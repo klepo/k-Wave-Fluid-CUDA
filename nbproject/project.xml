@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.cnd.makeproject</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/make-project/1">
+            <name>k-wave-fluid-cuda</name>
+            <c-extensions/>
+            <cpp-extensions>cpp,cu</cpp-extensions>
+            <header-extensions>h</header-extensions>
+            <sourceEncoding>UTF-8</sourceEncoding>
+            <make-dep-projects/>
+            <sourceRootList>
+                <sourceRootElem>CUDA</sourceRootElem>
+                <sourceRootElem>HDF5</sourceRootElem>
+                <sourceRootElem>KSpaceSolver</sourceRootElem>
+                <sourceRootElem>MatrixClasses</sourceRootElem>
+                <sourceRootElem>Parameters</sourceRootElem>
+                <sourceRootElem>Utils</sourceRootElem>
+            </sourceRootList>
+            <confList>
+                <confElem>
+                    <name>Debug</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Release</name>
+                    <type>1</type>
+                </confElem>
+            </confList>
+            <formatting>
+                <project-formatting-style>false</project-formatting-style>
+            </formatting>
+        </data>
+    </configuration>
+</project>

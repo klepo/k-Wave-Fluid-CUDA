@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="95">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="CUDA" displayName="CUDA" projectFiles="true">
+      <logicalFolder name="MatrixClasses"
+                     displayName="MatrixClasses"
+                     projectFiles="true">
+        <itemPath>CUDA/MatrixClasses/CUFFTComplexMatrix.cpp</itemPath>
+        <itemPath>CUDA/MatrixClasses/CUFFTComplexMatrix.h</itemPath>
+      </logicalFolder>
+      <itemPath>CUDA/CUDAImplementations.cu</itemPath>
+      <itemPath>CUDA/CUDAImplementations.h</itemPath>
+      <itemPath>CUDA/CUDATuner.cpp</itemPath>
+      <itemPath>CUDA/CUDATuner.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="HDF5" displayName="HDF5" projectFiles="true">
+      <itemPath>HDF5/HDF5_File.cpp</itemPath>
+      <itemPath>HDF5/HDF5_File.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="KSpaceSolver"
+                   displayName="KSpaceSolver"
+                   projectFiles="true">
+      <itemPath>KSpaceSolver/KSpaceFirstOrder3DSolver.cpp</itemPath>
+      <itemPath>KSpaceSolver/KSpaceFirstOrder3DSolver.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="MatrixClasses"
+                   displayName="MatrixClasses"
+                   projectFiles="true">
+      <logicalFolder name="OutputHDF5Stream"
+                     displayName="OutputHDF5Stream"
+                     projectFiles="true">
+        <itemPath>MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.cpp</itemPath>
+        <itemPath>MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.h</itemPath>
+        <itemPath>MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.cpp</itemPath>
+        <itemPath>MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.h</itemPath>
+        <itemPath>MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.cpp</itemPath>
+        <itemPath>MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.h</itemPath>
+      </logicalFolder>
+      <itemPath>MatrixClasses/BaseFloatMatrix.cpp</itemPath>
+      <itemPath>MatrixClasses/BaseFloatMatrix.h</itemPath>
+      <itemPath>MatrixClasses/BaseLongMatrix.cpp</itemPath>
+      <itemPath>MatrixClasses/BaseLongMatrix.h</itemPath>
+      <itemPath>MatrixClasses/BaseMatrix.h</itemPath>
+      <itemPath>MatrixClasses/ComplexMatrix.cpp</itemPath>
+      <itemPath>MatrixClasses/ComplexMatrix.h</itemPath>
+      <itemPath>MatrixClasses/LongMatrix.cpp</itemPath>
+      <itemPath>MatrixClasses/LongMatrix.h</itemPath>
+      <itemPath>MatrixClasses/MatrixContainer.cpp</itemPath>
+      <itemPath>MatrixClasses/MatrixContainer.h</itemPath>
+      <itemPath>MatrixClasses/MatrixRecord.cpp</itemPath>
+      <itemPath>MatrixClasses/MatrixRecord.h</itemPath>
+      <itemPath>MatrixClasses/OutputStreamContainer.cpp</itemPath>
+      <itemPath>MatrixClasses/OutputStreamContainer.h</itemPath>
+      <itemPath>MatrixClasses/RealMatrix.cpp</itemPath>
+      <itemPath>MatrixClasses/RealMatrix.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="Parameters" displayName="Parameters" projectFiles="true">
+      <itemPath>Parameters/CommandLineParameters.cpp</itemPath>
+      <itemPath>Parameters/CommandLineParameters.h</itemPath>
+      <itemPath>Parameters/Parameters.cpp</itemPath>
+      <itemPath>Parameters/Parameters.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="Utils" displayName="Utils" projectFiles="true">
+      <itemPath>Utils/DimensionSizes.h</itemPath>
+      <itemPath>Utils/ErrorMessages.h</itemPath>
+      <itemPath>Utils/MatrixNames.h</itemPath>
+      <itemPath>Utils/MemoryMeasure.h</itemPath>
+      <itemPath>Utils/TimeMeasure.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+    <itemPath>main.cpp</itemPath>
+  </logicalFolder>
+  <sourceRootList>
+    <Elem>CUDA</Elem>
+    <Elem>HDF5</Elem>
+    <Elem>KSpaceSolver</Elem>
+    <Elem>MatrixClasses</Elem>
+    <Elem>Parameters</Elem>
+    <Elem>Utils</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <compilerSet>CUDA|GNU</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/hdf5-serial/include</pElem>
+          </incDir>
+          <commandLine>-Xcompiler="-fopenmp"</commandLine>
+          <preprocessorList>
+            <Elem>CUDA_VERSION=1</Elem>
+            <Elem>NDEBUG</Elem>
+          </preprocessorList>
+          <warningLevel>0</warningLevel>
+        </ccTool>
+        <linkerTool>
+          <linkerAddLib>
+            <pElem>/usr/local/hdf5-serial/lib</pElem>
+            <pElem>/usr/local/cuda/lib64</pElem>
+          </linkerAddLib>
+          <linkerLibItems>
+            <linkerLibFileItem>/usr/local/hdf5-serial/lib/libhdf5_hl.a</linkerLibFileItem>
+            <linkerLibFileItem>/usr/local/hdf5-serial/lib/libhdf5.a</linkerLibFileItem>
+            <linkerLibStdlibItem>DataCompression</linkerLibStdlibItem>
+            <linkerLibLibItem>cufft</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="CUDA/CUDAImplementations.cu" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="CUDA/CUDAImplementations.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="CUDA/CUDATuner.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="CUDA/CUDATuner.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="CUDA/MatrixClasses/CUFFTComplexMatrix.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="CUDA/MatrixClasses/CUFFTComplexMatrix.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/BaseFloatMatrix.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/BaseFloatMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/BaseLongMatrix.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/BaseLongMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/BaseMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/ComplexMatrix.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/ComplexMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/LongMatrix.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/LongMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/MatrixContainer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/MatrixRecord.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/MatrixRecord.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputStreamContainer.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputStreamContainer.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/RealMatrix.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/RealMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Parameters/CommandLineParameters.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="Parameters/CommandLineParameters.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Parameters/Parameters.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/ErrorMessages.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/MatrixNames.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/MemoryMeasure.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/TimeMeasure.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <compilerSet>CUDA|GNU</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+      </compileType>
+      <item path="CUDA/CUDAImplementations.cu" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="CUDA/CUDAImplementations.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="CUDA/CUDATuner.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="CUDA/CUDATuner.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="CUDA/MatrixClasses/CUFFTComplexMatrix.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="CUDA/MatrixClasses/CUFFTComplexMatrix.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/BaseFloatMatrix.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/BaseFloatMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/BaseLongMatrix.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/BaseLongMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/BaseMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/ComplexMatrix.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/ComplexMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/LongMatrix.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/LongMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/MatrixContainer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/MatrixRecord.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/MatrixRecord.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputStreamContainer.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/OutputStreamContainer.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/RealMatrix.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MatrixClasses/RealMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Parameters/CommandLineParameters.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="Parameters/CommandLineParameters.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Parameters/Parameters.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/ErrorMessages.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/MatrixNames.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/MemoryMeasure.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/TimeMeasure.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
