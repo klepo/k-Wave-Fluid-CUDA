@@ -1,19 +1,21 @@
 /**
  * @file        HDF5_File.cpp
  * @author      Jiri Jaros              \n
- *              CECS, ANU, Australia     \n
- *              jiri.jaros@anu.edu.au
+ *              Faculty of Information Technology \n
+ *              Brno University of Technology \n
+ *              jarosjir@fit.vutbr.cz
  *
- * @brief       The implementation file containing the HDF5 related classes
+ * @brief       The implementation file containing the HDF5 related classes.
  *
- * @version     kspaceFirstOrder3D 2.13
- * @date        27 July 2012, 14:14      (created) \n
- *              17 September 2012, 15:35 (revised
+ * @version     kspaceFirstOrder3D 3.3
+ * @date        27 July     2012, 14:14 (created) \n
+ *              04 November 2014, 15:00 (revised)
  *
 
- * @section License
+* @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2012 Jiri Jaros and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
+ * and Bradley Treeby
  *
  * This file is part of the k-Wave. k-Wave is free software: you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
@@ -26,7 +28,7 @@
  * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see <http://www.gnu.org/licenses/>.
+ * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
 
@@ -286,7 +288,7 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t ParentGroup,
         const int CompressionLevel)
 {
     const int RANK = (DimensionSizes.Is3D()) ? 3 : 4;
-	
+
 	// a windows hack
     hsize_t Dims [4];
     hsize_t Chunk[4];
@@ -543,7 +545,7 @@ void THDF5_File::WriteHyperSlab(const hid_t HDF5_Dataset_id,
     HDF5_Filespace = H5Dget_space(HDF5_Dataset_id);
     const int Rank = H5Sget_simple_extent_ndims(HDF5_Filespace);
 
-    // Set sizes and offsets, windows hack 
+    // Set sizes and offsets, windows hack
     hsize_t ElementCount[4];
     hsize_t Offset      [4];
 

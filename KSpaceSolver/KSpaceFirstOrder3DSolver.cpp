@@ -1,35 +1,34 @@
-
 /**
  * @file        KSpaceFirstOrder3DSolver.cpp
  * @author      Jiri Jaros              \n
- *              CECS, ANU, Australia    \n
- *              jiri.jaros@anu.edu.au
+ *              Faculty of Information Technology \n
+ *              Brno University of Technology \n
+ *              jarosjir@fit.vutbr.cz
  *
  * @brief       The implementation file containing the main class of the
  *              project responsible for the entire simulation.
  *
- * @version     kspaceFirstOrder3D 2.13
- * @date        12 July 2012, 10:27       (created)\n
- *              17 September 2012, 14:20  (revised)
+ * @version     kspaceFirstOrder3D 3.3
+ * @date        12 July     2012, 10:27 (created)\n
+ *              04 November 2014, 15:07 (revised)
  *
- * @section License
+* @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n
- * Copyright (C) 2012 Jiri Jaros and Bradley Treeby.
+ * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
+ * and Bradley Treeby
  *
  * This file is part of the k-Wave. k-Wave is free software: you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * Public License as published by the Free Software Foundation, either version
+ * 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Lesser General Public License for more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see <http://www.gnu.org/licenses/>.
+ * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
 // Linux build
@@ -427,7 +426,7 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense(FILE * file)
 #elif _WIN32
     fprintf(file,"| Operating System: Windows x64                   |\n");
 #endif
-    
+
     fprintf(file,"|                                                  |\n");
     fprintf(file,"| Copyright (C) 2014 Jiri Jaros, Bradley Treeby    |\n");
     fprintf(file,"|                    and Beau Johnston             |\n");
@@ -483,7 +482,7 @@ void TKSpaceFirstOrder3DSolver::InitializeFFTWPlans()
  * Secondly CUFFT
  */
 void TKSpaceFirstOrder3DSolver::InitializeCUFFTPlans(){
-    
+
     // create real to complex plans
     TCUFFTComplexMatrix::CreateFFTPlan3D_R2C(Get_p());
     //Get_CUFFT_X_temp().CreateFFTPlan3D_R2C(Get_p());
@@ -495,7 +494,7 @@ void TKSpaceFirstOrder3DSolver::InitializeCUFFTPlans(){
     //Get_CUFFT_X_temp().CreateFFTPlan3D_C2R(Get_p());
     //Get_CUFFT_Y_temp().CreateFFTPlan3D_C2R(Get_p());
     //Get_CUFFT_Z_temp().CreateFFTPlan3D_C2R(Get_p());
-    
+
 }// end of PrepareData
 //---------------------------------------------------------------------------//
 #endif
@@ -2025,22 +2024,22 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_nonlinear()
         Get_FFT_Y_temp().Compute_iFFT_3D_C2R(Absorb_eta_temp);
 #endif
 #if CUDA_VERSION
-        
+
         Get_CUFFT_X_temp().Compute_FFT_3D_R2C(Sum_du);
         Get_CUFFT_Y_temp().Compute_FFT_3D_R2C(Sum_rhoxyz);
 
-        
+
         cuda_implementations->Compute_Absorb_nabla1_2(Get_absorb_nabla1(),
                                                      Get_absorb_nabla2(),
                                                      Get_CUFFT_X_temp(),
                                                      Get_CUFFT_Y_temp());
 
-        
+
         Get_CUFFT_X_temp().Compute_iFFT_3D_C2R(Absorb_tau_temp);
         Get_CUFFT_Y_temp().Compute_iFFT_3D_C2R(Absorb_eta_temp);
 #endif
 
-        
+
         Sum_Subterms_nonlinear(Absorb_tau_temp,
                                Absorb_eta_temp,
                                BonA_rho_rhoxyz);
@@ -2191,7 +2190,7 @@ void TKSpaceFirstOrder3DSolver::Compute_uxyz(){
             Get_ddx_k_shift_pos(),
             Get_ddy_k_shift_pos(),
             Get_ddz_k_shift_pos());
-    
+
     Get_CUFFT_X_temp().Compute_iFFT_3D_C2R(Get_Temp_1_RS3D());
     Get_CUFFT_Y_temp().Compute_iFFT_3D_C2R(Get_Temp_2_RS3D());
     Get_CUFFT_Z_temp().Compute_iFFT_3D_C2R(Get_Temp_3_RS3D());
@@ -2377,7 +2376,7 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
     {
         ActPercent = (Parameters->Get_t_index() / (Parameters->Get_Nt() / 100));
     }
-    
+
     PrintOutputHeader();
 
 #if CUDA_VERSION || OPENCL_VERSION
@@ -2385,21 +2384,21 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
 #endif
 
     IterationTime.Start();
-    
+
     while (Parameters->Get_t_index() < Parameters->Get_Nt() &&
             (!IsTimeToCheckpoint())) {
         const size_t t_index = Parameters->Get_t_index();
 
-        
+
         Compute_uxyz();
 
         // add in the velocity u source term
-        
+
         Add_u_source();
 
         // add in the transducer source term (t = t1) to ux
         if (Parameters->Get_transducer_source_flag() > t_index){
-        
+
 #if VANILLA_CPP_VERSION
             {
             cpp_implementations->AddTransducerSource(
@@ -2441,7 +2440,7 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
 
             Compute_new_p_nonlinear();
         }else {
-            
+
             Compute_new_p_linear();
         }
         //-- calculate initial pressure
@@ -2455,7 +2454,7 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
 
 
         PrintStatistics();
-        
+
 
         Parameters->Increment_t_index();
     }

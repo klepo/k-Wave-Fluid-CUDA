@@ -1,10 +1,35 @@
-//
-//  KSpaceFirstOrder3DSolver.h
-//  kwave-opencl
-//
-//  Created by Beau Johnston on 26/03/13.
-//  Copyright (c) 2013 Australian National University. All rights reserved.
-//
+/**
+ * @file        KSpaceFirstOrder3DSolver.h
+ * @author      Jiri Jaros              \n
+ *              Faculty of Information Technology \n
+ *              Brno University of Technology \n
+ *              jarosjir@fit.vutbr.cz
+ *
+ * @brief       The header file containing the main class of the
+ *              project responsible for the entire simulation.
+ *
+ * @version     kspaceFirstOrder3D 3.3
+ * @date        12 July     2012, 10:27 (created)\n
+ *              04 November 2014, 15:09 (revised)
+ *
+ * @section License
+ * This file is part of the C++ extension of the k-Wave Toolbox
+ * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
+ * and Bradley Treeby
+ *
+ * This file is part of the k-Wave. k-Wave is free software: you can
+ * redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version
+ * 3 of the License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ */
 
 #ifndef __kwave_opencl__KSpaceFirstOrder3DSolver__
 #define __kwave_opencl__KSpaceFirstOrder3DSolver__
