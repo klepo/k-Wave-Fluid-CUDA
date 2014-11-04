@@ -1,19 +1,22 @@
 /**
  * @file        main.cpp
  * @author      Jiri Jaros              \n
- *              CECS, ANU, Australia    \n
- *              jiri.jaros@anu.edu.au
- * @brief       The main file
+ *              Faculty of Information Technology \n
+ *              Brno University of Technology \n
+ *              jarosjir@fit.vutbr.cz
  *
- * @version     kspaceFirstOrder3D 2.13
- * @date        11 July 2012, 10:57             (created) \n
- *              14 September 2012, 12:30        (revised)
+ * @brief       The main file for the kspaceFirstOrder3D-CUDA.
+ *
+ * @version     kspaceFirstOrder3D 3.3
+ * @date        11 July     2012, 10:57 (created) \n
+ *              04 November 2014, 17:31 (revised)
  *
  *
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2012 Jiri Jaros and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
+ * and Bradley Treeby
  *
  * This file is part of the k-Wave. k-Wave is free software: you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
