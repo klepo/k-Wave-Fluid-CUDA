@@ -108,30 +108,34 @@ public:
     // Print the code name and license
     void PrintFullNameCodeAndLicense(FILE * file);
 
-    // Get total simulation time
-    double GetTotalTime() const {
-        return TotalTime.GetElapsedTime();
-    };
+    /// Set processor affinity
+    void SetProcessorAffinity();
 
-    // Get pre-processing time
-    double GetPreProcessingTime() const {
-        return PreProcessingTime.GetElapsedTime();
-    };
+    /// Get total simulation time.
+    double GetTotalTime()          const { return TotalTime.GetElapsedTime(); };
 
-    // Get data load time
-    double GetDataLoadTime() const {
-        return DataLoadTime.GetElapsedTime();
-    };
+    /// Get pre-processing time.
+    double GetPreProcessingTime()  const { return PreProcessingTime.GetElapsedTime(); };
 
-    // Get simulation time (time loop)
-    double GetSimulationTime() const {
-        return SimulationTime.GetElapsedTime();
-    };
+    /// Get data load time.
+    double GetDataLoadTime()       const { return DataLoadTime.GetElapsedTime(); };
 
-    // Get post-processing time
-    double GetPostProcessingTime() const {
-        return PostProcessingTime.GetElapsedTime();
-    };
+    /// Get simulation time (time loop).
+    double GetSimulationTime()     const { return SimulationTime.GetElapsedTime(); };
+
+    /// Get post-processing time.
+    double GetPostProcessingTime() const  { return PostProcessingTime.GetElapsedTime(); };
+
+    /// Get total simulation time cumulated over all legs.
+    double GetCumulatedTotalTime()          const { return TotalTime.GetCumulatedElapsedTimeOverAllLegs();          };
+    /// Get pre-processing time cumulated over all legs.
+    double GetCumulatedPreProcessingTime()  const { return PreProcessingTime.GetCumulatedElapsedTimeOverAllLegs();  };
+    /// Get data load time cumulated over all legs.
+    double GetCumulatedDataLoadTime()       const { return DataLoadTime.GetCumulatedElapsedTimeOverAllLegs();       };
+    /// Get simulation time (time loop) cumulated over all legs.
+    double GetCumulatedSimulationTime()     const { return SimulationTime.GetCumulatedElapsedTimeOverAllLegs();     };
+    /// Get post-processing time cumulated over all legs.
+    double GetCumulatedPostProcessingTime() const { return PostProcessingTime.GetCumulatedElapsedTimeOverAllLegs(); };
 
 protected:
 

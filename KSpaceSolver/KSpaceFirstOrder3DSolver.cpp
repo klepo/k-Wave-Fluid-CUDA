@@ -437,6 +437,31 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense(FILE * file)
 //---------------------------------------------------------------------------//
 
 
+/**
+ * Set processor affinity.
+ */
+void TKSpaceFirstOrder3DSolver::SetProcessorAffinity()
+{
+  // Linux Build
+  #ifdef __linux__
+    //GNU compiler
+    #if (defined(__GNUC__) || defined(__GNUG__)) && !(defined(__clang__) || defined(__INTEL_COMPILER))
+      setenv("OMP_PROC_BIND","TRUE",1);
+    #endif
+
+    #ifdef __INTEL_COMPILER
+      setenv("KMP_AFFINITY","none",1);
+    #endif
+  #endif
+
+  // Windows build is always compiled by the Intel Compiler
+  #ifdef _WIN64
+    _putenv_s("KMP_AFFINITY","none");
+  #endif
+}//end of SetProcessorAffinity
+//------------------------------------------------------------------------------
+
+
 //---------------------------------------------------------------------------//
 //                            Protected methods                              //
 //---------------------------------------------------------------------------//

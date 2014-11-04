@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        15 August   2012, 09:35 (created) \n
- *              04 November 2014, 17:31 (revised)
+ *              04 November 2014, 18:18 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -34,100 +34,131 @@
 #ifndef TIMEMEASURE_H
 #define	TIMEMEASURE_H
 
-#include <omp.h>
+#include <exception>
+
+#ifdef _OPENMP
+  #include <omp.h>
+#else
+  #include <sys/time.h>
+#endif
 
 /**
- * @class  Time Messsure
+ * @class  TTimeMeasure
+ * @brief  Class measuring elapsed time.
+ * @brief  Class measuring elapsed time, even over multiple leg simulations.
  */
-class TTimeMeasure{
-    private:
-        /// Start timestamp of the interval
-        double StartTime;
-        /// Stop timestamp of the interval
-        double StopTime;
-        /// Elapsed time in previous simulation legs
-        double CumulatedElapsedTimeOverPreviousLegs;
+class TTimeMeasure
+{
+  public:
+  ///Default constructor
 
-    public:
-        ///Default constructor
-        TTimeMeasure() {
-            StartTime = 0.0;
-            StopTime = 0.0;
-            CumulatedElapsedTimeOverPreviousLegs = 0.0;
-        };
+  TTimeMeasure() :
+        StartTime(0.0),
+        StopTime(0.0),
+        CumulatedElapsedTimeOverPreviousLegs(0.0)
+    { };
 
-        /**
-         * @brief Copy constructor
-         * @param [in] src - the other class to copy from
-         */
-        TTimeMeasure(const TTimeMeasure & orig) {
-            StartTime = orig.StartTime;
-            StopTime  = orig.StopTime;
-            CumulatedElapsedTimeOverPreviousLegs = orig.CumulatedElapsedTimeOverPreviousLegs;
-        };
+    /**
+     * @brief Copy constructor.
+     * @details Copy constructor.
+     * @param [in] src - the other class to copy from
+     */
+    TTimeMeasure(const TTimeMeasure & src) :
+        StartTime(src.StartTime),
+        StopTime (src.StopTime),
+        CumulatedElapsedTimeOverPreviousLegs(src.CumulatedElapsedTimeOverPreviousLegs)
+    { };
 
-        /**
-         * @brief operator =
-         * @param [in] src - source
-         * @return
-         */
-        TTimeMeasure& operator = (const TTimeMeasure & orig){
-            if (this != &orig){
-                StartTime = orig.StartTime;
-                StopTime  = orig.StopTime;
-                CumulatedElapsedTimeOverPreviousLegs =
-                    orig.CumulatedElapsedTimeOverPreviousLegs;
-            }
-            return *this;
-        };
+    /**
+     * @brief operator =
+     * @details operator =
+     * @param [in] src - source
+     * @return
+     */
+    TTimeMeasure& operator = (const TTimeMeasure & src)
+    {
+      if (this != &src)
+      {
+        StartTime = src.StartTime;
+        StopTime  = src.StopTime;
+        CumulatedElapsedTimeOverPreviousLegs = src.CumulatedElapsedTimeOverPreviousLegs;
+      }
+      return *this;
+    };
 
-        ///Destructor
-        virtual ~TTimeMeasure() {};
+    /// Destructor.
+    virtual ~TTimeMeasure() {};
 
-        ///Get start timestamp
-        void Start(){
-            StartTime = omp_get_wtime();
-        };
+    ///Get start timestamp.
+    void Start()
+    {
+      #ifdef _OPENMP
+        StartTime = omp_get_wtime();
+      #else
+        timeval ActTime;
+        gettimeofday(&ActTime, NULL);
+        StartTime = ActTime.tv_sec + ActTime.tv_usec * 1.0e-6;
+      #endif
+    };
 
-        ///Get the stop timestamp
-        void Stop(){
-            StopTime = omp_get_wtime();
-        };
+    ///Get stop timestamp.
+    void Stop()
+    {
+      #ifdef _OPENMP
+        StopTime = omp_get_wtime();
+      #else
+        timeval ActTime;
+        gettimeofday(&ActTime, NULL);
+        StopTime = ActTime.tv_sec + ActTime.tv_usec * 1.0e-6;
+      #endif
+    };
 
-        /**
-         * Get elapsed time
-         * @return elapsed time between start timestamp and stop timestamp
-         */
-        double GetElapsedTime() const {
-            return StopTime - StartTime;
-        };
+    /**
+     * @brief Get elapsed time.
+     * @details Get elapsed time.
+     * @return elapsed time between start timestamp and stop timestamp.
+     */
+    double GetElapsedTime() const
+    {
+      return StopTime - StartTime;
+    };
 
-        /**
-         * Get cumulated elapsed time over all simulation legs
-         * @return
-         */
-        double GetCumulatedElapsedTimeOverAllLegs() const
-        {
-            return CumulatedElapsedTimeOverPreviousLegs + (StopTime - StartTime);
-        };
+   /**
+     * @brief Get cumulated elapsed time over all simulation legs.
+     * @details Get cumulated elapsed time over all simulation legs.
+     * @return elapsed time all (including this one) legs.
+     */
+    double GetCumulatedElapsedTimeOverAllLegs() const
+    {
+      return CumulatedElapsedTimeOverPreviousLegs + (StopTime - StartTime);
+    };
 
-        /**
-         * Get time spent in previous legs
-         * @return
-         */
-        double GetCumulatedElapsedTimePreviousAllLegs() const
-        {
-            return CumulatedElapsedTimeOverPreviousLegs;
-        };
+    /**
+     * @brief Get time spent in previous legs
+     * @return Elapsed time over previous legs.
+     */
+    double GetCumulatedElapsedTimeOverPreviousLegs() const
+    {
+      return CumulatedElapsedTimeOverPreviousLegs;
+    };
 
-        /**
-         * @brief Set elapsed time in previous legs of the simulation
-         * @param [in] ElapsedTime
-         */
-        void SetCumulatedElapsedTimeOverPreviousLegs(const double ElapsedTime)
-        {
-            CumulatedElapsedTimeOverPreviousLegs = ElapsedTime;
-        }
+    /**
+     * @brief Set elapsed time in previous legs of the simulation.
+     * @details Set elapsed time in previous legs of the simulation.
+     * @param [in] ElapsedTime
+     */
+    void SetCumulatedElapsedTimeOverPreviousLegs(const double ElapsedTime)
+    {
+      CumulatedElapsedTimeOverPreviousLegs = ElapsedTime;
+    }
+    
+  private:
+    /// Start timestamp of the interval
+    double StartTime;
+    /// Stop timestamp of the interval
+    double StopTime;
+    /// Elapsed time in previous simulation legs
+    double CumulatedElapsedTimeOverPreviousLegs;
 
 };// end of TTimeMeasure
 //------------------------------------------------------------------------------

@@ -647,106 +647,128 @@ These are only defined if (p_source_flag == 1)
 
 #include <cstdlib>
 #include <iostream>
-#include <omp.h>
 #include <exception>
 
-#include "KSpaceSolver/KSpaceFirstOrder3DSolver.h"
-
-    using namespace std;
-
-    // separator
-    static const char * FMT_SmallSeparator = "--------------------------------\n";
-
-    /**
-     *  The main function
-     * @param argc
-     * @param argv
-     * @return
-     */
-    int main(int argc, char** argv) {
-
-        // Create K-Space solver
-        TKSpaceFirstOrder3DSolver KSpaceSolver;
-
-        // print header
-        fprintf(stdout,"---%s",FMT_SmallSeparator);
-        fprintf(stdout,"    %s\n",KSpaceSolver.GetCodeName().c_str());
-        fprintf(stdout,"---%s",FMT_SmallSeparator);
-
-        // Create parameters and parse command line
-        TParameters* Parameters = TParameters::GetInstance();
-
-        Parameters->ParseCommandLine(argc,argv);
-        if (Parameters->IsVersion()){
-            KSpaceSolver.PrintFullNameCodeAndLicense(stdout);
-            return 0;
-        }
-
-        // set number of threads and bind them to cores
-        //omp_set_num_threads(1);
-        omp_set_num_threads(Parameters->GetNumberOfThreads());
-        //etenv("OMP_PROC_BIND","TRUE",1); windows do not need this
-
-#if CUDA_VERSION
-        CUDATuner* Tuner = CUDATuner::GetInstance();
-        fprintf(stdout, "Selected GPU device id:   %9d\n", Tuner->GetDevice());
-        fprintf(stdout,
-                "GPU Device info: %18s\n",
-                Tuner->GetDeviceName().c_str());
-#elif OPENCL_VERSION
-        OpenCLTuner* Tuner = OpenCLTuner::GetInstance();
-        fprintf(stdout, "Selected OpenCL device:   %9d\n", Tuner->GetDevice());
+#ifdef _OPENMP
+  #include <omp.h>
 #endif
-        fprintf(stdout,
-                "Number of CPU threads:    %9d\n",
-                Parameters->GetNumberOfThreads());
-        KSpaceSolver.PrintParametersOfSimulation(stdout);
 
-        fprintf(stdout,"---%s",FMT_SmallSeparator);
-        fprintf(stdout,".......... Initialization .........\n");
-        fprintf(stdout,"Memory allocation .............");
-        fflush(stdout);
+#include <KSpaceSolver/KSpaceFirstOrder3DSolver.h>
 
-        // allocate memory
-        try {
-            KSpaceSolver.AllocateMemory();
-        } catch (exception e){
-            fprintf(stdout, "Failed!\nK-Wave panic: Not enough memory to run this simulation!\n%s\n",e.what());
-            fprintf(stderr, "K-Wave panic: Not enough memory to run this simulation! \n%s\n",e.what());
-            return EXIT_FAILURE;
-        }
-        fprintf(stdout, "Done\n");
+using namespace std;
 
-        // Load data from disk
-        fprintf(stdout, "Data loading...................");
-        fflush(stdout);
-        try {
-            KSpaceSolver.LoadInputData();
-        }catch (ios::failure e) {
-            fprintf(stdout, "Failed!\nK-Wave panic: Data loading was not successful!\n%s\n",e.what());
-            fprintf(stderr, "K-Wave panic: Data loading was not successful! \n%s\n",e.what());
-            return EXIT_FAILURE;
-        }
-        fprintf(stdout, "Done\n");
+/// separator
+static const char * FMT_SmallSeparator = "--------------------------------\n";
 
-        fprintf(stdout,"Elapsed time:          %11.2fs\n",KSpaceSolver.GetDataLoadTime());
+/**
+ * The main function of the kspaceFirstOrder3D-CUDA
+ * @param [in] argc
+ * @param [in] argv
+ * @return
+ */
+int main(int argc, char** argv)
+{
+  // Create k-Space solver
+  TKSpaceFirstOrder3DSolver KSpaceSolver;
 
-        // start computation
-        fprintf(stdout,"---%s",FMT_SmallSeparator);
-        fprintf(stdout, "........... Computation ...........\n");
+  // print header
+  fprintf(stdout, "---%s", FMT_SmallSeparator);
+  fprintf(stdout, "    %s\n", KSpaceSolver.GetCodeName().c_str());
+  fprintf(stdout, "---%s", FMT_SmallSeparator);
 
-        KSpaceSolver.Compute();
+  // Create parameters and parse command line
+  TParameters* Parameters = TParameters::GetInstance();
 
-        fprintf(stdout,"%s",FMT_SmallSeparator);
-        fprintf(stdout, "............ Summary ...........\n");
-        fprintf(stdout, "Peak Host memory in use:   %1ldMB\n",KSpaceSolver.GetHostMemoryUsageInMB());
-        fprintf(stdout, "Peak Device memory in use: %1ldMB\n",KSpaceSolver.GetDeviceMemoryUsageInMB());
-        fprintf(stdout, "Total execution time:  %8.2fs\n",KSpaceSolver.GetTotalTime());
+  Parameters->ParseCommandLine(argc, argv);
+  if (Parameters->IsVersion())
+  {
+    KSpaceSolver.PrintFullNameCodeAndLicense(stdout);
+    return EXIT_SUCCESS;
+  }
 
-        fprintf(stdout,"%s",FMT_SmallSeparator);
-        fprintf(stdout,"       End of computation \n");
-        fprintf(stdout,"%s",FMT_SmallSeparator);
+  // set number of threads and bind them to cores
+  #ifdef _OPENMP
+    KSpaceSolver.SetProcessorAffinity();
+    omp_set_num_threads(Parameters->GetNumberOfThreads());
+  #endif
 
-        return EXIT_SUCCESS;
-    }// end of main
+  // CUDA Tuner from Beau's code. Not sure what this is
+  CUDATuner* Tuner = CUDATuner::GetInstance();
+  fprintf(stdout, "Selected GPU device id:   %9d\n", Tuner->GetDevice());
+  fprintf(stdout,
+          "GPU Device info: %18s\n",
+          Tuner->GetDeviceName().c_str());
+
+  fprintf(stdout,
+          "Number of CPU threads:    %9d\n",
+          Parameters->GetNumberOfThreads());
+
+  KSpaceSolver.PrintParametersOfSimulation(stdout);
+
+  fprintf(stdout,"---%s",FMT_SmallSeparator);
+  fprintf(stdout,".......... Initialization .........\n");
+  fprintf(stdout,"Memory allocation .............");
+  fflush(stdout);
+
+  // allocate memory
+  try
+  {
+    KSpaceSolver.AllocateMemory();
+  }
+  catch (exception e)
+  {
+    fprintf(stdout, "Failed!\nK-Wave panic: Not enough memory to run this simulation!\n%s\n", e.what());
+    fprintf(stderr, "K-Wave panic: Not enough memory to run this simulation! \n%s\n", e.what());
+    return EXIT_FAILURE;
+  }
+  fprintf(stdout, "Done\n");
+
+  // Load data from disk
+  fprintf(stdout, "Data loading...................");
+  fflush(stdout);
+  try
+  {
+    KSpaceSolver.LoadInputData();
+  }
+  catch (ios::failure e)
+  {
+    fprintf(stdout, "Failed!\nK-Wave panic: Data loading was not successful!\n%s\n",e.what());
+    fprintf(stderr, "K-Wave panic: Data loading was not successful! \n%s\n",e.what());
+    return EXIT_FAILURE;
+  }
+  fprintf(stdout, "Done\n");
+
+  fprintf(stdout,"Elapsed time:          %11.2fs\n",KSpaceSolver.GetDataLoadTime());
+
+  if (Parameters->Get_t_index() > 0)
+  {
+    fprintf(stdout, "Recovered from t_index: %8ld\n", Parameters->Get_t_index());
+  }
+
+  // start computation
+  fprintf(stdout,"---%s",FMT_SmallSeparator);
+  fprintf(stdout, "........... Computation ...........\n");
+
+  KSpaceSolver.Compute();
+
+  fprintf(stdout,"%s",FMT_SmallSeparator);
+  fprintf(stdout, "............ Summary ...........\n");
+  fprintf(stdout, "Peak Host memory in use:   %1ldMB\n",KSpaceSolver.GetHostMemoryUsageInMB());
+  fprintf(stdout, "Peak Device memory in use: %1ldMB\n",KSpaceSolver.GetDeviceMemoryUsageInMB());
+
+  if (KSpaceSolver.GetCumulatedTotalTime() != KSpaceSolver.GetTotalTime())
+  {
+    fprintf(stdout,"This leg execution time:%7.2fs\n",KSpaceSolver.GetTotalTime());
+  }
+  fprintf(stdout, "Total execution time:  %8.2fs\n",KSpaceSolver.GetCumulatedTotalTime());
+
+
+  fprintf(stdout,"%s",FMT_SmallSeparator);
+  fprintf(stdout,"       End of computation \n");
+  fprintf(stdout,"%s",FMT_SmallSeparator);
+
+  fprintf(stdout,"%s",FMT_SmallSeparator);
+
+  return EXIT_SUCCESS;
+}// end of main
 //------------------------------------------------------------------------------
