@@ -1,17 +1,20 @@
 /**
  * @file        Parameters.cpp
- * @author      Jiri Jaros
- *              CECS, ANU, Australia
- *              jiri.jaros@anu.edu.au
- * @brief       The implementation file containing parameters of the simulation
+ * @author      Jiri Jaros   \n
+ *              Faculty of Information Technology \n
+ *              Brno University of Technology \n
+ *              jarosjir@fit.vutbr.cz
  *
- * @version     kspaceFirstOrder3D 2.13
- * @date        9 August 2012, 1:39      (created) \n
- *              14 September 2012, 14:20 (revised)
+ * @brief       The implementation file containing parameters of the simulation.
+ *
+ * @version     kspaceFirstOrder3D 3.3
+ * @date        09 August    2012, 13:39 (created) \n
+ *              04 November  2014, 17:26 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2012 Jiri Jaros and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
+ * and Bradley Treeby
  *
  * This file is part of the k-Wave. k-Wave is free software: you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
@@ -24,7 +27,7 @@
  * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see <http://www.gnu.org/licenses/>.
+ * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
 #include <omp.h>
@@ -216,7 +219,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
                 HDF5_FileHeader.GetCurrentHDF5_MinorVersion().c_str());
         throw ios::failure(ErrorMessage);
     }
-    
+
     const hid_t HDF5RootGroup = HDF5_InputFile.GetRootGroup();
 
     HDF5_InputFile.ReadCompleteDataset(HDF5RootGroup, Nt_Name, ScalarSizes, &Nt);
@@ -258,9 +261,9 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
                                        &pml_z_alpha);
 
     size_t X, Y, Z;
-	HDF5_InputFile.ReadCompleteDataset(HDF5RootGroup, Nx_Name, ScalarSizes, &X);    
+	HDF5_InputFile.ReadCompleteDataset(HDF5RootGroup, Nx_Name, ScalarSizes, &X);
     HDF5_InputFile.ReadCompleteDataset(HDF5RootGroup, Ny_Name, ScalarSizes, &Y);
-    HDF5_InputFile.ReadCompleteDataset(HDF5RootGroup, Nz_Name, ScalarSizes, &Z);            
+    HDF5_InputFile.ReadCompleteDataset(HDF5RootGroup, Nz_Name, ScalarSizes, &Z);
 
 
     FullDimensionSizes.X = X;
@@ -274,7 +277,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
     // if the file is of version 1.0, there must be a sensor mask index
     // (backward compatibility)
     if (HDF5_FileHeader.GetFileVersion() == THDF5_FileHeader::hdf5_fv_10) {
-        sensor_mask_ind_size = 
+        sensor_mask_ind_size =
             HDF5_InputFile.GetDatasetElementCount(HDF5RootGroup,
                                                   sensor_mask_index_Name);
 

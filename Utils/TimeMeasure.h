@@ -1,32 +1,34 @@
 /**
- * @File        TimeMeasure.h
- * @Author      Jiri Jaros
- * @Affiliation CECS,ANU, Australia
- * @Email       jiri.jaros@anu.edu.au
+ * @file        TimeMeasure.h
+ * @author      Jiri Jaros              \n
+ *              Faculty of Information Technology \n
+ *              Brno University of Technology \n
+ *              jarosjir@fit.vutbr.cz
  *
- * @Comments    Class with time measurement
+ * @brief        The header file for class with time measurement
  *
- * @Tool        kspaceFirstOrder3D 2.13
- * @Created     15 August 2012, 9:35 AM
- * @LastModif   17 September 2012, 15:35PM
+ * @version     kspaceFirstOrder3D 3.3
+ * @date        15 August   2012, 09:35 (created) \n
+ *              04 November 2014, 17:31 (revised)
  *
- * @License:
- * This file is part of the C++ extension of the k-Wave Toolbox (http://www.k-wave.org)
- * Copyright (C) 2012 Jiri Jaros and Bradley Treeby
+ * @section License
+ * This file is part of the C++ extension of the k-Wave Toolbox
+ * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
+ * and Bradley Treeby
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it
- * and/or modify it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * This file is part of the k-Wave. k-Wave is free software: you can
+ * redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version
+ * 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Lesser General Public License for more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see <http://www.gnu.org/licenses/>.
- *  */
+ * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ */
 
 
 #ifndef TIMEMEASURE_H
@@ -38,14 +40,14 @@
  * @class  Time Messsure
  */
 class TTimeMeasure{
-    private: 
+    private:
         /// Start timestamp of the interval
         double StartTime;
         /// Stop timestamp of the interval
         double StopTime;
         /// Elapsed time in previous simulation legs
         double CumulatedElapsedTimeOverPreviousLegs;
-    
+
     public:
         ///Default constructor
         TTimeMeasure() {
@@ -99,7 +101,7 @@ class TTimeMeasure{
         double GetElapsedTime() const {
             return StopTime - StartTime;
         };
-        
+
         /**
          * Get cumulated elapsed time over all simulation legs
          * @return

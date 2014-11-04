@@ -1,17 +1,20 @@
 /**
  * @file        Parameters.h
  * @author      Jiri Jaros              \n
- *              CECS, ANU, Australia    \n
- *              jiri.jaros@anu.edu.au
- * @brief       The header file containing the parameters of the simulation
+ *              Faculty of Information Technology \n
+ *              Brno University of Technology \n
+ *              jarosjir@fit.vutbr.cz
  *
- * @version     kspaceFirstOrder3D 2.13
- * @date        8 December 2011, 16:34   (created)      \n
- *              14 September 2012, 14:20 (revised)
+ * @brief       The header file containing the parameters of the simulation.
+ *
+ * @version     kspaceFirstOrder3D 3.3
+ * @date        08 December 2011, 16:34 (created)      \n
+ *              04 November 2014, 13:45 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2012 Jiri Jaros and Bradley Treeby.
+ * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
+ * and Bradley Treeby
  *
  * This file is part of the k-Wave. k-Wave is free software: you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
@@ -24,7 +27,7 @@
  * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see <http://www.gnu.org/licenses/>.
+ * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
 #ifndef PARAMETERS_H
@@ -70,7 +73,7 @@ class TParameters {
         TDimensionSizes GetFullDimensionSizes   () const {
             return FullDimensionSizes;
         };
-        
+
         // Reduced dimension sizes of the simulation (complex clases)
         TDimensionSizes GetReducedDimensionSizes() const {
             return ReducedDimensionSizes;
@@ -225,7 +228,7 @@ class TParameters {
 
         /// Is checkpoint enabled
         bool IsCheckpointEnabled()     const {
-            return command_line_parameters.IsCheckpointEnabled(); 
+            return command_line_parameters.IsCheckpointEnabled();
         };
         /// Get checkpoint interval
         int  GetCheckpointInterval()   const {
@@ -275,7 +278,7 @@ class TParameters {
         bool IsStore_u_min_all() const {
             return command_line_parameters.IsStore_u_min_all();
         };
-        
+
         /// Is --u_final specified at the command line
         bool IsStore_u_final() const {
             return command_line_parameters.IsStore_u_final();
