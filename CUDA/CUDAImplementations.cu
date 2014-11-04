@@ -1,10 +1,35 @@
-//
-//  CUDAImplementations.cpp
-//  kwave-cuda
-//
-//  Created by Beau Johnston on 11/03/13.
-//  Copyright (c) 2013 Australian National University. All rights reserved.
-//
+/**
+ * @file        CUDAImplementations.cpp
+ * @author      Jiri Jaros \n
+ *              Faculty of Information Technology \n
+ *              Brno University of Technology \n
+ *              jarosjir@fit.vutbr.cz
+ *
+ * @brief       The header file containing the all CUDA kernels
+ *              for the GPU implementation
+ *
+ * @version     kspaceFirstOrder3D 3.3
+ * @date        11 March    2013, 13:10 (created) \n
+ *              04 November 2014, 14:47 (revised)
+ *
+ * @section License
+ * This file is part of the C++ extension of the k-Wave Toolbox
+ * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
+ * and Bradley Treeby
+ *
+ * This file is part of the k-Wave. k-Wave is free software: you can
+ * redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version
+ * 3 of the License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ */
 
 #include "CUDAImplementations.h"
 
@@ -1466,7 +1491,7 @@ void CUDAImplementations::Compute_duxyz_non_linear(TRealMatrix& duxdx,
 }
 
 __global__ void CudaComputeC2_matrix(float * c2_data, size_t max_i){
-    size_t i = threadIdx.x + blockIdx.x*blockDim.x;	
+    size_t i = threadIdx.x + blockIdx.x*blockDim.x;
     size_t istride = blockDim.x * gridDim.x;
 
     while (i < max_i){
@@ -1495,7 +1520,7 @@ __global__ void CudaCalculate_p0_source_add_initial_pressure(
         const size_t max_i)
 {
 
-    size_t i = threadIdx.x + blockIdx.x*blockDim.x;	
+    size_t i = threadIdx.x + blockIdx.x*blockDim.x;
     size_t istride = blockDim.x * gridDim.x;
 
     float tmp;
@@ -1520,7 +1545,7 @@ __global__ void CudaCalculate_p0_source_add_initial_pressure(
         const size_t max_i)
 {
 
-    size_t i = threadIdx.x + blockIdx.x*blockDim.x;	
+    size_t i = threadIdx.x + blockIdx.x*blockDim.x;
     size_t istride = blockDim.x * gridDim.x;
 
     float tmp;
