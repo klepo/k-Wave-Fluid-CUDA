@@ -37,14 +37,6 @@
 #include "BaseMatrix.h"
 #include "../Utils/DimensionSizes.h"
 
-#if OPENCL_VERSION
-#if __APPLE__ & __MACH__
-#include <OpenCL/opencl.h>
-#else
-#include <CL/opencl.h>
-#endif
-#endif
-
 using namespace std;
 
 /**
@@ -63,9 +55,8 @@ class TBaseFloatMatrix : public TBaseMatrix{
             pDataRowSize = 0;
             p2DDataSliceSize = 0;
             pMatrixData = NULL;
-#if (defined (CUDA_VERSION) || defined(OPENCL_VERSION))
             pdMatrixData = NULL;
-#endif
+
         };
 
         //Get dimension sizes of the matrix
@@ -95,7 +86,7 @@ class TBaseFloatMatrix : public TBaseMatrix{
             return pMatrixData;
         }
 
-#if CUDA_VERSION || OPENCL_VERSION
+
         virtual void SyncroniseToGPUDevice(){
             CopyIn(pMatrixData);
         }
@@ -108,9 +99,9 @@ class TBaseFloatMatrix : public TBaseMatrix{
             CopyOut(pMatrixData,first_n_elements);
         }
 
-#endif
 
-#if CUDA_VERSION
+
+
         //Host   -> Device
         virtual void CopyIn  (const float * HostSource);
 
@@ -128,24 +119,7 @@ class TBaseFloatMatrix : public TBaseMatrix{
             //CopyIn(pMatrixData);
             return pdMatrixData;
         }
-#endif
-#if OPENCL_VERSION
-        //Host -> Device
-        virtual void CopyIn  (const float* HostSource);
 
-        //Device -> Host
-        virtual void CopyOut (float* HostDestination);
-
-        //Device -> Host (but only the first n elements)
-        virtual void CopyOut(float* HostDestination, size_t n);
-
-        //Device -> Device
-        virtual void CopyForm(const cl_mem DeviceSource);
-
-        virtual cl_mem GetRawDeviceData() {
-            return pdMatrixData;
-        }
-#endif
 
     protected:
 
@@ -164,14 +138,10 @@ class TBaseFloatMatrix : public TBaseMatrix{
 
         /// Raw matrix data
         float* pMatrixData;
-#if CUDA_VERSION
+
         /// Device matrix data
         float* pdMatrixData;
-#endif
-#if OPENCL_VERSION
-        /// Device matrix data
-        cl_mem pdMatrixData;
-#endif
+
 
         //Memory allocation
         virtual void AllocateMemory();

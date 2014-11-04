@@ -76,7 +76,6 @@
       <itemPath>Utils/DimensionSizes.h</itemPath>
       <itemPath>Utils/ErrorMessages.h</itemPath>
       <itemPath>Utils/MatrixNames.h</itemPath>
-      <itemPath>Utils/MemoryMeasure.h</itemPath>
       <itemPath>Utils/TimeMeasure.h</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -115,10 +114,6 @@
             <pElem>/usr/local/hdf5-serial/include</pElem>
           </incDir>
           <commandLine>-Xcompiler="-fopenmp"</commandLine>
-          <preprocessorList>
-            <Elem>CUDA_VERSION=1</Elem>
-            <Elem>NDEBUG</Elem>
-          </preprocessorList>
         </ccTool>
         <linkerTool>
           <linkerAddLib>
@@ -251,8 +246,6 @@
       <item path="Utils/ErrorMessages.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/MatrixNames.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="Utils/MemoryMeasure.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/TimeMeasure.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -397,8 +390,6 @@
       <item path="Utils/ErrorMessages.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/MatrixNames.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="Utils/MemoryMeasure.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/TimeMeasure.h" ex="false" tool="3" flavor2="0">
       </item>

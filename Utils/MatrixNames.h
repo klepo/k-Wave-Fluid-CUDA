@@ -325,7 +325,7 @@ const char * const Temp_2_RS3D_Name = "Temp_2_RS3D";
 /// Temp_3_RS3D variable name
 const char * const Temp_3_RS3D_Name = "Temp_3_RS3D";
 
-#if CUDA_VERSION
+
 /// CUFFT_shift_temp variable name
 const char * const CUFFT_shift_temp_Name = "CUFFT_shift_temp";
 /// CUFFT_X_temp variable name
@@ -334,17 +334,6 @@ const char * const CUFFT_X_temp_Name = "CUFFT_X_temp";
 const char * const CUFFT_Y_temp_Name = "CUFFT_Y_temp";
 /// CUFFT_Z_temp variable name
 const char * const CUFFT_Z_temp_Name = "CUFFT_Z_temp";
-#endif
-#if VANILLA_CPP_VERSION
-/// FFT_shift_temp variable name
-const char * const FFT_shift_temp_Name = "FFT_shift_temp";
-/// FFT_X_temp variable name
-const char * const FFT_X_temp_Name = "FFT_X_temp";
-/// FFT_Y_temp variable name
-const char * const FFT_Y_temp_Name = "FFT_Y_temp";
-/// FFT_Z_temp variable name
-const char * const FFT_Z_temp_Name = "FFT_Z_temp";
-#endif
 
 #endif	/* MATRIXNAMES_H */
 

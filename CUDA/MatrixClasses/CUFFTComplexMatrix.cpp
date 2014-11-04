@@ -34,17 +34,14 @@
 #include "CUFFTComplexMatrix.h"
 #include "../../MatrixClasses/RealMatrix.h"
 #include "../../Utils/ErrorMessages.h"
-#include "../../Utils/MemoryMeasure.h"
+
 
 #include <iostream>
 #include <string>
 #include <assert.h>
 
-#ifdef __APPLE__
-#include <stdlib.h>
-#else
 #include <malloc.h>
-#endif
+
 
 using namespace std;
 
@@ -221,14 +218,10 @@ void TCUFFTComplexMatrix::AllocateMemory()
     assert(pdMatrixData == NULL);
     /* No memory allocated before this function*/
 
-    //if testing, print the current memory size
-    LogPreAlloc();
 
     //size of memory to allocate
     size_t size_in_bytes = pTotalAllocatedElementCount*sizeof(float);
 
-    //if testing, print how much memory is requested
-    LogAlloc(size_in_bytes);
 
     //Allocate memory
     pMatrixData = static_cast<float*>(malloc(size_in_bytes));
@@ -246,8 +239,6 @@ void TCUFFTComplexMatrix::AllocateMemory()
         throw bad_alloc();
     }
 
-    //if testing, print the current memory size
-    LogPostAlloc();
 
 }// end of virtual bool FreeMemory
 //----------------------------------------------------------------------------

@@ -34,16 +34,11 @@
 #include <string.h>
 #include <assert.h>
 
-#ifdef __APPLE__
-#include <stdlib.h>
-#else
+
 #include <malloc.h>
-#endif
 
-#if VANILLA_CPP_VERSION
 
-#endif
-#if CUDA_VERSION
+
 #include <cuda_runtime.h>
 #include <iostream> //fprintf
 #include <stdlib.h> //exit
@@ -64,17 +59,13 @@ inline void gpuAssert(cudaError_t code,
 }
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-#endif
-#if OPENCL_VERSION
 
-#include "../OpenCL/ClSupremo.h"
 
-#endif
 
 #include "../MatrixClasses/BaseLongMatrix.h"
 #include "../Utils/DimensionSizes.h"
 #include "../Utils/ErrorMessages.h"
-#include "../Utils/MemoryMeasure.h"
+
 
 //---------------------------------------------------------------------------//
 //                             Constants                                     //
@@ -96,7 +87,7 @@ void TBaseLongMatrix::CopyData(TBaseLongMatrix & src)
            pTotalAllocatedElementCount*sizeof(size_t));
 }
 
-#if CUDA_VERSION
+
 //Host   -> Device
 void TBaseLongMatrix::CopyIn(const size_t * HostSource)
 {
@@ -123,34 +114,6 @@ void TBaseLongMatrix::CopyForm(const size_t* DeviceSource)
                          pTotalAllocatedElementCount*sizeof(size_t),
                          cudaMemcpyDeviceToDevice));
 }
-#endif
-#if OPENCL_VERSION
-//Host   -> Device
-void TBaseLongMatrix::CopyIn(const size_t* HostSource)
-{
-    ClSupremo* handle = ClSupremo::GetInstance();
-    handle->PassLongMemoryToClMemory(pdMatrixData,
-                                     const_cast<size_t*>(HostSource),
-                                     pTotalAllocatedElementCount);
-}
-
-//Device -> Host
-void TBaseLongMatrix::CopyOut(size_t* HostDestination)
-{
-    ClSupremo* handle = ClSupremo::GetInstance();
-    handle->PassClMemoryToLongMemory(pdMatrixData,
-                                     HostDestination,
-                                     pTotalAllocatedElementCount);
-}
-
-//Device -> Device
-void TBaseLongMatrix::CopyForm(const cl_mem DeviceSource)
-{
-    ClSupremo* handle = ClSupremo::GetInstance();
-    pdMatrixData = handle->CopyLongClMemory(DeviceSource,
-                                            pTotalAllocatedElementCount);
-}
-#endif
 
 //---------------------------------------------------------------------------//
 //                             Implementation                                //
@@ -166,14 +129,10 @@ void TBaseLongMatrix::AllocateMemory()
     /* No memory allocated before this function*/
     assert(pMatrixData == NULL);
 
-    //if testing, print the current memory size
-    LogPreAlloc();
 
     //size of memory to allocate
     size_t size_in_bytes = pTotalAllocatedElementCount*sizeof(size_t);
 
-    //if testing, print how much memory is requested
-    LogAlloc(size_in_bytes);
 
     pMatrixData = static_cast<size_t*>(malloc(size_in_bytes));
 
@@ -182,7 +141,7 @@ void TBaseLongMatrix::AllocateMemory()
         throw bad_alloc();
     }
 
-#if CUDA_VERSION
+
     assert(pdMatrixData == NULL);
 
     gpuErrchk(cudaMalloc((void **)&pdMatrixData,
@@ -192,23 +151,6 @@ void TBaseLongMatrix::AllocateMemory()
         fprintf(stderr,Matrix_ERR_FMT_Not_Enough_Memory, "TBaseLongMatrix");
         throw bad_alloc();
     }
-#endif
-
-#if OPENCL_VERSION
-    assert(pdMatrixData == NULL);
-
-    pdMatrixData =
-        ClSupremo::GetInstance()->CreateLongClMemory(pTotalAllocatedElementCount);
-
-    if (!pdMatrixData) {
-        fprintf(stderr,Matrix_ERR_FMT_Not_Enough_Memory, "TBaseLongMatrix");
-        throw bad_alloc();
-    }
-#endif
-
-    //if testing, print the current memory size
-    LogPostAlloc();
-
 }// end of AllocateMemory
 //-----------------------------------------------------------------------------
 
@@ -220,14 +162,11 @@ void TBaseLongMatrix::FreeMemory()
     if (pMatrixData) free(pMatrixData);
     pMatrixData = NULL;
 
-#if CUDA_VERSION
+
     if (pdMatrixData) gpuErrchk(cudaFree(pdMatrixData));
     pdMatrixData = NULL;
-#endif
-#if OPENCL_VERSION
-    if (pdMatrixData) clReleaseMemObject(pdMatrixData);
-    pdMatrixData = NULL;
-#endif
+
+
 
 }// end of MemoryDeallocation
 //-----------------------------------------------------------------------------

@@ -32,11 +32,8 @@
  */
 
 
-#ifdef __APPLE__
-#include <stdlib.h>
-#else
 #include <malloc.h>
-#endif
+
 
 #include <string.h>
 #include <assert.h>
@@ -46,12 +43,10 @@
 
 #include "../Utils/DimensionSizes.h"
 #include "../Utils/ErrorMessages.h"
-#include "../Utils/MemoryMeasure.h"
 
-#if VANILLA_CPP_VERSION
 
-#endif
-#if CUDA_VERSION
+
+
 #include <cuda_runtime.h>
 #include <iostream> //fprintf
 #include <stdlib.h> //exit
@@ -73,12 +68,8 @@ inline void gpuAssert(cudaError_t code,
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 
-#endif
-#if OPENCL_VERSION
 
-#include "../OpenCL/ClSupremo.h"
 
-#endif
 //--------------------------------------------------------------------------//
 //                            Constants                                     //
 //--------------------------------------------------------------------------//
@@ -107,7 +98,7 @@ void TBaseFloatMatrix::CopyData(TBaseFloatMatrix & src)
 }//end of CopyDataSameSize
 //----------------------------------------------------------------------------
 
-#if CUDA_VERSION
+
 /*
  *  Host   -> Device
  */
@@ -151,43 +142,6 @@ void TBaseFloatMatrix::CopyForm(const float * DeviceSource)
                          cudaMemcpyDeviceToDevice));
 }// end of CopyFrom
 //----------------------------------------------------------------------------
-#endif
-#if OPENCL_VERSION
-//Host   -> Device
-void TBaseFloatMatrix::CopyIn(const float* HostSource)
-{
-    ClSupremo* handle = ClSupremo::GetInstance();
-    handle->PassMemoryToClMemory(pdMatrixData,
-                                 const_cast<float*>(HostSource),
-                                 pTotalAllocatedElementCount);
-}
-
-//Device -> Host
-void TBaseFloatMatrix::CopyOut(float* HostDestination)
-{
-    ClSupremo* handle = ClSupremo::GetInstance();
-    handle->PassClMemoryToMemory(pdMatrixData,
-                                 HostDestination,
-                                 pTotalAllocatedElementCount);
-}
-
-//Device -> Host (but only the first n elements)
-void TBaseFloatMatrix::CopyOut(float* HostDestination, size_t n)
-{
-    ClSupremo* handle = ClSupremo::GetInstance();
-    handle->PassClMemoryToMemory(pdMatrixData,
-                                 HostDestination,
-                                 n);
-}
-
-//Device -> Device
-void TBaseFloatMatrix::CopyForm(const cl_mem DeviceSource)
-{
-    ClSupremo* handle = ClSupremo::GetInstance();
-    pdMatrixData = handle->CopyClMemory(DeviceSource,
-                                        pTotalAllocatedElementCount);
-}
-#endif
 
 //--------------------------------------------------------------------------//
 //                            Implementation                                //
@@ -202,14 +156,10 @@ void TBaseFloatMatrix::CopyForm(const cl_mem DeviceSource)
 void TBaseFloatMatrix::AllocateMemory(){
     assert(pMatrixData == NULL);
 
-    //if testing, print the current memory size
-    LogPreAlloc();
 
     //size of memory to allocate
     size_t size_in_bytes = pTotalAllocatedElementCount*sizeof(float);
 
-    //if testing, print how much memory is requested
-    LogAlloc(size_in_bytes);
 
     pMatrixData = static_cast<float*>(malloc(size_in_bytes));
 
@@ -218,7 +168,7 @@ void TBaseFloatMatrix::AllocateMemory(){
         throw bad_alloc();
     }
 
-#if CUDA_VERSION
+
     assert(pdMatrixData == NULL);
 
     gpuErrchk(cudaMalloc((void **)&pdMatrixData,size_in_bytes));
@@ -227,20 +177,7 @@ void TBaseFloatMatrix::AllocateMemory(){
         fprintf(stderr,Matrix_ERR_FMT_Not_Enough_Memory, "TBaseFloatMatrix");
         throw bad_alloc();
     }
-#endif
-#if OPENCL_VERSION
-    assert(pdMatrixData == NULL);
 
-    pdMatrixData =
-        ClSupremo::GetInstance()->CreateClMemory(pTotalAllocatedElementCount);
-
-    if (!pdMatrixData) {
-        fprintf(stderr,Matrix_ERR_FMT_Not_Enough_Memory, "TBaseFloatMatrix");
-        throw bad_alloc();
-    }
-#endif
-    //if testing, print the current memory size
-    LogPostAlloc();
 
 }//end of AllocateMemory
 //----------------------------------------------------------------------------
@@ -256,16 +193,12 @@ void TBaseFloatMatrix::FreeMemory()
     }
     pMatrixData = NULL;
 
-#if CUDA_VERSION
+
     if (pdMatrixData){
         gpuErrchk(cudaFree(pdMatrixData));
     }
     pdMatrixData = NULL;
-#endif
-#if OPENCL_VERSION
-    if (pdMatrixData) clReleaseMemObject(pdMatrixData);
-    pdMatrixData = NULL;
-#endif
+
 
 }//end of MemoryDealocation
 //----------------------------------------------------------------------------

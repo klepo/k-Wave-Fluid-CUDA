@@ -31,8 +31,10 @@
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef __kwave_opencl__KSpaceFirstOrder3DSolver__
-#define __kwave_opencl__KSpaceFirstOrder3DSolver__
+#ifndef TKSPACEFIRSTORDER3DSOLVER_H
+#define	TKSPACEFIRSTORDER3DSOLVER_H
+
+
 
 #include <iostream>
 
@@ -45,15 +47,9 @@
 
 #include "../Utils/TimeMeasure.h"
 
-#if VANILLA_CPP_VERSION
-#include "../VanillaC++/CImplementations.h"
-#endif
-#if CUDA_VERSION
+
 #include "../CUDA/CUDAImplementations.h"
-#endif
-#if OPENCL_VERSION
-#include "../OpenCL/OpenCLImplementations.h"
-#endif
+
 
 using namespace std;
 
@@ -88,22 +84,11 @@ public:
     size_t GetHostMemoryUsageInMB();
     size_t GetDeviceMemoryUsageInMB();
 
-#if VANILLA_CPP_VERSION
-    // Get code name
-    string GetCodeName() {
-        return "kspaceFirstOrder3D-OMP v1.1";
-    };
-#elif CUDA_VERSION
+
     // Get code name
     string GetCodeName() {
         return "kspaceFirstOrder3D-CUDA v1.1";
     };
-#elif OPENCL_VERSION
-    // Get code name
-    string GetCodeName() {
-        return "kspaceFirstOrder3D-OpenCL v1.1";
-    };
-#endif
 
     // Print the code name and license
     void PrintFullNameCodeAndLicense(FILE * file);
@@ -152,15 +137,9 @@ protected:
 
     // Initialize FFT plans
     void InitializeFFTPlans();
-#if VANILLA_CPP_VERSION
-    void InitializeFFTWPlans();
-#endif
-#if CUDA_VERSION
-    void InitializeCUFFTPlans();
-#endif
-#if OPENCL_VERSION
 
-#endif
+
+    void InitializeCUFFTPlans();
 
     // Compute pre-processing phase
     void PreProcessingPhase();
@@ -610,29 +589,8 @@ protected:
     {
       return MatrixContainer.GetRealMatrix(Temp_3_RS3D);
     };
-    #if VANILLA_CPP_VERSION
-    /// Get the FFT_X_temp from the container
-    TFFTWComplexMatrix& Get_FFT_X_temp()
-    {
-      return MatrixContainer.GetFFTWComplexMatrix(FFT_X_temp);
-    };
-    /// Get the FFT_Y_temp from the container
-    TFFTWComplexMatrix& Get_FFT_Y_temp()
-    {
-      return MatrixContainer.GetFFTWComplexMatrix(FFT_Y_temp);
-    };
-    /// Get the FFT_Z_temp from the container
-    TFFTWComplexMatrix& Get_FFT_Z_temp()
-    {
-      return MatrixContainer.GetFFTWComplexMatrix(FFT_Z_temp);
-    };
-    /// Get the FFT_shift_temp the container
-    TFFTWComplexMatrix& Get_FFT_shift_temp()
-    {
-      return MatrixContainer.GetFFTWComplexMatrix(FFT_shift_temp);
-    };
-#endif
-#if CUDA_VERSION
+
+
     // Get the FFT_X_temp from the container
     TCUFFTComplexMatrix  & Get_CUFFT_X_temp()
     {return MatrixContainer.GetCUFFTComplexMatrix(CUFFT_X_temp);};
@@ -642,23 +600,14 @@ protected:
     // Get the FFT_Z_temp from the container
     TCUFFTComplexMatrix  & Get_CUFFT_Z_temp()
     {return MatrixContainer.GetCUFFTComplexMatrix(CUFFT_Z_temp);};
-#endif
-#if OPENCL_VERSION
 
-#endif
 
 private:
-#if VANILLA_CPP_VERSION
-    // Use C CPU functions for big computational blocks
-    CImplementations* cpp_implementations;
-#endif
-#if CUDA_VERSION
+
+
     // Use CUDA GPU functions for big computational blocks
     CUDAImplementations* cuda_implementations;
-#endif
-#if OPENCL_VERSION
 
-#endif
 
     // Matrix container with all the matrix classes
     TMatrixContainer MatrixContainer;
@@ -699,4 +648,4 @@ private:
 };// end of  TKSpace3DSolver
   //-------------------------------------------------------------------------//
 
-#endif /* defined(__kwave_opencl__KSpaceFirstOrder3DSolver__) */
+#endif

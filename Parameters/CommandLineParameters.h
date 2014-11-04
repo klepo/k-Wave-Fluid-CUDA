@@ -170,14 +170,14 @@ using std::string;
             /// Get Checkpoint file name
             std::string GetCheckpointFileName() const {return CheckpointFileName;};
 
-#if (defined (CUDA_VERSION) || defined(OPENCL_VERSION))
+
             /// Get GPU to use
             int GetGPUDeviceID()                const {return gpu_device_id;};
             int Get1DBlockSize()                const {return one_d_block_size;};
             int Get3DBlockSize_X()               const {return three_d_block_size_x;};
             int Get3DBlockSize_Y()               const {return three_d_block_size_y;};
             int Get3DBlockSize_Z()               const {return three_d_block_size_z;};
-#endif
+
             /// Is --benchmark flag set?
             bool IsBenchmarkFlag()              const {return BenchmarkFlag;};
             /// Is --version flag set?
@@ -260,14 +260,14 @@ using std::string;
             // NumberOfThreads value
             int NumberOfThreads;
 
-#if (defined (CUDA_VERSION) || defined(OPENCL_VERSION))
+
             // GPUDeviceID value
             int gpu_device_id;
             int one_d_block_size;
             int three_d_block_size_x;
             int three_d_block_size_y;
             int three_d_block_size_z;
-#endif
+
             // VerboseInterval value
             int VerboseInterval;
             // CompressionLevel value

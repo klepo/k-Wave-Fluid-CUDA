@@ -62,20 +62,8 @@
 #include "../Utils/ErrorMessages.h"
 #include "../MatrixClasses/MatrixContainer.h"
 
-#if VANILLA_CPP_VERSION
-#include "../VanillaC++/CImplementations.h"
-#endif
-#if CUDA_VERSION
 #include "../CUDA/CUDAImplementations.h"
-#endif
-#if OPENCL_VERSION
 
-#endif
-#if COMPARE_CPU_TO_GPU
-#include "../UnitTests/Debugging/MatrixTester.h"
-#endif
-
-//#include "../Debugging/Logger.h"
 
 using namespace std;
 
@@ -112,10 +100,7 @@ TKSpaceFirstOrder3DSolver::~TKSpaceFirstOrder3DSolver()
 
 bool TKSpaceFirstOrder3DSolver::DoesDeviceHaveEnoughMemory()
 {
-#if VANILLA_CPP_VERSION
-    return true;
-#endif
-#if CUDA_VERSION
+
     size_t free, total, available_device_memory, estimate_of_required_memory;
     cudaMemGetInfo(&free,&total);
     available_device_memory = (free >> 20);
@@ -129,10 +114,6 @@ bool TKSpaceFirstOrder3DSolver::DoesDeviceHaveEnoughMemory()
     else{
         return true;
     }
-#endif
-#if OPENCL_VERSION
-    return true;
-#endif
 
 }
 
@@ -259,10 +240,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
     fprintf(stdout,"Pre-processing phase..........."); fflush(stdout);
 
     //initialise the cpu and gpu computation handler
-#if VANILLA_CPP_VERSION
-    cpp_implementations = CImplementations::GetInstance();
-#endif
-#if CUDA_VERSION
+
     cuda_implementations = CUDAImplementations::GetInstance();
     cuda_implementations->SetUpExecutionModelWithTuner(
             Parameters->GetFullDimensionSizes().X,
@@ -275,10 +253,8 @@ void TKSpaceFirstOrder3DSolver::Compute()
             Parameters->GetReducedDimensionSizes().X,
             Parameters->GetReducedDimensionSizes().Y,
             Parameters->GetReducedDimensionSizes().Z);
-#endif
-#if OPENCL_VERSION
 
-#endif
+
 
     PreProcessingPhase();
 
@@ -286,11 +262,6 @@ void TKSpaceFirstOrder3DSolver::Compute()
 
     fprintf(stdout,"Done \n");
 
-#if CUDA_VERSION && DEBUGGING
-    fprintf(stdout,
-            "Matrices used in simulation:    %lu\n",
-            MatrixContainer.size());
-#endif
 
     fprintf(stdout,"Current Host memory in use:   %3ldMB\n",
             GetHostMemoryUsageInMB());
@@ -365,15 +336,11 @@ void TKSpaceFirstOrder3DSolver::PrintParametersOfSimulation(FILE * file)
  */
 size_t TKSpaceFirstOrder3DSolver::GetDeviceMemoryUsageInMB()
 {
-#if CUDA_VERSION
+
     size_t free, total;
     cudaMemGetInfo(&free,&total);
     return ((total-free) >> 20);
-#elif OPENCL_VERSION
 
-#else
-    return 0;
-#endif
 }
 
 /**
@@ -470,39 +437,13 @@ void TKSpaceFirstOrder3DSolver::SetProcessorAffinity()
  * Initialize FFT plans.
  */
 void TKSpaceFirstOrder3DSolver::InitializeFFTPlans(){
-#if VANILLA_CPP_VERSION
-    InitializeFFTWPlans();
 
-#endif
-#if CUDA_VERSION
+
     InitializeCUFFTPlans();
-#endif
+
 }
 
-#if VANILLA_CPP_VERSION
-/*
- * Firstly FFTW
- */
-void TKSpaceFirstOrder3DSolver::InitializeFFTWPlans()
-{
-    Log("Creating FFTW plans");
-    // initialization of FFTW library
-    fftwf_init_threads();
-    fftwf_plan_with_nthreads(Parameters->GetNumberOfThreads());
 
-    // create real to complex plans
-    Get_FFT_X_temp().CreateFFTPlan3D_R2C(Get_p());
-    Get_FFT_Y_temp().CreateFFTPlan3D_R2C(Get_p());
-    Get_FFT_Z_temp().CreateFFTPlan3D_R2C(Get_p());
-
-    // create real to complex plans
-    Get_FFT_X_temp().CreateFFTPlan3D_C2R(Get_p());
-    Get_FFT_Y_temp().CreateFFTPlan3D_C2R(Get_p());
-    Get_FFT_Z_temp().CreateFFTPlan3D_C2R(Get_p());
-}
-#endif
-
-#if CUDA_VERSION
 /*
  * Secondly CUFFT
  */
@@ -522,10 +463,6 @@ void TKSpaceFirstOrder3DSolver::InitializeCUFFTPlans(){
 
 }// end of PrepareData
 //---------------------------------------------------------------------------//
-#endif
-#if OPENCL_VERSION
-
-#endif
 
 /*
  * Compute pre-processing phase
@@ -771,9 +708,9 @@ void TKSpaceFirstOrder3DSolver::Generate_absorb_tau_absorb_eta_matrix()
                     alpha_power) * tan_pi_y_2;
     }
     else {
-#ifndef __NO_OMP__
+
 #pragma omp parallel
-#endif
+
         {
             const size_t Z_Size  = Parameters->GetFullDimensionSizes().Z;
             const size_t Y_Size  = Parameters->GetFullDimensionSizes().Y;
@@ -814,9 +751,9 @@ void TKSpaceFirstOrder3DSolver::Generate_absorb_tau_absorb_eta_matrix()
                         ), alpha_power)) / (20.0f *
                     static_cast<float>(M_LOG10E));
 
-#ifndef __NO_OMP__
+
 #pragma omp for schedule (static)
-#endif
+
             for (size_t z = 0; z < Z_Size; z++){
                 for (size_t y = 0; y < Y_Size; y++){
                     size_t i = (z*Y_Size + y) * X_Size;
@@ -848,9 +785,9 @@ void TKSpaceFirstOrder3DSolver::Generate_absorb_tau_absorb_eta_matrix()
 void TKSpaceFirstOrder3DSolver::Calculate_dt_rho0_non_uniform()
 {
 
-#ifndef __NO_OMP__
+
 #pragma omp parallel
-#endif
+
     {
         float * dt_rho0_sgx   = Get_dt_rho0_sgx().GetRawData();
         float * dt_rho0_sgy   = Get_dt_rho0_sgy().GetRawData();
@@ -868,9 +805,9 @@ void TKSpaceFirstOrder3DSolver::Calculate_dt_rho0_non_uniform()
 
         const size_t SliceSize = (X_Size * Y_Size );
 
-#ifndef __NO_OMP__
+
 #pragma omp for schedule (static)
-#endif
+
         for (size_t z = 0; z < Z_Size; z++){
             register size_t i = z* SliceSize;
             for (size_t y = 0; y< Y_Size; y++){
@@ -881,9 +818,9 @@ void TKSpaceFirstOrder3DSolver::Calculate_dt_rho0_non_uniform()
             } // y
         } // z
 
-#ifndef __NO_OMP__
+
 #pragma omp for schedule (static)
-#endif
+
         for (size_t z = 0; z < Z_Size; z++){
             register size_t i = z* SliceSize;
             for (size_t y = 0; y< Y_Size; y++){
@@ -895,9 +832,9 @@ void TKSpaceFirstOrder3DSolver::Calculate_dt_rho0_non_uniform()
             } // y
         } // z
 
-#ifndef __NO_OMP__
+
 #pragma omp for schedule (static)
-#endif
+
         for (size_t z = 0; z < Z_Size; z++){
             register size_t i = z* SliceSize;
             const float duzdzn_el = duzdzn_sgz[z];
@@ -921,102 +858,13 @@ void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
 
     Get_p().CopyData(Get_p0_source_input());
 
-#if CUDA_VERSION
+
     //if it's for the gpu build make first copy
     Get_p().SyncroniseToGPUDevice();
-#endif
 
-#if VANILLA_CPP_VERSION
-    {
-    const float * p0 = Get_p0_source_input().GetRawData();
 
-    float * c2;
-    size_t c2_shift;
 
-    if (Parameters->Get_c0_scalar_flag()) {
-        c2 = &Parameters->Get_c0_scalar();
-        c2_shift = 0;
 
-    }else{
-        c2 = Get_c2().GetRawData();
-        c2_shift = 1;
-    }
-
-    //-- add the initial pressure to rho as a mass source --//
-    cpp_implementations->Calculate_p0_source_add_initial_pressure(
-            Get_rhox(),
-            Get_rhoy(),
-            Get_rhoz(),
-            Get_p0_source_input(),
-            c2_shift,
-            c2);
-
-    //-----------------------------------------------------------------------//
-    //--compute u(t = t1 + dt/2) based on the assumption u(dt/2) = -u(-dt/2)-//
-    //--    which forces u(t = t1) = 0                                      -//
-    //-----------------------------------------------------------------------//
-
-    cpp_implementations->Compute_ddx_kappa_fft_p(Get_p(),
-            Get_FFT_X_temp(),
-            Get_FFT_Y_temp(),
-            Get_FFT_Z_temp(),
-            Get_kappa(),
-            Get_ddx_k_shift_pos(),
-            Get_ddy_k_shift_pos(),
-            Get_ddz_k_shift_pos());
-
-    if (Parameters->Get_rho0_scalar_flag()){
-        if (Parameters->Get_nonuniform_grid_flag()) {
-            cpp_implementations->
-                Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x(
-                        Get_ux_sgx(),
-                        Parameters->Get_rho0_sgx_scalar(),
-                        Get_dxudxn_sgx(),
-                        Get_FFT_X_temp());
-            cpp_implementations->
-                Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y(
-                        Get_uy_sgy(),
-                        Parameters->Get_rho0_sgy_scalar(),
-                        Get_dyudyn_sgy(),
-                        Get_FFT_Y_temp());
-            cpp_implementations->
-                Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z(
-                        Get_uz_sgz(),
-                        Parameters->Get_rho0_sgz_scalar(),
-                        Get_dzudzn_sgz(),
-                        Get_FFT_Z_temp());
-        } else {
-            cpp_implementations->Compute_dt_rho_sg_mul_ifft_div_2(
-                    Get_ux_sgx(),
-                    Parameters->Get_rho0_sgx_scalar(),
-                    Get_FFT_X_temp());
-            cpp_implementations->Compute_dt_rho_sg_mul_ifft_div_2(
-                    Get_uy_sgy(),
-                    Parameters->Get_rho0_sgy_scalar(),
-                    Get_FFT_Y_temp());
-            cpp_implementations->Compute_dt_rho_sg_mul_ifft_div_2(
-                    Get_uz_sgz(),
-                    Parameters->Get_rho0_sgz_scalar(),
-                    Get_FFT_Z_temp());
-        }
-    } else {
-        // divide the matrix by 2 and multiply with st./rho0_sg
-        cpp_implementations->Compute_dt_rho_sg_mul_ifft_div_2(
-                Get_ux_sgx(),
-                Get_dt_rho0_sgx(),
-                Get_FFT_X_temp());
-        cpp_implementations->Compute_dt_rho_sg_mul_ifft_div_2(
-                Get_uy_sgy(),
-                Get_dt_rho0_sgy(),
-                Get_FFT_Y_temp());
-        cpp_implementations->Compute_dt_rho_sg_mul_ifft_div_2(
-                Get_uz_sgz(),
-                Get_dt_rho0_sgz(),
-                Get_FFT_Z_temp());
-    }
-    }
-#endif
-#if CUDA_VERSION
     {
     const float * p0 = Get_p0_source_input().GetRawDeviceData();
 
@@ -1103,15 +951,12 @@ void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
                 Get_CUFFT_Z_temp());
     }
     }
-#endif
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
+
 
 }// end of Calculate_p0_source
 //---------------------------------------------------------------------------//
 
-#pragma mark start of duplicate cpu kernels
+
 /**
  * Compute c^2.
  *
@@ -1125,9 +970,9 @@ void TKSpaceFirstOrder3DSolver::ComputeC2()
     }else {
         float * c2 =  Get_c2().GetRawData();
         //cpp_implementations->ComputeC2_matrix(Get_c2());
-#ifndef __NO_OMP__
+
 #pragma omp parallel for schedule (static)
-#endif
+
         for (size_t i=0; i < Get_c2().GetTotalElementCount(); i++){
             c2[i] = c2[i] * c2[i];
         }
@@ -1140,9 +985,9 @@ void TKSpaceFirstOrder3DSolver::SetAllElementsToValue(TRealMatrix* matrix,
                                                       const float value)
 {
     float * matrix_data = matrix->GetRawData();
-#ifndef __NO_OMP__
+
 #pragma omp parallel for schedule (static)
-#endif
+
     for(int i = 0; i < matrix->GetTotalElementCount(); i++){
         matrix_data[i] = value;
     }
@@ -1152,9 +997,9 @@ void TKSpaceFirstOrder3DSolver::ScalarDividedBy(TRealMatrix& matrix,
                                                 const float  scalar)
 {
     float* matrix_data = matrix.GetRawData();
-#ifndef __NO_OMP__
+
 #pragma omp parallel for schedule (static)
-#endif
+
     for (size_t i=0; i < matrix.GetTotalAllocatedElementCount(); i++){
         matrix_data[i] = scalar / matrix_data[i];
     }
@@ -1163,9 +1008,9 @@ void TKSpaceFirstOrder3DSolver::ScalarDividedBy(TRealMatrix& matrix,
 void TKSpaceFirstOrder3DSolver::ZeroMatrix(TBaseFloatMatrix& matrix)
 {
     float* matrix_data = matrix.GetRawData();
-#ifndef __NO_OMP__
+
 #pragma omp parallel for schedule (static)
-#endif
+
     for (size_t i=0; i < matrix.GetTotalAllocatedElementCount(); i++){
         matrix_data[i] = 0.0f;
     }
@@ -1174,9 +1019,9 @@ void TKSpaceFirstOrder3DSolver::ZeroMatrix(TBaseFloatMatrix& matrix)
 void TKSpaceFirstOrder3DSolver::ZeroMatrix(TBaseLongMatrix& matrix)
 {
     size_t* matrix_data = matrix.GetRawData();
-#ifndef __NO_OMP__
+
 #pragma omp parallel for schedule (static)
-#endif
+
     for (size_t i=0; i < matrix.GetTotalAllocatedElementCount(); i++){
         //matrix.operator[](i) = 0.0f;
         matrix_data[i] = 0;
@@ -1201,40 +1046,7 @@ void TKSpaceFirstOrder3DSolver::RecomputeIndices(TLongMatrix& matrix)
  *
  */
 void TKSpaceFirstOrder3DSolver::Compute_duxyz(){
-#if VANILLA_CPP_VERSION
-    Get_FFT_X_temp().Compute_FFT_3D_R2C(Get_ux_sgx());
-    Get_FFT_Y_temp().Compute_FFT_3D_R2C(Get_uy_sgy());
-    Get_FFT_Z_temp().Compute_FFT_3D_R2C(Get_uz_sgz());
 
-    cpp_implementations->Compute_duxyz_initial(Get_FFT_X_temp(),
-            Get_FFT_Y_temp(),
-            Get_FFT_Z_temp(),
-            Get_kappa(),
-            Get_ux_sgx(),
-            Get_ddx_k_shift_neg(),
-            Get_ddy_k_shift_neg(),
-            Get_ddz_k_shift_neg());
-
-    Get_FFT_X_temp().Compute_iFFT_3D_C2R(Get_duxdx());
-    Get_FFT_Y_temp().Compute_iFFT_3D_C2R(Get_duydy());
-    Get_FFT_Z_temp().Compute_iFFT_3D_C2R(Get_duzdz());
-
-    //-----------------------------------------------------------------------//
-    //--------------------- Non linear grid ---------------------------------//
-    //-----------------------------------------------------------------------//
-    if (Parameters->Get_nonuniform_grid_flag() != 0){
-
-        cpp_implementations->Compute_duxyz_non_linear(Get_duxdx(),
-                Get_duydy(),
-                Get_duzdz(),
-                Get_dxudxn(),
-                Get_dyudyn(),
-                Get_dzudzn());
-
-    }// nonlinear
-
-#endif
-#if CUDA_VERSION
     Get_CUFFT_X_temp().Compute_FFT_3D_R2C(Get_ux_sgx());
     Get_CUFFT_Y_temp().Compute_FFT_3D_R2C(Get_uy_sgy());
     Get_CUFFT_Z_temp().Compute_FFT_3D_R2C(Get_uz_sgz());
@@ -1265,10 +1077,7 @@ void TKSpaceFirstOrder3DSolver::Compute_duxyz(){
                 Get_dzudzn());
 
     }// nonlinear
-#endif
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
+
 
 }// end of Compute_duxyz
 //---------------------------------------------------------------------------//
@@ -1277,39 +1086,7 @@ void TKSpaceFirstOrder3DSolver::Compute_duxyz(){
  * Calculate new values of rhox, rhoy and rhoz for non-linear case.
  */
 void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_nonlinear(){
-#if VANILLA_CPP_VERSION
-    // Scalar
-    if (Parameters->Get_rho0_scalar()) {
-        cpp_implementations->Compute_rhoxyz_nonlinear_scalar(
-                Get_rhox(),
-                Get_rhoy(),
-                Get_rhoz(),
-                Get_pml_x(),
-                Get_pml_y(),
-                Get_pml_z(),
-                Get_duxdx(),
-                Get_duydy(),
-                Get_duzdz(),
-                Parameters->Get_dt(),
-                Parameters->Get_rho0_scalar());
-    }else {
-        //-------------------------------------------------------------------//
-        // rho0 is a matrix
-        cpp_implementations->Compute_rhoxyz_nonlinear_matrix(
-                Get_rhox(),
-                Get_rhoy(),
-                Get_rhoz(),
-                Get_pml_x(),
-                Get_pml_y(),
-                Get_pml_z(),
-                Get_duxdx(),
-                Get_duydy(),
-                Get_duzdz(),
-                Parameters->Get_dt(),
-                Get_rho0());
-    } // end matrix
-#endif
-#if CUDA_VERSION
+
     // Scalar
     if (Parameters->Get_rho0_scalar()) {
         cuda_implementations->Compute_rhoxyz_nonlinear_scalar(
@@ -1340,10 +1117,8 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_nonlinear(){
                 Parameters->Get_dt(),
                 Get_rho0());
     } // end matrix
-#endif
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
+
+
 }// end of Compute_rhoxyz
 //---------------------------------------------------------------------------//
 
@@ -1352,39 +1127,7 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_nonlinear(){
  *
  */
 void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_linear(){
-#if VANILLA_CPP_VERSION
-    // Scalar
-    if (Parameters->Get_rho0_scalar()) {
-        cpp_implementations->Compute_rhoxyz_linear_scalar(
-                Get_rhox(),
-                Get_rhoy(),
-                Get_rhoz(),
-                Get_pml_x(),
-                Get_pml_y(),
-                Get_pml_z(),
-                Get_duxdx(),
-                Get_duydy(),
-                Get_duzdz(),
-                Parameters->Get_dt(),
-                Parameters->Get_rho0_scalar());
-    }else {
-        //-------------------------------------------------------------------//
-        // rho0 is a matrix
-        cpp_implementations->Compute_rhoxyz_linear_matrix(
-                Get_rhox(),
-                Get_rhoy(),
-                Get_rhoz(),
-                Get_pml_x(),
-                Get_pml_y(),
-                Get_pml_z(),
-                Get_duxdx(),
-                Get_duydy(),
-                Get_duzdz(),
-                Parameters->Get_dt(),
-                Get_rho0());
-    } // end matrix
-#endif
-#if CUDA_VERSION
+
     // Scalar
     if (Parameters->Get_rho0_scalar()) {
         cuda_implementations->Compute_rhoxyz_linear_scalar(
@@ -1415,10 +1158,8 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_linear(){
                 Parameters->Get_dt(),
                 Get_rho0());
     } // end matrix
-#endif
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
+
+
 }// end of Compute_rhoxyz
 //---------------------------------------------------------------------------//
 
@@ -1433,34 +1174,6 @@ void TKSpaceFirstOrder3DSolver::Calculate_SumRho_SumRhoDu(
         TRealMatrix& Sum_rho0_du)
 {
 
-#if VANILLA_CPP_VERSION
-    {
-    const size_t TotalElementCount =
-        Parameters->GetFullDimensionSizes().GetElementCount();
-
-    const float * rho0_data = NULL;
-
-    const float rho0_data_el = Parameters->Get_rho0_scalar();
-    if (!Parameters->Get_rho0_scalar_flag()) {
-        rho0_data = Get_rho0().GetRawData();
-    }
-
-    cpp_implementations->Calculate_SumRho_SumRhoDu(
-            Sum_rhoxyz,
-            Sum_rho0_du,
-            Get_rhox(),
-            Get_rhoy(),
-            Get_rhoz(),
-            Get_duxdx(),
-            Get_duydy(),
-            Get_duzdz(),
-            rho0_data,
-            rho0_data_el,
-            TotalElementCount,
-            Parameters->Get_rho0_scalar_flag());
-    }
-#endif
-#if CUDA_VERSION
     {
 
     const size_t TotalElementCount =
@@ -1488,10 +1201,7 @@ void TKSpaceFirstOrder3DSolver::Calculate_SumRho_SumRhoDu(
             Parameters->Get_rho0_scalar_flag());
 
     }
-#endif
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
+
 
 }// end of Calculate_SumRho_SumRhoDu
 //--------------------------------------------------------------------------//
@@ -1507,52 +1217,7 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_nonlinear(
         TRealMatrix& Absorb_tau_temp,
         TRealMatrix& Absorb_eta_temp,
         TRealMatrix& BonA_temp) {
-#if VANILLA_CPP_VERSION
-    {
-    float * tau_data;
-    float * eta_data;
-    float * c2_data;
 
-    size_t  c2_shift;
-    size_t  tau_eta_shift;
-
-    const float *  Absorb_tau_data = Absorb_tau_temp.GetRawData();
-    const float *  Absorb_eta_data = Absorb_eta_temp.GetRawData();
-
-    // c2 scalar
-    if (Parameters->Get_c0_scalar_flag()){
-        c2_data = &Parameters->Get_c0_scalar();
-        c2_shift = 0;
-    }else{
-        c2_data  = Get_c2().GetRawData();
-        c2_shift = 1;
-    }
-
-    // eta and tau scalars
-    if (Parameters->Get_c0_scalar_flag() &&
-            Parameters->Get_alpha_coeff_scalar_flag()) {
-
-        tau_data = &Parameters->Get_absorb_tau_scalar();
-        eta_data = &Parameters->Get_absorb_eta_scalar();
-        tau_eta_shift = 0;
-    } else {
-        tau_data = Get_absorb_tau().GetRawData();
-        eta_data = Get_absorb_eta().GetRawData();
-        tau_eta_shift = 1;
-    }
-
-    cpp_implementations->Sum_Subterms_nonlinear(BonA_temp,
-                                                Get_p(),
-                                                c2_data,
-                                                c2_shift,
-                                                Absorb_tau_data,
-                                                tau_data,
-                                                Absorb_eta_data,
-                                                eta_data,
-                                                tau_eta_shift);
-    }
-#endif
-#if CUDA_VERSION
     {
 
     float  tau_data_scalar;
@@ -1603,10 +1268,8 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_nonlinear(
             eta_data_matrix,
             tau_eta_shift);
     }
-#endif
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
+
+
 
 }// end of Sum_Subterms_nonlinear
 //--------------------------------------------------------------------------//
@@ -1621,52 +1284,7 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_linear(
         TRealMatrix& Absorb_tau_temp,
         TRealMatrix& Absorb_eta_temp,
         TRealMatrix& Sum_rhoxyz) {
-#if VANILLA_CPP_VERSION
-    {
-    const float *  tau_data = NULL;
-    const float *  eta_data = NULL;
-    const float *  c2_data  = NULL;
 
-    size_t  c2_shift       = 0;
-    size_t  tau_eta_shift  = 0;
-
-    const size_t total_element_count =
-        Parameters->GetFullDimensionSizes().GetElementCount();
-
-    // c2 scalar
-    if (Parameters->Get_c0_scalar_flag()){
-        c2_data = &Parameters->Get_c0_scalar();
-        c2_shift = 0;
-    }else{
-        c2_data  = Get_c2().GetRawData();
-        c2_shift = 1;
-    }
-
-    // eta and tau scalars
-    if (Parameters->Get_c0_scalar_flag() &&
-            Parameters->Get_alpha_coeff_scalar_flag()) {
-        tau_data = &Parameters->Get_absorb_tau_scalar();
-        eta_data = &Parameters->Get_absorb_eta_scalar();
-        tau_eta_shift = 0;
-    } else {
-        tau_data = Get_absorb_tau().GetRawData();
-        eta_data = Get_absorb_eta().GetRawData();
-        tau_eta_shift = 1;
-    }
-
-    cpp_implementations->Sum_Subterms_linear(Absorb_tau_temp,
-                                             Absorb_eta_temp,
-                                             Sum_rhoxyz,
-                                             Get_p(),
-                                             total_element_count,
-                                             c2_shift,
-                                             tau_eta_shift,
-                                             tau_data,
-                                             eta_data,
-                                             c2_data);
-    }
-#endif
-#if CUDA_VERSION
     {
 
     float  tau_data_scalar;
@@ -1717,10 +1335,6 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_linear(
                                              c2_data_scalar,
                                              c2_data_matrix);
     }
-#endif
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
 
 }// end of Sum_Subterms_linear
 //--------------------------------------------------------------------------//
@@ -1729,61 +1343,7 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_linear(
  * Sum sub-terms for new p, non-linear lossless case.
  */
 void TKSpaceFirstOrder3DSolver::Sum_new_p_nonlinear_lossless() {
-#if VANILLA_CPP_VERSION
-    {
-    const size_t TotalElementCount =
-        Parameters->GetFullDimensionSizes().GetElementCount();
 
-    const float * rhox_data = Get_rhox().GetRawData();
-    const float * rhoy_data = Get_rhoy().GetRawData();
-    const float * rhoz_data = Get_rhoz().GetRawData();
-
-    float * c2_data;
-    size_t  c2_shift;
-
-    if (Parameters->Get_c0_scalar_flag()) {
-        c2_data = &Parameters->Get_c0_scalar();
-        c2_shift = 0;
-    } else {
-        c2_data  = Get_c2().GetRawData();
-        c2_shift = 1;
-    }
-
-    float * BonA_data;
-    size_t  BonA_shift;
-
-    if (Parameters->Get_BonA_scalar_flag()) {
-        BonA_data  = &Parameters->Get_BonA_scalar();
-        BonA_shift = 0;
-    } else {
-        BonA_data  = Get_BonA().GetRawData();
-        BonA_shift = 1;
-    }
-
-    float * rho0_data;
-    size_t  rho0_shift;
-
-    if (Parameters->Get_rho0_scalar_flag()) {
-        rho0_data  = &Parameters->Get_rho0_scalar();
-        rho0_shift = 0;
-    } else {
-        rho0_data  = Get_rho0().GetRawData();
-        rho0_shift = 1;
-    }
-    cpp_implementations->Sum_new_p_nonlinear_lossless(TotalElementCount,
-                                                      Get_p(),
-                                                      rhox_data,
-                                                      rhoy_data,
-                                                      rhoz_data,
-                                                      c2_data,
-                                                      c2_shift,
-                                                      BonA_data,
-                                                      BonA_shift,
-                                                      rho0_data,
-                                                      rho0_shift);
-    }
-#endif
-#if CUDA_VERSION
     {
     const size_t TotalElementCount =
         Parameters->GetFullDimensionSizes().GetElementCount();
@@ -1842,10 +1402,8 @@ void TKSpaceFirstOrder3DSolver::Sum_new_p_nonlinear_lossless() {
                                                       rho0_data_matrix,
                                                       rho0_shift);
     }
-#endif
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
+
+
 }// end of Sum_new_p_nonlinear_lossless
 //--------------------------------------------------------------------------//
 
@@ -1854,31 +1412,8 @@ void TKSpaceFirstOrder3DSolver::Sum_new_p_nonlinear_lossless() {
  * Sum sub-terms for new p, linear lossless case.
  */
 void TKSpaceFirstOrder3DSolver::Sum_new_p_linear_lossless(){
-#if VANILLA_CPP_VERSION
-    {
-    const size_t total_element_count =
-        Parameters->GetFullDimensionSizes().GetElementCount();
 
-    if (Parameters->Get_c0_scalar_flag()){
-        const float c2_element = Parameters->Get_c0_scalar();
-        cpp_implementations->Sum_new_p_linear_lossless_scalar(Get_p(),
-                Get_rhox(),
-                Get_rhoy(),
-                Get_rhoz(),
-                total_element_count,
-                c2_element);
-    }else {
-        cpp_implementations->Sum_new_p_linear_lossless_matrix(
-                Get_p(),
-                Get_rhox(),
-                Get_rhoy(),
-                Get_rhoz(),
-                total_element_count,
-                Get_c2());
-    }
-    }
-#endif
-#if CUDA_VERSION
+
     {
     const size_t total_element_count =
         Parameters->GetFullDimensionSizes().GetElementCount();
@@ -1903,10 +1438,7 @@ void TKSpaceFirstOrder3DSolver::Sum_new_p_linear_lossless(){
                 Get_c2());
     }
     }
-#endif
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
+
 
 }// end of Sum_new_p_linear_lossless()
 //--------------------------------------------------------------------------//
@@ -1924,49 +1456,8 @@ void TKSpaceFirstOrder3DSolver::Calculate_SumRho_BonA_SumDu(
         TRealMatrix& RHO_Temp,
         TRealMatrix& BonA_Temp,
         TRealMatrix& Sum_du) {
-#if VANILLA_CPP_VERSION
-    {
-#pragma mark unhappy with this function (should not pass ptr to functions)
-    float * BonA_data;
-    size_t  BonA_shift;
-    const bool BonA_flag = Parameters->Get_BonA_scalar_flag();
 
-    if (BonA_flag) {
-        BonA_data = &Parameters->Get_BonA_scalar();
-        BonA_shift = 0;
-    } else {
-        BonA_data = Get_BonA().GetRawData();
-        BonA_shift = 1;
-    }
 
-    float * rho0_data;
-    size_t  rho0_shift;
-    const bool rho0_flag = Parameters->Get_rho0_scalar_flag();
-
-    if (rho0_flag) {
-        rho0_data = &Parameters->Get_rho0_scalar();
-        rho0_shift = 0;
-    } else {
-        rho0_data = Get_rho0().GetRawData();
-        rho0_shift = 1;
-    }
-
-    cpp_implementations->Calculate_SumRho_BonA_SumDu(RHO_Temp,
-            BonA_Temp,
-            Sum_du,
-            Get_rhox(),
-            Get_rhoy(),
-            Get_rhoz(),
-            Get_duxdx(),
-            Get_duydy(),
-            Get_duzdz(),
-            BonA_data,
-            BonA_shift,
-            rho0_data,
-            rho0_shift);
-    }
-#endif
-#if CUDA_VERSION
     {
     float  BonA_data_scalar;
     float* BonA_data_matrix;
@@ -2010,10 +1501,6 @@ void TKSpaceFirstOrder3DSolver::Calculate_SumRho_BonA_SumDu(
                                                       rho0_data_matrix,
                                                       rho0_shift);
     }
-#endif
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
 
 }
 // end of Calculate_SumRho_BonA_SumDu
@@ -2035,20 +1522,8 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_nonlinear()
         TRealMatrix& Absorb_eta_temp = Sum_rhoxyz;
 
         Calculate_SumRho_BonA_SumDu(Sum_rhoxyz,BonA_rho_rhoxyz, Sum_du);
-#if VANILLA_CPP_VERSION
-        // ifftn ( absorb_nabla1 * fftn (rho0 * (duxdx+duydy+duzdz))
-        Get_FFT_X_temp().Compute_FFT_3D_R2C(Sum_du);
-        Get_FFT_Y_temp().Compute_FFT_3D_R2C(Sum_rhoxyz);
 
-        cpp_implementations->Compute_Absorb_nabla1_2(Get_absorb_nabla1(),
-                                                     Get_absorb_nabla2(),
-                                                     Get_FFT_X_temp(),
-                                                     Get_FFT_Y_temp());
 
-        Get_FFT_X_temp().Compute_iFFT_3D_C2R(Absorb_tau_temp);
-        Get_FFT_Y_temp().Compute_iFFT_3D_C2R(Absorb_eta_temp);
-#endif
-#if CUDA_VERSION
 
         Get_CUFFT_X_temp().Compute_FFT_3D_R2C(Sum_du);
         Get_CUFFT_Y_temp().Compute_FFT_3D_R2C(Sum_rhoxyz);
@@ -2062,7 +1537,7 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_nonlinear()
 
         Get_CUFFT_X_temp().Compute_iFFT_3D_C2R(Absorb_tau_temp);
         Get_CUFFT_Y_temp().Compute_iFFT_3D_C2R(Absorb_eta_temp);
-#endif
+
 
 
         Sum_Subterms_nonlinear(Absorb_tau_temp,
@@ -2071,10 +1546,6 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_nonlinear()
     }else {
         Sum_new_p_nonlinear_lossless();
     }
-
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
 
 }// end of Compute_new_p_nonlinear()
 //---------------------------------------------------------------------------//
@@ -2093,21 +1564,8 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_linear()
         TRealMatrix& Absorb_eta_temp = Get_Temp_3_RS3D();
 
         Calculate_SumRho_SumRhoDu(Sum_rhoxyz,Sum_rho0_du);
-#if VANILLA_CPP_VERSION
-        // ifftn ( absorb_nabla1 * fftn (rho0 * (duxdx+duydy+duzdz))
-        Get_FFT_X_temp().Compute_FFT_3D_R2C(Sum_rho0_du);
-        Get_FFT_Y_temp().Compute_FFT_3D_R2C(Sum_rhoxyz);
 
-        cpp_implementations->Compute_Absorb_nabla1_2(Get_absorb_nabla1(),
-                                                     Get_absorb_nabla2(),
-                                                     Get_FFT_X_temp(),
-                                                     Get_FFT_Y_temp());
 
-        // override Sum_rho0_dx
-        Get_FFT_X_temp().Compute_iFFT_3D_C2R(Absorb_tau_temp);
-        Get_FFT_Y_temp().Compute_iFFT_3D_C2R(Absorb_eta_temp);
-#endif
-#if CUDA_VERSION
         // ifftn ( absorb_nabla1 * fftn (rho0 * (duxdx+duydy+duzdz))
         Get_CUFFT_X_temp().Compute_FFT_3D_R2C(Sum_rho0_du);
         Get_CUFFT_Y_temp().Compute_FFT_3D_R2C(Sum_rhoxyz);
@@ -2119,15 +1577,13 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_linear()
 
         Get_CUFFT_X_temp().Compute_iFFT_3D_C2R(Absorb_tau_temp);
         Get_CUFFT_Y_temp().Compute_iFFT_3D_C2R(Absorb_eta_temp);
-#endif
+
         Sum_Subterms_linear(Absorb_tau_temp, Absorb_eta_temp, Sum_rhoxyz);
     }else{
         // lossless case
         Sum_new_p_linear_lossless();
     }
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
+
 }// end of Compute_new_p_linear_absorbing()
 //---------------------------------------------------------------------------//
 
@@ -2135,77 +1591,8 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_linear()
  * Compute new values of ux_sgx, uy_sgy, uz_sgz.
  */
 void TKSpaceFirstOrder3DSolver::Compute_uxyz(){
-#if VANILLA_CPP_VERSION
-    {
-    cpp_implementations->Compute_ddx_kappa_fft_p(Get_p(),
-            Get_FFT_X_temp(),
-            Get_FFT_Y_temp(),
-            Get_FFT_Z_temp(),
-            Get_kappa(),
-            Get_ddx_k_shift_pos(),
-            Get_ddy_k_shift_pos(),
-            Get_ddz_k_shift_pos());
 
-    Get_FFT_X_temp().Compute_iFFT_3D_C2R(Get_Temp_1_RS3D());
-    Get_FFT_Y_temp().Compute_iFFT_3D_C2R(Get_Temp_2_RS3D());
-    Get_FFT_Z_temp().Compute_iFFT_3D_C2R(Get_Temp_3_RS3D());
 
-    if (Parameters->Get_rho0_scalar_flag()) { // scalars
-        if (Parameters->Get_nonuniform_grid_flag()){
-            cpp_implementations->Compute_ux_sgx_normalize_scalar_nonuniform(
-                    Get_ux_sgx(),
-                    Get_Temp_1_RS3D(),
-                    Parameters->Get_rho0_sgx_scalar(),
-                    Get_dxudxn_sgx(),
-                    Get_pml_x_sgx());
-            cpp_implementations->Compute_uy_sgy_normalize_scalar_nonuniform(
-                    Get_uy_sgy(),
-                    Get_Temp_2_RS3D(),
-                    Parameters->Get_rho0_sgy_scalar(),
-                    Get_dyudyn_sgy(),
-                    Get_pml_y_sgy());
-            cpp_implementations->Compute_uz_sgz_normalize_scalar_nonuniform(
-                    Get_uz_sgz(),
-                    Get_Temp_3_RS3D(),
-                    Parameters->Get_rho0_sgz_scalar(),
-                    Get_dzudzn_sgz(),
-                    Get_pml_z_sgz());
-        }
-        else {
-            cpp_implementations->Compute_ux_sgx_normalize_scalar_uniform(
-                    Get_ux_sgx(),
-                    Get_Temp_1_RS3D(),
-                    Parameters->Get_rho0_sgx_scalar(),
-                    Get_pml_x_sgx());
-            cpp_implementations->Compute_uy_sgy_normalize_scalar_uniform(
-                    Get_uy_sgy(),
-                    Get_Temp_2_RS3D(),
-                    Parameters->Get_rho0_sgy_scalar(),
-                    Get_pml_y_sgy());
-            cpp_implementations->Compute_uz_sgz_normalize_scalar_uniform(
-                    Get_uz_sgz(),
-                    Get_Temp_3_RS3D(),
-                    Parameters->Get_rho0_sgz_scalar(),
-                    Get_pml_z_sgz());
-        }
-    }
-    else {// matrices
-        cpp_implementations->Compute_ux_sgx_normalize(Get_ux_sgx(),
-                Get_Temp_1_RS3D(),
-                Get_dt_rho0_sgx(),
-                Get_pml_x_sgx());
-        cpp_implementations->Compute_uy_sgy_normalize(Get_uy_sgy(),
-                Get_Temp_2_RS3D(),
-                Get_dt_rho0_sgy(),
-                Get_pml_y_sgy());
-        cpp_implementations->Compute_uz_sgz_normalize(Get_uz_sgz(),
-                Get_Temp_3_RS3D(),
-                Get_dt_rho0_sgz(),
-                Get_pml_z_sgz());
-    }
-    }
-#endif
-#if CUDA_VERSION
     {
     cuda_implementations->Compute_ddx_kappa_fft_p(Get_p(),
             Get_CUFFT_X_temp(),
@@ -2274,10 +1661,7 @@ void TKSpaceFirstOrder3DSolver::Compute_uxyz(){
                 Get_pml_z_sgz());
     }
     }
-#endif
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
+
 }// end of Compute_uxyz()
 //---------------------------------------------------------------------------//
 
@@ -2287,35 +1671,8 @@ void TKSpaceFirstOrder3DSolver::Compute_uxyz(){
 void TKSpaceFirstOrder3DSolver::Add_u_source()
 {
     size_t t_index = Parameters->Get_t_index();
-#if VANILLA_CPP_VERSION
-    {
-    if (Parameters->Get_ux_source_flag() > t_index) {
-        cpp_implementations->Add_u_source(Get_ux_sgx(),
-                Get_ux_source_input(),
-                Get_u_source_index(),
-                Parameters->Get_t_index(),
-                Parameters->Get_u_source_mode(),
-                Parameters->Get_u_source_many());
-    }
-    if (Parameters->Get_uy_source_flag() > t_index) {
-        cpp_implementations->Add_u_source(Get_uy_sgy(),
-                Get_uy_source_input(),
-                Get_u_source_index(),
-                t_index,
-                Parameters->Get_u_source_mode(),
-                Parameters->Get_u_source_many());
-    }
-    if (Parameters->Get_uz_source_flag() > t_index) {
-        cpp_implementations->Add_u_source(Get_uz_sgz(),
-                Get_uz_source_input(),
-                Get_u_source_index(),
-                t_index,
-                Parameters->Get_u_source_mode(),
-                Parameters->Get_u_source_many());
-    }
-    }
-#endif
-#if CUDA_VERSION
+
+
     {
     if (Parameters->Get_ux_source_flag() > t_index) {
         cuda_implementations->Add_u_source(Get_ux_sgx(),
@@ -2342,10 +1699,7 @@ void TKSpaceFirstOrder3DSolver::Add_u_source()
                 Parameters->Get_u_source_many());
     }
     }
-#endif
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
+
 }// end of Add_u_source
 //---------------------------------------------------------------------------//
 
@@ -2354,21 +1708,8 @@ void TKSpaceFirstOrder3DSolver::Add_u_source()
  */
 void TKSpaceFirstOrder3DSolver::Add_p_source(){
     size_t t_index = Parameters->Get_t_index();
-#if VANILLA_CPP_VERSION
-    {
-    if (Parameters->Get_p_source_flag() > t_index){
-        cpp_implementations->Add_p_source(Get_rhox(),
-                Get_rhoy(),
-                Get_rhoz(),
-                Get_p_source_input(),
-                Get_p_source_index(),
-                Parameters->Get_p_source_many(),
-                Parameters->Get_p_source_mode(),
-                t_index);
-    }// if do at all
-    }
-#endif
-#if CUDA_VERSION
+
+
     {
     if (Parameters->Get_p_source_flag() > t_index){
         cuda_implementations->Add_p_source(Get_rhox(),
@@ -2381,10 +1722,7 @@ void TKSpaceFirstOrder3DSolver::Add_p_source(){
                 t_index);
     }// if do at all
     }
-#endif
-#if COMPARE_CPU_TO_GPU
-    MatrixContainer.CompareAllMatrices();
-#endif
+
 }// end of Add_p_source
 //---------------------------------------------------------------------------//
 
@@ -2404,9 +1742,9 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
 
     PrintOutputHeader();
 
-#if CUDA_VERSION || OPENCL_VERSION
+
     MatrixContainer.CopyAllMatricesToGPU();
-#endif
+
 
     IterationTime.Start();
 
@@ -2424,16 +1762,7 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
         // add in the transducer source term (t = t1) to ux
         if (Parameters->Get_transducer_source_flag() > t_index){
 
-#if VANILLA_CPP_VERSION
-            {
-            cpp_implementations->AddTransducerSource(
-                    Get_ux_sgx(),
-                    Get_u_source_index(),
-                    Get_delay_mask(),
-                    Get_transducer_source_input());
-            }
-#endif
-#if CUDA_VERSION
+
             {
             cuda_implementations->AddTransducerSource(
                     Get_ux_sgx(),
@@ -2441,10 +1770,7 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
                     Get_delay_mask(),
                     Get_transducer_source_input());
             }
-#endif
-#if COMPARE_CPU_TO_GPU
-            MatrixContainer.CompareAllMatrices();
-#endif
+
         }
 
         Compute_duxyz();
@@ -2483,9 +1809,9 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
 
         Parameters->Increment_t_index();
     }
-#if CUDA_VERSION
+
     MatrixContainer.CopyAllMatricesFromGPU();
-#endif
+
 }// end of ComputeMainLoop()
 //---------------------------------------------------------------------------//
 

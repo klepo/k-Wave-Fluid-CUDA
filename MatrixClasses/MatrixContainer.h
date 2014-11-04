@@ -45,15 +45,10 @@
 #include "../Utils/MatrixNames.h"
 #include "../Utils/DimensionSizes.h"
 
-#if VANILLA_CPP_VERSION
-#include "../VanillaC++/MatrixClasses/FFTWComplexMatrix.h"
-#endif
-#if CUDA_VERSION
+
+
 #include "../CUDA/MatrixClasses/CUFFTComplexMatrix.h"
-#endif
-#if OPENCL_VERSION
-#include "../OpenCL/MatrixClasses/ClFFTComplexMatrix.h"
-#endif
+
 
 /**
  * @enum TMatrixID
@@ -105,16 +100,9 @@ enum TMatrixID
 
     //--------------Temporary matrices -------------//
     Temp_1_RS3D, Temp_2_RS3D, Temp_3_RS3D,
-#if VANILLA_CPP_VERSION & CUDA_VERSION
-    FFT_X_temp, FFT_Y_temp, FFT_Z_temp, FFT_shift_temp,
-    CUFFT_X_temp, CUFFT_Y_temp, CUFFT_Z_temp, CUFFT_shift_temp
-#elif VANILLA_CPP_VERSION
-    FFT_X_temp, FFT_Y_temp, FFT_Z_temp, FFT_shift_temp
-#elif CUDA_VERSION
-    CUFFT_X_temp, CUFFT_Y_temp, CUFFT_Z_temp, CUFFT_shift_temp
-#elif OPENCL_VERSION
 
-#endif
+    CUFFT_X_temp, CUFFT_Y_temp, CUFFT_Z_temp, CUFFT_shift_temp
+
 };
 
 
@@ -172,15 +160,12 @@ class TMatrixContainer {
         /// Set all matrices recored - populate the container
         void AddMatricesIntoContainer();
 
-#if CUDA_VERSION || OPENCL_VERSION
+
         /// Copy matrix host memory to GPU Device memory
         void CopyAllMatricesToGPU();
         /// Copy GPU Device memory to matrix host memory
         void CopyAllMatricesFromGPU();
-#endif
-#if COMPARE_CPU_TO_GPU
-        void CompareAllMatrices();
-#endif
+
         /**
          * Get matrix record
          * @param [in] MatrixID - Matrix identifier
@@ -256,21 +241,13 @@ class TMatrixContainer {
          * @param [in] MatrixID - Matrix identifier
          * @return FFTWComplexMatrix
          */
-#if VANILLA_CPP_VERSION
-        inline TFFTWComplexMatrix& GetFFTWComplexMatrix(
-                const TMatrixID MatrixID){
-            return static_cast<TFFTWComplexMatrix &>  (*(MatrixContainer[MatrixID].MatrixPtr));
-        };
-#endif
-#if CUDA_VERSION
+
         inline TCUFFTComplexMatrix& GetCUFFTComplexMatrix(
                 const TMatrixID MatrixID){
             return static_cast<TCUFFTComplexMatrix&>(*(MatrixContainer[MatrixID].MatrixPtr));
         };
-#endif
-#if OPENCL_VERSION
 
-#endif
+
 
         /**
          * Get LongMatrix matrix from the container

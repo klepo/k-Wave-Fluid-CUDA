@@ -78,10 +78,10 @@ class TBaseMatrix {
                                          const char* MatrixName,
                                          const int CompressionLevel) {};
 
-#if (defined (CUDA_VERSION) || defined(OPENCL_VERSION))
+
         virtual void SyncroniseToGPUDevice() {};
         virtual void SyncroniseToCPUHost() {};
-#endif
+
 
         /// Destructor
         virtual ~TBaseMatrix() {};

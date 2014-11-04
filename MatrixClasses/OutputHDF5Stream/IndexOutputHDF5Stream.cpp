@@ -199,9 +199,9 @@ void TIndexOutputHDF5Stream::Reopen()
 void TIndexOutputHDF5Stream::Sample()
 {
 
-#if CUDA_VERSION
+
     SourceMatrix.SyncroniseToCPUHost();
-#endif //CUDA_VERSION
+
 
     const float * SourceData = const_cast<const float*>(SourceMatrix.GetRawData());
     const size_t  * SensorData = const_cast<const size_t* >(SensorMask.GetRawData());
@@ -269,9 +269,9 @@ void TIndexOutputHDF5Stream::Sample()
  */
 void TIndexOutputHDF5Stream::PostProcess()
 {
-    #if CUDA_VERSION
+
     SourceMatrix.SyncroniseToCPUHost();
-#endif //CUDA_VERSION
+
 
 // run inherited method
     TBaseOutputHDF5Stream::PostProcess();

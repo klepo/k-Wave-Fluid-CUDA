@@ -37,14 +37,6 @@
 #include "../MatrixClasses/BaseMatrix.h"
 #include "../Utils/DimensionSizes.h"
 
-#if OPENCL_VERSION
-#if __APPLE__ & __MACH__
-#include <OpenCL/opencl.h>
-#else
-#include <CL/opencl.h>
-#endif
-#endif
-
 using namespace std;
 
 /**
@@ -61,9 +53,8 @@ class TBaseLongMatrix : public TBaseMatrix{
             pDataRowSize = 0;
             p2DDataSliceSize = 0;
             pMatrixData = NULL;
-#if CUDA_VERSION || OPENCL_VERSION
             pdMatrixData = NULL;
-#endif
+
         }
 
         /// Get dimension sizes of the matrix
@@ -93,7 +84,7 @@ class TBaseLongMatrix : public TBaseMatrix{
             return pMatrixData;
         }
 
-#if CUDA_VERSION || OPENCL_VERSION
+
         virtual void SyncroniseToGPUDevice(){
             CopyIn(pMatrixData);
         }
@@ -101,9 +92,9 @@ class TBaseLongMatrix : public TBaseMatrix{
         virtual void SyncroniseToCPUHost(){
             CopyOut(pMatrixData);
         }
-#endif
 
-#if CUDA_VERSION
+
+
         //Host -> Device
         virtual void CopyIn  (const size_t* HostSource);
 
@@ -116,22 +107,7 @@ class TBaseLongMatrix : public TBaseMatrix{
         virtual size_t* GetRawDeviceData() {
             return pdMatrixData;
         }
-#endif
 
-#if OPENCL_VERSION
-        //Host -> Device
-        virtual void CopyIn  (const size_t* HostSource);
-
-        //Device -> Host
-        virtual void CopyOut (size_t* HostDestination);
-
-        //Device -> Device
-        virtual void CopyForm(const cl_mem DeviceSource);
-
-        virtual cl_mem GetRawDeviceData() {
-            return pdMatrixData;
-        }
-#endif
 
     protected:
         /// Total number of elements
@@ -150,15 +126,10 @@ class TBaseLongMatrix : public TBaseMatrix{
         /// Raw matrix data
         size_t* pMatrixData;
 
-#if CUDA_VERSION
+
         /// Device matrix data
         size_t* pdMatrixData;
-#endif
 
-#if OPENCL_VERSION
-        /// Device matrix data
-        cl_mem pdMatrixData;
-#endif
 
         /// Memory allocation
         virtual void AllocateMemory();

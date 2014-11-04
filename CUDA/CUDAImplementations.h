@@ -31,8 +31,8 @@
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef __kwave_opencl__CUDAImplementations__
-#define __kwave_opencl__CUDAImplementations__
+#ifndef CUDAIMPLEMENTATIONS_H
+#define	CUDAIMPLEMENTATIONS_H
 
 #include <iostream>
 
@@ -432,4 +432,4 @@ class CUDAImplementations{
 
 };
 
-#endif /* defined(__kwave_opencl__CImplementations__) */
+#endif

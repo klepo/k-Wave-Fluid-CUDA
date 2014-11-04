@@ -165,9 +165,9 @@ void TWholeDomainOutputHDF5Stream::Reopen()
 void TWholeDomainOutputHDF5Stream::Sample()
 {
 
-#if CUDA_VERSION
+
     SourceMatrix.SyncroniseToCPUHost();
-#endif //CUDA_VERSION
+
 
     const float * SourceData = SourceMatrix.GetRawData();
 
@@ -290,9 +290,9 @@ void TWholeDomainOutputHDF5Stream::Close()
 void TWholeDomainOutputHDF5Stream::FlushBufferToFile()
 {
 
-#if CUDA_VERSION
+
     SourceMatrix.SyncroniseToCPUHost();
-#endif //CUDA_VERSION
+
 
     TDimensionSizes Size = SourceMatrix.GetDimensionSizes();
     TDimensionSizes Position(0,0,0);

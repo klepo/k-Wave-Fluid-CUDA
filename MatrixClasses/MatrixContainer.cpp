@@ -31,7 +31,6 @@
  */
 
 #include <stdexcept>
-
 #include "MatrixContainer.h"
 
 #include "../Parameters/Parameters.h"
@@ -105,23 +104,14 @@ void TMatrixContainer::CreateAllObjects()
                 break;
             }
 
-#if VANILLA_CPP_VERSION
-            case TMatrixRecord::mdtFFTW:
-            {
-                it->second.MatrixPtr =  new TFFTWComplexMatrix(it->second.DimensionSizes);
-                break;
-            }
-#endif
-#if CUDA_VERSION
+
             case TMatrixRecord::mdtCUFFT:
             {
                 it->second.MatrixPtr = new TCUFFTComplexMatrix(it->second.DimensionSizes);
                 break;
             }
-#endif
-#if OPENCL_VERSION
 
-#endif
+
             default:
             {
                 PrintErrorAndThrowException(
@@ -208,26 +198,14 @@ void TMatrixContainer::FreeAllMatrices()
 }// end of FreeAllMatrices
 //----------------------------------------------------------------------------
 
-#if CUDA_VERSION || OPENCL_VERSION
+
 void TMatrixContainer::CopyAllMatricesToGPU(){
     for (TMatrixRecordContainer::iterator it = MatrixContainer.begin();
          it != MatrixContainer.end();
          it++){
-#if COMPARE_CPU_TO_GPU
-        //the only matrix without a GPU memory buffer is the FFTW matrices thus
-        //don't copy it
-        if(it->second.MatrixDataType != TMatrixRecord::mdtFFTW){
-            Log("SyncroniseToGPUDevice: " + it->second.HDF5MatrixName);
-            //stringstream ss;
-            //ss << it->second.MatrixPtr->GetTotalElementCount();
-            //string val = ss.str();
-            //Log("   with allocated memory = " + val);
-            it->second.MatrixPtr->SyncroniseToGPUDevice();
-        }
-#else
 
         it->second.MatrixPtr->SyncroniseToGPUDevice();
-#endif
+
     }
 }
 
@@ -235,80 +213,12 @@ void TMatrixContainer::CopyAllMatricesFromGPU(){
     for (TMatrixRecordContainer::iterator it = MatrixContainer.begin();
          it != MatrixContainer.end();
          it++){
-#if COMPARE_CPU_TO_GPU
-        //the only matrix without a GPU memory buffer is the FFTW matrices thus
-        //don't copy it
-        if(it->second.MatrixDataType != TMatrixRecord::mdtFFTW){
-            Log("SyncroniseToCPUHost: " + it->second.HDF5MatrixName);
-            it->second.MatrixPtr->SyncroniseToCPUHost();
-        }
-#else
 
         it->second.MatrixPtr->SyncroniseToCPUHost();
-#endif
-    }
-}
-#endif
-#if COMPARE_CPU_TO_GPU
-void WaitForUserInput(){
-    cout << "is this ok? (y/n)" << endl;
-    // Set terminal to raw mode
-    system("stty raw");
-    char var = getchar();
-    // Reset terminal to normal "cooked" mode
-    system("stty cooked");
-    if(var=='y'){
-        return;
-    }
-    else {
-        abort();
+
     }
 }
 
-void TMatrixContainer::CompareAllMatrices()
-{
-    TMatrixTester * tester = new TMatrixTester();
-    for(TMatrixRecordContainer::iterator it = MatrixContainer.begin();
-        it != MatrixContainer.end();
-        it++){
-        Log("Comparing Matrix: " + it->second.HDF5MatrixName);
-        bool in_sync = false;
-        //mdtReal
-        if(it->second.MatrixDataType == TMatrixRecord::mdtReal){
-            in_sync = tester->IsInSync(
-                    static_cast<TRealMatrix*>(it->second.MatrixPtr));
-        //mdtComplex
-        }else if(it->second.MatrixDataType == TMatrixRecord::mdtComplex){
-            in_sync = tester->IsInSync(
-                    static_cast<TComplexMatrix*>(it->second.MatrixPtr));
-        //mdtIndex
-        }else if(it->second.MatrixDataType == TMatrixRecord::mdtIndex){
-            in_sync = tester->IsInSync(
-                    static_cast<TLongMatrix*>(it->second.MatrixPtr));
-        //mdtFFTW
-        }else if(it->second.MatrixDataType == TMatrixRecord::mdtFFTW){
-            //testing the FFTW implementation against itself doesn't make
-            //sense
-            //in_sync = tester->IsInSync(
-            //        static_cast<TComplexMatrix*>(it->second.MatrixPtr));
-            in_sync = true;
-        //mdtCUFFT
-        }else if(it->second.MatrixDataType == TMatrixRecord::mdtCUFFT){
-            in_sync = tester->IsInSync(
-                    static_cast<TComplexMatrix*>(it->second.MatrixPtr));
-        }
-
-        //do compare
-        if(!in_sync){
-            Log(it->second.HDF5MatrixName + " out of step!");
-            WaitForUserInput();
-        }
-
-    }
-    delete tester;
-}
-
-#endif
 
 /*
  *  Prior to allocating any memory we can approximate the amount of memory
@@ -843,22 +753,14 @@ void TMatrixContainer::AddMatricesIntoContainer()
             //all are the same
             ShiftDims.X = X_2;
         }
-#if CUDA_VERSION
+
         MatrixContainer[CUFFT_shift_temp].SetAllValues(NULL,
                                                        TMatrixRecord::mdtCUFFT,
                                                        ShiftDims,
                                                        NOLOAD,
                                                        NOCHECKPOINT,
                                                        CUFFT_shift_temp_Name);
-#endif
-#if VANILLA_CPP_VERSION
-        MatrixContainer[FFT_shift_temp].SetAllValues(NULL,
-                                                     TMatrixRecord::mdtFFTW,
-                                                     ShiftDims,
-                                                     NOLOAD,
-                                                     NOCHECKPOINT,
-                                                     FFT_shift_temp_Name);
-#endif
+
 
         // these three are necessary only for u_non_staggered calculation now
         MatrixContainer[ux_shifted].SetAllValues(NULL,
@@ -935,27 +837,7 @@ void TMatrixContainer::AddMatricesIntoContainer()
                                               NOLOAD,
                                               NOCHECKPOINT,
                                               Temp_3_RS3D_Name);
-#if VANILLA_CPP_VERSION
-    MatrixContainer[FFT_X_temp].SetAllValues(NULL,
-                                             TMatrixRecord::mdtFFTW,
-                                             ReducedDims,
-                                             NOLOAD,
-                                             NOCHECKPOINT,
-                                             FFT_X_temp_Name);
-    MatrixContainer[FFT_Y_temp].SetAllValues(NULL,
-                                             TMatrixRecord::mdtFFTW,
-                                             ReducedDims,
-                                             NOLOAD,
-                                             NOCHECKPOINT,
-                                             FFT_Y_temp_Name);
-    MatrixContainer[FFT_Z_temp].SetAllValues(NULL,
-                                             TMatrixRecord::mdtFFTW,
-                                             ReducedDims,
-                                             NOLOAD,
-                                             NOCHECKPOINT,
-                                             FFT_Z_temp_Name);
-#endif
-#if CUDA_VERSION
+
     MatrixContainer[CUFFT_X_temp].SetAllValues(NULL,
                                                TMatrixRecord::mdtCUFFT,
                                                ReducedDims,
@@ -974,10 +856,7 @@ void TMatrixContainer::AddMatricesIntoContainer()
                                                NOLOAD,
                                                NOCHECKPOINT,
                                                CUFFT_Z_temp_Name);
-#endif
-#if OPENCL_VERSION
 
-#endif
 }// end of AddMatricesIntoContainer
 //----------------------------------------------------------------------------
 

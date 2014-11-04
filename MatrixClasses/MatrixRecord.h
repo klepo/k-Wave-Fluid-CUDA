@@ -49,16 +49,9 @@ struct TMatrixRecord
     enum TMatrixDataType {mdtReal,
                           mdtComplex,
                           mdtIndex,
-#if VANILLA_CPP_VERSION & CUDA_VERSION
-                          mdtFFTW,
                           mdtCUFFT
-#elif VANILLA_CPP_VERSION
-                          mdtFFTW
-#elif CUDA_VERSION
-                          mdtCUFFT
-#elif OPENCL_VERSION
-#endif
                           };
+
 
     /// Pointer to the matrix object
     TBaseMatrix   * MatrixPtr;

@@ -89,13 +89,13 @@ TCommandLineParameters::TCommandLineParameters()
     Store_I_avg = false;
     Store_I_max = false;
     StartTimeStep = 0;
-#if CUDA_VERSION || OPENCL_VERSION
+
     gpu_device_id = -1;
     one_d_block_size = 0;
     three_d_block_size_x = 0;
     three_d_block_size_y = 0;
     three_d_block_size_z = 0;
-#endif
+
     NumberOfThreads  = 1;
     VerboseInterval  = DefaultVerboseInterval;
     CompressionLevel = DefaultCompressionLevel;
@@ -113,10 +113,10 @@ void TCommandLineParameters::PrintUsageAndExit(){
     printf("  -o Output_file_name             : HDF5 output file\n");
     printf("\n");
     printf("Optional parameters: \n");
-#if CUDA_VERSION || OPENCL_VERSION
+
     printf("  -g GPU_device_number            : GPU device to run on\n");
     printf("                                      (default = device with most global memory)\n");
-#endif
+
     printf("  -t Number_of_CPU_threads        : Number of CPU threads\n");
     printf("                                      (default = %d)\n",1);
     printf("  -r Progress_report_interval_in_%%: Progress print interval\n");
@@ -163,13 +163,13 @@ void TCommandLineParameters::PrintUsageAndExit(){
     printf("  --I_avg                         : Store avg of intensity\n");
     printf("  --I_max                         : Store max of intensity\n");
     printf("\n");
-#if CUDA_VERSION || OPENCL_VERSION
+
     printf("  --1DBlockSize i                 : Run 1D CUDA kernels with block size i\n");
     printf("                                      (default is 256 threads per block)\n");
     printf("  --3DBlockSize x,y,z             : Run 3D CUDA kernels with block size in x, y and z dimensions\n");
     printf("                                      (default is x=256 y=1 z=1 threads per block)\n");
     printf("\n");
-#endif
+
     printf("  -s Start_time_step              : Time step when data collection begins\n");
 
     printf("                                      (default = 1)\n");
@@ -191,13 +191,13 @@ void TCommandLineParameters::PrintSetup(){
     printf("  Input  file               %s\n",InputFileName.c_str());
     printf("  Output file               %s\n",OutputFileName.c_str());
     printf("\n");
-#if CUDA_VERSION || OPENCL_VERSION
+
     if(gpu_device_id == -1){
         printf("  GPU device number     default\n");
     }else{
         printf("  GPU device number     %d\n", gpu_device_id);
     }
-#endif
+
     printf("  Number of threads         %d\n", NumberOfThreads);
     printf("  Verbose interval[%%]      %d\n", VerboseInterval);
     printf("  Compression level         %d\n", CompressionLevel);
@@ -228,7 +228,7 @@ void TCommandLineParameters::PrintSetup(){
     printf("  Store I_avg               %d\n", Store_I_avg);
     printf("  Store I_max               %d\n", Store_I_max);
     printf("\n");
-#if CUDA_VERSION || OPENCL_VERSION
+
     if(one_d_block_size == 0){
         printf("  1D Block Size   =     default\n");
     }else{
@@ -244,7 +244,7 @@ void TCommandLineParameters::PrintSetup(){
         printf("                Z =     %d\n", three_d_block_size_z);
     }
     printf("\n");
-#endif
+
     printf("  Collection begins at  %d\n", StartTimeStep+1);
 
 }// end of PrintSetup
@@ -291,10 +291,10 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
 
         { "copy_sensor_mask", no_argument, NULL, 0},
 
-#if CUDA_VERSION || OPENCL_VERSION
+
         { "1DBlockSize", required_argument, NULL, 0 },
         { "3DBlockSize", required_argument, NULL, 0 },
-#endif
+
         { NULL, no_argument, NULL, 0 }
     };
 
@@ -331,7 +331,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
                  }
                  break;
             }
-#if CUDA_VERSION || OPENCL_VERSION
+
             case 'g':{
                 if ((optarg == NULL) || (atoi(optarg) < -1)) {
                     fprintf(stderr,
@@ -343,7 +343,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
                 }
                 break;
             }
-#endif
+
             case 'c':{
                 if ((optarg == NULL) || (atoi(optarg) < 0) || atoi(optarg) > 9) {
                     fprintf(stderr,
@@ -488,7 +488,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
                     CopySensorMask = true;
                     break;
                 }
-#if CUDA_VERSION || OPENCL_VERSION
+
                 if(strcmp("1DBlockSize",longOpts[longIndex].name) == 0) {
                     if(optarg == NULL || atoi(optarg)<0){
                         PrintUsageAndExit();
@@ -512,7 +512,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
                     three_d_block_size_z = atoi(z.c_str());
                     return;
                 }
-#endif
+
                 //else
                 PrintUsageAndExit();
                 break;

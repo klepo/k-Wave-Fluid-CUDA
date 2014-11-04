@@ -44,13 +44,11 @@
 #include "../LongMatrix.h"
 #include "../../HDF5/HDF5_File.h"
 
-#if CUDA_VERSION
-#include "../../CUDA/CUDAImplementations.h"
-#endif
 
-#if OPENCL_VERSION
-#include "../../OpenCL/OpenCLImplementations.h"
-#endif
+#include "../../CUDA/CUDAImplementations.h"
+
+
+
 
 using namespace std;
 
@@ -105,9 +103,9 @@ class TBaseOutputHDF5Stream {
       // copy the dataset name (just for sure)
       this->HDF5_RootObjectName = new char[strlen(HDF5_RootObjectName)];
       strcpy(this->HDF5_RootObjectName, HDF5_RootObjectName);
-#if CUDA_VERSION
+
             cuda_implementations = CUDAImplementations::GetInstance();
-#endif
+
         };
 
         /// Destructor
@@ -178,12 +176,9 @@ class TBaseOutputHDF5Stream {
         /// The minimum number of elements to start sampling in parallel (4MB)
         static const size_t MinGridpointsToSampleInParallel = 1048576;
 
-#if CUDA_VERSION
+
         CUDAImplementations* cuda_implementations;
-#endif
-#if OPENCL_VERSION
-        OpenCLImplementations* opencl_implementations;
-#endif
+
 };// end of TBaseOutputHDF5Stream
 
 #endif /* BASEOUTPUTHDF5STREAM_H */

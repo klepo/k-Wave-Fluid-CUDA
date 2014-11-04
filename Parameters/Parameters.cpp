@@ -41,11 +41,9 @@
 #include "../Utils/MatrixNames.h"
 #include "../Utils/ErrorMessages.h"
 
-#if CUDA_VERSION
+
 #include "../CUDA/CUDATuner.h"
-#elif OPENCL_VERSION
-#include "../OpenCL/OpenCLTuner.h"
-#endif
+
 
 using namespace std;
 
@@ -115,7 +113,7 @@ void TParameters::ParseCommandLine(int argc, char** argv)
         command_line_parameters.PrintUsageAndExit();
     }
 
-    #if CUDA_VERSION
+
     //cuboid corners is currently not supported in CUDA version
     //thus check for it and notify the user accordingly
     if(this->Get_sensor_mask_type() == TParameters::smt_corners){
@@ -132,15 +130,13 @@ void TParameters::ParseCommandLine(int argc, char** argv)
                 "--u_non_staggered_raw");
         command_line_parameters.PrintUsageAndExit();
     }
-#endif
 
-#if CUDA_VERSION
+
+
     CUDATuner* tuner = CUDATuner::GetInstance();
-#elif OPENCL_VERSION
-    OpenCLTuner* tuner = OpenCLTuner::GetInstance();
-#endif
 
-#if CUDA_VERSION || OPENCL_VERSION
+
+
     int pGPU_ID = command_line_parameters.GetGPUDeviceID();
     bool did_set_device = tuner->SetDevice(pGPU_ID);
     if(!did_set_device){
@@ -166,7 +162,7 @@ void TParameters::ParseCommandLine(int argc, char** argv)
                         command_line_parameters.Get3DBlockSize_Z());
         exit(EXIT_FAILURE);
     }
-#endif
+
 
 }// end of ParseCommandLine
 //----------------------------------------------------------------------------
