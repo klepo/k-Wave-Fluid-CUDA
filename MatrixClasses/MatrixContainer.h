@@ -1,18 +1,20 @@
 /**
  * @file        MatrixContainer.h
  * @author      Jiri Jaros              \n
- *              CECS, ANU, Australia    \n
- *              jiri.jaros@anu.edu.au
+ *              Faculty of Information Technology \n
+ *              Brno University of Technology \n
+ *              jarosjir@fit.vutbr.cz
  *
- * @brief       The header file containing the matrix container
+ * @brief       The header file containing the matrix container.
  *
- * @version     kspaceFirstOrder3D 2.13
+ * @version     kspaceFirstOrder3D 3.3
  * @date        14 September 2012, 14:33 (created) \n
- *              14 September 2012, 14:20 (revised)
+ *              04 November  2014, 17:17 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2012 Jiri Jaros and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
+ * and Bradley Treeby
  *
  * This file is part of the k-Wave. k-Wave is free software: you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
@@ -25,7 +27,7 @@
  * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see <http://www.gnu.org/licenses/>.
+ * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
 #ifndef MATRIXCONTAINER_H
@@ -86,7 +88,7 @@ enum TMatrixID
     delay_mask,
 
     //------------------- redundant ----------------//
-    Ix_sensor_avg, Iy_sensor_avg, Iz_sensor_avg, 
+    Ix_sensor_avg, Iy_sensor_avg, Iz_sensor_avg,
     Ix_sensor_max, Iy_sensor_max, Iz_sensor_max,
 
     //---------------- output matrices -------------//

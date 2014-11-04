@@ -1,18 +1,21 @@
 /**
  * @file        MatrixRecord.cpp
- * @author      Jiri Jaros & Beau Johnston \n
- *              CECS, ANU, Australia       \n
- *              jiri.jaros@anu.edu.au
+ * @author      Jiri Jaros \n
+ *              Faculty of Information Technology \n
+ *              Brno University of Technology \n
+ *              jarosjir@fit.vutbr.cz
  *
- * @brief       An implementation file of the class for storing Matrix structural details.
-
+ * @brief       An implementation file of the class for storing Matrix structural
+ *              details.
  *
- * @version     kspaceFirstOrder3D 2.13
- * @date        27 August 2014, 10:22 (created)
+ * @version     kspaceFirstOrder3D 3.3
+ * @date        27 August   2014, 10:22 (created)
+ *              04 November 2014, 17:17 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2012 Jiri Jaros and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
+ * and Bradley Treeby
  *
  * This file is part of the k-Wave. k-Wave is free software: you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
@@ -25,7 +28,7 @@
  * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see <http://www.gnu.org/licenses/>.
+ * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
 

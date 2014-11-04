@@ -1,17 +1,20 @@
 /**
  * @file        OutputStreamContainer.h
  * @author      Jiri Jaros & Beau Johnston \n
- *              CECS, ANU, Australia       \n
- *              jiri.jaros@anu.edu.au
+ *              Faculty of Information Technology \n
+ *              Brno University of Technology \n
+ *              jarosjir@fit.vutbr.cz
  *
- * @brief       The header file defining the output stream container
+ * @brief       The header file defining the output stream container.
  *
- * @version     kspaceFirstOrder3D 2.13
- * @date        27 August 2014, 10:22 (created)
+ * @version     kspaceFirstOrder3D 3.3
+ * @date        27 August   2014, 10:22 (created)
+ *              04 November 2014, 17:20 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2012 Jiri Jaros and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
+ * and Bradley Treeby
  *
  * This file is part of the k-Wave. k-Wave is free software: you can
  * redistribute it and/or modify it under the terms of the GNU Lesser General
@@ -24,7 +27,7 @@
  * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see <http://www.gnu.org/licenses/>.
+ * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
 #ifndef OUTPUTSTREAMCONTAINER_H
