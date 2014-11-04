@@ -111,6 +111,7 @@
       <compileType>
         <ccTool>
           <incDir>
+            <pElem>./</pElem>
             <pElem>/usr/local/hdf5-serial/include</pElem>
           </incDir>
           <commandLine>-Xcompiler="-fopenmp"</commandLine>
@@ -118,7 +119,6 @@
             <Elem>CUDA_VERSION=1</Elem>
             <Elem>NDEBUG</Elem>
           </preprocessorList>
-          <warningLevel>0</warningLevel>
         </ccTool>
         <linkerTool>
           <linkerAddLib>

@@ -86,79 +86,79 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: ${OBJECTFILES}
 
 ${OBJECTDIR}/CUDA/CUDAImplementations.o: CUDA/CUDAImplementations.cu 
 	${MKDIR} -p ${OBJECTDIR}/CUDA
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/CUDA/CUDAImplementations.o CUDA/CUDAImplementations.cu
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/CUDA/CUDAImplementations.o CUDA/CUDAImplementations.cu
 
 ${OBJECTDIR}/CUDA/CUDATuner.o: CUDA/CUDATuner.cpp 
 	${MKDIR} -p ${OBJECTDIR}/CUDA
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/CUDA/CUDATuner.o CUDA/CUDATuner.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/CUDA/CUDATuner.o CUDA/CUDATuner.cpp
 
 ${OBJECTDIR}/CUDA/MatrixClasses/CUFFTComplexMatrix.o: CUDA/MatrixClasses/CUFFTComplexMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/CUDA/MatrixClasses
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/CUDA/MatrixClasses/CUFFTComplexMatrix.o CUDA/MatrixClasses/CUFFTComplexMatrix.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/CUDA/MatrixClasses/CUFFTComplexMatrix.o CUDA/MatrixClasses/CUFFTComplexMatrix.cpp
 
 ${OBJECTDIR}/HDF5/HDF5_File.o: HDF5/HDF5_File.cpp 
 	${MKDIR} -p ${OBJECTDIR}/HDF5
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/HDF5/HDF5_File.o HDF5/HDF5_File.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/HDF5/HDF5_File.o HDF5/HDF5_File.cpp
 
 ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o: KSpaceSolver/KSpaceFirstOrder3DSolver.cpp 
 	${MKDIR} -p ${OBJECTDIR}/KSpaceSolver
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o KSpaceSolver/KSpaceFirstOrder3DSolver.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o KSpaceSolver/KSpaceFirstOrder3DSolver.cpp
 
 ${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o: MatrixClasses/BaseFloatMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o MatrixClasses/BaseFloatMatrix.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o MatrixClasses/BaseFloatMatrix.cpp
 
 ${OBJECTDIR}/MatrixClasses/BaseLongMatrix.o: MatrixClasses/BaseLongMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/BaseLongMatrix.o MatrixClasses/BaseLongMatrix.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/BaseLongMatrix.o MatrixClasses/BaseLongMatrix.cpp
 
 ${OBJECTDIR}/MatrixClasses/ComplexMatrix.o: MatrixClasses/ComplexMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/ComplexMatrix.o MatrixClasses/ComplexMatrix.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/ComplexMatrix.o MatrixClasses/ComplexMatrix.cpp
 
 ${OBJECTDIR}/MatrixClasses/LongMatrix.o: MatrixClasses/LongMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/LongMatrix.o MatrixClasses/LongMatrix.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/LongMatrix.o MatrixClasses/LongMatrix.cpp
 
 ${OBJECTDIR}/MatrixClasses/MatrixContainer.o: MatrixClasses/MatrixContainer.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/MatrixContainer.o MatrixClasses/MatrixContainer.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/MatrixContainer.o MatrixClasses/MatrixContainer.cpp
 
 ${OBJECTDIR}/MatrixClasses/MatrixRecord.o: MatrixClasses/MatrixRecord.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/MatrixRecord.o MatrixClasses/MatrixRecord.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/MatrixRecord.o MatrixClasses/MatrixRecord.cpp
 
 ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.o: MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.o MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.o MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.cpp
 
 ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.o: MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.o MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.o MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.cpp
 
 ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.o: MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.o MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.o MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.cpp
 
 ${OBJECTDIR}/MatrixClasses/OutputStreamContainer.o: MatrixClasses/OutputStreamContainer.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/OutputStreamContainer.o MatrixClasses/OutputStreamContainer.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/OutputStreamContainer.o MatrixClasses/OutputStreamContainer.cpp
 
 ${OBJECTDIR}/MatrixClasses/RealMatrix.o: MatrixClasses/RealMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/RealMatrix.o MatrixClasses/RealMatrix.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/MatrixClasses/RealMatrix.o MatrixClasses/RealMatrix.cpp
 
 ${OBJECTDIR}/Parameters/CommandLineParameters.o: Parameters/CommandLineParameters.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Parameters
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/Parameters/CommandLineParameters.o Parameters/CommandLineParameters.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/Parameters/CommandLineParameters.o Parameters/CommandLineParameters.cpp
 
 ${OBJECTDIR}/Parameters/Parameters.o: Parameters/Parameters.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Parameters
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/Parameters/Parameters.o Parameters/Parameters.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/Parameters/Parameters.o Parameters/Parameters.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
-	$(COMPILE.cc) -g -w -DCUDA_VERSION=1 -DNDEBUG -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/main.o main.cpp
+	$(COMPILE.cc) -g -DCUDA_VERSION=1 -DNDEBUG -I./ -I/usr/local/hdf5-serial/include -o ${OBJECTDIR}/main.o main.cpp
 
 # Subprojects
 .build-subprojects:
