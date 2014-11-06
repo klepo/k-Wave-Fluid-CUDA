@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        15 August   2012, 09:35 (created) \n
- *              04 November 2014, 18:18 (revised)
+ *              06 November 2014, 15:08 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,9 +50,9 @@
 class TTimeMeasure
 {
   public:
-  ///Default constructor
 
-  TTimeMeasure() :
+    ///Default constructor
+    TTimeMeasure() :
         StartTime(0.0),
         StopTime(0.0),
         CumulatedElapsedTimeOverPreviousLegs(0.0)
@@ -151,7 +151,7 @@ class TTimeMeasure
     {
       CumulatedElapsedTimeOverPreviousLegs = ElapsedTime;
     }
-    
+
   private:
     /// Start timestamp of the interval
     double StartTime;

@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        14 September 2012, 17:28 (created) \n
- *              04 November  2014, 13:45 (revised)
+ *              04 November  2014, 15:08W (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -75,11 +75,11 @@ const char * const y_shift_neg_r_Name           = "y_shift_neg_r";
 const char * const z_shift_neg_r_Name           = "z_shift_neg_r";
 
 /// ux_shifted variable name
-const char * const ux_shifted_Name           = "ux_shifted";
+const char * const ux_shifted_Name             = "ux_shifted";
 /// uy_shifted variable name
-const char * const uy_shifted_Name           = "uy_shifted";
+const char * const uy_shifted_Name             = "uy_shifted";
 /// uz_shifted variable name
-const char * const uz_shifted_Name           = "uz_shifted";
+const char * const uz_shifted_Nam  e           = "uz_shifted";
 
 /// pml_x_size variable name
 const char * const  pml_x_size_Name             = "pml_x_size";
@@ -329,11 +329,11 @@ const char * const Temp_3_RS3D_Name = "Temp_3_RS3D";
 /// CUFFT_shift_temp variable name
 const char * const CUFFT_shift_temp_Name = "CUFFT_shift_temp";
 /// CUFFT_X_temp variable name
-const char * const CUFFT_X_temp_Name = "CUFFT_X_temp";
+const char * const CUFFT_X_temp_Name     = "CUFFT_X_temp";
 /// CUFFT_Y_temp variable name
-const char * const CUFFT_Y_temp_Name = "CUFFT_Y_temp";
+const char * const CUFFT_Y_temp_Name     = "CUFFT_Y_temp";
 /// CUFFT_Z_temp variable name
-const char * const CUFFT_Z_temp_Name = "CUFFT_Z_temp";
+const char * const CUFFT_Z_temp_Name     = "CUFFT_Z_temp";
 
 #endif	/* MATRIXNAMES_H */
 
