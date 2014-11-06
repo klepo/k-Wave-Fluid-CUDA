@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        27 July     2012, 14:14 (created) \n
- *              04 November 2014, 15:00 (revised)
+ *              06 November 2014, 14:21 (revised)
  *
 
 * @section License
@@ -937,6 +937,36 @@ void THDF5_File::ReadCompleteDataset (const hid_t ParentGroup,
 //------------------------------------------------------------------------------
 
 /**
+ * Read the scalar value under a specified group - float value.
+ * @param[in]  ParentGroup
+ * @param[in]  DatasetName
+ * @param[out] Value
+ */
+void THDF5_File::ReadScalarValue(const hid_t ParentGroup,
+                                 const char * DatasetName,
+                                 float      & Value)
+{
+  ReadCompleteDataset(ParentGroup, DatasetName, TDimensionSizes(1,1,1), &Value);
+} // end of ReadScalarValue
+//------------------------------------------------------------------------------
+
+
+/**
+ * Read the scalar value under a specified group - index value.
+ * @param[in] ParentGroup
+ * @param[in] DatasetName
+ * @param[out] Value
+ */
+void THDF5_File::ReadScalarValue(const hid_t ParentGroup,
+                                 const char * DatasetName,
+                                 size_t & Value)
+{
+ ReadCompleteDataset(ParentGroup, DatasetName, TDimensionSizes(1,1,1), &Value);
+}// end of ReadScalarValue
+//------------------------------------------------------------------------------
+
+
+/**
  * Read data from the dataset at a specified place in the file tree.
  *
  * @param [in] ParentGroup
@@ -1499,7 +1529,7 @@ void THDF5_FileHeader::GetExecutionTimes(double& TotalTime,
 void THDF5_FileHeader::SetNumberOfCores()
 {
     char Text[12] = "";
-    sprintf(Text, "%d",TParameters::GetInstance()->GetNumberOfThreads());
+    sprintf(Text, "%ld",TParameters::GetInstance()->GetNumberOfThreads());
 
     HDF5_FileHeaderValues[hdf5_fhi_number_of_cores] = Text;
 }// end of SetNumberOfCores

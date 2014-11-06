@@ -8,8 +8,8 @@
  * @brief       The header file containing all error messages of the project.
  *
  * @version     kspaceFirstOrder3D 3.3
- * @date        09 August   2011, 12:34  (created) \n
- *              04 November 2014, 13:45 (revised)
+ * @date        09 August   2011, 12:34 (created) \n
+ *              06 November 2014, 13:18 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -133,8 +133,13 @@ const char * const Parameters_ERR_FMT_WrongSensorMaskType = "Error: The sensor m
 /// Command line parameters error message
 const char * const Parameters_ERR_FMT_UNonStaggeredNotSupportedForFile10 = "Error: --u_non_staggered_raw is not supported along with the input file of the version 1.0! \n";
 
-/// Unimplemented error
-const char * const CUDA_ERR_FMT_OptionNotSupported = "Error: %s is not currently supported for CUDA version! \n";
+//------------------------------- CUDA  --------------------------------------//
+
+/// CUDA error message.
+const char * const CUDA_ERR_FMT_CouldNotSetupDevice = "Error: Couldn't setup the device!\n";
+/// CUDA error message.
+const char * const CUDA_ERR_FMT_BadBlocksSize = "Error: The device %ld cannot handle either the \n \
+                                                 \t 1D blocksize of %ld\n \t or \n \t 3D blocksize of %ld,%ld,%ld \n";
 
 #endif	/* ERRORMESSAGES_H */
 

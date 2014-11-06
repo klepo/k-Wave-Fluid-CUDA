@@ -700,7 +700,7 @@ int main(int argc, char** argv)
           Tuner->GetDeviceName().c_str());
 
   fprintf(stdout,
-          "Number of CPU threads:    %9d\n",
+          "Number of CPU threads:    %9ld\n",
           Parameters->GetNumberOfThreads());
 
   KSpaceSolver.PrintParametersOfSimulation(stdout);

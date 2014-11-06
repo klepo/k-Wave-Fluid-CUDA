@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        27 July     2012, 14:14 (created) \n
- *              04 November 2014, 15:00 (revised)
+ *              04 November 2014, 14:14 (revised)
  *
  *
  *
@@ -633,6 +633,16 @@ Name                            Size           Data type       Domain Type      
         void WriteScalarValue(const hid_t ParentGroup,
                 const char * DatasetName,
                 const size_t  Value);
+
+        /// Read the scalar value under a specified group - float value.
+        void ReadScalarValue(const hid_t ParentGroup,
+                             const char * DatasetName,
+                             float      & Value);
+        /// Read the scalar value under a specified group - index value.
+        void ReadScalarValue(const hid_t ParentGroup,
+                             const char * DatasetName,
+                             size_t & Value);
+
 
         /// Read data from the dataset under a specified group - float dataset
         void ReadCompleteDataset(const hid_t ParentGroup,
