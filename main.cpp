@@ -767,8 +767,6 @@ int main(int argc, char** argv)
   fprintf(stdout,"       End of computation \n");
   fprintf(stdout,"%s",FMT_SmallSeparator);
 
-  fprintf(stdout,"%s",FMT_SmallSeparator);
-
   return EXIT_SUCCESS;
 }// end of main
 //------------------------------------------------------------------------------

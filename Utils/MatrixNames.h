@@ -79,7 +79,7 @@ const char * const ux_shifted_Name             = "ux_shifted";
 /// uy_shifted variable name
 const char * const uy_shifted_Name             = "uy_shifted";
 /// uz_shifted variable name
-const char * const uz_shifted_Nam  e           = "uz_shifted";
+const char * const uz_shifted_Name             = "uz_shifted";
 
 /// pml_x_size variable name
 const char * const  pml_x_size_Name             = "pml_x_size";

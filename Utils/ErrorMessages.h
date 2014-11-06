@@ -57,7 +57,7 @@ const char * const HDF5_ERR_FMT_NotHDF5File             = "Error: File \"%s\" is
 /// HDF5 error message
 const char * const HDF5_ERR_FMT_DatasetNotOpened        = "Error: File \"%s\" could not open dataset \"%s\"!\n";
 /// HDF5 error message
-const char * const HDF5_ERR_FMT_CouldNotSetCompression  = "Error: File \"%s\", dataset \"%s\" could set compression level [%d]!\n";
+const char * const HDF5_ERR_FMT_CouldNotSetCompression  = "Error: File \"%s\", dataset \"%s\" could set compression level [%ld]!\n";
 /// HDF5 error message
 const char * const HDF5_ERR_FMT_BadAttributeValue       = "Error: Bad attribute value: [%s,%s] = %s";
 /// HDF5 error message
@@ -68,6 +68,12 @@ const char * const HDF5_ERR_FMT_CouldNotReadFromAttribute = "Error: Could not re
 const char * const HDF5_ERR_FMT_GroupNotCreated          = "Error: Could not create group \"%s\" in file \"%s\"!\n";
 /// HDF5 error message
 const char * const HDF5_ERR_FMT_GroupNotOpened           = "Error: Could not open group \"%s\" in file \"%s\"!\n";
+/// HDF5 error message
+const char * const HDF5_ERR_FMT_BadInputFileType         = "Error: The input file has not a valid format!\n";
+/// HDF5 error message
+const char * const HDF5_ERR_FMT_BadOutputFileType        = "Error: The output file has not a valid format!\n";
+/// HDF5 error message
+const char * const HDF5_ERR_FMT_BadCheckpointFileType    = "Error: The checkpoint file has not a valid format!\n";
 
 //---------------------------------- Matrix Classes  -------------------------//
 

@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        27 July     2012, 14:14 (created) \n
- *              04 November 2014, 14:14 (revised)
+ *              04 November 2014, 16:30 (revised)
  *
  *
  *
@@ -38,7 +38,7 @@
  * HDF5 object. More information can be obtained from the HDF5 documentation (http://www.hdfgroup.org/HDF5/doc/index.html).
  *
  *
- * kspaceFirstOrder3D-OMP v1.1 introduces a new version of the HDF5 input and
+ * kspaceFirstOrder3D-CUDA v1.1 introduces a new version of the HDF5 input and
  * output file format. The code is happy to work with both versions (1.0 and 1.1), however when
  * working with an input file of version 1.0, some features are not supported,
  * namely the cuboid sensor mask, and u_non_staggered_raw.
@@ -487,414 +487,443 @@ Name                            Size           Data type       Domain Type      
   #include <io.h>
 #endif
 
-#include "../Utils/DimensionSizes.h"
+#include <Utils/DimensionSizes.h>
 
 
 
-    using namespace std;
+using namespace std;
 
-    // Class with File header
-    class THDF5_FileHeader;
+// Class with File header
+class THDF5_FileHeader;
+
+/**
+ * @class THDF5_File
+ * @brief Class wrapping the HDF5 routines.
+ * @details This class is responsible for working with HDF5 files. It offers routines
+ * to manage files (create, open, close) as well as creating, reading and modifying the
+ * contents (groups and datasets).
+ *
+ */
+class THDF5_File
+{
+  public:
 
     /**
-     * @class THDF5_File
-     * @brief Class wrapping the HDF5 routines
+     * @enum THDF5_MatrixDataType
+     * @brief HDF5 matrix data type (float or uint64).
      */
-    class THDF5_File
-{
-    public:
+    enum THDF5_MatrixDataType
+    {
+      hdf5_mdt_float = 0,
+      hdf5_mdt_long  = 1
+    };
 
-        /**
-         * @enum THDF5_MatrixDataType
-         * @brief HDF5 matrix data type
-         */
-        enum THDF5_MatrixDataType   {hdf5_mdt_float = 0, hdf5_mdt_long    = 1};
-
-        /**
-         * @enum  THDF5_MatrixDomainType
-         * @brief HDF5 Matrix domain type
-         */
-        enum THDF5_MatrixDomainType {hdf5_mdt_real  = 0, hdf5_mdt_complex = 1};
+    /**
+     * @enum  THDF5_MatrixDomainType
+     * @brief HDF5 Matrix domain type (real or complex).
+     */
+    enum THDF5_MatrixDomainType
+    {
+      hdf5_mdt_real  = 0,
+      hdf5_mdt_complex = 1
+    };
 
 
-        /// Constructor
-        THDF5_File();
+    /// Constructor of the class.
+    THDF5_File();
 
-        //----------------------- Basic file operations --------------------------//
-        /// Create the file
-        void Create(const char * FileName,
-                unsigned int Flags = H5F_ACC_TRUNC );
-        /// Open the file
-        void Open (const char * FileName,
-                unsigned int Flags  = H5F_ACC_RDONLY);
-        /**
-         * Is the file opened?
-         * @return true if the file is opened
-         */
-        bool IsOpened() const
-        {
-            return HDF5_FileId != H5I_BADID;
-        };
+    //----------------------- Basic file operations --------------------------//
+    /// Create the file.
+    void Create(const char * FileName,
+                unsigned int Flags = H5F_ACC_TRUNC);
+
+    /// Open the file.
+    void Open (const char * FileName,
+               unsigned int Flags  = H5F_ACC_RDONLY);
+    /**
+     * @brief Is the file opened?
+     * @details Is the file opened?
+     * @return true if the file is opened
+     */
+    bool IsOpened() const {return HDF5_FileId != H5I_BADID;};
 
     /**
      * @brief Does the file exist? static method.
-     * @details Check if the file exist
+     * @details Check if the file exist.
      * @param [in] FileName
-     * @return true if the file exists
+     * @return true if the file exists.
      */
-        static bool IsHDF5(const char * FileName)
-        {
-          #ifdef __linux__
-            return (access(FileName, F_OK) == 0);
-          #endif
+    static bool IsHDF5(const char * FileName)
+    {
+      #ifdef __linux__
+        return (access(FileName, F_OK) == 0);
+      #endif
 
-          #ifdef _WIN64
-             return (_access_s(FileName, 0) == 0 );
-          #endif
-        };
+      #ifdef _WIN64
+         return (_access_s(FileName, 0) == 0 );
+      #endif
+    };
 
-        /// Close file
-        void Close();
+        /// Close file.
+    void Close();
 
-        //----------------------- Group manipulators -----------------------------//
-        /// Create a HDF5 group at a specified place in the file tree
-        hid_t CreateGroup(const hid_t ParentGroup,
-                const char * GroupName);
-        /// Open a HDF5 group at a specified place in the file tree
-        hid_t OpenGroup  (const hid_t ParentGroup,
-                const char * GroupName);
-        /// Close group
-        void CloseGroup(const hid_t Group);
-        /**
-         * Get handle to the root group
-         * @return  - handle to the root group
-         */
-        hid_t GetRootGroup() const
-        {
-            return HDF5_FileId;
-        };
+    //----------------------- Group manipulators -----------------------------//
+    /// Create a HDF5 group at a specified place in the file tree.
+    hid_t CreateGroup(const hid_t ParentGroup,
+            const char * GroupName);
+    /// Open a HDF5 group at a specified place in the file tree.
+    hid_t OpenGroup  (const hid_t ParentGroup,
+            const char * GroupName);
+    /// Close group.
+    void CloseGroup(const hid_t Group);
 
-
-        //---------------------- Dataset manipulators ----------------------------//
-        /// Open the HDF5 dataset at a specified place in the file tree.
-        hid_t OpenDataset  (const hid_t ParentGroup,
-                const char * DatasetName);
-        /// Create the HDF5 dataset at a specified place in the file tree (3D/4D).
-        hid_t CreateFloatDataset(const hid_t ParentGroup,
-                const char * DatasetName,
-                const TDimensionSizes & DimensionSizes,
-                const TDimensionSizes & ChunkSizes,
-                const int CompressionLevel);
-
-        /// Create the HDF5 dataset at a specified place in the file tree (3D only).
-        hid_t CreateLongDataset(const hid_t ParentGroup,
-                const char * DatasetName,
-                const TDimensionSizes & DimensionSizes,
-                const TDimensionSizes & ChunkSizes,
-                const int CompressionLevel);
-
-        /// Close the HDF5 dataset
-        void  CloseDataset (const hid_t HDF5_Dataset_id);
+    /**
+     * @brief Get handle to the root group.
+     * @details Get handle to the root group.
+     * @return  - handle to the root group
+     */
+    hid_t GetRootGroup() const  {return HDF5_FileId;};
 
 
-        //------------------ Dataset Read/Write operations -----------------------//
-        /// Write a hyper-slab into the dataset - float dataset
-        void WriteHyperSlab(const hid_t HDF5_Dataset_id,
-                const TDimensionSizes & Position,
-                const TDimensionSizes & Size,
-                const float * Data);
-        /// Write a hyper-slab into the dataset - long dataset
-        void WriteHyperSlab(const hid_t HDF5_Dataset_id,
-                const TDimensionSizes & Position,
-                const TDimensionSizes & Size,
-                const size_t * Data);
+    //---------------------- Dataset manipulators ----------------------------//
+    /// Open the HDF5 dataset at a specified place in the file tree.
+    hid_t OpenDataset(const hid_t  ParentGroup,
+                      const char * DatasetName);
 
-        /// Write a cuboid selected inside MatrixData into a Hyperslab
-        void WriteCuboidToHyperSlab(const hid_t HDF5_Dataset_id,
-                const TDimensionSizes & HyperslabPosition,
-                const TDimensionSizes & CuboidPosition,
-                const TDimensionSizes & CuboidSize,
-                const TDimensionSizes & MatrixDimensions,
-                const float * MatrixData);
+    /// Create the HDF5 dataset at a specified place in the file tree (3D/4D).
+    hid_t CreateFloatDataset(const hid_t             ParentGroup,
+                             const char            * DatasetName,
+                             const TDimensionSizes & DimensionSizes,
+                             const TDimensionSizes & ChunkSizes,
+                             const size_t            CompressionLevel);
 
-        /// Write sensor data selected by the sensor mask - Occasionally very slow, do not use!
-        void WriteSensorByMaskToHyperSlab(const hid_t HDF5_Dataset_id,
-                const TDimensionSizes & HyperslabPosition,
-                const size_t IndexSensorSize,
-                const size_t * IndexSensorData,
-                const TDimensionSizes & MatrixDimensions,
-                const float * MatrixData);
+    /// Create the HDF5 dataset at a specified place in the file tree (3D only).
+    hid_t CreateIndexDataset(const hid_t             ParentGroup,
+                             const char            * DatasetName,
+                             const TDimensionSizes & DimensionSizes,
+                             const TDimensionSizes & ChunkSizes,
+                             const size_t            CompressionLevel);
 
-        /// Write the scalar value under a specified group - float value
-        void WriteScalarValue(const hid_t ParentGroup,
-                const char * DatasetName,
-                const float Value);
-        /// Write the scalar value under a specified group - long value
-        void WriteScalarValue(const hid_t ParentGroup,
-                const char * DatasetName,
-                const size_t  Value);
+    /// Close the HDF5 dataset.
+    void  CloseDataset (const hid_t HDF5_Dataset_id);
 
-        /// Read the scalar value under a specified group - float value.
-        void ReadScalarValue(const hid_t ParentGroup,
+
+    //------------------ Dataset Read/Write operations -----------------------//
+    /// Write a hyper-slab into the dataset - float dataset.
+  void WriteHyperSlab(const hid_t             HDF5_Dataset_id,
+                      const TDimensionSizes & Position,
+                      const TDimensionSizes & Size,
+                      const float           * Data);
+  /// Write a hyper-slab into the dataset - long dataset.
+  void WriteHyperSlab(const hid_t             HDF5_Dataset_id,
+                      const TDimensionSizes & Position,
+                      const TDimensionSizes & Size,
+                      const size_t          * Data);
+
+  /// Write a cuboid selected inside MatrixData into a Hyperslab.
+  void WriteCuboidToHyperSlab(const hid_t             HDF5_Dataset_id,
+                              const TDimensionSizes & HyperslabPosition,
+                              const TDimensionSizes & CuboidPosition,
+                              const TDimensionSizes & CuboidSize,
+                              const TDimensionSizes & MatrixDimensions,
+                              const float           * MatrixData);
+
+  /// Write sensor data selected by the sensor mask - Occasionally very slow, do not use!
+  void WriteSensorByMaskToHyperSlab(const hid_t             HDF5_Dataset_id,
+                                    const TDimensionSizes & HyperslabPosition,
+                                    const size_t            IndexSensorSize,
+                                    const size_t          * IndexSensorData,
+                                    const TDimensionSizes & MatrixDimensions,
+                                    const float           * MatrixData);
+
+  /// Write the scalar value under a specified group - float value.
+  void WriteScalarValue(const hid_t  ParentGroup,
+                        const char * DatasetName,
+                        const float  Value);
+  /// Write the scalar value under a specified group - long value.
+  void WriteScalarValue(const hid_t  ParentGroup,
+                        const char * DatasetName,
+                        const size_t Value);
+
+  /// Read the scalar value under a specified group - float value.
+  void ReadScalarValue(const hid_t ParentGroup,
+                       const char * DatasetName,
+                       float      & Value);
+  /// Read the scalar value under a specified group - index value.
+  void ReadScalarValue(const hid_t ParentGroup,
+                       const char * DatasetName,
+                       size_t     & Value);
+
+
+  /// Read data from the dataset under a specified group - float dataset.
+  void ReadCompleteDataset(const hid_t ParentGroup,
+                           const char * DatasetName,
+                           const TDimensionSizes & DimensionSizes,
+                           float * Data);
+  /// Read data from the dataset under a specified group - long dataset.
+  void ReadCompleteDataset(const hid_t ParentGroup,
+                           const char * DatasetName,
+                           const TDimensionSizes & DimensionSizes,
+                           size_t * Data);
+
+
+  //------------------- Attributes Read/Write operations -------------------//
+
+  /// Get dimension sizes of the dataset  under a specified group.
+  TDimensionSizes GetDatasetDimensionSizes(const hid_t  ParentGroup,
+                                           const char * DatasetName);
+
+  /// Get number of dimensions of the dataset  under a specified group.
+  size_t GetDatasetNumberOfDimensions(const hid_t  ParentGroup,
+                                      const char * DatasetName);
+
+  /// Get dataset element count under a specified group.
+  size_t GetDatasetElementCount(const hid_t  ParentGroup,
+                                const char * DatasetName);
+
+
+  /// Write matrix data type into the dataset under a specified group.
+  void WriteMatrixDataType (const hid_t                  ParentGroup,
+                            const char                 * DatasetName,
+                            const THDF5_MatrixDataType & MatrixDataType);
+  /// Write matrix domain type into the dataset under the root group.
+  void WriteMatrixDomainType(const hid_t                    ParentGroup,
+                             const char                   * DatasetName,
+                             const THDF5_MatrixDomainType & MatrixDomainType);
+
+  /// Read matrix data type from the dataset.
+  THDF5_File::THDF5_MatrixDataType   ReadMatrixDataType(const hid_t  ParentGroup,
+                                                        const char * DatasetName);
+  /// Read matrix domain type from the dataset under a specified group.
+  THDF5_File::THDF5_MatrixDomainType ReadMatrixDomainType(const hid_t  ParentGroup,
+                                                          const char * DatasetName);
+
+
+  /// Write string attribute into the dataset under the root group.
+  void   WriteStringAttribute(const hid_t    ParentGroup,
+                              const char   * DatasetName,
+                              const char   * AttributeName,
+                              const string & Value);
+  /// Read string attribute from the dataset under the root group.
+  string ReadStringAttribute(const hid_t  ParentGroup,
                              const char * DatasetName,
-                             float      & Value);
-        /// Read the scalar value under a specified group - index value.
-        void ReadScalarValue(const hid_t ParentGroup,
-                             const char * DatasetName,
-                             size_t & Value);
+                             const char * AttributeName);
+
+  /// Destructor.
+  virtual ~THDF5_File();
+
+ protected:
+
+  /// Copy constructor is not allowed for public.
+  THDF5_File(const THDF5_File& src);
+  /// Operator = is not allowed for public.
+  THDF5_File & operator = (const THDF5_File& src);
 
 
-        /// Read data from the dataset under a specified group - float dataset
-        void ReadCompleteDataset(const hid_t ParentGroup,
-                const char * DatasetName,
-                const TDimensionSizes & DimensionSizes,
-                float * Data);
-        /// Read data from the dataset under a specified group - long dataset
-        void ReadCompleteDataset(const hid_t ParentGroup,
-                const char * DatasetName,
-                const TDimensionSizes & DimensionSizes,
-                size_t * Data);
+private:
+  /// String representation of the Domain type in the HDF5 file.
+  static const char * HDF5_MatrixDomainTypeName;
+  /// String representation of the Data type in the HDF5 file.
+  static const char * HDF5_MatrixDataTypeName;
 
+  /// String representation of different domain types.
+  static const string HDF5_MatrixDomainTypeNames[];
+  /// String representation of different data types.
+  static const string HDF5_MatrixDataTypeNames[];
 
-        //------------------- Attributes Read/Write operations -------------------//
-
-        /// Get dimension sizes of the dataset  under a specified group
-        TDimensionSizes GetDatasetDimensionSizes(const hid_t ParentGroup,
-                const char * DatasetName);
-
-        /// Get number of dimensions of the dataset  under a specified group
-        size_t GetDatasetNumberOfDimensions(const hid_t ParentGroup,
-                const char * DatasetName);
-
-        /// Get dataset element count under a specified group
-        size_t GetDatasetElementCount(const hid_t ParentGroup,
-                const char * DatasetName);
-
-
-        /// Write matrix data type into the dataset under a specified group
-        void WriteMatrixDataType (const hid_t ParentGroup,
-                const char * DatasetName,
-                const THDF5_MatrixDataType   & MatrixDataType);
-        /// Write matrix domain type into the dataset under the root group
-        void WriteMatrixDomainType(const hid_t ParentGroup,
-                const char * DatasetName,
-                const THDF5_MatrixDomainType & MatrixDomainType);
-
-        /// Read matrix data type from the dataset c
-        THDF5_File::THDF5_MatrixDataType   ReadMatrixDataType(const hid_t ParentGroup,
-                const char * DatasetName);
-        /// Read matrix domain type from the dataset under a specified group
-        THDF5_File::THDF5_MatrixDomainType ReadMatrixDomainType(const hid_t ParentGroup,
-                const char * DatasetName);
-
-
-        /// Write string attribute into the dataset under the root group
-        void   WriteStringAttribute (const hid_t ParentGroup,
-                const char * DatasetName,
-                const char * AttributeName,
-                const string &  Value);
-        /// Read string attribute from the dataset under the root group
-        string ReadStringAttribute  (const hid_t ParentGroup,
-                const char * DatasetName,
-                const char * AttributeName);
-
-        /// Destructor
-        virtual ~THDF5_File();
-
-    protected:
-
-        /// Copy constructor is not allowed for public
-        THDF5_File(const THDF5_File& src);
-        /// Operator = is not allowed for public
-        THDF5_File & operator = (const THDF5_File& src);
-
-
-    private:
-        /// String representation of the Domain type in the HDF5 file
-        static const char * HDF5_MatrixDomainTypeName;
-        /// String representation of the Data type in the HDF5 file
-        static const char * HDF5_MatrixDataTypeName;
-
-        /// String representation of different domain types
-        static const string HDF5_MatrixDomainTypeNames[];
-        /// String representation of different data types
-        static const string HDF5_MatrixDataTypeNames[];
-
-        /// HDF file handle
-        hid_t  HDF5_FileId;
-        /// File name
-        string FileName;
-
+  /// HDF file handle.
+  hid_t  HDF5_FileId;
+  /// File name.
+  string FileName;
 }; // THDF5_File
 //------------------------------------------------------------------------------
 
 
 /**
  * @class THDF5_FileHeader
- * @brief Class for HDF5 header
- *
+ * @brief Class for HDF5 header.
+ * @details This class manages all information that can be stored in the input
+ * output or checkpoint file.
  */
 class THDF5_FileHeader
 {
-    public:
+  public:
 
-        /**
-         * @enum THDF5_FileHeaderItems
-         * @brief List of all header items
-         */
-        enum THDF5_FileHeaderItems { hdf5_fhi_created_by =  0,
-            hdf5_fhi_creation_date                       =  1,
-            hdf5_fhi_file_description                    =  2,
-            hdf5_fhi_major_version                       =  3,
-            hdf5_fhi_minor_version                       =  4,
-            hdf5_fhi_file_type                           =  5,
-            hdf5_fhi_host_name                           =  6,
-            hdf5_fhi_total_memory_consumption            =  7,
-            hdf5_fhi_peak_core_memory_consumption        =  8,
-            hdf5_fhi_total_execution_time                =  9,
-            hdf5_fhi_data_load_time                      = 10,
-            hdf5_fhi_preprocessing_time                  = 11,
-            hdf5_fhi_simulation_time                     = 12,
-            hdf5_fhi_postprocessing_time                 = 13,
-            hdf5_fhi_number_of_cores                     = 14
-        };
+    /**
+     * @enum THDF5_FileHeaderItems
+     * @brief List of all header items.
+     */
+    enum THDF5_FileHeaderItems
+    {
+      hdf5_fhi_created_by                   =  0,
+      hdf5_fhi_creation_date                =  1,
+      hdf5_fhi_file_description             =  2,
+      hdf5_fhi_major_version                =  3,
+      hdf5_fhi_minor_version                =  4,
+      hdf5_fhi_file_type                    =  5,
+      hdf5_fhi_host_name                    =  6,
+      hdf5_fhi_total_memory_consumption     =  7,
+      hdf5_fhi_peak_core_memory_consumption =  8,
+      hdf5_fhi_total_execution_time         =  9,
+      hdf5_fhi_data_load_time               = 10,
+      hdf5_fhi_preprocessing_time           = 11,
+      hdf5_fhi_simulation_time              = 12,
+      hdf5_fhi_postprocessing_time          = 13,
+      hdf5_fhi_number_of_cores              = 14
+    };
 
-        /**
-         * @enum  THDF5_FileType
-         * @brief HDF5 file type
-         */
-        enum THDF5_FileType         {hdf5_ft_input  = 0,
-            hdf5_ft_output = 1,
-            hdf5_ft_checkpoint = 2,
-            hdf5_ft_unknown = 3};
+    /**
+     * @enum  THDF5_FileType
+     * @brief HDF5 file type.
+     */
+    enum THDF5_FileType
+    {
+      hdf5_ft_input      = 0,
+      hdf5_ft_output     = 1,
+      hdf5_ft_checkpoint = 2,
+      hdf5_ft_unknown    = 3
+    };
 
-        /**
-         * @enum  THDF5_FileVersion
-         * @brief HDF5 file version
-         */
-        enum THDF5_FileVersion       {hdf5_fv_10 = 0,
-            hdf5_fv_11 = 1,
-            hdf5_fv_unknown = 2};
+    /**
+     * @enum  THDF5_FileVersion
+     * @brief HDF5 file version.
+     */
+    enum THDF5_FileVersion
+    {
+      hdf5_fv_10      = 0,
+      hdf5_fv_11      = 1,
+      hdf5_fv_unknown = 2
+    };
 
 
-        /// Constructor
-        THDF5_FileHeader();
-        /// Copy constructor
-        THDF5_FileHeader(const THDF5_FileHeader & other);
-        /// Destructor
-        ~THDF5_FileHeader();
+    /// Constructor.
+    THDF5_FileHeader();
+    /// Copy constructor.
+    THDF5_FileHeader(const THDF5_FileHeader & other);
+    /// Destructor.
+    ~THDF5_FileHeader();
 
-        /// Read header from the input file
-        void ReadHeaderFromInputFile(THDF5_File & InputFile);
-        /// Read Header from output file (necessary for checkpointing)
-        void ReadHeaderFromOutputFile(THDF5_File & OutputFile);
-        /// Write header to the output file
-        void WriteHeaderToOutputFile(THDF5_File & OutputFile);
+    /// Read header from the input file.
+    void ReadHeaderFromInputFile(THDF5_File & InputFile);
+    /// Read Header from output file (necessary for checkpoint-restart).
+    void ReadHeaderFromOutputFile(THDF5_File & OutputFile);
+    /// Read Header from checkpoint file (necessary for checkpoint-restart).
+    void ReadHeaderFromCheckpointFile(THDF5_File & CheckpointFile);
 
-        /**
-         * Set code name
-         * @param CodeName - code version
-         */
-        void SetCodeName(string CodeName)
-        {
-            HDF5_FileHeaderValues[hdf5_fhi_created_by] = CodeName;
-        };
+    /// Write header to the output file
+    void WriteHeaderToOutputFile(THDF5_File & OutputFile);
+    /// Write header to the output file
+    void WriteHeaderToCheckpointFile(THDF5_File & CheckpointFile);
 
-        /// Set creation time
-        void SetActualCreationTime();
+    /**
+     * @brief Set code name.
+     * @details Set code name to the header.
+     * @param [in] CodeName - code version
+     */
+    void SetCodeName(const string& CodeName)
+    {
+      HDF5_FileHeaderValues[hdf5_fhi_created_by] = CodeName;
+    };
 
-        /**
-         * Get string version of current Major version
-         * @return  current version
-         */
-        static string GetCurrentHDF5_MajorVersion()
-        {
-            return HDF5_MajorFileVersionsNames[0];
-        };
+    /// Set creation time
+    void SetActualCreationTime();
 
-        /**
-         * Get string version of current Minor version
-         * @return  current minor version
-         */
-        static string GetCurrentHDF5_MinorVersion()
-        {
-            return HDF5_MinorFileVersionsNames[1];
-        };
+    /**
+     * @brief   Get string version of current Major version.
+     * @details Get string version of current Major version.
+     * @return  current version
+     */
+    static string GetCurrentHDF5_MajorVersion()
+    {
+      return HDF5_MajorFileVersionsNames[0];
+    };
 
-        /// Set major file version
-        void SetMajorFileVersion()
-        {
-            HDF5_FileHeaderValues[hdf5_fhi_major_version] = GetCurrentHDF5_MajorVersion();
-        };
-        /// Set minor file version
-        void SetMinorFileVersion()
-        {
-            HDF5_FileHeaderValues[hdf5_fhi_minor_version] = GetCurrentHDF5_MinorVersion();
-        };
+    /**
+     * @brief   Get string version of current Minor version.
+     * @details Get string version of current Minor version.
+     * @return  current minor version
+     */
+    static string GetCurrentHDF5_MinorVersion()
+    {
+      return HDF5_MinorFileVersionsNames[1];
+    };
 
-        /// Set major file version in a string
-        THDF5_FileVersion GetFileVersion();
+    /// Set major file version.
+    void SetMajorFileVersion()
+    {
+      HDF5_FileHeaderValues[hdf5_fhi_major_version] = GetCurrentHDF5_MajorVersion();
+    };
+    /// Set minor file version.
+    void SetMinorFileVersion()
+    {
+      HDF5_FileHeaderValues[hdf5_fhi_minor_version] = GetCurrentHDF5_MinorVersion();
+    };
 
-        /**
-         * Check major file version
-         * @return true if ok
-         */
-        bool CheckMajorFileVersion()
-        {
-            return (HDF5_FileHeaderValues[hdf5_fhi_major_version] == GetCurrentHDF5_MajorVersion());
-        };
-        /**
-         * Check minor file version
-         * @return true if ok
-         */
-        bool CheckMinorFileVersion()
-        {
-            return (HDF5_FileHeaderValues[hdf5_fhi_minor_version] <= GetCurrentHDF5_MinorVersion());
-        };
+    /// Set major file version in a string.
+    THDF5_FileVersion GetFileVersion();
 
-        /// Get File type
-        THDF5_FileHeader::THDF5_FileType GetFileType();
-        /// Set file type
-        void SetFileType(const THDF5_FileHeader::THDF5_FileType FileType);
+    /**
+     * @brief   Check major file version.
+     * @details Check major file version.
+     * @return true if ok
+     */
+    bool CheckMajorFileVersion()
+    {
+      return (HDF5_FileHeaderValues[hdf5_fhi_major_version] == GetCurrentHDF5_MajorVersion());
+    };
+    /**
+     * @brief   Check minor file version.
+     * @details Check minor file version.
+     * @return true if ok
+     */
+    bool CheckMinorFileVersion()
+    {
+      return (HDF5_FileHeaderValues[hdf5_fhi_minor_version] <= GetCurrentHDF5_MinorVersion());
+    };
 
-        /// Set host name
-        void SetHostName();
-        /// Set memory consumption
-        void SetMemoryConsumption(size_t TotalMemory);
-        /// Set execution times
-        void SetExecutionTimes(const double TotalTime,
-                const double LoadTime,
-                const double PreProcessingTime,
-                const double SimulationTime,
-                const double PostprocessingTime);
 
-        /// Get execution times stored in the output file header
-        void GetExecutionTimes(double& TotalTime,
-                double& LoadTime,
-                double& PreProcessingTime,
-                double& SimulationTime,
-                double& PostprocessingTime);
-        /// Set number of cores
-        void SetNumberOfCores();
+    /// Get File type.
+    THDF5_FileHeader::THDF5_FileType GetFileType();
+    /// Set file type.
+    void SetFileType(const THDF5_FileHeader::THDF5_FileType FileType);
 
-    private:
-        /// Populate the map with the header items
-        void PopulateHeaderFileMap();
+    /// Set host name.
+    void SetHostName();
+    /// Set memory consumption.
+    void SetMemoryConsumption(const size_t TotalMemory);
+    /// Set execution times.
+    void SetExecutionTimes(const double TotalTime,
+                           const double LoadTime,
+                           const double PreProcessingTime,
+                           const double SimulationTime,
+                           const double PostprocessingTime);
 
-        /// map for the header values
-        map<THDF5_FileHeaderItems, string> HDF5_FileHeaderValues;
-        /// map for the header names
-        map<THDF5_FileHeaderItems, string> HDF5_FileHeaderNames;
+  /// Get execution times stored in the output file header.
+  void GetExecutionTimes(double& TotalTime,
+                         double& LoadTime,
+                         double& PreProcessingTime,
+                         double& SimulationTime,
+                         double& PostprocessingTime);
+  /// Set number of cores.
+  void SetNumberOfCores();
 
-        ///String representation of different file types
-        static const string HDF5_FileTypesNames[];
-        /// String representations of Major file versions
-        static const string HDF5_MajorFileVersionsNames[];
-        /// String representations of Major file versions
-        static const string HDF5_MinorFileVersionsNames[];
+private:
+  /// Populate the map with the header items.
+  void PopulateHeaderFileMap();
+
+  /// map for the header values.
+  map<THDF5_FileHeaderItems, string> HDF5_FileHeaderValues;
+  /// map for the header names.
+  map<THDF5_FileHeaderItems, string> HDF5_FileHeaderNames;
+
+  ///String representation of different file types.
+  static const string HDF5_FileTypesNames[];
+  /// String representations of Major file versions.
+  static const string HDF5_MajorFileVersionsNames[];
+  /// String representations of Major file versions.
+  static const string HDF5_MinorFileVersionsNames[];
 
 };// THDF5_FileHeader
 //------------------------------------------------------------------------------
 
 #endif	/* THDF5_FILE_H */
-

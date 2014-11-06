@@ -153,7 +153,7 @@ void TLongMatrix::WriteDataToHDF5File(THDF5_File& HDF5_File,
         }
     }
 
-    hid_t HDF5_Dataset_id = HDF5_File.CreateLongDataset(HDF5_File.GetRootGroup(),
+    hid_t HDF5_Dataset_id = HDF5_File.CreateIndexDataset(HDF5_File.GetRootGroup(),
                                                         MatrixName,
                                                         pDimensionSizes,
                                                         Chunks,
