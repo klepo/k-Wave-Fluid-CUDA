@@ -62,7 +62,7 @@ inline void gpuAssert(cudaError_t code,
 
 
 
-#include "../MatrixClasses/BaseLongMatrix.h"
+#include "../MatrixClasses/BaseIndexMatrix.h"
 #include "../Utils/DimensionSizes.h"
 #include "../Utils/ErrorMessages.h"
 

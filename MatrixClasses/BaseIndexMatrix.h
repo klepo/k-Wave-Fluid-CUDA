@@ -85,11 +85,11 @@ class TBaseLongMatrix : public TBaseMatrix{
         }
 
 
-        virtual void SyncroniseToGPUDevice(){
+        virtual void CopyToDevice(){
             CopyIn(pMatrixData);
         }
 
-        virtual void SyncroniseToCPUHost(){
+        virtual void CopyFromDevice(){
             CopyOut(pMatrixData);
         }
 
