@@ -33,7 +33,7 @@
 #ifndef LONGMATRIXDATA_H
 #define	LONGMATRIXDATA_H
 
-#include "../MatrixClasses/BaseLongMatrix.h"
+#include "../MatrixClasses/BaseIndexMatrix.h"
 #include "../Utils/DimensionSizes.h"
 
 /**
@@ -41,7 +41,7 @@
  * @brief The class for 64b integers. It is used for index mask into
  * float matrices
  */
-class TLongMatrix : public TBaseLongMatrix{
+class TLongMatrix : public TBaseIndexMatrix{
     public:
 
         /// Constructor
@@ -87,7 +87,7 @@ class TLongMatrix : public TBaseLongMatrix{
 
     protected:
         /// Default constructor not allowed for public
-        TLongMatrix()  : TBaseLongMatrix() {};
+        TLongMatrix()  : TBaseIndexMatrix() {};
 
         /// Copy constructor not allowed for public
         TLongMatrix(const TLongMatrix& orig);

@@ -166,7 +166,7 @@ void TWholeDomainOutputHDF5Stream::Sample()
 {
 
 
-    SourceMatrix.SyncroniseToCPUHost();
+    SourceMatrix.CopyFromDevice();
 
 
     const float * SourceData = SourceMatrix.GetRawData();
@@ -291,7 +291,7 @@ void TWholeDomainOutputHDF5Stream::FlushBufferToFile()
 {
 
 
-    SourceMatrix.SyncroniseToCPUHost();
+    SourceMatrix.CopyFromDevice();
 
 
     TDimensionSizes Size = SourceMatrix.GetDimensionSizes();

@@ -34,7 +34,7 @@
 #define REALMATRIXDATA_H
 
 #include "../MatrixClasses/BaseFloatMatrix.h"
-#include "../MatrixClasses/LongMatrix.h"
+#include "../MatrixClasses/IndexMatrix.h"
 
 #include "../Utils/DimensionSizes.h"
 

@@ -1,5 +1,5 @@
 /**
- * @file        BaseLongMatrix.cpp
+ * @file        BaseIndexMatrix.cpp
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        26 July     2011, 14:17 (created) \n
- *              04 November 2014, 17:11 (revised)
+ *              13 November 2014, 14:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -32,39 +32,44 @@
  */
 
 #include <string.h>
+#include <immintrin.h>
 #include <assert.h>
-
-
-#include <malloc.h>
-
-
 
 #include <cuda_runtime.h>
 #include <iostream> //fprintf
 #include <stdlib.h> //exit
 
+
+#include <MatrixClasses/BaseIndexMatrix.h>
+#include <Utils/DimensionSizes.h>
+#include <Utils/ErrorMessages.h>
+
+
 using std::string;
 
-inline void gpuAssert(cudaError_t code,
-                      string file,
-                      int line,
-                      bool Abort=true)
+/**
+ * Check errors of the CUDA routines and print error.
+ * @param [in] code  - error code of last routine
+ * @param [in] file  - The name of the file, where the error was raised
+ * @param [in] line  - What is the line
+ * @param [in] Abort - Shall the code abort?
+ */
+inline void gpuAssert(const cudaError_t code,
+                      const string      file,
+                      const int         line,
+                      const bool        Abort=true)
 {
-    if (code != cudaSuccess) {
-        fprintf(stderr,
-                "GPUassert: %s %s %d\n",
-                cudaGetErrorString(code),file.c_str(),line);
-        if (Abort) exit(code);
-    }
+  if (code != cudaSuccess)
+  {
+    fprintf(stderr,
+            "GPUassert: %s %s %d\n",
+            cudaGetErrorString(code), file.c_str(), line);
+    if (Abort) exit(code);
+  }
 }
 
+/// Define to get the usage easier.
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-
-
-
-#include "../MatrixClasses/BaseIndexMatrix.h"
-#include "../Utils/DimensionSizes.h"
-#include "../Utils/ErrorMessages.h"
 
 
 //---------------------------------------------------------------------------//
@@ -80,40 +85,41 @@ inline void gpuAssert(cudaError_t code,
 //                             public methods                                //
 //---------------------------------------------------------------------------//
 
-void TBaseLongMatrix::CopyData(TBaseLongMatrix & src)
+/**
+ *  Zero all allocated elements.
+ *
+ */
+void TBaseIndexMatrix::ZeroMatrix()
 {
-    memcpy(pMatrixData,
-           src.pMatrixData,
-           pTotalAllocatedElementCount*sizeof(size_t));
-}
+  ///@todo: This breaks the first touch policy! - however we don't know the distribution
+  memset(pMatrixData, 0, pTotalAllocatedElementCount * sizeof(size_t));
+}// end of ZeroMatrix
+//------------------------------------------------------------------------------
 
-
-//Host   -> Device
-void TBaseLongMatrix::CopyIn(const size_t * HostSource)
+/**
+ * Copy data from CPU (Host) to GPU (Device).
+ */
+void TBaseIndexMatrix::CopyToDevice()
 {
-    gpuErrchk(cudaMemcpy(pdMatrixData,
-                         HostSource,
-                         pTotalAllocatedElementCount*sizeof(size_t),
-                         cudaMemcpyHostToDevice));
-}
+  gpuErrchk(cudaMemcpy(pdMatrixData,
+                       pMatrixData,
+                       pTotalAllocatedElementCount * sizeof(size_t),
+                       cudaMemcpyHostToDevice));
 
-//Device -> Host
-void TBaseLongMatrix::CopyOut(size_t* HostDestination)
-{
-    gpuErrchk(cudaMemcpy(HostDestination,
-                         pdMatrixData,
-                         pTotalAllocatedElementCount*sizeof(size_t),
-                         cudaMemcpyDeviceToHost));
-}
+}// end of CopyToDevice
+//------------------------------------------------------------------------------
 
-//Device -> Device
-void TBaseLongMatrix::CopyForm(const size_t* DeviceSource)
+/**
+ * Copy data from GPU (Device) to CPU (Host).
+ */
+void TBaseIndexMatrix::CopyFromDevice()
 {
-    gpuErrchk(cudaMemcpy(pdMatrixData,
-                         DeviceSource,
-                         pTotalAllocatedElementCount*sizeof(size_t),
-                         cudaMemcpyDeviceToDevice));
-}
+  gpuErrchk(cudaMemcpy(pMatrixData,
+                       pdMatrixData,
+                       pTotalAllocatedElementCount * sizeof(size_t),
+                       cudaMemcpyDeviceToHost));
+}// end of CopyFromDevice
+//------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------//
 //                             Implementation                                //
@@ -122,52 +128,63 @@ void TBaseLongMatrix::CopyForm(const size_t* DeviceSource)
 
 /**
  * Memory allocation based on the total number of elements. \n
+ *
+ * CPU memory is aligned by the DATA_ALIGNMENT and then registered as pinned and
+ * zeroed. The GPU memory is allocated on GPU but not zeroed (no reason)
+ *
  */
-void TBaseLongMatrix::AllocateMemory()
+void TBaseIndexMatrix::AllocateMemory()
 {
+  /* No memory allocated before this function*/
+  assert(pMatrixData == NULL);
 
-    /* No memory allocated before this function*/
-    assert(pMatrixData == NULL);
+  //size of memory to allocate
+  size_t SizeInBytes = pTotalAllocatedElementCount * sizeof(size_t);
+
+  pMatrixData = static_cast<size_t*>(_mm_malloc(SizeInBytes, DATA_ALIGNMENT));
+
+  if (!pMatrixData)
+  {
+    fprintf(stderr,Matrix_ERR_FMT_Not_Enough_Memory, "TBaseIndexMatrix");
+    throw bad_alloc();
+  }
+
+  // Register Host memory (pin in memory)
+  gpuErrchk(cudaHostRegister(pMatrixData,
+                             SizeInBytes,
+                             cudaHostRegisterPortable));
 
 
-    //size of memory to allocate
-    size_t size_in_bytes = pTotalAllocatedElementCount*sizeof(size_t);
+  assert(pdMatrixData == NULL);
 
+  gpuErrchk(cudaMalloc<size_t>(&pdMatrixData, SizeInBytes));
 
-    pMatrixData = static_cast<size_t*>(malloc(size_in_bytes));
-
-    if (!pMatrixData) {
-        fprintf(stderr,Matrix_ERR_FMT_Not_Enough_Memory, "TBaseLongMatrix");
-        throw bad_alloc();
-    }
-
-
-    assert(pdMatrixData == NULL);
-
-    gpuErrchk(cudaMalloc((void **)&pdMatrixData,
-                         size_in_bytes));
-
-    if (!pdMatrixData) {
-        fprintf(stderr,Matrix_ERR_FMT_Not_Enough_Memory, "TBaseLongMatrix");
-        throw bad_alloc();
-    }
+  if (!pdMatrixData)
+  {
+    fprintf(stderr,Matrix_ERR_FMT_Not_Enough_Memory, "TBaseIndexMatrix");
+    throw bad_alloc();
+  }
 }// end of AllocateMemory
 //-----------------------------------------------------------------------------
 
 /*
  * Free memory
  */
-void TBaseLongMatrix::FreeMemory()
+void TBaseIndexMatrix::FreeMemory()
 {
-    if (pMatrixData) free(pMatrixData);
-    pMatrixData = NULL;
+  if (pMatrixData)
+  {
+    cudaHostUnregister(pMatrixData);
+    _mm_free(pMatrixData);
+  }
+  pMatrixData = NULL;
 
-
-    if (pdMatrixData) gpuErrchk(cudaFree(pdMatrixData));
-    pdMatrixData = NULL;
-
-
-
+  // Free GPU memory
+  if (pdMatrixData)
+  {
+      gpuErrchk(cudaFree(pdMatrixData));
+  }
+  pdMatrixData = NULL;
 }// end of MemoryDeallocation
 //-----------------------------------------------------------------------------
 

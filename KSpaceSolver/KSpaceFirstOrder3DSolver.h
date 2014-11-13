@@ -42,7 +42,7 @@
 #include "../MatrixClasses/MatrixContainer.h"
 #include "../MatrixClasses/RealMatrix.h"
 #include "../MatrixClasses/ComplexMatrix.h"
-#include "../MatrixClasses/LongMatrix.h"
+#include "../MatrixClasses/IndexMatrix.h"
 #include "../MatrixClasses/OutputStreamContainer.h"
 
 #include "../Utils/TimeMeasure.h"
@@ -201,7 +201,7 @@ protected:
     void SetAllElementsToValue(TRealMatrix*,const float value);
     void ScalarDividedBy(TRealMatrix&, const float);
     void ZeroMatrix(TBaseFloatMatrix&);
-    void ZeroMatrix(TBaseLongMatrix&);
+    void ZeroMatrix(TBaseIndexMatrix&);
     void RecomputeIndices(TLongMatrix&);
     /*
      * End of duplicate kernels

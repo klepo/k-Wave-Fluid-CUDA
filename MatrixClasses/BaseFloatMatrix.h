@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        11 July      2011, 12:13 (created) \n
- *              04 November  2014, 17:11 (revised)
+ *              12 November  2014, 13:58 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -34,8 +34,8 @@
 #ifndef BASEFLOATMATRIXDATA_H
 #define	BASEFLOATMATRIXDATA_H
 
-#include "BaseMatrix.h"
-#include "../Utils/DimensionSizes.h"
+#include <MatrixClasses/BaseMatrix.h>
+#include <Utils/DimensionSizes.h>
 
 using namespace std;
 
@@ -43,118 +43,119 @@ using namespace std;
  * @class TBaseFloatMatrix
  * @brief Abstract base class for float based matrices defining basic interface.
  *        Higher dimensional matrices stored as 1D arrays, row-major order.
+ *
+ * @details Abstract base class for float based matrices defining basic interface.
+ *          Higher dimensional matrices stored as 1D arrays, row-major order.
+ *          Implemented both on CPU and GPU side.
+ *
  */
-class TBaseFloatMatrix : public TBaseMatrix{
-    public:
+class TBaseFloatMatrix : public TBaseMatrix
+{
+  public:
+    /// Default constructor.
+    TBaseFloatMatrix() : TBaseMatrix(),
+            pTotalElementCount(0), pTotalAllocatedElementCount(0), pDimensionSizes(),
+            pDataRowSize(0), p2DDataSliceSize(0),
+            pMatrixData(NULL), pdMatrixData(NULL)
+    {
+    };
 
-        TBaseFloatMatrix(){
-            //TBaseMatrix();
-            pTotalElementCount = 0;
-            pTotalAllocatedElementCount = 0;
-            //pDimensionSizes;
-            pDataRowSize = 0;
-            p2DDataSliceSize = 0;
-            pMatrixData = NULL;
-            pdMatrixData = NULL;
+    //Destructor.
+    virtual ~TBaseFloatMatrix() {};
 
-        };
+    /// Get dimension sizes of the matrix.
+    virtual TDimensionSizes GetDimensionSizes() const
+    {
+      return pDimensionSizes;
+    }
 
-        //Get dimension sizes of the matrix
-        virtual TDimensionSizes GetDimensionSizes() const {
-            return pDimensionSizes;
-        }
+    /// Get element count of the matrix.
+    virtual size_t GetTotalElementCount() const
+    {
+      return pTotalElementCount;
+    };
 
-        //Get total element count of the matrix
-        virtual size_t GetTotalElementCount() const {
-            return pTotalElementCount;
-        };
+    /// Get total allocated element count (might differ from total element count used for the simulation because of padding).
+    virtual size_t GetTotalAllocatedElementCount() const
+    {
+      return pTotalAllocatedElementCount;
+    };
 
-        //Get total allocated element count (might differ from total element
-        //count used for the simulation because of padding).
-        virtual size_t GetTotalAllocatedElementCount() const {
-            return pTotalAllocatedElementCount;
-        };
+    /// Copy data from other matrix with the same size.
+    virtual void CopyData(const TBaseFloatMatrix & src);
 
-        //Destructor
-        virtual ~TBaseFloatMatrix() {};
+    /// Zero all elements of the matrix (NUMA first touch).
+    virtual void ZeroMatrix();
 
-        //Copy data from other matrix with the same size
-        virtual void CopyData(TBaseFloatMatrix & src);
-
-        //Get raw data out of the class (for direct kernel access).
-        virtual float* GetRawData() {
-            return pMatrixData;
-        }
-
-
-        virtual void SyncroniseToGPUDevice(){
-            CopyIn(pMatrixData);
-        }
-
-        virtual void SyncroniseToCPUHost(){
-            CopyOut(pMatrixData);
-        }
-
-        virtual void SyncroniseToCPUHost(size_t first_n_elements){
-            CopyOut(pMatrixData,first_n_elements);
-        }
+    /// Divide scalar/ matrix_element[i].
+    virtual void ScalarDividedBy(const float scalar);
 
 
+    /// Get raw CPU data out of the class (for direct CPU kernel access).
+    virtual float * GetRawData()
+    {
+      return pMatrixData;
+    }
+
+    /// Get raw CPU data out of the class (for direct CPU kernel access).
+    virtual const float * GetRawData() const
+    {
+      return pMatrixData;
+    }
+
+    /// Get raw GPU data out of the class (for direct GPU kernel access).
+    virtual float * GetRawDeviceData()
+    {
+      return pdMatrixData;
+    }
+
+    /// Get raw GPU data out of the class (for direct GPU kernel access).
+    virtual const float * GetRawDeviceData() const
+    {
+      return pdMatrixData;
+    }
+
+    /// Copy data from CPU (Host) to GPU (Device).
+    virtual void CopyToDevice();
+
+    /// Copy data from GPU (Device) to CPU (Host).
+    virtual void CopyFromDevice();
 
 
-        //Host   -> Device
-        virtual void CopyIn  (const float * HostSource);
+  protected:
 
-        //Device -> Host
-        virtual void CopyOut (float * HostDestination);
+    /// Total number of elements.
+    size_t pTotalElementCount;
+    /// Total number of allocated elements (in terms of floats).
+    size_t pTotalAllocatedElementCount;
 
-        //Device -> Host (but only the first n elements)
-        virtual void CopyOut(float* HostDestination, size_t n);
+    /// Dimension sizes.
+    struct TDimensionSizes pDimensionSizes;
 
-        //Device -> Device
-        virtual void CopyForm(const float * DeviceSource);
+    /// Size of a 1D row in X dimension.
+    size_t pDataRowSize;
+    /// Size of a 2D slab (X,Y).
+    size_t p2DDataSliceSize;
 
-        virtual float * GetRawDeviceData() {
-            //copy pMatrixData to GPU Device memory (pdMatrixData)
-            //CopyIn(pMatrixData);
-            return pdMatrixData;
-        }
+    /// Raw CPU matrix data.
+    float * pMatrixData;
 
-
-    protected:
-
-        /// Total number of elements
-        size_t pTotalElementCount;
-        /// Total number of allocated elements (the array size).
-        size_t pTotalAllocatedElementCount;
-
-        /// Dimension sizes
-        struct TDimensionSizes pDimensionSizes;
-
-        /// Size of 1D row in X dimension
-        size_t pDataRowSize;
-        /// Size of 2D slab (X,Y)
-        size_t p2DDataSliceSize;
-
-        /// Raw matrix data
-        float* pMatrixData;
-
-        /// Device matrix data
-        float* pdMatrixData;
+    /// Raw GPU matrix data.
+    float * pdMatrixData;
 
 
-        //Memory allocation
-        virtual void AllocateMemory();
+    ///Memory allocation (both on CPU and GPU).
+    virtual void AllocateMemory();
 
-        //Memory deallocation
-        virtual void FreeMemory();
+    ///Memory allocation (both on CPU and GPU).
+    virtual void FreeMemory();
 
-        //Copy constructor is not directly allowed
-        TBaseFloatMatrix(const TBaseFloatMatrix& orig);
-        //operator =  is not directly allowed
-        TBaseFloatMatrix & operator =(const TBaseFloatMatrix&);
+    /// Copy constructor is not directly allowed.
+    TBaseFloatMatrix(const TBaseFloatMatrix& src);
+    /// operator =  is not directly allowed.
+    TBaseFloatMatrix & operator =(const TBaseFloatMatrix& src);
 
-    private:
+  private:
 
 };//end of class TBaseFloatMatrix
 //----------------------------------------------------------------------------

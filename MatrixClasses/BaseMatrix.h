@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        11 July     2012, 11:34 (created) \n
- *              04 November 2014, 14:11 (revised)
+ *              12 November 2014, 13:34 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -34,59 +34,67 @@
 #ifndef BASEMATRIX_H
 #define BASEMATRIX_H
 
-#include "../Utils/DimensionSizes.h"
-#include "../HDF5/HDF5_File.h"
+#include <Utils/DimensionSizes.h>
+#include <HDF5/HDF5_File.h>
 
 /**
  * @class TBaseMatrix
  * @brief Abstract base class, the common ancestor defining the common interface
  *      and allowing derived classes to be allocated, freed and loaded from the file
- *      using the Matrix container
+ *      using the Matrix container.
  *
+ * @details Abstract base class, the common ancestor defining the common interface
+ *      and allowing derived classes to be allocated, freed and loaded from the file
+ *      using the Matrix container. In this version of the code, It allocates memory
+ *      both on the CPU and GPU side.
  */
-class TBaseMatrix {
-    public:
-        /// Default constructor
-        TBaseMatrix() {};
+class TBaseMatrix
+{
+  public:
+    /// Default constructor
+    TBaseMatrix() {};
 
-        /// Get dimension sizes of the matrix
-        virtual struct TDimensionSizes GetDimensionSizes() const  = 0;
+    /// Get dimension sizes of the matrix
+    virtual struct TDimensionSizes GetDimensionSizes() const  = 0;
 
-        /// Get total element count of the matrix
-        virtual size_t GetTotalElementCount()              const = 0;
+    /// Get total element count of the matrix
+    virtual size_t GetTotalElementCount()              const = 0;
 
-        /// Get total allocated element count (might differ from total element
-        // count used for the simulation because of padding).
-        virtual size_t GetTotalAllocatedElementCount()     const  = 0;
-
-
-        /**
-         * Read matrix from the HDF5 file
-         * @param [in] HDF5_File    - Handle to the HDF5 file
-         * @param [in] MatrixName   - HDF5 dataset name to read from
-         */
-        virtual void ReadDataFromHDF5File(THDF5_File& HDF5_File,
-                                          const char* MatrixName) {};
-
-        /**
-         * Write data into the HDF5 file
-         * @param HDF5_File         - Handle to the HDF5 file
-         * @param MatrixName        - HDF5 dataset name to write to
-         * @param CompressionLevel  - Compression level for the HDF5 dataset
-         */
-        virtual void WriteDataToHDF5File(THDF5_File& HDF5_File,
-                                         const char* MatrixName,
-                                         const int CompressionLevel) {};
+    /// Get total allocated element count (might differ from the total element count used for the simulation because of e.g. padding).
+    virtual size_t GetTotalAllocatedElementCount()     const  = 0;
 
 
-        virtual void SyncroniseToGPUDevice() {};
-        virtual void SyncroniseToCPUHost() {};
+    /**
+     * @brief   Read matrix from the HDF5 file
+     * @details Read matrix from the HDF5 file
+     * @param [in] HDF5_File  - Handle to the HDF5 file
+     * @param [in] MatrixName - HDF5 dataset name to read from
+     */
+    virtual void ReadDataFromHDF5File(THDF5_File & HDF5_File,
+                                      const char * MatrixName) {};
+
+    /**
+     * @brief   Write data into the HDF5 file
+     * @details Write data into the HDF5 file
+     * @param [in] HDF5_File        - Handle to the HDF5 file
+     * @param [in] MatrixName       - HDF5 dataset name to write to
+     * @param [in] CompressionLevel - Compression level for the HDF5 dataset
+     */
+    virtual void WriteDataToHDF5File(THDF5_File & HDF5_File,
+                                     const char * MatrixName,
+                                     const size_t CompressionLevel) {};
+
+    /// Copy data from CPU (Host) to GPU (Device)
+    virtual void CopyToDevice()   = 0;
+
+    /// Copy data from GPU (Device) to CPU (Host)
+    virtual void CopyFromDevice() = 0;
 
 
-        /// Destructor
-        virtual ~TBaseMatrix() {};
+    /// Destructor
+    virtual ~TBaseMatrix() {};
 
-    protected:
+  protected:
 
 };// end of TBaseMatrix
 

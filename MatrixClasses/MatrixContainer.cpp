@@ -204,7 +204,7 @@ void TMatrixContainer::CopyAllMatricesToGPU(){
          it != MatrixContainer.end();
          it++){
 
-        it->second.MatrixPtr->SyncroniseToGPUDevice();
+        it->second.MatrixPtr->CopyToDevice();
 
     }
 }
@@ -214,7 +214,7 @@ void TMatrixContainer::CopyAllMatricesFromGPU(){
          it != MatrixContainer.end();
          it++){
 
-        it->second.MatrixPtr->SyncroniseToCPUHost();
+        it->second.MatrixPtr->CopyFromDevice();
 
     }
 }

@@ -860,7 +860,7 @@ void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
 
 
     //if it's for the gpu build make first copy
-    Get_p().SyncroniseToGPUDevice();
+    Get_p().CopyToDevice();
 
 
 
@@ -1016,7 +1016,7 @@ void TKSpaceFirstOrder3DSolver::ZeroMatrix(TBaseFloatMatrix& matrix)
     }
 }
 
-void TKSpaceFirstOrder3DSolver::ZeroMatrix(TBaseLongMatrix& matrix)
+void TKSpaceFirstOrder3DSolver::ZeroMatrix(TBaseIndexMatrix& matrix)
 {
     size_t* matrix_data = matrix.GetRawData();
 

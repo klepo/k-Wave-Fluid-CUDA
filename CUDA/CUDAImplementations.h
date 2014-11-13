@@ -38,7 +38,7 @@
 
 #include "../MatrixClasses/RealMatrix.h"
 #include "../MatrixClasses/ComplexMatrix.h"
-#include "../MatrixClasses/LongMatrix.h"
+#include "../MatrixClasses/IndexMatrix.h"
 #include "../Utils/DimensionSizes.h"
 
 #include "MatrixClasses/CUFFTComplexMatrix.h"

@@ -41,7 +41,7 @@
 #include <stdexcept>
 
 #include "../RealMatrix.h"
-#include "../LongMatrix.h"
+#include "../IndexMatrix.h"
 #include "../../HDF5/HDF5_File.h"
 
 

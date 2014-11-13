@@ -40,7 +40,7 @@
 #include "BaseFloatMatrix.h"
 #include "RealMatrix.h"
 #include "ComplexMatrix.h"
-#include "LongMatrix.h"
+#include "IndexMatrix.h"
 #include "MatrixRecord.h"
 #include "../Utils/MatrixNames.h"
 #include "../Utils/DimensionSizes.h"

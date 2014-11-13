@@ -33,7 +33,7 @@
 
 #include <iostream>
 
-#include "../MatrixClasses/LongMatrix.h"
+#include "../MatrixClasses/IndexMatrix.h"
 #include "../Utils/ErrorMessages.h"
 
 //--------------------------------------------------------------------------//
@@ -54,7 +54,7 @@
  * @param [in] DimensionSizes - Dimension sizes
  */
 TLongMatrix::TLongMatrix(struct TDimensionSizes DimensionSizes)
-    : TBaseLongMatrix()
+    : TBaseIndexMatrix()
 {
 
     pDimensionSizes = DimensionSizes;

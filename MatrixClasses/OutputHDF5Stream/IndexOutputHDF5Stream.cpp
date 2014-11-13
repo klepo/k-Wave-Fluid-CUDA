@@ -200,7 +200,7 @@ void TIndexOutputHDF5Stream::Sample()
 {
 
 
-    SourceMatrix.SyncroniseToCPUHost();
+    SourceMatrix.CopyFromDevice();
 
 
     const float * SourceData = const_cast<const float*>(SourceMatrix.GetRawData());
@@ -270,7 +270,7 @@ void TIndexOutputHDF5Stream::Sample()
 void TIndexOutputHDF5Stream::PostProcess()
 {
 
-    SourceMatrix.SyncroniseToCPUHost();
+    SourceMatrix.CopyFromDevice();
 
 
 // run inherited method
