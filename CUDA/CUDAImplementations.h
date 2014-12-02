@@ -87,7 +87,7 @@ class CUDAImplementations{
 
         //computational functions
         void ExtractDataFromPressureMatrix(TRealMatrix& SourceMatrix,
-                                           TLongMatrix& Index,
+                                           TIndexMatrix& Index,
                                            TRealMatrix& TempBuffer);
 
         void ScalarDividedBy(TRealMatrix& matrix,
@@ -147,13 +147,13 @@ class CUDAImplementations{
                 TRealMatrix& pml);
 
         void AddTransducerSource(TRealMatrix& uxyz_sgxyz,
-                                 TLongMatrix& us_index,
-                                 TLongMatrix& delay_mask,
+                                 TIndexMatrix& us_index,
+                                 TIndexMatrix& delay_mask,
                                  TRealMatrix& transducer_signal);
 
         void Add_u_source(TRealMatrix& uxyz_sgxyz,
                           TRealMatrix& u_source_input,
-                          TLongMatrix& us_index,
+                          TIndexMatrix& us_index,
                           int t_index,
                           size_t u_source_mode,
                           size_t u_source_many);
@@ -278,7 +278,7 @@ class CUDAImplementations{
                           TRealMatrix& rhoy,
                           TRealMatrix& rhoz,
                           TRealMatrix& p_source_input,
-                          TLongMatrix& p_source_index,
+                          TIndexMatrix& p_source_index,
                           size_t p_source_many,
                           size_t p_source_mode,
                           size_t t_index);
@@ -374,11 +374,11 @@ class CUDAImplementations{
 
         void StoreSensorData_store_p_max(TRealMatrix& p,
                                          TRealMatrix& p_sensor_max,
-                                         TLongMatrix& sensor_mask_index);
+                                         TIndexMatrix& sensor_mask_index);
 
         void StoreSensorData_store_p_rms(TRealMatrix& p,
                                          TRealMatrix& p_sensor_rms,
-                                         TLongMatrix& sensor_mask_index);
+                                         TIndexMatrix& sensor_mask_index);
 
         void StoreSensorData_store_u_max(TRealMatrix& ux_sgx,
                                          TRealMatrix& uy_sgy,
@@ -386,7 +386,7 @@ class CUDAImplementations{
                                          TRealMatrix& ux_sensor_max,
                                          TRealMatrix& uy_sensor_max,
                                          TRealMatrix& uz_sensor_max,
-                                         TLongMatrix& sensor_mask_index);
+                                         TIndexMatrix& sensor_mask_index);
 
         void StoreSensorData_store_u_rms(TRealMatrix& ux_sgx,
                                          TRealMatrix& uy_sgy,
@@ -394,7 +394,7 @@ class CUDAImplementations{
                                          TRealMatrix& ux_sensor_rms,
                                          TRealMatrix& uy_sensor_rms,
                                          TRealMatrix& uz_sensor_rms,
-                                         TLongMatrix& sensor_mask_index);
+                                         TIndexMatrix& sensor_mask_index);
 
         void StoreIntensityData_first_step(const size_t sensor_size,
                                            const TDimensionSizes Dims,

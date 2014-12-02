@@ -73,7 +73,7 @@ using namespace std;
 TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File &             HDF5_File,
                                                const char *             HDF5_ObjectName,
                                                TRealMatrix &            SourceMatrix,
-                                               TLongMatrix &            SensorMask,
+                                               TIndexMatrix &            SensorMask,
                                                const TReductionOperator ReductionOp,
                                                float *                  BufferToReuse)
 : TBaseOutputHDF5Stream(HDF5_File,

@@ -1,5 +1,5 @@
 /**
- * @file        LongMatrix.h
+ * @file        IndexMatrix.h
  * @author      Jiri Jaros & Beau Johnston \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        26 July     2011, 15:16 (created) \n
- *              04 November 2014, 17:15 (revised)
+ *              13 November 2014, 15:16 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,77 +30,126 @@
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef LONGMATRIXDATA_H
-#define	LONGMATRIXDATA_H
+#ifndef INDEX_MATRIX_DATA_H
+#define	INDEX_MATRIX_DATA_H
 
-#include "../MatrixClasses/BaseIndexMatrix.h"
-#include "../Utils/DimensionSizes.h"
+#include <MatrixClasses/BaseIndexMatrix.h>
+#include <Utils/DimensionSizes.h>
 
 /**
- * @class TLongMatrix
- * @brief The class for 64b integers. It is used for index mask into
- * float matrices
+ * @class TIndexMatrix
+ * @brief The class for 64b unsigned integers (indices). It is used for
+ *  sensor_mask_index or sensor_corners_mask to get the address of sampled voxels.
+ *
+ * @details The class for 64b unsigned integers (indices). It is used for
+ *  sensor_mask_index or sensor_corners_mask to get the address of sampled voxels.
+ *  Stores data both GPU and CPU side.
+ *
  */
-class TLongMatrix : public TBaseIndexMatrix{
-    public:
+class TIndexMatrix : public TBaseIndexMatrix
+{
+  public:
+    /// Constructor allocating memory.
+    TIndexMatrix(const TDimensionSizes & DimensionSizes);
 
-        /// Constructor
-        TLongMatrix(struct TDimensionSizes DimensionSizes);
+    /// Destructor
+    virtual ~TIndexMatrix()
+    {
+      FreeMemory();
+    };
 
-        /// Destructor
-        virtual ~TLongMatrix() { FreeMemory(); };
+    /// Read data from the HDF5 file.
+    virtual void ReadDataFromHDF5File(THDF5_File& HDF5_File,
+                                      const char* MatrixName);
+    /// Write data into the HDF5 file.
+    virtual void WriteDataToHDF5File(THDF5_File& HDF5_File,
+                                     const char* MatrixName,
+                                     const size_t CompressionLevel);
 
-        /// Read data from the HDF5 file
-        virtual void ReadDataFromHDF5File(THDF5_File& HDF5_File,
-                                          const char* MatrixName);
-        /// Write data into the HDF5 file
-        virtual void WriteDataToHDF5File(THDF5_File& HDF5_File,
-                                         const char* MatrixName,
-                                         const int CompressionLevel);
+   /**
+     * Operator [].
+     * @param [in] index - 1D index into the matrix
+     * @return Value of the index
+     */
+    size_t& operator [](const size_t& index)
+    {
+      return pMatrixData[index];
+    };
 
-        /**
-         * Operator []
-         * @param index - 1D index into the matrix
-         * @return  Value of the index
-         */
-        size_t& operator [](const size_t& index)
-        {
-            return pMatrixData[index];
-        };
+    /**
+     * Operator [], constant version
+     * @param [in] index - 1D index into the matrix
+     * @return Value of the index
+     */
+    const size_t & operator [](const size_t& index) const
+    {
+      return pMatrixData[index];
+    };
 
-        /**
-         * Get element form the 3D matrix
-         * @param X - X dimension
-         * @param Y - Y dimension
-         * @param Z - Z dimension
-         * @return an alement
-         */
-        inline size_t&  GetElementFrom3D(const size_t X,
-                                       const size_t Y,
-                                       const size_t Z)
-        {
-            return pMatrixData[Z * p2DDataSliceSize + Y * pDataRowSize +  X];
-        };
+    /**
+     * @brief Get the top left corner of the index-th cuboid.
+     * @details Get the top left corner of the index-th cuboid. Cuboids are
+     *          stored as 6-tuples (two 3D coordinates).
+     *          This gives the first three coordinates
+     * @param [in] index - Id of the corner
+     * @return the top left corner
+     */
+    TDimensionSizes GetTopLeftCorner(const size_t& index) const
+    {
+      size_t X =  pMatrixData[6 * index   ];
+      size_t Y =  pMatrixData[6 * index +1];
+      size_t Z =  pMatrixData[6 * index +2];
 
-        ///  Recompute indices MATALAB->C++
-        void RecomputeIndices();
+      return TDimensionSizes(X, Y, Z);
+    };
 
-    protected:
-        /// Default constructor not allowed for public
-        TLongMatrix()  : TBaseIndexMatrix() {};
+    /**
+     * @brief   Get the bottom right corner of the index-th cuboid
+     * @details Get the top bottom right of the index-th cuboid. Cuboids are
+     *          stored as 6-tuples (two 3D coordinates).
+     *          This gives the first three coordinates.
+     *          This routine works only on the CPU side.
+     * @param [in] index -Id of the corner
+     * @return the bottom right corner
+     */
+    TDimensionSizes GetBottomRightCorner(const size_t & index) const
+    {
+      size_t X =  pMatrixData[6 * index + 3];
+      size_t Y =  pMatrixData[6 * index + 4];
+      size_t Z =  pMatrixData[6 * index + 5];
 
-        /// Copy constructor not allowed for public
-        TLongMatrix(const TLongMatrix& orig);
+      return TDimensionSizes(X, Y, Z);
+    };
 
-    private:
-        /// Number of elements to get 4MB block of data
-        static const size_t ChunkSize_1D_4MB   = 1048576; //(4MB)
-        /// Number of elements to get 1MB block of data
-        static const size_t ChunkSize_1D_1MB   =  262144; //(1MB)
-        /// Number of elements to get 256KB block of data
-        static const size_t ChunkSize_1D_256KB =   65536; //(256KB)
+    ///  Recompute indices MATALAB->C++.
+    void RecomputeIndicesToCPP();
 
-};// end of TLongMatrixData
+    ///  Recompute indices C++ -> MATLAB.
+    void RecomputeIndicesToMatlab();
+
+    /// Get the total number of elements to be sampled within all cuboids.
+    size_t GetTotalNumberOfElementsInAllCuboids() const;
+
+
+  protected:
+    /// Default constructor not allowed for public.
+    TIndexMatrix() {};
+
+    /// Copy constructor not allowed for public.
+    TIndexMatrix(const TIndexMatrix& src);
+
+    /// Operator =  not allowed for public.
+    TIndexMatrix& operator = (const TIndexMatrix& src);
+
+  private:
+    /// Number of elements to get 4MB block of data.
+    static const size_t ChunkSize_1D_4MB   = 1048576; //(4MB)
+    /// Number of elements to get 1MB block of data.
+    static const size_t ChunkSize_1D_1MB   =  262144; //(1MB)
+    /// Number of elements to get 256KB block of data.
+    static const size_t ChunkSize_1D_256KB =   65536; //(256KB)
+
+};// end of TIndexMatrixData
 //------------------------------------------------------------------------------
-#endif /* LONGMATRIXDATA_H */
+#endif /* INDEX_MATRIX_DATA_H */
 

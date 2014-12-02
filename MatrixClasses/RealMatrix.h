@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        11 July      2011, 10:30 (created) \n
- *              04 November  2014, 13:45 (revised)
+ *              13 November  2014, 15:23 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,84 +30,108 @@
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef REALMATRIXDATA_H
-#define REALMATRIXDATA_H
+#ifndef REAL_MATRIX_DATA_H
+#define REAL_MATRIX_DATA_H
 
-#include "../MatrixClasses/BaseFloatMatrix.h"
-#include "../MatrixClasses/IndexMatrix.h"
+#include <MatrixClasses/BaseFloatMatrix.h>
+#include <MatrixClasses/IndexMatrix.h>
 
-#include "../Utils/DimensionSizes.h"
+#include <Utils/DimensionSizes.h>
 
+// Forward declaration
 class TComplexMatrix;
 
 /**
  * @class TRealMatrix
  * @brief The class for real matrices
+ * @details The class for real matrices (floats) on both CPU and GPU side
  */
-class TRealMatrix : public TBaseFloatMatrix{
-    public:
+class TRealMatrix : public TBaseFloatMatrix
+{
+  public:
 
-        /// Constructor
-        TRealMatrix(struct TDimensionSizes DimensionSizes);
+    /// Constructor
+    TRealMatrix(const TDimensionSizes & DimensionSizes);
 
-        /// Destructor
-        virtual ~TRealMatrix() { FreeMemory(); };
+    /// Destructor.
+    virtual ~TRealMatrix()
+    {
+      FreeMemory();
+    };
 
-        /// Read data from the HDF5 file
-        virtual void ReadDataFromHDF5File(THDF5_File& HDF5_File,
-                                          const char* MatrixName);
 
-        /// Write data into the HDF5 file
-        virtual void WriteDataToHDF5File(THDF5_File& HDF5_File,
-                                         const char* MatrixName,
-                                         const int CompressionLevel);
+    /// Read data from the HDF5 file - only from the root group.
+    virtual void ReadDataFromHDF5File(THDF5_File & HDF5_File,
+                                      const char * MatrixName);
 
-        /**
-         * @brief operator []
-         * @param index - 1D index
-         * @return an element
-         */
-        float& operator [](const size_t& index) {
-            return pMatrixData[index];
-        };
+    /// Write data into the HDF5 file.
+    virtual void WriteDataToHDF5File(THDF5_File & HDF5_File,
+                                     const char * MatrixName,
+                                     const size_t CompressionLevel);
 
-        /**
-         * @brief Get element from 3D matrix
-         * @param X - X dimension
-         * @param Y - Y dimension
-         * @param Z - Z dimension
-         * @return  an element
-         */
-        inline float&  GetElementFrom3D(const size_t X,
-                                        const size_t Y,
-                                        const size_t Z)
-        {
-            return pMatrixData[Z * p2DDataSliceSize + Y * pDataRowSize +  X];
-        };
 
-    protected:
+ /**
+     * @brief operator [].
+     * @details operator [].
+     * @param [in] index - 1D index
+     * @return an element
+     */
+    float& operator [](const size_t& index)
+    {
+      return pMatrixData[index];
+    };
 
-        /// Init dimension
-        virtual void InitDimensions(struct TDimensionSizes DimensionSizes);
 
-        /// Default constructor is not allowed for public
-        TRealMatrix() : TBaseFloatMatrix() {};
+    /**
+     * @brief operator [], constant version.
+     * @details operator [], constant version.
+     * @param [in] index - 1D index
+     * @return an element
+     */
+    const float& operator [](const size_t& index) const
+    {
+      return pMatrixData[index];
+    };
 
-        /// Copy constructor not allowed for public
-        TRealMatrix(const TRealMatrix& orig);
+    /**
+     * @brief Get element from 3D matrix.
+     * @details Get element from 3D matrix.
+     * @param [in] X - X dimension
+     * @param [in] Y - Y dimension
+     * @param [in] Z - Z dimension
+     * @return  an element
+     */
+    float& GetElementFrom3D(const size_t X, const size_t Y, const size_t Z)
+    {
+      return pMatrixData[Z * p2DDataSliceSize + Y * pDataRowSize +  X];
+    };
 
-    private:
-        /// Number of elements to get 4MB block of data
-        static const size_t ChunkSize_1D_4MB   = 1048576; //(4MB)
-        /// Number of elements to get 1MB block of data
-        static const size_t ChunkSize_1D_1MB   =  262144; //(1MB)
-        /// Number of elements to get 256KB block of data
-        static const size_t ChunkSize_1D_256KB =   65536; //(256KB)
+
+    /// Default constructor is not allowed for public.
+    TRealMatrix() : TBaseFloatMatrix() {};
+
+    /// Copy constructor not allowed for public.
+    TRealMatrix(const TRealMatrix& src);
+
+    /// Operator = is not allowed for public.
+    TRealMatrix& operator = (const TRealMatrix& src);
+
+    /// Init dimension.
+    virtual void InitDimensions(const TDimensionSizes & DimensionSizes);
+
+private:
+
+   /// Number of elements to get 4MB block of data.
+   static const size_t ChunkSize_1D_4MB   = 1048576; //(4MB)
+   /// Number of elements to get 1MB block of data.
+   static const size_t ChunkSize_1D_1MB   =  262144; //(1MB)
+   /// Number of elements to get 256KB block of data.
+   static const size_t ChunkSize_1D_256KB =   65536; //(256KB)
 
 };// end of class TRealMatrix
 //----------------------------------------------------------------------------
 
-#endif	/* REALMATRIXDATA_H */
+#endif	/* REAL_MATRIX_DATA_H */
 
 
 

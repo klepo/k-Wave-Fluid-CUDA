@@ -121,7 +121,7 @@ __global__ void CUDAExtractDataFromPressureMatrix(const float*  p_matrix,
 
 void CUDAImplementations::ExtractDataFromPressureMatrix(
         TRealMatrix& SourceMatrix,
-        TLongMatrix& Index,
+        TIndexMatrix& Index,
         TRealMatrix& TempBuffer)
 {
     const float*  p_matrix = SourceMatrix.GetRawDeviceData();
@@ -839,8 +839,8 @@ __global__ void CudaAddTransducerSource(const size_t us_index_size,
 }
 
 void CUDAImplementations::AddTransducerSource(TRealMatrix& uxyz_sgxyz,
-                                              TLongMatrix& us_index,
-                                              TLongMatrix& delay_mask,
+                                              TIndexMatrix& us_index,
+                                              TIndexMatrix& delay_mask,
                                               TRealMatrix& transducer_signal)
 {
 
@@ -903,7 +903,7 @@ __global__ void CudaAdd_u_source(float* matrix_data,
 
 void CUDAImplementations::Add_u_source(TRealMatrix& uxyz_sgxyz,
                                        TRealMatrix& u_source_input,
-                                       TLongMatrix& us_index,
+                                       TIndexMatrix& us_index,
                                        int t_index,
                                        size_t u_source_mode,
                                        size_t u_source_many)
@@ -954,7 +954,7 @@ void CUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2(
         TCUFFTComplexMatrix& FFT)
 {
 
-    FFT.Compute_iFFT_3D_C2R(uxyz_sgxyz);
+    FFT.Compute_FFT_3D_C2R(uxyz_sgxyz);
 
     float * matrix_data = uxyz_sgxyz.GetRawDeviceData();
     float * dt_rho0_sg_data = dt_rho0_sg.GetRawDeviceData();
@@ -992,7 +992,7 @@ void CUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2(
         float dt_rho_0_sg,
         TCUFFTComplexMatrix& FFT)
 {
-    FFT.Compute_iFFT_3D_C2R(uxyz_sgxyz);
+    FFT.Compute_FFT_3D_C2R(uxyz_sgxyz);
 
     float* matrix_data = uxyz_sgxyz.GetRawDeviceData();
     float dt_rho0_sg_data = dt_rho_0_sg;
@@ -1048,7 +1048,7 @@ void CUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x(
         TRealMatrix& dxudxn_sgx,
         TCUFFTComplexMatrix& FFT)
 {
-    FFT.Compute_iFFT_3D_C2R(uxyz_sgxyz);
+    FFT.Compute_FFT_3D_C2R(uxyz_sgxyz);
 
     float* matrix_data = uxyz_sgxyz.GetRawDeviceData();
     float  dt_rho0_sgx_data = dt_rho_0_sgx;
@@ -1114,7 +1114,7 @@ void CUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y(
         TRealMatrix& dyudyn_sgy,
         TCUFFTComplexMatrix& FFT)
 {
-    FFT.Compute_iFFT_3D_C2R(uxyz_sgxyz);
+    FFT.Compute_FFT_3D_C2R(uxyz_sgxyz);
 
     float * matrix_data = uxyz_sgxyz.GetRawDeviceData();
     float dt_rho0_sgy_data = dt_rho_0_sgy;
@@ -1179,7 +1179,7 @@ void CUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z(T
         TRealMatrix& dzudzn_sgz,
         TCUFFTComplexMatrix& FFT)
 {
-    FFT.Compute_iFFT_3D_C2R(uxyz_sgxyz);
+    FFT.Compute_FFT_3D_C2R(uxyz_sgxyz);
 
     float * matrix_data = uxyz_sgxyz.GetRawDeviceData();
     float dt_rho0_sgz_data = dt_rho_0_sgz;
@@ -2072,7 +2072,7 @@ void CUDAImplementations::Add_p_source(TRealMatrix& rhox,
         TRealMatrix& rhoy,
         TRealMatrix& rhoz,
         TRealMatrix& p_source_input,
-        TLongMatrix& p_source_index,
+        TIndexMatrix& p_source_index,
         size_t p_source_many,
         size_t p_source_mode,
         size_t t_index)
@@ -2697,7 +2697,7 @@ __global__ void CudaStoreSensorData_store_p_max(const float* p_data,
 
 void CUDAImplementations::StoreSensorData_store_p_max(TRealMatrix& p,
         TRealMatrix& p_sensor_max,
-        TLongMatrix& sensor_mask_index
+        TIndexMatrix& sensor_mask_index
         )
 {
     const float* p_data = p.GetRawDeviceData();
@@ -2729,7 +2729,7 @@ __global__ void CudaStoreSensorData_store_p_rms(const float* p_data,
 
 void CUDAImplementations::StoreSensorData_store_p_rms(TRealMatrix& p,
         TRealMatrix& p_sensor_rms,
-        TLongMatrix& sensor_mask_index
+        TIndexMatrix& sensor_mask_index
         )
 {
     const float* p_data = p.GetRawDeviceData();
@@ -2771,7 +2771,7 @@ void CUDAImplementations::StoreSensorData_store_u_max(TRealMatrix& ux_sgx,
         TRealMatrix& ux_sensor_max,
         TRealMatrix& uy_sensor_max,
         TRealMatrix& uz_sensor_max,
-        TLongMatrix& sensor_mask_index
+        TIndexMatrix& sensor_mask_index
         )
 {
     const float* ux = ux_sgx.GetRawDeviceData();
@@ -2821,7 +2821,7 @@ void CUDAImplementations::StoreSensorData_store_u_rms(TRealMatrix& ux_sgx,
         TRealMatrix& ux_sensor_rms,
         TRealMatrix& uy_sensor_rms,
         TRealMatrix& uz_sensor_rms,
-        TLongMatrix& sensor_mask_index
+        TIndexMatrix& sensor_mask_index
         )
 {
     const float* ux = ux_sgx.GetRawDeviceData();

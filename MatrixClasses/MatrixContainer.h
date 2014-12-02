@@ -47,7 +47,7 @@
 
 
 
-#include "../CUDA/MatrixClasses/CUFFTComplexMatrix.h"
+#include <MatrixClasses/CUFFTComplexMatrix.h>
 
 
 /**
@@ -254,9 +254,9 @@ class TMatrixContainer {
          * @param [in] MatrixID - Matrix identifier
          * @return LongMatrix
          */
-        inline TLongMatrix& GetLongMatrix (const TMatrixID MatrixID)
+        inline TIndexMatrix& GetLongMatrix (const TMatrixID MatrixID)
         {
-            return static_cast<TLongMatrix&>(*(MatrixContainer[MatrixID].MatrixPtr));
+            return static_cast<TIndexMatrix&>(*(MatrixContainer[MatrixID].MatrixPtr));
         };
 
         size_t GetSpeculatedMemoryFootprintInMegabytes();

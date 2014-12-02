@@ -202,7 +202,7 @@ protected:
     void ScalarDividedBy(TRealMatrix&, const float);
     void ZeroMatrix(TBaseFloatMatrix&);
     void ZeroMatrix(TBaseIndexMatrix&);
-    void RecomputeIndices(TLongMatrix&);
+    void RecomputeIndices(TIndexMatrix&);
     /*
      * End of duplicate kernels
      */
@@ -505,7 +505,7 @@ protected:
     //-- Index matrices --//
 
     /// Get the sensor_mask_index matrix from the container
-    TLongMatrix& Get_sensor_mask_index()
+    TIndexMatrix& Get_sensor_mask_index()
     {
       return MatrixContainer.GetLongMatrix(sensor_mask_index);
     };
@@ -518,17 +518,17 @@ protected:
     };
     */
     /// Get the u_source_index matrix from the container
-    TLongMatrix& Get_u_source_index()
+    TIndexMatrix& Get_u_source_index()
     {
       return MatrixContainer.GetLongMatrix(u_source_index);
     };
     /// Get the p_source_index matrix from the container
-    TLongMatrix& Get_p_source_index()
+    TIndexMatrix& Get_p_source_index()
     {
       return MatrixContainer.GetLongMatrix(p_source_index);
     };
     /// Get the delay_mask matrix from the container
-    TLongMatrix& Get_delay_mask()
+    TIndexMatrix& Get_delay_mask()
     {
       return MatrixContainer.GetLongMatrix(delay_mask);
     }

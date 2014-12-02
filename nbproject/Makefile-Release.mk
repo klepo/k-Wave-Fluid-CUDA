@@ -37,13 +37,13 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/CUDA/CUDAImplementations.o \
 	${OBJECTDIR}/CUDA/CUDATuner.o \
-	${OBJECTDIR}/CUDA/MatrixClasses/CUFFTComplexMatrix.o \
 	${OBJECTDIR}/HDF5/HDF5_File.o \
 	${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o \
 	${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o \
-	${OBJECTDIR}/MatrixClasses/BaseLongMatrix.o \
+	${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o \
+	${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/ComplexMatrix.o \
-	${OBJECTDIR}/MatrixClasses/LongMatrix.o \
+	${OBJECTDIR}/MatrixClasses/IndexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/MatrixContainer.o \
 	${OBJECTDIR}/MatrixClasses/MatrixRecord.o \
 	${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.o \
@@ -90,11 +90,6 @@ ${OBJECTDIR}/CUDA/CUDATuner.o: CUDA/CUDATuner.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CUDA/CUDATuner.o CUDA/CUDATuner.cpp
 
-${OBJECTDIR}/CUDA/MatrixClasses/CUFFTComplexMatrix.o: CUDA/MatrixClasses/CUFFTComplexMatrix.cpp 
-	${MKDIR} -p ${OBJECTDIR}/CUDA/MatrixClasses
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CUDA/MatrixClasses/CUFFTComplexMatrix.o CUDA/MatrixClasses/CUFFTComplexMatrix.cpp
-
 ${OBJECTDIR}/HDF5/HDF5_File.o: HDF5/HDF5_File.cpp 
 	${MKDIR} -p ${OBJECTDIR}/HDF5
 	${RM} "$@.d"
@@ -110,20 +105,25 @@ ${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o: MatrixClasses/BaseFloatMatrix.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o MatrixClasses/BaseFloatMatrix.cpp
 
-${OBJECTDIR}/MatrixClasses/BaseLongMatrix.o: MatrixClasses/BaseLongMatrix.cpp 
+${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o: MatrixClasses/BaseIndexMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/BaseLongMatrix.o MatrixClasses/BaseLongMatrix.cpp
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o MatrixClasses/BaseIndexMatrix.cpp
+
+${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o: MatrixClasses/CUFFTComplexMatrix.cpp 
+	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o MatrixClasses/CUFFTComplexMatrix.cpp
 
 ${OBJECTDIR}/MatrixClasses/ComplexMatrix.o: MatrixClasses/ComplexMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/ComplexMatrix.o MatrixClasses/ComplexMatrix.cpp
 
-${OBJECTDIR}/MatrixClasses/LongMatrix.o: MatrixClasses/LongMatrix.cpp 
+${OBJECTDIR}/MatrixClasses/IndexMatrix.o: MatrixClasses/IndexMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/LongMatrix.o MatrixClasses/LongMatrix.cpp
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/IndexMatrix.o MatrixClasses/IndexMatrix.cpp
 
 ${OBJECTDIR}/MatrixClasses/MatrixContainer.o: MatrixClasses/MatrixContainer.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses

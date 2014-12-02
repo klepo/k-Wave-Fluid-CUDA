@@ -50,7 +50,7 @@ class TIndexOutputHDF5Stream : public TBaseOutputHDF5Stream
     TIndexOutputHDF5Stream(THDF5_File &             HDF5_File,
                            const char *             HDF5_ObjectName,
                            TRealMatrix &      SourceMatrix,
-                           TLongMatrix &      SensorMask,
+                           TIndexMatrix &      SensorMask,
                            const TReductionOperator ReductionOp,
                            float *                  BufferToReuse = NULL);
 
@@ -82,7 +82,7 @@ class TIndexOutputHDF5Stream : public TBaseOutputHDF5Stream
     virtual void FlushBufferToFile();
 
     /// Sensor mask to sample data
-    TLongMatrix & SensorMask;
+    TIndexMatrix & SensorMask;
     /// Handle to a HDF5 dataset
     hid_t               HDF5_DatasetId;
 

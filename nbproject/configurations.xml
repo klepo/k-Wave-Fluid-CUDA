@@ -2,12 +2,6 @@
 <configurationDescriptor version="95">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="CUDA" displayName="CUDA" projectFiles="true">
-      <logicalFolder name="MatrixClasses"
-                     displayName="MatrixClasses"
-                     projectFiles="true">
-        <itemPath>CUDA/MatrixClasses/CUFFTComplexMatrix.cpp</itemPath>
-        <itemPath>CUDA/MatrixClasses/CUFFTComplexMatrix.h</itemPath>
-      </logicalFolder>
       <itemPath>CUDA/CUDAImplementations.cu</itemPath>
       <itemPath>CUDA/CUDAImplementations.h</itemPath>
       <itemPath>CUDA/CUDATuner.cpp</itemPath>
@@ -42,13 +36,15 @@
       </logicalFolder>
       <itemPath>MatrixClasses/BaseFloatMatrix.cpp</itemPath>
       <itemPath>MatrixClasses/BaseFloatMatrix.h</itemPath>
-      <itemPath>MatrixClasses/BaseLongMatrix.cpp</itemPath>
-      <itemPath>MatrixClasses/BaseLongMatrix.h</itemPath>
+      <itemPath>MatrixClasses/BaseIndexMatrix.cpp</itemPath>
+      <itemPath>MatrixClasses/BaseIndexMatrix.h</itemPath>
       <itemPath>MatrixClasses/BaseMatrix.h</itemPath>
+      <itemPath>MatrixClasses/CUFFTComplexMatrix.cpp</itemPath>
+      <itemPath>MatrixClasses/CUFFTComplexMatrix.h</itemPath>
       <itemPath>MatrixClasses/ComplexMatrix.cpp</itemPath>
       <itemPath>MatrixClasses/ComplexMatrix.h</itemPath>
-      <itemPath>MatrixClasses/LongMatrix.cpp</itemPath>
-      <itemPath>MatrixClasses/LongMatrix.h</itemPath>
+      <itemPath>MatrixClasses/IndexMatrix.cpp</itemPath>
+      <itemPath>MatrixClasses/IndexMatrix.h</itemPath>
       <itemPath>MatrixClasses/MatrixContainer.cpp</itemPath>
       <itemPath>MatrixClasses/MatrixContainer.h</itemPath>
       <itemPath>MatrixClasses/MatrixRecord.cpp</itemPath>
@@ -109,11 +105,13 @@
       </toolsSet>
       <compileType>
         <ccTool>
+          <developmentMode>6</developmentMode>
+          <standard>8</standard>
           <incDir>
             <pElem>./</pElem>
             <pElem>/usr/local/hdf5-serial/include</pElem>
           </incDir>
-          <commandLine>-Xcompiler="-fopenmp"</commandLine>
+          <commandLine>-Xcompiler="-fopenmp -mavx"</commandLine>
         </ccTool>
         <linkerTool>
           <linkerAddLib>
@@ -136,16 +134,6 @@
       </item>
       <item path="CUDA/CUDATuner.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="CUDA/MatrixClasses/CUFFTComplexMatrix.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="CUDA/MatrixClasses/CUFFTComplexMatrix.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
@@ -164,19 +152,26 @@
       </item>
       <item path="MatrixClasses/BaseFloatMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="MatrixClasses/BaseLongMatrix.cpp" ex="false" tool="1" flavor2="0">
+      <item path="MatrixClasses/BaseIndexMatrix.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="MatrixClasses/BaseLongMatrix.h" ex="false" tool="3" flavor2="0">
+      <item path="MatrixClasses/BaseIndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/CUFFTComplexMatrix.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/CUFFTComplexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/ComplexMatrix.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="MatrixClasses/ComplexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="MatrixClasses/LongMatrix.cpp" ex="false" tool="1" flavor2="0">
+      <item path="MatrixClasses/IndexMatrix.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="MatrixClasses/LongMatrix.h" ex="false" tool="3" flavor2="0">
+      <item path="MatrixClasses/IndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -280,16 +275,6 @@
       </item>
       <item path="CUDA/CUDATuner.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="CUDA/MatrixClasses/CUFFTComplexMatrix.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="CUDA/MatrixClasses/CUFFTComplexMatrix.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
@@ -308,19 +293,26 @@
       </item>
       <item path="MatrixClasses/BaseFloatMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="MatrixClasses/BaseLongMatrix.cpp" ex="false" tool="1" flavor2="0">
+      <item path="MatrixClasses/BaseIndexMatrix.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="MatrixClasses/BaseLongMatrix.h" ex="false" tool="3" flavor2="0">
+      <item path="MatrixClasses/BaseIndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MatrixClasses/CUFFTComplexMatrix.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/CUFFTComplexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/ComplexMatrix.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="MatrixClasses/ComplexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="MatrixClasses/LongMatrix.cpp" ex="false" tool="1" flavor2="0">
+      <item path="MatrixClasses/IndexMatrix.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="MatrixClasses/LongMatrix.h" ex="false" tool="3" flavor2="0">
+      <item path="MatrixClasses/IndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
       </item>

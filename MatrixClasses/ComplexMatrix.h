@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        11 July     2011, 14:02 (created) \n
- *              04 November 2014, 17:14 (revised)
+ *              13 November 2014, 15:47 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -33,93 +33,109 @@
 #ifndef COMPLEXMATRIXDATA_H
 #define	COMPLEXMATRIXDATA_H
 
-#include "../MatrixClasses/BaseFloatMatrix.h"
-#include "../MatrixClasses/RealMatrix.h"
+#include <MatrixClasses/BaseFloatMatrix.h>
+#include <MatrixClasses/RealMatrix.h>
 
-#include "../Utils/DimensionSizes.h"
+#include <Utils/DimensionSizes.h>
 
 
 using namespace std;
 
 
-
-
 /**
- * @struct TFloat_complex
- * @brief  struct for complex values
+ * @struct TFloatComplex
+ * @brief  Structure for complex values
+ * @todo:  Change to classic C++ complex (better support of vectorisation)
  */
-struct TFloat_complex{
-    /// real part
-    float real;
-    /// imaginary part
-    float imag;
-};
-
-struct float_complex{
-	float real;
-	float imag;
-};
+struct TFloatComplex
+{
+  /// real part
+  float real;
+  /// imaginary part
+  float imag;
+};//TFloatComplex
 //------------------------------------------------------------------------------
 
 
 /**
- * @class TComplexMatrix
- * @brief The class for complex matrices
+ * @class   TComplexMatrix
+ * @brief   The class for complex matrices.
+ * @details The class for complex matrices.
  */
-class TComplexMatrix : public TBaseFloatMatrix {
-public:
+class TComplexMatrix : public TBaseFloatMatrix
+{
+  public:
 
-    /// Constructor
-    TComplexMatrix(struct TDimensionSizes DimensionSizes);
+    /// Constructor.
+    TComplexMatrix(const TDimensionSizes & DimensionSizes);
 
-    /// Destructor
-    virtual ~TComplexMatrix() { FreeMemory(); };
+    /// Destructor.
+    virtual ~TComplexMatrix()
+    {
+      FreeMemory();
+    };
 
+
+    /* @brief   operator [].
+     * @details operator [].
+     * @param [in] index - 1D index into the array
+     * @return           - element of the matrix
+     */
+    inline TFloatComplex& operator [](const size_t& index)
+    {
+      return ((TFloatComplex *) pMatrixData)[index];
+    };
 
     /**
-     * @brief operator []
-     * @param index     - 1D index into the array
-     * @return          - element of the matrix
+     * @brief   operator [], constant version.
+     * @details operator [], constant version.
+     * @param [in] index - 1D index into the array
+     * @return element of the matrix
      */
-    inline TFloat_complex& operator [](const size_t& index) {
-        return ((TFloat_complex *) pMatrixData)[index];
+    inline const TFloatComplex& operator [](const size_t& index) const
+    {
+      return ((TFloatComplex *) pMatrixData)[index];
     };
 
 
     /**
-     * @brief Get element from 3D matrix
-     * @param X - X dimension
-     * @param Y - Y dimension
-     * @param Z - Z dimension
+     * @brief   Get element from 3D matrix.
+     * @details Get element from 3D matrix.
+     * @param [in] X - X dimension
+     * @param [in] Y - Y dimension
+     * @param [in] Z - Z dimension
      * @return a complex element of the class
      */
-    inline const  TFloat_complex& GetElementFrom3D(const size_t X, const size_t Y, const size_t Z){
-
-        return ((TFloat_complex *) pMatrixData)[Z * (p2DDataSliceSize>>1) + Y * (pDataRowSize>>1) + X];
-
+    inline  TFloatComplex& GetElementFrom3D(const size_t X,
+                                            const size_t Y,
+                                            const size_t Z)
+    {
+      return ((TFloatComplex *) pMatrixData)[Z * (p2DDataSliceSize>>1) + Y * (pDataRowSize>>1) + X];
     };
 
 
-    /// Load data from the HDF5_File
-    virtual void ReadDataFromHDF5File(THDF5_File & HDF5_File, const char * MatrixName);
+    /// Load data from the HDF5_File.
+    virtual void ReadDataFromHDF5File(THDF5_File & HDF5_File,
+                                      const char * MatrixName);
 
     /// Write data into the HDF5_File
-    virtual void WriteDataToHDF5File(THDF5_File & HDF5_File, const char * MatrixName, const int CompressionLevel);
-
-
+    virtual void WriteDataToHDF5File(THDF5_File & HDF5_File,
+                                     const char * MatrixName,
+                                     const size_t CompressionLevel);
 
 
 protected:
-    /// Default constructor not allowed for public
+    /// Default constructor not allowed for public.
     TComplexMatrix() : TBaseFloatMatrix() {};
 
+    /// Copy constructor not allowed for public.
+    TComplexMatrix(const TComplexMatrix& src);
 
-    /// Copy constructor not allowed for public
-    TComplexMatrix(const TComplexMatrix& orig);
+    /// Operator not allowed for public.
+    TComplexMatrix& operator = (const TComplexMatrix& src);
 
-    /// Initialize dimension sizes and related structures
-    virtual void InitDimensions(struct TDimensionSizes DimensionSizes);
-
+    /// Initialize dimension sizes and related structures.
+    virtual void InitDimensions(const TDimensionSizes& DimensionSizes);
 
 private:
 

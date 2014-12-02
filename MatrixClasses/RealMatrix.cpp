@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        11 July      2011, 10:30 (created) \n
- *              04 November  2014, 17:20 (revised)
+ *              13 November  2014, 15:23 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -33,145 +33,155 @@
 #include <iostream>
 #include <string.h>
 
-#include "../MatrixClasses/RealMatrix.h"
-#include "../MatrixClasses/ComplexMatrix.h"
+#include <MatrixClasses/RealMatrix.h>
+#include <MatrixClasses/ComplexMatrix.h>
 
-#include "../Utils/ErrorMessages.h"
-//--------------------------------------------------------------------------//
-//                            Constants                                     //
-//--------------------------------------------------------------------------//
+#include <Utils/ErrorMessages.h>
+//----------------------------------------------------------------------------//
+//                              Constants                                     //
+//----------------------------------------------------------------------------//
 
-//--------------------------------------------------------------------------//
-//                            Definitions                                   //
-//--------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//                              Definitions                                   //
+//----------------------------------------------------------------------------//
 
-//--------------------------------------------------------------------------//
-//                            Implementation                                //
-//                            public methods                                //
-//--------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//                              Implementation                                //
+//                              public methods                                //
+//----------------------------------------------------------------------------//
 
 /**
- * Constructor
+ * Constructor.
  * @param [in] DimensionSizes - Dimension sizes
  */
-TRealMatrix::TRealMatrix(struct TDimensionSizes DimensionSizes)
-    : TBaseFloatMatrix()
+TRealMatrix::TRealMatrix(const TDimensionSizes & DimensionSizes)
+                    : TBaseFloatMatrix()
 {
-    InitDimensions (DimensionSizes);
-    AllocateMemory();
+  InitDimensions(DimensionSizes);
+
+  AllocateMemory();
 }// end of TRealMatrixData
-//---------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
 
 /**
- * Read data data from HDF5 file
- * @throw ios::failure if error occurred
+ * Read data data from HDF5 file (only from the root group).
  *
- * @param [in] HDF5_File - HDF5 file
- * @param [in] MatrixName  - HDF5 dataset name
+ * @param [in] HDF5_File  - HDF5 file
+ * @param [in] MatrixName - HDF5 dataset name
+ *
+ * @throw ios::failure if error occurred.
  */
 void TRealMatrix::ReadDataFromHDF5File(THDF5_File & HDF5_File,
                                        const char * MatrixName)
 {
-    // test matrix datatype
-    if (HDF5_File.ReadMatrixDataType(HDF5_File.GetRootGroup(),MatrixName) !=
-            THDF5_File::hdf5_mdt_float){
-        char ErrorMessage[256];
-        sprintf(ErrorMessage,Matrix_ERR_FMT_MatrixNotFloat,MatrixName);
-        throw ios::failure(ErrorMessage);
-    }
+  // test matrix datatype
+  if (HDF5_File.ReadMatrixDataType(HDF5_File.GetRootGroup(), MatrixName) != THDF5_File::hdf5_mdt_float)
+  {
+    char ErrorMessage[256];
+    sprintf(ErrorMessage, Matrix_ERR_FMT_MatrixNotFloat, MatrixName);
+    throw ios::failure(ErrorMessage);
+  }
 
-    if (HDF5_File.ReadMatrixDomainType(HDF5_File.GetRootGroup(),MatrixName) !=
-            THDF5_File::hdf5_mdt_real){
-        char ErrorMessage[256];
-        sprintf(ErrorMessage,Matrix_ERR_FMT_MatrixNotReal,MatrixName);
-        throw ios::failure(ErrorMessage);
-    }
 
-    // Read matrix
-    HDF5_File.ReadCompleteDataset(HDF5_File.GetRootGroup(),
-                                  MatrixName,
-                                  pDimensionSizes,
-                                  pMatrixData);
+  if (HDF5_File.ReadMatrixDomainType(HDF5_File.GetRootGroup(), MatrixName) != THDF5_File::hdf5_mdt_real)
+  {
+    char ErrorMessage[256];
+    sprintf(ErrorMessage, Matrix_ERR_FMT_MatrixNotReal, MatrixName);
+    throw ios::failure(ErrorMessage);
+  }
 
+  // Read matrix
+  HDF5_File.ReadCompleteDataset(HDF5_File.GetRootGroup(),
+                                MatrixName,
+                                pDimensionSizes,
+                                pMatrixData
+                                );
 }// end of LoadDataFromMatlabFile
-//----------------------------------------------------------------------------
-
+//------------------------------------------------------------------------------
 
 /**
- * Write data to HDF5 file
- * @throw ios::failure if an error occurred
+ * Write data to HDF5 file (only from the root group)
  *
  * @param [in] HDF5_File        - HDF5 file
  * @param [in] MatrixName       - HDF5 Matrix name
  * @param [in] CompressionLevel - Compression level
+ *
+ * @throw ios::failure if an error occurred
  */
 void TRealMatrix::WriteDataToHDF5File(THDF5_File & HDF5_File,
                                       const char * MatrixName,
-                                      const int CompressionLevel)
+                                      const size_t CompressionLevel)
 {
+  TDimensionSizes Chunks = pDimensionSizes;
+  Chunks.Z = 1;
 
-    TDimensionSizes Chunks = pDimensionSizes;
-    Chunks.Z = 1;
-
-    //1D matrices
-    if ((pDimensionSizes.Y == 1) && (pDimensionSizes.Z == 1)){
-        // Chunk = 4MB
-        if (pDimensionSizes.X > 4*ChunkSize_1D_4MB) {
-            Chunks.X = ChunkSize_1D_4MB;
-        } else if (pDimensionSizes.X > 4*ChunkSize_1D_1MB){
-            Chunks.X = ChunkSize_1D_1MB;
-        } else if (pDimensionSizes.X > 4*ChunkSize_1D_256KB)
-        {
-            Chunks.X = ChunkSize_1D_256KB;
-        }
+  //1D matrices
+  if ((pDimensionSizes.Y == 1) && (pDimensionSizes.Z == 1))
+  {
+    // Chunk = 4MB
+    if (pDimensionSizes.X > 4 * ChunkSize_1D_4MB)
+    {
+      Chunks.X = ChunkSize_1D_4MB;
     }
+    else if (pDimensionSizes.X > 4 * ChunkSize_1D_1MB)
+    {
+      Chunks.X = ChunkSize_1D_1MB;
+    }
+    else if (pDimensionSizes.X > 4 * ChunkSize_1D_256KB)
+    {
+      Chunks.X = ChunkSize_1D_256KB;
+    }
+  }
 
-    hid_t HDF5_Dataset_id =  HDF5_File.CreateFloatDataset(HDF5_File.GetRootGroup(),
-                                                          MatrixName,
-                                                          pDimensionSizes,
-                                                          Chunks,
-                                                          CompressionLevel);
-    HDF5_File.WriteHyperSlab(HDF5_Dataset_id,
-                             TDimensionSizes(0,0,0),
-                             pDimensionSizes,
-                             pMatrixData);
-    HDF5_File.CloseDataset(HDF5_Dataset_id);
+  hid_t HDF5_Dataset_id = HDF5_File.CreateFloatDataset(HDF5_File.GetRootGroup(),
+                                                       MatrixName,
+                                                       pDimensionSizes,
+                                                       Chunks,
+                                                       CompressionLevel);
 
-    HDF5_File.WriteMatrixDataType(HDF5_File.GetRootGroup(),
+  HDF5_File.WriteHyperSlab(HDF5_Dataset_id,
+                           TDimensionSizes(0, 0, 0),
+                           pDimensionSizes,
+                           pMatrixData);
+
+  HDF5_File.CloseDataset(HDF5_Dataset_id);
+
+  // Write data and domain type
+  HDF5_File.WriteMatrixDataType  (HDF5_File.GetRootGroup(),
                                   MatrixName,
                                   THDF5_File::hdf5_mdt_float);
-    HDF5_File.WriteMatrixDomainType(HDF5_File.GetRootGroup(),
-                                    MatrixName,
-                                    THDF5_File::hdf5_mdt_real);
-
+  HDF5_File.WriteMatrixDomainType(HDF5_File.GetRootGroup(),
+                                  MatrixName,
+                                  THDF5_File::hdf5_mdt_real);
 }// end of WriteDataToHDF5File
-//----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------//
-//                            Implementation                                //
-//                           protected methods                              //
-//--------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//                              Implementation                                //
+//                             protected methods                              //
+//----------------------------------------------------------------------------//
 
 /**
- * Set necessary dimensions and auxiliary variables
- * @param DimensionSizes - 3D Dimension sizes
+ * Set necessary dimensions and auxiliary variables.
+ * @param [in] DimensionSizes - 3D Dimension sizes
  */
-void TRealMatrix::InitDimensions(struct TDimensionSizes DimensionSizes){
+void TRealMatrix::InitDimensions(const TDimensionSizes & DimensionSizes)
+{
+  pDimensionSizes = DimensionSizes;
 
-    pDimensionSizes = DimensionSizes;
+  pTotalElementCount = pDimensionSizes.X *
+                       pDimensionSizes.Y *
+                       pDimensionSizes.Z;
 
-    pTotalElementCount = pDimensionSizes.X *
-                         pDimensionSizes.Y *
-                         pDimensionSizes.Z;
+  pTotalAllocatedElementCount = pTotalElementCount;
 
-    pTotalAllocatedElementCount = pTotalElementCount;
+  pDataRowSize = pDimensionSizes.X;
 
-    pDataRowSize       = pDimensionSizes.X;
-
-    p2DDataSliceSize   = pDimensionSizes.X * pDimensionSizes.Y;
-
+  p2DDataSliceSize = pDimensionSizes.X *
+                     pDimensionSizes.Y;
 }// end of SetDimensions
-//--------------------------------------------------------------------------//
+//------------------------------------------------------------------------------/
 
 //--------------------------------------------------------------------------//
 //                            Implementation                                //

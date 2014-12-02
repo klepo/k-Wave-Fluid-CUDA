@@ -100,7 +100,7 @@ void TMatrixContainer::CreateAllObjects()
 
             case TMatrixRecord::mdtIndex:
             {
-                it->second.MatrixPtr =  new TLongMatrix(it->second.DimensionSizes);
+                it->second.MatrixPtr =  new TIndexMatrix(it->second.DimensionSizes);
                 break;
             }
 

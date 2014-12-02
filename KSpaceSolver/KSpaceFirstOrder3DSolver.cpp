@@ -94,7 +94,11 @@ TKSpaceFirstOrder3DSolver::TKSpaceFirstOrder3DSolver()
  */
 TKSpaceFirstOrder3DSolver::~TKSpaceFirstOrder3DSolver()
 {
-    FreeMemory();
+  // Delete CUDA FFT plans and related data
+  TCUFFTComplexMatrix::DestroyAllPlansAndStaticData();
+
+  // Free memory
+  FreeMemory();
 }// end of TKSpace3DSolver
 //---------------------------------------------------------------------------//
 
@@ -445,22 +449,15 @@ void TKSpaceFirstOrder3DSolver::InitializeFFTPlans(){
 
 
 /*
- * Secondly CUFFT
+ * Initilaise CUDA FFT plans.
  */
-void TKSpaceFirstOrder3DSolver::InitializeCUFFTPlans(){
+void TKSpaceFirstOrder3DSolver::InitializeCUFFTPlans()
+{
+  // create real to complex plans
+  TCUFFTComplexMatrix::Create_FFT_Plan_3D_R2C(Parameters->GetFullDimensionSizes());
 
-    // create real to complex plans
-    TCUFFTComplexMatrix::CreateFFTPlan3D_R2C(Get_p());
-    //Get_CUFFT_X_temp().CreateFFTPlan3D_R2C(Get_p());
-    //Get_CUFFT_Y_temp().CreateFFTPlan3D_R2C(Get_p());
-    //Get_CUFFT_Z_temp().CreateFFTPlan3D_R2C(Get_p());
-
-    // create complex to real plans
-    TCUFFTComplexMatrix::CreateFFTPlan3D_C2R(Get_p());
-    //Get_CUFFT_X_temp().CreateFFTPlan3D_C2R(Get_p());
-    //Get_CUFFT_Y_temp().CreateFFTPlan3D_C2R(Get_p());
-    //Get_CUFFT_Z_temp().CreateFFTPlan3D_C2R(Get_p());
-
+ // create complex to real plans
+  TCUFFTComplexMatrix::Create_FFT_Plan_3D_C2R(Parameters->GetFullDimensionSizes());
 }// end of PrepareData
 //---------------------------------------------------------------------------//
 
@@ -1031,7 +1028,7 @@ void TKSpaceFirstOrder3DSolver::ZeroMatrix(TBaseIndexMatrix& matrix)
 /**
  * Recompute Indices from matlab to C++
  */
-void TKSpaceFirstOrder3DSolver::RecomputeIndices(TLongMatrix& matrix)
+void TKSpaceFirstOrder3DSolver::RecomputeIndices(TIndexMatrix& matrix)
 {
     size_t* matrix_data = matrix.GetRawData();
     for (size_t i = 0; i< matrix.GetTotalElementCount(); i++){
@@ -1060,9 +1057,9 @@ void TKSpaceFirstOrder3DSolver::Compute_duxyz(){
             Get_ddy_k_shift_neg(),
             Get_ddz_k_shift_neg());
 
-    Get_CUFFT_X_temp().Compute_iFFT_3D_C2R(Get_duxdx());
-    Get_CUFFT_Y_temp().Compute_iFFT_3D_C2R(Get_duydy());
-    Get_CUFFT_Z_temp().Compute_iFFT_3D_C2R(Get_duzdz());
+    Get_CUFFT_X_temp().Compute_FFT_3D_C2R(Get_duxdx());
+    Get_CUFFT_Y_temp().Compute_FFT_3D_C2R(Get_duydy());
+    Get_CUFFT_Z_temp().Compute_FFT_3D_C2R(Get_duzdz());
 
     //-----------------------------------------------------------------------//
     //--------------------- Non linear grid ---------------------------------//
@@ -1535,8 +1532,8 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_nonlinear()
                                                      Get_CUFFT_Y_temp());
 
 
-        Get_CUFFT_X_temp().Compute_iFFT_3D_C2R(Absorb_tau_temp);
-        Get_CUFFT_Y_temp().Compute_iFFT_3D_C2R(Absorb_eta_temp);
+        Get_CUFFT_X_temp().Compute_FFT_3D_C2R(Absorb_tau_temp);
+        Get_CUFFT_Y_temp().Compute_FFT_3D_C2R(Absorb_eta_temp);
 
 
 
@@ -1575,8 +1572,8 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_linear()
                                                      Get_CUFFT_X_temp(),
                                                      Get_CUFFT_Y_temp());
 
-        Get_CUFFT_X_temp().Compute_iFFT_3D_C2R(Absorb_tau_temp);
-        Get_CUFFT_Y_temp().Compute_iFFT_3D_C2R(Absorb_eta_temp);
+        Get_CUFFT_X_temp().Compute_FFT_3D_C2R(Absorb_tau_temp);
+        Get_CUFFT_Y_temp().Compute_FFT_3D_C2R(Absorb_eta_temp);
 
         Sum_Subterms_linear(Absorb_tau_temp, Absorb_eta_temp, Sum_rhoxyz);
     }else{
@@ -1603,9 +1600,9 @@ void TKSpaceFirstOrder3DSolver::Compute_uxyz(){
             Get_ddy_k_shift_pos(),
             Get_ddz_k_shift_pos());
 
-    Get_CUFFT_X_temp().Compute_iFFT_3D_C2R(Get_Temp_1_RS3D());
-    Get_CUFFT_Y_temp().Compute_iFFT_3D_C2R(Get_Temp_2_RS3D());
-    Get_CUFFT_Z_temp().Compute_iFFT_3D_C2R(Get_Temp_3_RS3D());
+    Get_CUFFT_X_temp().Compute_FFT_3D_C2R(Get_Temp_1_RS3D());
+    Get_CUFFT_Y_temp().Compute_FFT_3D_C2R(Get_Temp_2_RS3D());
+    Get_CUFFT_Z_temp().Compute_FFT_3D_C2R(Get_Temp_3_RS3D());
 
     if (Parameters->Get_rho0_scalar_flag()) { // scalars
         if (Parameters->Get_nonuniform_grid_flag()){
