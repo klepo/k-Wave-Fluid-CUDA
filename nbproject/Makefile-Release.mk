@@ -37,6 +37,9 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/CUDA/CUDAImplementations.o \
 	${OBJECTDIR}/CUDA/CUDATuner.o \
+	${OBJECTDIR}/Containers/MatrixContainer.o \
+	${OBJECTDIR}/Containers/MatrixRecord.o \
+	${OBJECTDIR}/Containers/OutputStreamContainer.o \
 	${OBJECTDIR}/HDF5/HDF5_File.o \
 	${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o \
 	${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o \
@@ -44,13 +47,10 @@ OBJECTFILES= \
 	${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/ComplexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/IndexMatrix.o \
-	${OBJECTDIR}/MatrixClasses/MatrixContainer.o \
-	${OBJECTDIR}/MatrixClasses/MatrixRecord.o \
-	${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.o \
-	${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.o \
-	${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.o \
-	${OBJECTDIR}/MatrixClasses/OutputStreamContainer.o \
 	${OBJECTDIR}/MatrixClasses/RealMatrix.o \
+	${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o \
+	${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o \
+	${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o \
 	${OBJECTDIR}/Parameters/CommandLineParameters.o \
 	${OBJECTDIR}/Parameters/Parameters.o \
 	${OBJECTDIR}/main.o
@@ -90,6 +90,21 @@ ${OBJECTDIR}/CUDA/CUDATuner.o: CUDA/CUDATuner.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CUDA/CUDATuner.o CUDA/CUDATuner.cpp
 
+${OBJECTDIR}/Containers/MatrixContainer.o: Containers/MatrixContainer.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Containers
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Containers/MatrixContainer.o Containers/MatrixContainer.cpp
+
+${OBJECTDIR}/Containers/MatrixRecord.o: Containers/MatrixRecord.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Containers
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Containers/MatrixRecord.o Containers/MatrixRecord.cpp
+
+${OBJECTDIR}/Containers/OutputStreamContainer.o: Containers/OutputStreamContainer.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Containers
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Containers/OutputStreamContainer.o Containers/OutputStreamContainer.cpp
+
 ${OBJECTDIR}/HDF5/HDF5_File.o: HDF5/HDF5_File.cpp 
 	${MKDIR} -p ${OBJECTDIR}/HDF5
 	${RM} "$@.d"
@@ -125,40 +140,25 @@ ${OBJECTDIR}/MatrixClasses/IndexMatrix.o: MatrixClasses/IndexMatrix.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/IndexMatrix.o MatrixClasses/IndexMatrix.cpp
 
-${OBJECTDIR}/MatrixClasses/MatrixContainer.o: MatrixClasses/MatrixContainer.cpp 
-	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/MatrixContainer.o MatrixClasses/MatrixContainer.cpp
-
-${OBJECTDIR}/MatrixClasses/MatrixRecord.o: MatrixClasses/MatrixRecord.cpp 
-	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/MatrixRecord.o MatrixClasses/MatrixRecord.cpp
-
-${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.o: MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.cpp 
-	${MKDIR} -p ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.o MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.cpp
-
-${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.o: MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.cpp 
-	${MKDIR} -p ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.o MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.cpp
-
-${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.o: MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.cpp 
-	${MKDIR} -p ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.o MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.cpp
-
-${OBJECTDIR}/MatrixClasses/OutputStreamContainer.o: MatrixClasses/OutputStreamContainer.cpp 
-	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/OutputStreamContainer.o MatrixClasses/OutputStreamContainer.cpp
-
 ${OBJECTDIR}/MatrixClasses/RealMatrix.o: MatrixClasses/RealMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/RealMatrix.o MatrixClasses/RealMatrix.cpp
+
+${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o: OutputHDF5Streams/BaseOutputHDF5Stream.cpp 
+	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o OutputHDF5Streams/BaseOutputHDF5Stream.cpp
+
+${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o: OutputHDF5Streams/IndexOutputHDF5Stream.cpp 
+	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o OutputHDF5Streams/IndexOutputHDF5Stream.cpp
+
+${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o: OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp 
+	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp
 
 ${OBJECTDIR}/Parameters/CommandLineParameters.o: Parameters/CommandLineParameters.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Parameters

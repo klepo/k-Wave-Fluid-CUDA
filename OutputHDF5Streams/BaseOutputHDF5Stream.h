@@ -11,7 +11,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        11 July      2012, 10:30 (created) \n
- *              04 November  2014, 17:01 (revised)
+ *              04 December  2014, 18:01 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -32,66 +32,66 @@
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef BASEOUTPUTHDF5STREAM_H
-#define BASEOUTPUTHDF5STREAM_H
+#ifndef BASE_OUTPUT_HDF5_STREAM_H
+#define BASE_OUTPUT_HDF5_STREAM_H
 
 #include <string>
 #include <cstring>
 #include <vector>
 #include <stdexcept>
 
-#include "../RealMatrix.h"
-#include "../IndexMatrix.h"
-#include "../../HDF5/HDF5_File.h"
+#include <MatrixClasses/RealMatrix.h>
+#include <MatrixClasses/IndexMatrix.h>
+#include <HDF5/HDF5_File.h>
 
-
-#include "../../CUDA/CUDAImplementations.h"
-
-
+#include <CUDA/CUDAImplementations.h>
 
 
 using namespace std;
 
 /**
  * @class TBaseOutputHDF5Stream
- * @brief Output stream for sensor data. It stores time series every timestep
+ * @brief   Abstract base class for output data streams (sampled data).
+ * @details Abstract base class for output data streams (sampled data).
+ *
  */
-class TBaseOutputHDF5Stream {
-    public:
-        /**
-         * @enum TOutputHDF5StreamReductionOperator
-         * @brief How to aggregate data \n
-         *        roNONE - store actual data (time series)
-         *        roRMS  - calculate root mean square \n
-         *        roMAX  - store maximum
-         *        roMIN  - store minimum
-         */
-        enum TReductionOperator
-        {
-            roNONE, roRMS, roMAX, roMIN
-        };
+class TBaseOutputHDF5Stream
+{
+  public:
+    /**
+     * @enum TOutputHDF5StreamReductionOperator
+     * @brief How to aggregate data \n
+     *        roNONE - store actual data (time series)
+     *        roRMS  - calculate root mean square \n
+     *        roMAX  - store maximum
+     *        roMIN  - store minimum
+     */
+    enum TReductionOperator
+    {
+        roNONE, roRMS, roMAX, roMIN
+    };
 
-        /**
-         * Constructor - there is no sensor mask by default!
-         * it links the HDF5 dataset, source (sampled matrix) and the reduction
-         * operator together. The constructor DOES NOT allocate memory because the
-         * size of the sensor mask is not known at the time the instance of
-         * the class is being created.
-         *
-         * @param [in] HDF5_File           - Handle to the HDF5 (output) file
-         * @param [in] HDF5_RootObjectName - The root object that stores the sample
-         *                                   data (dataset or group)
-         * @param [in] SourceMatrix        - The source matrix (only real matrices
-         *                                   are supported)
-         * @param [in] ReductionOp         - Reduction operator
-         * @param [in] BufferToReuse       - An external buffer can be used to line
-         *                                   up the grid points
-         */
-        TBaseOutputHDF5Stream(THDF5_File&              HDF5_File,
-                              const char*              HDF5_RootObjectName,
-                              TRealMatrix&             SourceMatrix,
-                              const TReductionOperator ReductionOp,
-                              float*                   BufferToReuse = NULL)
+    /**
+     * Constructor - there is no sensor mask by default!
+     * it links the HDF5 dataset, source (sampled matrix) and the reduction
+     * operator together. The constructor DOES NOT allocate memory because the
+     * size of the sensor mask is not known at the time the instance of
+     * the class is being created.
+     *
+     * @param [in] HDF5_File           - Handle to the HDF5 (output) file
+     * @param [in] HDF5_RootObjectName - The root object that stores the sample
+     *                                   data (dataset or group)
+     * @param [in] SourceMatrix        - The source matrix (only real matrices
+     *                                   are supported)
+     * @param [in] ReductionOp         - Reduction operator
+     * @param [in] BufferToReuse       - An external buffer can be used to line
+     *                                   up the grid points
+     */
+    TBaseOutputHDF5Stream(THDF5_File &             HDF5_File,
+                          const char *             HDF5_RootObjectName,
+                          TRealMatrix &            SourceMatrix,
+                          const TReductionOperator ReductionOp,
+                          float *                   BufferToReuse = NULL)
             : HDF5_File          (HDF5_File),
               HDF5_RootObjectName(NULL),
               SourceMatrix       (SourceMatrix),
@@ -99,87 +99,90 @@ class TBaseOutputHDF5Stream {
               BufferReuse        (BufferToReuse != NULL),
               BufferSize         (0),
               StoreBuffer        (BufferToReuse)
+{
+  // copy the dataset name (just for sure)
+  this->HDF5_RootObjectName = new char[strlen(HDF5_RootObjectName)];
+  strcpy(this->HDF5_RootObjectName, HDF5_RootObjectName);
+
+  ///@todo What is this?????
+  cuda_implementations = CUDAImplementations::GetInstance();
+
+  };
+
+    /**
+     * @brief Destructor.
+     * @details Destructor.
+     */
+    virtual ~TBaseOutputHDF5Stream()
     {
-      // copy the dataset name (just for sure)
-      this->HDF5_RootObjectName = new char[strlen(HDF5_RootObjectName)];
-      strcpy(this->HDF5_RootObjectName, HDF5_RootObjectName);
+      delete [] HDF5_RootObjectName;
+    };
 
-            cuda_implementations = CUDAImplementations::GetInstance();
+    /// Create a HDF5 stream and allocate data for it.
+    virtual void Create() = 0;
 
-        };
+    /// Reopen the output stream after restart.
+    virtual void Reopen() = 0;
 
-        /// Destructor
-        virtual ~TBaseOutputHDF5Stream()
-        {
-            delete [] HDF5_RootObjectName;
-        };
+    /// Sample data into buffer, apply reduction or flush to disk - based on a sensor mask.
+    virtual void Sample() = 0;
 
+    /// Apply post-processing on the buffer and flush it to the file.
+    virtual void PostProcess();
 
-        /// Create a HDF5 stream and allocate data for it - a virtual method
-        virtual void Create() = 0;
+    /// Checkpoint the stream.
+    virtual void Checkpoint() = 0;
 
-        /// Reopen the output stream after restart
-        virtual void Reopen() = 0;
+    /// Close stream (apply post-processing if necessary, flush data and close).
+    virtual void Close() = 0;
 
-        /// Sample data into buffer, apply reduction or flush to disk - based on a sensor mask
-        virtual void Sample() = 0;
+  protected:
+    /// Default constructor not allowed.
+    TBaseOutputHDF5Stream();
+    /// Copy constructor not allowed.
+    TBaseOutputHDF5Stream(const TBaseOutputHDF5Stream & src);
+    /// Operator = not allowed (we don't want any data movements).
+    TBaseOutputHDF5Stream & operator = (const TBaseOutputHDF5Stream & src);
 
-        /// Apply post-processing on the buffer and flush it to the file
-        virtual void PostProcess();
+    /// A generic function to allocate memory - not used in the base class.
+    virtual void AllocateMemory();
+    /// A generic function to free memory - not used in the base class.
+    virtual void FreeMemory();
 
-        /// Checkpoint the stream
-        virtual void Checkpoint() = 0;
+    /// HDF5 file handle.
+    THDF5_File& HDF5_File;
 
-        /// Close stream (apply post-processing if necessary, flush data and close)
-        virtual void Close() = 0;
+    /// Dataset name.
+    char* HDF5_RootObjectName;
 
-    protected:
-        /// Default constructor not allowed
-        TBaseOutputHDF5Stream();
-        /// Copy constructor not allowed
-        TBaseOutputHDF5Stream(const TBaseOutputHDF5Stream & src);
-        /// Operator = not allowed (we don't want any data movements)
-        TBaseOutputHDF5Stream & operator = (const TBaseOutputHDF5Stream & src);
+    /// Source matrix to be sampled.
+    TRealMatrix& SourceMatrix;
 
-        /// A generic function to allocate memory - not used in the base class
-        virtual void AllocateMemory();
-        /// A generic function to free memory - not used in the base class
-        virtual void FreeMemory();
+    /// HDF5 dataset handle.
+    hid_t HDF5_Dataset_id;
+    /// Reduction operator.
+    const TReductionOperator ReductionOp;
 
-        /// HDF5 file handle
-        THDF5_File& HDF5_File;
+    /// Position in the dataset
+    TDimensionSizes Position;
 
-        /// Dataset name
-        char* HDF5_RootObjectName;
+    /// if true, the container reuses e.g. Temp_1_RS3D, Temp_2_RS3D, Temp_3_RS3D
+    bool    BufferReuse;
+    /// Buffer size
+    size_t  BufferSize;
+    /// Temporary buffer for store - only if Buffer Reuse = false!
+    float * StoreBuffer;
 
-        /// Source matrix to be sampled
-        TRealMatrix& SourceMatrix;
+    /// chunk size of 4MB in number of float elements
+    static const size_t ChunkSize_4MB = 1048576;
 
-        /// HDF5 dataset handle
-        hid_t HDF5_Dataset_id;
-        /// Reduction operator
-        const TReductionOperator ReductionOp;
+    /// The minimum number of elements to start sampling in parallel (4MB)
+    static const size_t MinGridpointsToSampleInParallel = 1048576;
 
-        /// Position in the dataset
-        TDimensionSizes Position;
-
-        /// if true, the container reuses e.g. Temp_1_RS3D, Temp_2_RS3D, Temp_3_RS3D
-        bool    BufferReuse;
-        /// Buffer size
-        size_t  BufferSize;
-        /// Temporary buffer for store - only if Buffer Reuse = false!
-        float * StoreBuffer;
-
-        /// chunk size of 4MB in number of float elements
-        static const size_t ChunkSize_4MB = 1048576;
-
-        /// The minimum number of elements to start sampling in parallel (4MB)
-        static const size_t MinGridpointsToSampleInParallel = 1048576;
-
-
-        CUDAImplementations* cuda_implementations;
+    /// DO I NEE THIS???
+    CUDAImplementations* cuda_implementations;
 
 };// end of TBaseOutputHDF5Stream
 
-#endif /* BASEOUTPUTHDF5STREAM_H */
+#endif /* BASE_OUTPUT_HDF5_STREAM_H */
 

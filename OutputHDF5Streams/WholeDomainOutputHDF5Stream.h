@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        28 August   2014, 10:20 (created)
- *              04 November 2014, 17:05 (revised)
+ *              04 December 2014, 18:26 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,56 +30,56 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
-#ifndef WHOLEDOMAINOUTPUTHDF5STREAM_H
-#define WHOLEDOMAINOUTPUTHDF5STREAM_H
+#ifndef WHOLE_DOMAIN_OUTPUT_HDF5_STREAM_H
+#define WHOLE_DOMAIN_OUTPUT_HDF5_STREAM_H
 
-#include "./BaseOutputHDF5Stream.h"
+#include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
 
 /**
  * @class TWholeDomainOutputHDF5Stream
  * @brief Output stream for quantities sampled in the whole domain.
- *        The data is stored in a single dataset (aggregated quantities only)
+ * @details Output stream for quantities sampled in the whole domain.
+ *          The data is stored in a single dataset (aggregated quantities only).
  */
 class TWholeDomainOutputHDF5Stream : public TBaseOutputHDF5Stream
 {
-
   public:
     /// Constructor - links the HDF5 File, SourceMatrix, and SensorMask together
-    TWholeDomainOutputHDF5Stream(THDF5_File&              HDF5_File,
-                                 const char*              HDF5_DatasetName,
-                                 TRealMatrix&             SourceMatrix,
+    TWholeDomainOutputHDF5Stream(THDF5_File &             HDF5_File,
+                                 const char *             HDF5_DatasetName,
+                                 TRealMatrix &            SourceMatrix,
                                  const TReductionOperator ReductionOp,
-                                 float*                   BufferToReuse = NULL);
+                                 float *                  BufferToReuse = NULL);
 
-    /// Destructor
+    /// Destructor.
     virtual ~TWholeDomainOutputHDF5Stream();
 
-    /// Create a HDF5 stream and allocate data for it
+    /// Create a HDF5 stream and allocate data for it.
     virtual void Create();
 
-    /// Reopen the output stream after restart and reload data
+    /// Reopen the output stream after restart and reload data.
     virtual void Reopen();
 
-    /// Sample data into buffer and apply reduction, or flush to disk - based on a sensor mask
+    /// Sample data into buffer and apply reduction, or flush to disk - based on a sensor mask.
     virtual void Sample();
 
-    /// Apply post-processing on the buffer and flush it to the file
+    /// Apply post-processing on the buffer and flush it to the file.
     virtual void PostProcess();
 
-    //Checkpoint the stream and close
+    //Checkpoint the stream and close.
     virtual void Checkpoint();
 
-    /// Close stream (apply post-processing if necessary, flush data and close)
+    /// Close stream (apply post-processing if necessary, flush data and close).
     virtual void Close();
 
   protected:
-      /// Flush the buffer to the file
+      /// Flush the buffer to the file.
     virtual void FlushBufferToFile();
 
-    /// Handle to a HDF5 dataset
+    /// Handle to a HDF5 dataset.
     hid_t  HDF5_DatasetId;
 
-    /// Time step to store (N/A for aggregated)
+    /// Time step to store (N/A for aggregated).
     size_t SampledTimeStep;
 };// end of TWholeDomainOutputHDF5Stream
 

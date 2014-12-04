@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        04 December  2014, 11:00 (created)
- *              04 December  2014, 11:39 (revised)
+ *              04 December  2014, 17:50 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -37,7 +37,7 @@
 #include <map>
 
 #include <Containers/MatrixContainer.h>
-#include <MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.h>
+#include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
 
 #include <Utils/MatrixNames.h>
 #include <Utils/DimensionSizes.h>

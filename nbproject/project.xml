@@ -16,6 +16,8 @@
                 <sourceRootElem>MatrixClasses</sourceRootElem>
                 <sourceRootElem>Parameters</sourceRootElem>
                 <sourceRootElem>Utils</sourceRootElem>
+                <sourceRootElem>Containers</sourceRootElem>
+                <sourceRootElem>OutputHDF5Streams</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>

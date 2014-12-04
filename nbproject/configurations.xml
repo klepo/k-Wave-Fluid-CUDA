@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="95">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="Containers" displayName="Containers" projectFiles="true">
+      <itemPath>Containers/MatrixContainer.cpp</itemPath>
+      <itemPath>Containers/MatrixContainer.h</itemPath>
+      <itemPath>Containers/MatrixRecord.cpp</itemPath>
+      <itemPath>Containers/MatrixRecord.h</itemPath>
+      <itemPath>Containers/OutputStreamContainer.cpp</itemPath>
+      <itemPath>Containers/OutputStreamContainer.h</itemPath>
+    </logicalFolder>
     <logicalFolder name="CUDA" displayName="CUDA" projectFiles="true">
       <itemPath>CUDA/CUDAImplementations.cu</itemPath>
       <itemPath>CUDA/CUDAImplementations.h</itemPath>
@@ -24,16 +32,6 @@
     <logicalFolder name="MatrixClasses"
                    displayName="MatrixClasses"
                    projectFiles="true">
-      <logicalFolder name="OutputHDF5Stream"
-                     displayName="OutputHDF5Stream"
-                     projectFiles="true">
-        <itemPath>MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.cpp</itemPath>
-        <itemPath>MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.h</itemPath>
-        <itemPath>MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.cpp</itemPath>
-        <itemPath>MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.h</itemPath>
-        <itemPath>MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.cpp</itemPath>
-        <itemPath>MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.h</itemPath>
-      </logicalFolder>
       <itemPath>MatrixClasses/BaseFloatMatrix.cpp</itemPath>
       <itemPath>MatrixClasses/BaseFloatMatrix.h</itemPath>
       <itemPath>MatrixClasses/BaseIndexMatrix.cpp</itemPath>
@@ -45,14 +43,18 @@
       <itemPath>MatrixClasses/ComplexMatrix.h</itemPath>
       <itemPath>MatrixClasses/IndexMatrix.cpp</itemPath>
       <itemPath>MatrixClasses/IndexMatrix.h</itemPath>
-      <itemPath>MatrixClasses/MatrixContainer.cpp</itemPath>
-      <itemPath>MatrixClasses/MatrixContainer.h</itemPath>
-      <itemPath>MatrixClasses/MatrixRecord.cpp</itemPath>
-      <itemPath>MatrixClasses/MatrixRecord.h</itemPath>
-      <itemPath>MatrixClasses/OutputStreamContainer.cpp</itemPath>
-      <itemPath>MatrixClasses/OutputStreamContainer.h</itemPath>
       <itemPath>MatrixClasses/RealMatrix.cpp</itemPath>
       <itemPath>MatrixClasses/RealMatrix.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="OutputHDF5Streams"
+                   displayName="OutputHDF5Streams"
+                   projectFiles="true">
+      <itemPath>OutputHDF5Streams/BaseOutputHDF5Stream.cpp</itemPath>
+      <itemPath>OutputHDF5Streams/BaseOutputHDF5Stream.h</itemPath>
+      <itemPath>OutputHDF5Streams/IndexOutputHDF5Stream.cpp</itemPath>
+      <itemPath>OutputHDF5Streams/IndexOutputHDF5Stream.h</itemPath>
+      <itemPath>OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp</itemPath>
+      <itemPath>OutputHDF5Streams/WholeDomainOutputHDF5Stream.h</itemPath>
     </logicalFolder>
     <logicalFolder name="Parameters" displayName="Parameters" projectFiles="true">
       <itemPath>Parameters/CommandLineParameters.cpp</itemPath>
@@ -94,6 +96,8 @@
     <Elem>MatrixClasses</Elem>
     <Elem>Parameters</Elem>
     <Elem>Utils</Elem>
+    <Elem>Containers</Elem>
+    <Elem>OutputHDF5Streams</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -134,6 +138,21 @@
       </item>
       <item path="CUDA/CUDATuner.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Containers/MatrixRecord.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Containers/MatrixRecord.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Containers/OutputStreamContainer.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="Containers/OutputStreamContainer.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
@@ -173,57 +192,39 @@
       </item>
       <item path="MatrixClasses/IndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="MatrixClasses/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="MatrixClasses/MatrixContainer.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="MatrixClasses/MatrixRecord.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="MatrixClasses/MatrixRecord.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputStreamContainer.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputStreamContainer.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="MatrixClasses/RealMatrix.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="MatrixClasses/RealMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/BaseOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/BaseOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/IndexOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/IndexOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/WholeDomainOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
@@ -275,6 +276,21 @@
       </item>
       <item path="CUDA/CUDATuner.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Containers/MatrixRecord.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Containers/MatrixRecord.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Containers/OutputStreamContainer.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="Containers/OutputStreamContainer.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
@@ -314,57 +330,39 @@
       </item>
       <item path="MatrixClasses/IndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="MatrixClasses/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="MatrixClasses/MatrixContainer.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="MatrixClasses/MatrixRecord.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="MatrixClasses/MatrixRecord.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputStreamContainer.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/OutputStreamContainer.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="MatrixClasses/RealMatrix.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="MatrixClasses/RealMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/BaseOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/BaseOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/IndexOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/IndexOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/WholeDomainOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"

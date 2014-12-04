@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        11 July      2012, 10:30 (created) \n
- *              04 November  2014, 17:01 (revised)
+ *              04 December  2014, 18:12 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -31,12 +31,15 @@
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
-#include "./BaseOutputHDF5Stream.h"
-#include "../../Utils/ErrorMessages.h"
-#include "../../Parameters/Parameters.h"
-
 #include <cmath>
 #include <limits>
+#include <immintrin.h>
+
+#include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
+
+#include <Utils/ErrorMessages.h>
+#include <Parameters/Parameters.h>
+
 
 using namespace std;
 
@@ -54,42 +57,43 @@ using namespace std;
 //--------------------------------------------------------------------------//
 
 /**
- * Apply post-processing on the buffer. It supposes the elements are independent
- *
+ * Apply post-processing on the buffer. It supposes the elements are independent.
+ * Since this is done only once, let's do that on the CPU.
  */
 void TBaseOutputHDF5Stream::PostProcess()
 {
-    switch (ReductionOp) {
-        case roNONE:
-        {
-            // do nothing
-            break;
-        }
+  switch (ReductionOp)
+  {
+    case roNONE:
+    {
+      // do nothing
+      break;
+    }
 
-        case roRMS:
-        {
-            const float ScalingCoeff = 1.0f / (TParameters::GetInstance()->Get_Nt()
-                    - TParameters::GetInstance()->GetStartTimeIndex());
+    case roRMS:
+    {
+      const float ScalingCoeff = 1.0f / (TParameters::GetInstance()->Get_Nt() - TParameters::GetInstance()->GetStartTimeIndex());
 
-#pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
-            for (size_t i = 0; i < BufferSize; i++) {
-                StoreBuffer[i] = sqrt(StoreBuffer[i] * ScalingCoeff);
-            }
-            break;
-        }
+      #pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
+      for (size_t i = 0; i < BufferSize; i++)
+      {
+        StoreBuffer[i] = sqrt(StoreBuffer[i] * ScalingCoeff);
+      }
+      break;
+    }
 
-        case roMAX:
-        {
-            // do nothing
-            break;
-        }
+    case roMAX:
+    {
+      // do nothing
+      break;
+    }
 
-        case roMIN:
-        {
-            // do nothing
-            break;
-        }
-}// switch
+    case roMIN:
+    {
+      // do nothing
+      break;
+    }
+  }// switch
 
 }// end of ApplyPostProcessing
 //------------------------------------------------------------------------------
@@ -99,59 +103,68 @@ void TBaseOutputHDF5Stream::PostProcess()
  * Allocate memory using a proper memory alignment.
  * @warning - This can routine is not used in the base class (should be used in
  *            derived ones
+ *
+ * @todo - completely rewrite this routine to be executed on GPU
  */
 void TBaseOutputHDF5Stream::AllocateMemory()
 {
-    StoreBuffer = new float [BufferSize];
+  StoreBuffer = (float *) _mm_malloc(BufferSize * sizeof (float), DATA_ALIGNMENT);
 
-    if (!StoreBuffer) {
-        fprintf(stderr, Matrix_ERR_FMT_Not_Enough_Memory, "TBaseOutputHDF5Stream");
-        throw bad_alloc();
+  if (!StoreBuffer)
+  {
+    fprintf(stderr, Matrix_ERR_FMT_Not_Enough_Memory, "TBaseOutputHDF5Stream");
+    throw bad_alloc();
+  }
+
+  // we need different initialization for different reduction ops
+  switch (ReductionOp)
+  {
+    case roNONE :
+    {
+      // zero the matrix
+      #pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
+      for (size_t i = 0; i < BufferSize; i++)
+      {
+        StoreBuffer[i] = 0.0f;
+      }
+      break;
     }
 
-    // we need different initialization for different reduction ops
-    switch (ReductionOp) {
-        case roNONE :
-            {
-                // zero the matrix
-#pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
-                for (size_t i = 0; i < BufferSize; i++) {
-                    StoreBuffer[i] = 0.0f;
-                }
-                break;
-            }
+    case roRMS :
+    {
+      // zero the matrix
+      #pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
+      for (size_t i = 0; i < BufferSize; i++)
+      {
+        StoreBuffer[i] = 0.0f;
+      }
+      break;
+    }
 
-        case roRMS  :
-            {
-                // zero the matrix
-#pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
-                for (size_t i = 0; i < BufferSize; i++) {
-                    StoreBuffer[i] = 0.0f;
-                }
-                break;
-            }
+    case roMAX :
+    {
+      // set the values to the highest negative float value
+      #pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
+      for (size_t i = 0; i < BufferSize; i++)
+      {
+        StoreBuffer[i] = -1 * std::numeric_limits<float>::max();
+      }
+      break;
+    }
 
-        case roMAX  :
-            {
-                // set the values to the highest negative float value
-#pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
-                for (size_t i = 0; i < BufferSize; i++) {
-                    StoreBuffer[i] = -1 * std::numeric_limits<float>::max();
-                }
-                break;
-            }
+    case roMIN :
+    {
+      // set the values to the highest float value
+      #pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
+      for (size_t i = 0; i < BufferSize; i++)
+      {
+        StoreBuffer[i] = std::numeric_limits<float>::max();
+      }
+      break;
+    }
+  }// switch
 
-        case roMIN  :
-            {
-                // set the values to the highest float value
-#pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
-                for (size_t i = 0; i < BufferSize; i++)
-                {
-                    StoreBuffer[i] = std::numeric_limits<float>::max();
-                }
-                break;
-            }
-    }// switch
+  /// @todo Now it should be copied over to the GPU
 
 }// end of AllocateMemory
 //------------------------------------------------------------------------------
@@ -159,13 +172,14 @@ void TBaseOutputHDF5Stream::AllocateMemory()
 /**
  * Free memory.
  * @warning - This can routine is not used in the base class (should be used in
- *            derived ones
+ *            derived ones).
  */
 void TBaseOutputHDF5Stream::FreeMemory()
 {
-    if (StoreBuffer) {
-        delete[] StoreBuffer;
-        StoreBuffer = NULL;
+  if (StoreBuffer)
+  {
+    _mm_free(StoreBuffer);
+    StoreBuffer = NULL;
   }
 }// end of FreeMemory
 //------------------------------------------------------------------------------

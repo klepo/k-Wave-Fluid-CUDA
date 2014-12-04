@@ -33,9 +33,9 @@
 #include <Parameters/Parameters.h>
 #include <Containers/OutputStreamContainer.h>
 
-#include <MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.h>
-#include <MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.h>
-#include <MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.h>
+#include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
+#include <OutputHDF5Streams/IndexOutputHDF5Stream.h>
+#include <OutputHDF5Streams/WholeDomainOutputHDF5Stream.h>
 
 
 //============================================================================//

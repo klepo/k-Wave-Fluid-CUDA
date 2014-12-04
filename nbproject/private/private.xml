@@ -4,30 +4,24 @@
         <activeConfTypeElem>1</activeConfTypeElem>
         <activeConfIndexElem>0</activeConfIndexElem>
     </data>
-    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="1"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/MatrixClasses/ComplexMatrix.h</file>
+            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Containers/MatrixRecord.cpp</file>
             <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/MatrixClasses/BaseMatrix.h</file>
+            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Containers/OutputStreamContainer.cpp</file>
             <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/KSpaceSolver/KSpaceFirstOrder3DSolver.cpp</file>
             <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/MatrixClasses/CUFFTComplexMatrix.h</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/MatrixClasses/RealMatrix.h</file>
             <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/CUDA/CUDAImplementations.h</file>
+            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Containers/MatrixRecord.h</file>
             <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/main.cpp</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/MatrixClasses/RealMatrix.cpp</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/MatrixClasses/BaseIndexMatrix.cpp</file>
             <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/KSpaceSolver/KSpaceFirstOrder3DSolver.h</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/HDF5/HDF5_File.h</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/MatrixClasses/MatrixContainer.cpp</file>
             <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/MatrixClasses/CUFFTComplexMatrix.cpp</file>
+            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Containers/MatrixContainer.h</file>
             <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Utils/ErrorMessages.h</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/MatrixClasses/ComplexMatrix.cpp</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/CUDA/CUDATuner.cpp</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/MatrixClasses/IndexMatrix.h</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/HDF5/HDF5_File.cpp</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/MatrixClasses/BaseFloatMatrix.h</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/MatrixClasses/IndexMatrix.cpp</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/MatrixClasses/BaseFloatMatrix.cpp</file>
+            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Containers/OutputStreamContainer.h</file>
+            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Containers/MatrixContainer.cpp</file>
+            <file>file:/home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Utils/DimensionSizes.h</file>
         </group>
     </open-files>
 </project-private>
