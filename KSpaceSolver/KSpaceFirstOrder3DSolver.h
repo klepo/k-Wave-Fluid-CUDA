@@ -39,11 +39,12 @@
 #include <iostream>
 
 #include "../Parameters/Parameters.h"
-#include "../MatrixClasses/MatrixContainer.h"
 #include "../MatrixClasses/RealMatrix.h"
 #include "../MatrixClasses/ComplexMatrix.h"
 #include "../MatrixClasses/IndexMatrix.h"
-#include "../MatrixClasses/OutputStreamContainer.h"
+
+#include <Containers/MatrixContainer.h>
+#include <Containers//OutputStreamContainer.h>
 
 #include "../Utils/TimeMeasure.h"
 
@@ -262,243 +263,243 @@ protected:
     /// Get the kappa matrix from the container
     TRealMatrix& Get_kappa()
     {
-      return MatrixContainer.GetRealMatrix(kappa);
+      return MatrixContainer.GetMatrix<TRealMatrix>(kappa);
     };
     /// Get the c^2 matrix from the container
     TRealMatrix& Get_c2()
     {
-      return MatrixContainer.GetRealMatrix(c2);
+      return MatrixContainer.GetMatrix<TRealMatrix>(c2);
     };
 
     /// Get the p matrix from the container
     TRealMatrix& Get_p()
     {
-      return MatrixContainer.GetRealMatrix(p);
+      return MatrixContainer.GetMatrix<TRealMatrix>(p);
     };
 
     /// Get the ux_sgx matrix from the container
     TRealMatrix& Get_ux_sgx()
     {
-      return MatrixContainer.GetUxyz_sgxyzMatrix(ux_sgx);
+      return MatrixContainer.GetMatrix<TRealMatrix>(ux_sgx);
     };
     /// Get the uy_sgy matrix from the container
     TRealMatrix& Get_uy_sgy()
     {
-      return MatrixContainer.GetUxyz_sgxyzMatrix(uy_sgy);
+      return MatrixContainer.GetMatrix<TRealMatrix>(uy_sgy);
     };
     /// Get the uz_sgz matrix from the container
     TRealMatrix& Get_uz_sgz()
     {
-      return MatrixContainer.GetUxyz_sgxyzMatrix(uz_sgz);
+      return MatrixContainer.GetMatrix<TRealMatrix>(uz_sgz);
     };
 
     /// Get the ux_shifted matrix from the container
     TRealMatrix& Get_ux_shifted()
     {
-      return MatrixContainer.GetUxyz_sgxyzMatrix(ux_shifted);
+      return MatrixContainer.GetMatrix<TRealMatrix>(ux_shifted);
     };
     /// Get the uy_shifted matrix from the container
     TRealMatrix& Get_uy_shifted()
     {
-      return MatrixContainer.GetUxyz_sgxyzMatrix(uy_shifted);
+      return MatrixContainer.GetMatrix<TRealMatrix>(uy_shifted);
     };
     /// Get the uz_shifted matrix from the container
     TRealMatrix& Get_uz_shifted()
     {
-      return MatrixContainer.GetUxyz_sgxyzMatrix(uz_shifted);
+      return MatrixContainer.GetMatrix<TRealMatrix>(uz_shifted);
     };
 
     /// Get the duxdx matrix from the container
     TRealMatrix& Get_duxdx()
     {
-      return MatrixContainer.GetRealMatrix(duxdx);
+      return MatrixContainer.GetMatrix<TRealMatrix>(duxdx);
     };
     /// Get the duydy matrix from the container
     TRealMatrix& Get_duydy()
     {
-      return MatrixContainer.GetRealMatrix(duydy);
+      return MatrixContainer.GetMatrix<TRealMatrix>(duydy);
     };
     /// Get the duzdz matrix from the container
     TRealMatrix& Get_duzdz()
     {
-      return MatrixContainer.GetRealMatrix(duzdz);
+      return MatrixContainer.GetMatrix<TRealMatrix>(duzdz);
     };
 
     /// Get the dt.*rho0_sgx matrix from the container
     TRealMatrix& Get_dt_rho0_sgx()
     {
-      return MatrixContainer.GetRealMatrix(dt_rho0_sgx);
+      return MatrixContainer.GetMatrix<TRealMatrix>(dt_rho0_sgx);
     };
     /// Get the dt.*rho0_sgy matrix from the container
     TRealMatrix& Get_dt_rho0_sgy()
     {
-      return MatrixContainer.GetRealMatrix(dt_rho0_sgy);
+      return MatrixContainer.GetMatrix<TRealMatrix>(dt_rho0_sgy);
     };
     /// Get the dt.*rho0_sgz matrix from the container
     TRealMatrix& Get_dt_rho0_sgz()
     {
-      return MatrixContainer.GetRealMatrix(dt_rho0_sgz);
+      return MatrixContainer.GetMatrix<TRealMatrix>(dt_rho0_sgz);
     };
 
     /// Get the rhox matrix from the container
     TRealMatrix& Get_rhox()
     {
-      return MatrixContainer.GetRealMatrix(rhox);
+      return MatrixContainer.GetMatrix<TRealMatrix>(rhox);
     };
     /// Get the rhoy matrix from the container
     TRealMatrix& Get_rhoy()
     {
-      return MatrixContainer.GetRealMatrix(rhoy);
+      return MatrixContainer.GetMatrix<TRealMatrix>(rhoy);
     };
     /// Get the rhoz matrix from the container
     TRealMatrix& Get_rhoz()
     {
-      return MatrixContainer.GetRealMatrix(rhoz);
+      return MatrixContainer.GetMatrix<TRealMatrix>(rhoz);
     };
     /// Get the rho0 matrix from the container
     TRealMatrix& Get_rho0()
     {
-      return MatrixContainer.GetRealMatrix(rho0);
+      return MatrixContainer.GetMatrix<TRealMatrix>(rho0);
     };
 
     /// Get the ddx_k_shift_pos matrix from the container
     TComplexMatrix& Get_ddx_k_shift_pos()
     {
-      return MatrixContainer.GetComplexMatrix(ddx_k_shift_pos);
+      return MatrixContainer.GetMatrix<TComplexMatrix>(ddx_k_shift_pos);
     };
     /// Get the ddy_k_shift_pos matrix from the container
     TComplexMatrix& Get_ddy_k_shift_pos()
     {
-      return MatrixContainer.GetComplexMatrix(ddy_k_shift_pos);
+      return MatrixContainer.GetMatrix<TComplexMatrix>(ddy_k_shift_pos);
     };
     /// Get the ddz_k_shift_pos matrix from the container
     TComplexMatrix& Get_ddz_k_shift_pos()
     {
-      return MatrixContainer.GetComplexMatrix(ddz_k_shift_pos);
+      return MatrixContainer.GetMatrix<TComplexMatrix>(ddz_k_shift_pos);
     };
     /// Get the ddx_k_shift_neg matrix from the container
     TComplexMatrix& Get_ddx_k_shift_neg()
     {
-      return MatrixContainer.GetComplexMatrix(ddx_k_shift_neg);
+      return MatrixContainer.GetMatrix<TComplexMatrix>(ddx_k_shift_neg);
     };
     /// Get the ddy_k_shift_neg matrix from the container
     TComplexMatrix& Get_ddy_k_shift_neg()
     {
-      return MatrixContainer.GetComplexMatrix(ddy_k_shift_neg);
+      return MatrixContainer.GetMatrix<TComplexMatrix>(ddy_k_shift_neg);
     };
     /// Get the ddz_k_shift_neg matrix from the container
     TComplexMatrix& Get_ddz_k_shift_neg()
     {
-      return MatrixContainer.GetComplexMatrix(ddz_k_shift_neg);
+      return MatrixContainer.GetMatrix<TComplexMatrix>(ddz_k_shift_neg);
     };
 
     /// Get the x_shift_neg_r matrix from the container
     TComplexMatrix& Get_x_shift_neg_r()
     {
-      return MatrixContainer.GetComplexMatrix(x_shift_neg_r);
+      return MatrixContainer.GetMatrix<TComplexMatrix>(x_shift_neg_r);
     };
     /// Get the y_shift_neg_r from the container
     TComplexMatrix& Get_y_shift_neg_r()
     {
-      return MatrixContainer.GetComplexMatrix(y_shift_neg_r);
+      return MatrixContainer.GetMatrix<TComplexMatrix>(y_shift_neg_r);
     };
     /// Get the y_shift_neg_r from the container
     TComplexMatrix& Get_z_shift_neg_r()
     {
-      return MatrixContainer.GetComplexMatrix(z_shift_neg_r);
+      return MatrixContainer.GetMatrix<TComplexMatrix>(z_shift_neg_r);
     };
 
     /// Get the pml_x_sgx matrix from the container
     TRealMatrix& Get_pml_x_sgx()
     {
-      return MatrixContainer.GetRealMatrix(pml_x_sgx);
+      return MatrixContainer.GetMatrix<TRealMatrix>(pml_x_sgx);
     };
     /// Get the pml_y_sgy matrix from the container
     TRealMatrix& Get_pml_y_sgy()
     {
-      return MatrixContainer.GetRealMatrix(pml_y_sgy);
+      return MatrixContainer.GetMatrix<TRealMatrix>(pml_y_sgy);
     };
     /// Get the pml_z_sgz matrix from the container
     TRealMatrix& Get_pml_z_sgz()
     {
-      return MatrixContainer.GetRealMatrix(pml_z_sgz);
+      return MatrixContainer.GetMatrix<TRealMatrix>(pml_z_sgz);
     };
 
     /// Get the pml_x matrix from the container
     TRealMatrix& Get_pml_x()
     {
-      return MatrixContainer.GetRealMatrix(pml_x);
+      return MatrixContainer.GetMatrix<TRealMatrix>(pml_x);
     };
     /// Get the pml_y matrix from the container
     TRealMatrix& Get_pml_y()
     {
-      return MatrixContainer.GetRealMatrix(pml_y);
+      return MatrixContainer.GetMatrix<TRealMatrix>(pml_y);
     };
     /// Get the pml_z matrix from the container
     TRealMatrix& Get_pml_z()
     {
-      return MatrixContainer.GetRealMatrix(pml_z);
+      return MatrixContainer.GetMatrix<TRealMatrix>(pml_z);
     };
 
 
     /// Get the dxudxn matrix from the container
     TRealMatrix& Get_dxudxn()
     {
-      return MatrixContainer.GetRealMatrix(dxudxn);
+      return MatrixContainer.GetMatrix<TRealMatrix>(dxudxn);
     };
     /// Get the dyudyn matrix from the container
     TRealMatrix& Get_dyudyn()
     {
-      return MatrixContainer.GetRealMatrix(dyudyn);
+      return MatrixContainer.GetMatrix<TRealMatrix>(dyudyn);
     };
     /// Get the dzudzn matrix from the container
     TRealMatrix& Get_dzudzn()
     {
-      return MatrixContainer.GetRealMatrix(dzudzn);
+      return MatrixContainer.GetMatrix<TRealMatrix>(dzudzn);
     };
 
     /// Get the dxudxn_sgx matrix from the container
     TRealMatrix& Get_dxudxn_sgx()
     {
-      return MatrixContainer.GetRealMatrix(dxudxn_sgx);
+      return MatrixContainer.GetMatrix<TRealMatrix>(dxudxn_sgx);
     };
     /// Get the dyudyn_sgy matrix from the container
     TRealMatrix& Get_dyudyn_sgy()
     {
-      return MatrixContainer.GetRealMatrix(dyudyn_sgy);
+      return MatrixContainer.GetMatrix<TRealMatrix>(dyudyn_sgy);
     };
     /// Get the dzudzn_sgz matrix from the container
     TRealMatrix& Get_dzudzn_sgz()
     {
-      return MatrixContainer.GetRealMatrix(dzudzn_sgz);
+      return MatrixContainer.GetMatrix<TRealMatrix>(dzudzn_sgz);
     };
 
 
     /// Get the BonA matrix from the container
     TRealMatrix& Get_BonA()
     {
-      return MatrixContainer.GetRealMatrix(BonA);
+      return MatrixContainer.GetMatrix<TRealMatrix>(BonA);
     };
     /// Get the absorb_tau matrix from the container
     TRealMatrix& Get_absorb_tau()
     {
-      return MatrixContainer.GetRealMatrix(absorb_tau);
+      return MatrixContainer.GetMatrix<TRealMatrix>(absorb_tau);
     };
     /// Get the absorb_eta matrix from the container
     TRealMatrix& Get_absorb_eta()
     {
-      return MatrixContainer.GetRealMatrix(absorb_eta);
+      return MatrixContainer.GetMatrix<TRealMatrix>(absorb_eta);
     };
 
     /// Get the absorb_nabla1 matrix from the container
     TRealMatrix& Get_absorb_nabla1()
     {
-      return MatrixContainer.GetRealMatrix(absorb_nabla1);
+      return MatrixContainer.GetMatrix<TRealMatrix>(absorb_nabla1);
     };
     /// Get the absorb_nabla2 matrix from the container
     TRealMatrix& Get_absorb_nabla2()
     {
-      return MatrixContainer.GetRealMatrix(absorb_nabla2);
+      return MatrixContainer.GetMatrix<TRealMatrix>(absorb_nabla2);
     };
 
 
@@ -507,30 +508,30 @@ protected:
     /// Get the sensor_mask_index matrix from the container
     TIndexMatrix& Get_sensor_mask_index()
     {
-      return MatrixContainer.GetLongMatrix(sensor_mask_index);
+      return MatrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_index);
     };
-    //TODO implement cuboid corners
-    /*
+
+
     /// Get the sensor_mask_corners matrix from the container
-    TLongMatrix& Get_sensor_mask_corners()
+    TIndexMatrix& Get_sensor_mask_corners()
     {
-      return MatrixContainer.GetLongMatrix(sensor_mask_corners);
+      return MatrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_corners);
     };
-    */
+
     /// Get the u_source_index matrix from the container
     TIndexMatrix& Get_u_source_index()
     {
-      return MatrixContainer.GetLongMatrix(u_source_index);
+      return MatrixContainer.GetMatrix<TIndexMatrix>(u_source_index);
     };
     /// Get the p_source_index matrix from the container
     TIndexMatrix& Get_p_source_index()
     {
-      return MatrixContainer.GetLongMatrix(p_source_index);
+      return MatrixContainer.GetMatrix<TIndexMatrix>(p_source_index);
     };
     /// Get the delay_mask matrix from the container
     TIndexMatrix& Get_delay_mask()
     {
-      return MatrixContainer.GetLongMatrix(delay_mask);
+      return MatrixContainer.GetMatrix<TIndexMatrix>(delay_mask);
     }
 
 
@@ -539,36 +540,36 @@ protected:
     /// Get the transducer_source_input matrix from the container
     TRealMatrix& Get_transducer_source_input()
     {
-      return MatrixContainer.GetRealMatrix(transducer_source_input);
+      return MatrixContainer.GetMatrix<TRealMatrix>(transducer_source_input);
     };
 
     /// Get the p_source_input matrix from the container
     TRealMatrix& Get_p_source_input()
     {
-      return MatrixContainer.GetRealMatrix(p_source_input);
+      return MatrixContainer.GetMatrix<TRealMatrix>(p_source_input);
     };
 
     /// Get the p0_source_input from the container
     TRealMatrix& Get_p0_source_input()
     {
-      return MatrixContainer.GetRealMatrix(p0_source_input);
+      return MatrixContainer.GetMatrix<TRealMatrix>(p0_source_input);
     };
 
 
     /// Get the ux_source_input matrix from the container
     TRealMatrix& Get_ux_source_input()
     {
-      return MatrixContainer.GetRealMatrix(ux_source_input);
+      return MatrixContainer.GetMatrix<TRealMatrix>(ux_source_input);
     };
     /// Get the uy_source_input matrix from the container
     TRealMatrix& Get_uy_source_input()
     {
-      return MatrixContainer.GetRealMatrix(uy_source_input);
+      return MatrixContainer.GetMatrix<TRealMatrix>(uy_source_input);
     };
     /// Get the uz_source_input matrix from the container
     TRealMatrix& Get_uz_source_input()
     {
-      return MatrixContainer.GetRealMatrix(uz_source_input);
+      return MatrixContainer.GetMatrix<TRealMatrix>(uz_source_input);
     };
 
 
@@ -577,29 +578,35 @@ protected:
     /// Get the Temp_1_RS3D matrix from the container
     TRealMatrix& Get_Temp_1_RS3D()
     {
-      return MatrixContainer.GetRealMatrix(Temp_1_RS3D);
+      return MatrixContainer.GetMatrix<TRealMatrix>(Temp_1_RS3D);
     };
     /// Get the Temp_2_RS3D matrix from the container
     TRealMatrix& Get_Temp_2_RS3D()
     {
-      return MatrixContainer.GetRealMatrix(Temp_2_RS3D);
+      return MatrixContainer.GetMatrix<TRealMatrix>(Temp_2_RS3D);
     };
     /// Get the Temp_3_RS3D matrix from the container
     TRealMatrix& Get_Temp_3_RS3D()
     {
-      return MatrixContainer.GetRealMatrix(Temp_3_RS3D);
+      return MatrixContainer.GetMatrix<TRealMatrix>(Temp_3_RS3D);
     };
 
 
-    // Get the FFT_X_temp from the container
-    TCUFFTComplexMatrix  & Get_CUFFT_X_temp()
-    {return MatrixContainer.GetCUFFTComplexMatrix(CUFFT_X_temp);};
-    // Get the FFT_Y_temp from the container
+    /// Get the CUFFT_X_temp from the container.
+    TCUFFTComplexMatrix& Get_CUFFT_X_temp()
+    {
+      return MatrixContainer.GetMatrix<TCUFFTComplexMatrix>(CUFFT_X_temp);
+    };
+    /// Get the FFT_Y_temp from the container.
     TCUFFTComplexMatrix  & Get_CUFFT_Y_temp()
-    {return MatrixContainer.GetCUFFTComplexMatrix(CUFFT_Y_temp);};
-    // Get the FFT_Z_temp from the container
+    {
+      return MatrixContainer.GetMatrix<TCUFFTComplexMatrix>(CUFFT_Y_temp);
+    };
+    /// Get the FFT_Z_temp from the container.
     TCUFFTComplexMatrix  & Get_CUFFT_Z_temp()
-    {return MatrixContainer.GetCUFFTComplexMatrix(CUFFT_Z_temp);};
+    {
+      return MatrixContainer.GetMatrix<TCUFFTComplexMatrix>(CUFFT_Z_temp);
+    };
 
 
 private:

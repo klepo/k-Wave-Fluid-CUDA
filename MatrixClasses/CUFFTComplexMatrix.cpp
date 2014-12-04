@@ -116,7 +116,7 @@ std::map<cufftResult, TErrorMessage> TCUFFTComplexMatrix::cuFFTErrorMessages
 //----------------------------------------------------------------------------//
 
 /**
- * /**
+ * 
  * Create an cuFFT plan for 3D Real-to-Complex. \n
  * This version doesn't need any scratch place for planning.
  * @param [in] InMatrixDims - the dimension sizes of the input matrix

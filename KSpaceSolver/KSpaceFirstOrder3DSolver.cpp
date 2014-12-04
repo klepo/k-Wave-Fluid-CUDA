@@ -60,9 +60,9 @@
 
 #include "KSpaceFirstOrder3DSolver.h"
 #include "../Utils/ErrorMessages.h"
-#include "../MatrixClasses/MatrixContainer.h"
-
 #include "../CUDA/CUDAImplementations.h"
+
+#include <Containers/MatrixContainer.h>
 
 
 using namespace std;
@@ -1807,6 +1807,7 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
         Parameters->Increment_t_index();
     }
 
+    // WHAT THE HELL IS THIS!!!!
     MatrixContainer.CopyAllMatricesFromGPU();
 
 }// end of ComputeMainLoop()

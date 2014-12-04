@@ -1,16 +1,16 @@
 /**
  * @file        MatrixRecord.cpp
- * @author      Jiri Jaros \n
+ * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
  *              jarosjir@fit.vutbr.cz
  *
- * @brief       An implementation file of the class for storing Matrix structural
- *              details.
+ * @brief       The implementation file containing data about matrix stored in
+ *              matrix container (TMatrixRecord)
  *
  * @version     kspaceFirstOrder3D 3.3
- * @date        27 August   2014, 10:22 (created)
- *              04 November 2014, 17:17 (revised)
+ * @date        02 December 2014, 15:44 (created) \n
+ *              02 December 2014, 15:44 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -31,29 +31,28 @@
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
+//----------------------------------------------------------------------------//
+//--------------------------- CONSTANTS --------------------------------------//
+//----------------------------------------------------------------------------//
 
-#include "MatrixRecord.h"
-
-//============================================================================//
-//                              TMatrixRecord                                 //
-//============================================================================//
 
 //----------------------------------------------------------------------------//
 //--------------------------- Public methods ---------------------------------//
 //----------------------------------------------------------------------------//
 
+#include <Containers/MatrixRecord.h>
 
 /**
- * Copy constructor of TMatrixRecord
+ * Copy constructor of TMatrixRecord.
  * @param [in] src
  */
 TMatrixRecord::TMatrixRecord(const TMatrixRecord& src) :
-    MatrixPtr(src.MatrixPtr),
-    MatrixDataType(src.MatrixDataType),
-    DimensionSizes(src.DimensionSizes),
-    LoadData(src.LoadData),
-    Checkpoint(src.Checkpoint),
-    HDF5MatrixName(src.HDF5MatrixName)
+        MatrixPtr(src.MatrixPtr),
+        MatrixDataType(src.MatrixDataType),
+        DimensionSizes(src.DimensionSizes),
+        LoadData(src.LoadData),
+        Checkpoint(src.Checkpoint),
+        HDF5MatrixName(src.HDF5MatrixName)
 {
 
 }// end of TMatrixRecord
@@ -61,28 +60,28 @@ TMatrixRecord::TMatrixRecord(const TMatrixRecord& src) :
 
 
 /**
- * operator = of TMatrixRecord
+ * operator = of TMatrixRecord.
  * @param  [in] src
  * @return this
  */
 TMatrixRecord& TMatrixRecord::operator = (const TMatrixRecord& src)
 {
-    if (this != &src)
-    {
-        MatrixPtr       = src.MatrixPtr;
-        MatrixDataType  = src.MatrixDataType;
-        DimensionSizes  = src.DimensionSizes;
-        LoadData        = src.LoadData;
-        Checkpoint      = src.Checkpoint;
-        HDF5MatrixName  = src.HDF5MatrixName;
-    }
+  if (this != &src)
+  {
+    MatrixPtr       = src.MatrixPtr;
+    MatrixDataType  = src.MatrixDataType;
+    DimensionSizes  = src.DimensionSizes;
+    LoadData        = src.LoadData;
+    Checkpoint      = src.Checkpoint;
+    HDF5MatrixName  = src.HDF5MatrixName;
+  }
 
-    return *this;
+  return *this;
 }// end of operator =
 //------------------------------------------------------------------------------
 
 /**
- * Set all values for the record
+ * Set all values for the record.
  * @param [in] MatrixPtr        - Pointer to the MatrixClass object
  * @param [in] MatrixDataType   - Matrix data type
  * @param [in] DimensionSizes   - Dimension sizes
@@ -90,19 +89,19 @@ TMatrixRecord& TMatrixRecord::operator = (const TMatrixRecord& src)
  * @param [in] Checkpoint       - Checkpoint this matrix?
  * @param [in] HDF5MatrixName   - HDF5 matrix name
  */
-void TMatrixRecord::SetAllValues(TBaseMatrix *          MatrixPtr,
-        const TMatrixDataType  MatrixDataType,
-        const TDimensionSizes  DimensionSizes,
-        const bool             LoadData,
-        const bool             Checkpoint,
-        const string           HDF5MatrixName)
+void TMatrixRecord::SetAllValues(TBaseMatrix *         MatrixPtr,
+                                 const TMatrixDataType MatrixDataType,
+                                 const TDimensionSizes DimensionSizes,
+                                 const bool            LoadData,
+                                 const bool            Checkpoint,
+                                 const string          HDF5MatrixName)
 {
-    this->MatrixPtr        = MatrixPtr;
-    this->MatrixDataType   = MatrixDataType;
-    this->DimensionSizes   = DimensionSizes;
-    this->LoadData         = LoadData;
-    this->Checkpoint       = Checkpoint;
-    this->HDF5MatrixName   = HDF5MatrixName;
+  this->MatrixPtr        = MatrixPtr;
+  this->MatrixDataType   = MatrixDataType;
+  this->DimensionSizes   = DimensionSizes;
+  this->LoadData         = LoadData;
+  this->Checkpoint       = Checkpoint;
+  this->HDF5MatrixName   = HDF5MatrixName;
 }// end of SetAllValues
 //------------------------------------------------------------------------------
 
@@ -113,4 +112,3 @@ void TMatrixRecord::SetAllValues(TBaseMatrix *          MatrixPtr,
 //----------------------------------------------------------------------------//
 //-------------------------- Private methods ---------------------------------//
 //----------------------------------------------------------------------------//
-
