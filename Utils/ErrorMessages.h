@@ -187,6 +187,26 @@ TErrorMessage CUFFTComplexMatrix_ERR_FMT_CUFFT_LICENSE_ERROR   = "Error: cuFFT l
 /// CUDA FFT error message.
 TErrorMessage CUFFTComplexMatrix_ERR_FMT_CUFFT_UNKNOWN_ERROR   = "Error: cuFFT failed with unknown error for %s! \n";
 
+
+//------------------------- KSpaceFirstOrder3DSolver Classes  ----------------//
+
+/// KSpaceFirstOrder3DSolver error message
+TErrorMessage KSpaceFirstOrder3DSolver_ERR_FMT_IncorrectCheckpointFileFormat
+  = "Error: Incorrect checkpoint file \"%s\" format!\n";
+
+/// KSpaceFirstOrder3DSolver error message
+TErrorMessage KSpaceFirstOrder3DSolver_ERR_FMT_IncorrectOutputFileFormat
+  = "Error: Incorrect output file \"%s\" format!\n";
+
+/// KSpaceFirstOrder3DSolver error message
+TErrorMessage KSpaceFirstOrder3DSolver_ERR_FMT_CheckpointDimensionsDoNotMatch
+  = "Error: The dimensions [%ld, %ld, %ld] of the checkpoint file don't match the simulation dimensions [%ld, %ld, %ld] \n";
+
+/// KSpaceFirstOrder3DSolver error message
+TErrorMessage KSpaceFirstOrder3DSolver_ERR_FMT_OutputDimensionsDoNotMatch
+  = "Error: The dimensions [%ld, %ld, %ld] of the output file don't match the simulation dimensions [%ld, %ld, %ld] \n";
+
+
 #endif	/* ERRORMESSAGES_H */
 
 
