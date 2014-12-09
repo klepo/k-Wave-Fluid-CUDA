@@ -255,8 +255,8 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
 
   const struct option longOpts[] =
   {
-    { "1DBlockSize",          required_argument, NULL, 0 },
-    { "3DBlockSize",          required_argument, NULL, 0 },
+    { "BlockSize1D",          required_argument, NULL, 0 },
+    { "BlockSize3D",          required_argument, NULL, 0 },
 
     { "benchmark",            required_argument, NULL, 0},
     { "help",                 no_argument, NULL,      'h'},
