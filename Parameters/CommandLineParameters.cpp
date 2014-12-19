@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        29 August   2012, 11:25 (created) \n
- *              04 November 2014, 17:44 (revised)
+ *              19 December 2014, 21:19 (revised)
  *
  *
  * @section License
@@ -71,9 +71,9 @@ TCommandLineParameters::TCommandLineParameters() :
           NumberOfThreads(1),
         #endif
 
-        GPUDeviceID(std::numeric_limits<size_t>::max()), // default is undefined MAX_UINT
-        BlockSize1D(0),
-        BlockSize3DX(0), BlockSize3DY(0), BlockSize3DZ(0),
+        GPUDeviceIdx(-1), // default is undefined -1
+        BlockSize1D(128), // needs to be done differently
+        BlockSize3DX(128), BlockSize3DY(1), BlockSize3DZ(1),
 
         VerboseInterval(DefaultVerboseInterval),
         CompressionLevel(DefaultCompressionLevel),
@@ -182,7 +182,7 @@ void TCommandLineParameters::PrintSetup()
   printf("  Output file               %s\n",OutputFileName.c_str());
   printf("\n");
 
-  printf("  GPU device number     %ld\n", GPUDeviceID);
+  printf("  GPU device number     %d\n", GPUDeviceIdx);
 
   if (BlockSize1D == 0)
   {
@@ -190,7 +190,7 @@ void TCommandLineParameters::PrintSetup()
   }
   else
   {
-    printf("  1D Block Size   =     %ld\n", BlockSize1D);
+    printf("  1D Block Size   =     %d\n", BlockSize1D);
   }
 
   if (BlockSize3DX == 0 || BlockSize3DY == 0 || BlockSize3DZ == 0)
@@ -199,9 +199,9 @@ void TCommandLineParameters::PrintSetup()
   }
   else
   {
-    printf("  3D Block Size X =     %ld\n", BlockSize3DX);
-    printf("                Y =     %ld\n", BlockSize3DY);
-    printf("                Z =     %ld\n", BlockSize3DZ);
+    printf("  3D Block Size X =     %d\n", BlockSize3DX);
+    printf("                Y =     %d\n", BlockSize3DY);
+    printf("                Z =     %d\n", BlockSize3DZ);
   }
   printf("\n");
 
@@ -339,7 +339,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         }
         else
         {
-          GPUDeviceID = atoi(optarg);
+          GPUDeviceIdx = atoi(optarg);
         }
         break;
       }

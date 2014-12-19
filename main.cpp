@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        11 July     2012, 10:57 (created) \n
- *              04 November 2014, 17:31 (revised)
+ *              19 December 2014, 17:31 (revised)
  *
  *
  *
@@ -693,7 +693,7 @@ int main(int argc, char** argv)
   #endif
 
   // CUDA Tuner from Beau's code. Not sure what this is
-  CUDATuner* Tuner = CUDATuner::GetInstance();
+  TCUDATuner* Tuner = TCUDATuner::GetInstance();
   fprintf(stdout, "Selected GPU device id:   %9d\n", Tuner->GetDevice());
   fprintf(stdout,
           "GPU Device info: %18s\n",

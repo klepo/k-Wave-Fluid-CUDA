@@ -265,10 +265,8 @@ void TKSpaceFirstOrder3DSolver::Compute()
   cuda_implementations = CUDAImplementations::GetInstance();
 
   // Set up kernel sizes (default grid and block sizes)
-  cuda_implementations->SetUpExecutionModelWithTuner(
-            Parameters->GetFullDimensionSizes().X,
-            Parameters->GetFullDimensionSizes().Y,
-            Parameters->GetFullDimensionSizes().Z);
+  cuda_implementations->SetUpExecutionModelWithTuner(Parameters->GetFullDimensionSizes(),
+                                                     Parameters->GetReducedDimensionSizes());
 
   // Set up constant memory - copy over to GPU
   cuda_implementations->SetUpDeviceConstants(

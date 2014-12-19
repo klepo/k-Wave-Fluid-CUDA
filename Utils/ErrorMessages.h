@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        09 August   2011, 12:34 (created) \n
- *              06 November 2014, 13:18 (revised)
+ *              17 December 2014, 13:18 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -147,10 +147,8 @@ TErrorMessage Parameters_ERR_FMT_UNonStaggeredNotSupportedForFile10 = "Error: --
 //------------------------------- CUDA  --------------------------------------//
 
 /// CUDA error message.
-TErrorMessage CUDA_ERR_FMT_CouldNotSetupDevice = "Error: Couldn't setup the device!\n";
-/// CUDA error message.
-TErrorMessage CUDA_ERR_FMT_BadBlocksSize = "Error: The device %ld cannot handle either the \n \
-                                                 \t 1D blocksize of %ld\n \t or \n \t 3D blocksize of %ld,%ld,%ld \n";
+TErrorMessage CUDA_ERR_FMT_BadBlocksSize = "Error: The device %d cannot handle either the \n \
+                                                 \t 1D blocksize of %d\n \t or \n \t 3D blocksize of %d,%d,%d \n";
 
 
 //-------------------------------- CUDA FFT Errors ---------------------------//
@@ -200,12 +198,19 @@ TErrorMessage KSpaceFirstOrder3DSolver_ERR_FMT_IncorrectOutputFileFormat
 
 /// KSpaceFirstOrder3DSolver error message
 TErrorMessage KSpaceFirstOrder3DSolver_ERR_FMT_CheckpointDimensionsDoNotMatch
-  = "Error: The dimensions [%ld, %ld, %ld] of the checkpoint file don't match the simulation dimensions [%ld, %ld, %ld] \n";
+  = "Error: The dimensions [%ld, %ld, %ld] of the checkpoint file don't match the simulation dimensions [%ld, %ld, %ld]! \n";
 
 /// KSpaceFirstOrder3DSolver error message
 TErrorMessage KSpaceFirstOrder3DSolver_ERR_FMT_OutputDimensionsDoNotMatch
-  = "Error: The dimensions [%ld, %ld, %ld] of the output file don't match the simulation dimensions [%ld, %ld, %ld] \n";
+  = "Error: The dimensions [%ld, %ld, %ld] of the output file don't match the simulation dimensions [%ld, %ld, %ld]!\n";
 
+//----------------------------------- CUDATuner Class  -----------------------//
+
+/// CUDATuner error message
+TErrorMessage CUDATuner_ERR_FMT_WrongDeviceIdx = "Error: Wrong CUDA Device Idx %d. Allowed Devices 0-%d!\n";
+
+/// CUDATuner error message
+TErrorMessage CUDATuner_ERR_FMT_InvalidDimensions = "ERROR: Invalid simulation dimensions (zero when generating the execution model)!\n";
 
 #endif	/* ERRORMESSAGES_H */
 

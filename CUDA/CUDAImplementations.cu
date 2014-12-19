@@ -61,19 +61,13 @@ CUDAImplementations::~CUDAImplementations()
     instance_flag = false;
 }
 
-void CUDAImplementations::SetUpExecutionModelWithTuner(size_t x,
-                                                       size_t y,
-                                                       size_t z)
+void CUDAImplementations::SetUpExecutionModelWithTuner(const TDimensionSizes & FullDimensionSizes,
+                                                       const TDimensionSizes & ReducedDimensionSizes)
 {
-    tuner = CUDATuner::GetInstance();
+    tuner = TCUDATuner::GetInstance();
 
-    bool did_generate_model =
-        tuner->GenerateExecutionModelForMatrixSize(x, y, z);
+    tuner->GenerateExecutionModelForMatrixSize(FullDimensionSizes, ReducedDimensionSizes);
 
-    if(!did_generate_model){
-        cerr << "Error: Failed to create execution model for matrix" << endl;
-        abort();
-    }
 }
 
 void CUDAImplementations::SetUpDeviceConstants(size_t max_x,

@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        08 December 2011, 16:34 (created)      \n
- *              06 November 2014, 13:12 (revised)
+ *              17 December 2014, 21:19 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -78,7 +78,7 @@ class TParameters
     void SaveScalarsToHDF5File(THDF5_File & HDF5_OutputFile);
 
     /// Full dimension sizes of the simulation (real classes).
-     TDimensionSizes GetFullDimensionSizes()   const {return FullDimensionSizes; };
+    TDimensionSizes GetFullDimensionSizes()   const {return FullDimensionSizes; };
 
     // Reduced dimension sizes of the simulation (complex classes).
     TDimensionSizes GetReducedDimensionSizes() const {return ReducedDimensionSizes;};

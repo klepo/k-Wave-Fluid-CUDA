@@ -50,7 +50,7 @@ class CUDAImplementations{
         //private variables required for instance variable
         static bool instance_flag;
         static CUDAImplementations *single_cuda_implementation;
-        CUDATuner* tuner;
+        TCUDATuner* tuner;
 
         //functions
         CUDAImplementations();
@@ -74,9 +74,8 @@ class CUDAImplementations{
         ~CUDAImplementations();
 
         //setup functions
-        void SetUpExecutionModelWithTuner(size_t x,
-                                          size_t y,
-                                          size_t z);
+        void SetUpExecutionModelWithTuner(const TDimensionSizes & FullDimensionSizes,
+                                          const TDimensionSizes & ReducedDimensionSizes);
 
         void SetUpDeviceConstants(size_t max_x,
                                   size_t max_y,

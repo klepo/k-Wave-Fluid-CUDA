@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        09 August    2012, 13:39 (created) \n
- *              06 November  2014, 14:14 (revised)
+ *              17 December  2014, 20:37 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -119,19 +119,14 @@ void TParameters::ParseCommandLine(int argc, char** argv)
 
   // CUDA Tuner?
   ///@todo Should this be really here?
-  CUDATuner* Tuner = CUDATuner::GetInstance();
+  TCUDATuner* Tuner = TCUDATuner::GetInstance();
 
-  size_t pGPU_ID = CommandLinesParameters.GetGPUDeviceID();
-  bool did_set_device = Tuner->SetDevice(pGPU_ID);
-  if (!did_set_device)
-  {
-    fprintf(stderr, "%s", CUDA_ERR_FMT_CouldNotSetupDevice);
-    exit(EXIT_FAILURE);
-  }
+  int DeviceIdx = CommandLinesParameters.GetGPUDeviceIdx();
+  Tuner->SetDevice(DeviceIdx); // throws an exception when wrong
 
-  Tuner->Set1DBlockSize(CommandLinesParameters.GetBlockSize1D());
+  Tuner->SetBlockSize1D(CommandLinesParameters.GetBlockSize1D());
 
-  Tuner->Set3DBlockSize(CommandLinesParameters.GetBlockSize3DX(),
+  Tuner->SetBlockSize3D(CommandLinesParameters.GetBlockSize3DX(),
                         CommandLinesParameters.GetBlockSize3DY(),
                         CommandLinesParameters.GetBlockSize3DZ());
 
@@ -141,7 +136,7 @@ void TParameters::ParseCommandLine(int argc, char** argv)
   {
     fprintf(stderr,
             CUDA_ERR_FMT_BadBlocksSize,
-            pGPU_ID,
+            DeviceIdx,
 
             CommandLinesParameters.GetBlockSize1D(),
             CommandLinesParameters.GetBlockSize3DX(),

@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        04 November 2014, 14:40 (created) \n
- *              04 November 2014, 14:47 (revised)
+ *              17 December 2014, 20:36 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,81 +30,112 @@
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef CUDATUNER_H
-#define CUDATUNER_H
+#ifndef CUDA_TUNER_H
+#define CUDA_TUNER_H
 
 #include <string>
 #include <iostream>
 #include <cuda_runtime.h>
 
-class CUDATuner
+#include <Utils/DimensionSizes.h>
+
+/**
+ * @class CUDATnuer
+ * @brief Class responsible cuda blocks and grid seizes
+ * @details Class responsible cuda blocks and grid seizes and device selection
+ *
+ * @todo - needs a bit of investigation -> Move to TParameters?
+ *         There is a collision with TCommandline parameters
+ */
+class TCUDATuner
 {
-    private:
-        static bool CUDATunerInstanceFlag;
-        static CUDATuner* CUDATunerSingle;
-        CUDATuner();
+  public:
+    /// Get instance of the singleton class.
+    static TCUDATuner* GetInstance();
 
-    public:
-        static CUDATuner* GetInstance();
-        virtual ~CUDATuner();
+    ///Destructor.
+    virtual ~TCUDATuner();
 
-        void Set1DBlockSize(int i);
-        void Set3DBlockSize(int x, int y, int z);
-        bool SetDevice(int);
-        int  GetDevice();
-        std::string GetDeviceName();
-        bool CanDeviceHandleBlockSizes();
-        bool GenerateExecutionModelForMatrixSize(size_t X,
-                                                 size_t Y,
-                                                 size_t Z);
-        int GetNumberOfBlocksForSubmatrixWithSize(size_t number_of_elements);
+    /// Set block size of 1D Block.
+    void SetBlockSize1D(const int BlockSize1D) { NumberOfThreads1D = BlockSize1D;};
+    /// Set size for 3D block.
+    void SetBlockSize3D(const int x, const int y, const int z);
+    /// Set size for 3D block.
+    void SetBlockSize3D(const dim3 & BlockSize3D) { NumberOfThreads3D = BlockSize3D;};
 
-        //accessors
-        int GetNumberOfThreadsFor1D()
-        {
-            return default_number_of_threads_1D;
-        }
+    /// Set CUDA device for execution (-1 - let system to select the best on).
+    void SetDevice(const int DeviceIdx = DefaultDeviceIdx);
+    /// Get CUDA Device.
+    int  GetDevice() const {return DeviceIdx;};
 
-        int GetNumberOfBlocksFor1D()
-        {
-            return default_number_of_blocks_1D;
-        }
+    /// Get CUDA device name.
+    std::string GetDeviceName() const {return DeviceName;};
 
-        dim3 GetNumberOfThreadsFor3D()
-        {
-            return default_number_of_threads_3D;
-        }
+    /// Can the device handle this block size?
+    bool CanDeviceHandleBlockSizes() const;
+    /// Generate grid sizes for matrix
+    void GenerateExecutionModelForMatrixSize(const TDimensionSizes & FullDimensionSizes,
+                                             const TDimensionSizes & ReducedDimensionSizes);
 
-        dim3 GetNumberOfBlocksFor3D()
-        {
-            return default_number_of_blocks_3D;
-        }
+    /// Get number of block for smaller 1D matrix
+    int GetNumberOfBlocksForSubmatrixWithSize(const size_t NumberOfElements) const;
 
-        dim3 GetNumberOfBlocksFor3DComplex()
-        {
-            return default_number_of_blocks_3D_complex;
-        }
+    /// Get number of threads for 1D block.
+    int GetNumberOfThreadsFor1D() const {return NumberOfThreads1D;};
+    /// Get number of block for 1D grid.
+    int GetNumberOfBlocksFor1D()  const {return NumberOfBlocks1D;};
 
-        void ShowGPUParams();
-        void SetGPUParams();
-        void SetDefaultGPUParams();
+    /// Get number of threads for 3D block.
+    dim3 GetNumberOfThreadsFor3D() const {return NumberOfThreads3D;};
+    /// Get number for blocks for 3D grid.
+    dim3 GetNumberOfBlocksFor3D()  const {return NumberOfBlocks3D;};
+    /// Get number of block for 3D grid running in k-space (over comples matrices).
+    dim3 GetNumberOfBlocksFor3DComplex() const {return NumberOfBlocks3DComplex;};
 
-        protected:
-        //variables
-        int  device_id;
+    /// Show GPU parameters.
+    void ShowGPUParams();
+    /// Set GPU parameters.
+    void SetGPUParams();
+    /// Set Default GPU parameters
+    void SetDefaultGPUParams();
 
-        int  default_number_of_blocks_1D;
-        int  default_number_of_threads_1D;
+  protected:
+    /// Device index - where to run the code.
+    int  DeviceIdx;
 
-        dim3 default_number_of_blocks_3D;
-        dim3 default_number_of_threads_3D;
+    /// Number of threads for 1D block.
+    int  NumberOfThreads1D;
+    /// Number of block for 1D grid.
+    int  NumberOfBlocks1D;
 
-        dim3 default_number_of_blocks_3D_complex;
+    /// Number of Block in 3D grid.
+    dim3 NumberOfThreads3D;
+    /// Number of block for 3D grid.
+    dim3 NumberOfBlocks3D;
 
-        std::string device_type;
+   /// Number of Blocks in 3D complex grid
+    dim3 NumberOfBlocks3DComplex;
 
-        //functions
-        void IsTheNumberOfBlocksGreaterThanSupportedOnDevice();
+    /// Type of the device used.
+    std::string DeviceName;
+
+    // Check the grid size and if it's bigger than supported adjust it.
+    void CheckAndAdjustGridSize3DToDeviceProperties();
+
+  private:
+    /// Default constructor for singleton.
+    TCUDATuner();
+    /// Singleton flag.
+    static bool InstanceFlag;
+    ///Singleton instance.
+    static TCUDATuner * Instance;
+
+    /// Default device -1 - let the class to choose
+    static const int  DefaultDeviceIdx   = -1;
+    /// Default size of 1D block (empirically tested of Fermi and Kepler)
+    static const int  DefaultNumberOfThreads1D = 128;
+    /// Default size of 3D block (empirically tested of Fermi and Kepler)
+    static const dim3 DefaultNumberOfThreads3D; //initialized in the cpp file= {128, 1, 1};
 
 };
-#endif /* CUDATUNER_H */
+#endif /* CUDA_TUNER_H */

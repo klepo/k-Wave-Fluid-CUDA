@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        29 August   2012, 11:25 (created) \n
- *              05 November 2014, 12:40 (revised)
+ *              17 December 2014, 12:40 (revised)
  *
  * @section Params Command Line Parameters
  * The CUDA/C++ code requires two mandatory parameters and accepts a few optional
@@ -221,15 +221,15 @@ class TCommandLineParameters
 
 
     /// Get GPU device ID
-    size_t GetGPUDeviceID()             const {return GPUDeviceID;};
+    int GetGPUDeviceIdx()               const {return GPUDeviceIdx;};
     /// Get size of 1D block
-    size_t GetBlockSize1D()             const {return BlockSize1D;};
+    int GetBlockSize1D()                const {return BlockSize1D;};
     /// Get X size of 3D block
-    size_t GetBlockSize3DX()            const {return BlockSize3DX;};
+    int GetBlockSize3DX()               const {return BlockSize3DX;};
     /// Get Y size of 3D block
-    size_t GetBlockSize3DY()            const {return BlockSize3DY;};
+    int GetBlockSize3DY()               const {return BlockSize3DY;};
     /// Get Z size of 3D block
-    size_t GetBlockSize3DZ()            const {return BlockSize3DZ;};
+    int GetBlockSize3DZ()               const {return BlockSize3DZ;};
 
     /// Is --benchmark flag set?
     bool IsBenchmarkFlag()              const {return BenchmarkFlag;};
@@ -314,15 +314,15 @@ class TCommandLineParameters
 
 
     /// id of selected GPU devices.
-    size_t GPUDeviceID;
+    int GPUDeviceIdx;
     /// size of 1D block.
-    size_t BlockSize1D;
+    int BlockSize1D;
     /// x size of 3D block.
-    size_t BlockSize3DX;
+    int BlockSize3DX;
     /// y size of 3D block.
-    size_t BlockSize3DY;
+    int BlockSize3DY;
     /// z size of 3D block.
-    size_t BlockSize3DZ;
+    int BlockSize3DZ;
 
     /// VerboseInterval value.
     size_t VerboseInterval;
