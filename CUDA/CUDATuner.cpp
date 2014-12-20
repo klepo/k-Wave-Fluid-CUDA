@@ -45,7 +45,7 @@ using namespace std;
 //----------------------------------------------------------------------------//
 
 /**
-* Check errors of the CUDA routines and print error.
+ * Check errors of the CUDA routines and print error.
  * @param [in] code  - error code of last routine
  * @param [in] file  - The name of the file, where the error was raised
  * @param [in] line  - What is the line

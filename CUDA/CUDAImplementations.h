@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        11 March    2013, 13:10 (created) \n
- *              04 November 2014, 14:47 (revised)
+ *              20 December 2014, 10:15 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -31,119 +31,136 @@
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef CUDAIMPLEMENTATIONS_H
-#define	CUDAIMPLEMENTATIONS_H
+#ifndef CUDA_IMPLEMENTATIONS_H
+#define	CUDA_IMPLEMENTATIONS_H
 
 #include <iostream>
 
-#include "../MatrixClasses/RealMatrix.h"
-#include "../MatrixClasses/ComplexMatrix.h"
-#include "../MatrixClasses/IndexMatrix.h"
-#include "../Utils/DimensionSizes.h"
+#include <MatrixClasses/RealMatrix.h>
+#include <MatrixClasses/ComplexMatrix.h>
+#include <MatrixClasses/IndexMatrix.h>
+#include <MatrixClasses/CUFFTComplexMatrix.h>
 
-#include "MatrixClasses/CUFFTComplexMatrix.h"
-#include "CUDATuner.h"
+#include <Utils/DimensionSizes.h>
+#include <CUDA/CUDATuner.h>
 
-class CUDAImplementations{
+/**
+ * @class TCUDAImplementations
+ * @brief This singleton class implements interface for CUDA kernels.
+ * @details This singleton class implements interface for CUDA kernels.
+ */
+class TCUDAImplementations
+{
+  public:
 
-    private:
-        //private variables required for instance variable
-        static bool instance_flag;
-        static CUDAImplementations *single_cuda_implementation;
-        TCUDATuner* tuner;
+    /**
+     * @struct TDeviceConstants
+     * @brief  Structure for CUDA parameters to be placed in constant memory
+     * @todo this must be moved somewhere else.
+     */
+    struct TDeviceConstants
+    {
+      /// size of X dimension.
+      size_t X_Size;
+      /// size of Y dimension.
+      size_t Y_Size;
+      /// size of Z dimension.
+      size_t Z_Size;
+      /// total number of elements.
+      size_t TotalElementCount;
+      /// 2D Slab size
+      size_t SlabSize;
+      /// size of complex X dimension.
+      size_t Complex_X_Size;
+      /// size of complex Y dimension.
+      size_t Complex_Y_Size;
+      /// size of complex Z dimension.
+      size_t Complex_Z_Size;
+      /// complex number of elements.
+      size_t ComplexTotalElementCount;
+      /// complex slab size.
+      size_t ComplexSlabSize;
+      /// normalization constant for 3D FFT.
+      float  Divider;
+    };
 
-        //functions
-        CUDAImplementations();
+  /// Get instance of singleton class.
+  static TCUDAImplementations* GetInstance();
+  /// Destructor - may be virtual (once we merge OMP and CUDA).
+  virtual ~TCUDAImplementations();
 
-    public:
-        //new data types
-        struct device_constants_t{
-            size_t max_x;
-            size_t max_y;
-            size_t max_z;
-            size_t total_element_count;
-            float  divider;
-            size_t complex_max_x;
-            size_t complex_max_y;
-            size_t complex_max_z;
-            size_t complex_total_element_count;
-        };
+  /// Set up execution model with tuner - block and threads - take a look
+  void SetUpExecutionModelWithTuner(const TDimensionSizes& FullDimensionSizes,
+                                    const TDimensionSizes& ReducedDimensionSizes);
 
-        //access instance (there can be only one)
-        static CUDAImplementations* GetInstance();
-        ~CUDAImplementations();
+  /// Set up constant memory
+  void SetUpDeviceConstants(const TDimensionSizes& FullDimensionSizes,
+                            const TDimensionSizes& ReducedDimensionSizes);
 
-        //setup functions
-        void SetUpExecutionModelWithTuner(const TDimensionSizes & FullDimensionSizes,
-                                          const TDimensionSizes & ReducedDimensionSizes);
 
-        void SetUpDeviceConstants(size_t max_x,
-                                  size_t max_y,
-                                  size_t max_z,
-                                  size_t complex_max_x,
-                                  size_t complex_max_y,
-                                  size_t complex_max_z);
 
-        //computational functions
-        void ExtractDataFromPressureMatrix(TRealMatrix& SourceMatrix,
-                                           TIndexMatrix& Index,
-                                           TRealMatrix& TempBuffer);
+  //----------------------- ux calculation------------------------------------//
 
-        void ScalarDividedBy(TRealMatrix& matrix,
-                             const float scalar);
+  /// compute a new value of ux_sgx, default case
+  void Compute_ux_sgx_normalize(TRealMatrix&       ux_sgx,
+                                const TRealMatrix& FFT_p,
+                                const TRealMatrix& dt_rho0,
+                                const TRealMatrix& pml);
 
-        void ZeroMatrix(TRealMatrix& matrix);
+  /// Compute a new value of ux_sgx, scalar, uniform case
+  void Compute_ux_sgx_normalize_scalar_uniform(TRealMatrix&       ux_sgx,
+                                               const TRealMatrix& FFT_p,
+                                               const float        dt_rho0,
+                                               const TRealMatrix& pml);
 
-        void Compute_ux_sgx_normalize(TRealMatrix& uxyz_sgxyz,
-                                      TRealMatrix& FFT_p,
-                                      TRealMatrix& dt_rho0,
-                                      TRealMatrix& pml);
+  /// Compute a new value of ux_sgx, scalar, non-uniform case
+  void Compute_ux_sgx_normalize_scalar_nonuniform(TRealMatrix&       ux_sgx,
+                                                  const TRealMatrix& FFT_p,
+                                                  const float        dt_rho0,
+                                                  const TRealMatrix& dxudxn_sgx,
+                                                  const TRealMatrix& pml);
 
-        void Compute_ux_sgx_normalize_scalar_uniform(TRealMatrix& uxyz_sgxyz,
-                                                     TRealMatrix& FFT_p,
-                                                     float dt_rho0,
-                                                     TRealMatrix& pml);
+  //----------------------- uy calculation------------------------------------//
+  /// compute a new value of uy_sgy, default case.
+  void Compute_uy_sgy_normalize(TRealMatrix& uy_sgy,
+                                const TRealMatrix& FFT_p,
+                                const TRealMatrix& dt_rho0,
+                                const TRealMatrix& pml);
 
-        void Compute_ux_sgx_normalize_scalar_nonuniform(
-                TRealMatrix& uxyz_sgxyz,
-                TRealMatrix& FFT_p,
-                float dt_rho0,
-                TRealMatrix& dxudxn_sgx,
-                TRealMatrix& pml);
+  /// Compute a new value of uy_sgy, scalar, uniform case
+  void Compute_uy_sgy_normalize_scalar_uniform(TRealMatrix&      uy_sgy,
+                                               const TRealMatrix& FFT_p,
+                                               const float        dt_rho0,
+                                               const TRealMatrix& pml);
 
-        void Compute_uy_sgy_normalize(TRealMatrix& uxyz_sgxyz,
-                                      TRealMatrix& FFT_p,
-                                      TRealMatrix& dt_rho0,
-                                      TRealMatrix& pml);
+  /// Compute a new value of uy_sgy, scalar, non-uniform case
+  void Compute_uy_sgy_normalize_scalar_nonuniform(TRealMatrix&       uy_sgy,
+                                                  const TRealMatrix& FFT_p,
+                                                  const float        dt_rho0,
+                                                  const TRealMatrix& dyudyn_sgy,
+                                                  const TRealMatrix& pml);
 
-        void Compute_uy_sgy_normalize_scalar_uniform(TRealMatrix& uxyz_sgxyz,
-                                                     TRealMatrix& FFT_p,
-                                                     float dt_rho0,
-                                                     TRealMatrix& pml);
+  //----------------------- uz calculation -----------------------------------//
+  /// compute a new value of uz_sgz, default case.
+  void Compute_uz_sgz_normalize(TRealMatrix& uz_sgz,
+                                const TRealMatrix& FFT_p,
+                                const TRealMatrix& dt_rho0,
+                                const TRealMatrix& pml);
 
-        void Compute_uy_sgy_normalize_scalar_nonuniform(
-                TRealMatrix& uxyz_sgxyz,
-                TRealMatrix& FFT_p,
-                float dt_rho0,
-                TRealMatrix& dyudyn_sgy,
-                TRealMatrix& pml);
+  /// Compute a new value of uz_sgz, scalar, uniform case
+  void Compute_uz_sgz_normalize_scalar_uniform(TRealMatrix      & uz_sgz,
+                                               const TRealMatrix& FFT_p,
+                                               const float        dt_rho0,
+                                               const TRealMatrix& pml);
 
-        void Compute_uz_sgz_normalize(TRealMatrix& uxyz_sgxyz,
-                TRealMatrix& FFT_p,
-                TRealMatrix& dt_rho0,
-                TRealMatrix& pml);
+  /// Compute a new value of uz_sgz, scalar, non-uniform case
+  void Compute_uz_sgz_normalize_scalar_nonuniform(TRealMatrix&       uz_sgz,
+                                                  const TRealMatrix& FFT_p,
+                                                  const float        dt_rho0,
+                                                  const TRealMatrix& dzudzn_sgz,
+                                                  const TRealMatrix& pml);
 
-        void Compute_uz_sgz_normalize_scalar_uniform(TRealMatrix& uxyz_sgxyz,
-                                                     TRealMatrix& FFT_p,
-                                                     float dt_rho0,
-                                                     TRealMatrix& pml);
-
-        void Compute_uz_sgz_normalize_scalar_nonuniform(
-                TRealMatrix& uxyz_sgxyz,
-                TRealMatrix& FFT_p,
-                float dt_rho0,
-                TRealMatrix& dzudzn_sgz,
-                TRealMatrix& pml);
+  //------------------------ transducers -------------------------------------//
 
         void AddTransducerSource(TRealMatrix& uxyz_sgxyz,
                                  TIndexMatrix& us_index,
@@ -428,7 +445,17 @@ class CUDAImplementations{
                                            bool store_I_max,
                                            size_t Nt,
                                            size_t start_time_index);
+  private:
+    /// Default constructor for a singleton class
+    TCUDAImplementations() : CUDATuner(NULL)  {};
 
+    /// Singleton instance flag
+    static bool InstanceFlag;
+    /// Singleton instance
+    static TCUDAImplementations *Instance;
+
+    /// Pointer to CUDA tuner with parameters
+    TCUDATuner* CUDATuner;
 };
 
-#endif
+#endif /* CUDA_IMPLEMENTATIONS_H */

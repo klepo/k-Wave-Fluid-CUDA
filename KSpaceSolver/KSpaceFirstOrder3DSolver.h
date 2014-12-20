@@ -597,7 +597,7 @@ private:
 
 
     /// Use CUDA GPU functions for big computational blocks - what is this?
-    CUDAImplementations* cuda_implementations;
+    TCUDAImplementations* cuda_implementations;
 
 
     /// Matrix container with all the matrix classes

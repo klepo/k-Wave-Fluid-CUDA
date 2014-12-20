@@ -262,20 +262,15 @@ void TKSpaceFirstOrder3DSolver::Compute()
 
   //initialise the cpu and gpu computation handler
   //@todo  take look a this
-  cuda_implementations = CUDAImplementations::GetInstance();
+  cuda_implementations = TCUDAImplementations::GetInstance();
 
   // Set up kernel sizes (default grid and block sizes)
   cuda_implementations->SetUpExecutionModelWithTuner(Parameters->GetFullDimensionSizes(),
                                                      Parameters->GetReducedDimensionSizes());
 
   // Set up constant memory - copy over to GPU
-  cuda_implementations->SetUpDeviceConstants(
-            Parameters->GetFullDimensionSizes().X,
-            Parameters->GetFullDimensionSizes().Y,
-            Parameters->GetFullDimensionSizes().Z,
-            Parameters->GetReducedDimensionSizes().X,
-            Parameters->GetReducedDimensionSizes().Y,
-            Parameters->GetReducedDimensionSizes().Z);
+  cuda_implementations->SetUpDeviceConstants(Parameters->GetFullDimensionSizes(),
+                                             Parameters->GetReducedDimensionSizes());
 
   PreProcessingPhase();
   PreProcessingTime.Stop();

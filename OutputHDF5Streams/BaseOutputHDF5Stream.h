@@ -105,7 +105,7 @@ class TBaseOutputHDF5Stream
   strcpy(this->HDF5_RootObjectName, HDF5_RootObjectName);
 
   ///@todo What is this?????
-  cuda_implementations = CUDAImplementations::GetInstance();
+  cuda_implementations = TCUDAImplementations::GetInstance();
 
   };
 
@@ -180,7 +180,7 @@ class TBaseOutputHDF5Stream
     static const size_t MinGridpointsToSampleInParallel = 1048576;
 
     /// DO I NEE THIS???
-    CUDAImplementations* cuda_implementations;
+    TCUDAImplementations* cuda_implementations;
 
 };// end of TBaseOutputHDF5Stream
 
