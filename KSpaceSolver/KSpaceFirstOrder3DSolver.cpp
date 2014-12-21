@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        12 July     2012, 10:27 (created)\n
- *              05 December 2014, 15:07 (revised)
+ *              21 December 2014, 16:19 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -866,20 +866,11 @@ void TKSpaceFirstOrder3DSolver::Calculate_dt_rho0_non_uniform()
  */
 void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
 {
-  // Why on the CPU side?
-  Get_p().CopyData(Get_p0_source_input());
-
-  //if it's for the gpu build make first copy
-  // @todo - Why to do this, p0 should be on device???
-  Get_p().CopyToDevice();
-
-
-  const float * p0 = Get_p0_source_input().GetRawDeviceData();
-
   // get over the scalar problem
   float * c2;
   size_t c2_shift;
 
+  //@todo - this could be moved into kernel
   if (Parameters->Get_c0_scalar_flag())
   {
     c2 = &Parameters->Get_c0_scalar();
@@ -892,12 +883,13 @@ void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
   }
 
   //-- add the initial pressure to rho as a mass source --//
-  cuda_implementations->Calculate_p0_source_add_initial_pressure(Get_rhox(),
+  cuda_implementations->Calculate_p0_source_add_initial_pressure(Get_p(),
+                                                                 Get_rhox(),
                                                                  Get_rhoy(),
                                                                  Get_rhoz(),
                                                                  Get_p0_source_input(),
-                                                                 c2_shift,
-                                                                 c2);
+                                                                 c2,
+                                                                 c2_shift);
 
   //-----------------------------------------------------------------------//
   //--compute u(t = t1 + dt/2) based on the assumption u(dt/2) = -u(-dt/2)-//
@@ -997,12 +989,11 @@ void TKSpaceFirstOrder3DSolver::Compute_duxyz()
   Get_CUFFT_Y_temp().Compute_FFT_3D_R2C(Get_uy_sgy());
   Get_CUFFT_Z_temp().Compute_FFT_3D_R2C(Get_uz_sgz());
 
-  //@todo what is this???
-  cuda_implementations->Compute_duxyz_initial(Get_CUFFT_X_temp(),
+  /// calculate duxyz on uniform grid
+  cuda_implementations->Compute_duxyz_uniform(Get_CUFFT_X_temp(),
                                               Get_CUFFT_Y_temp(),
                                               Get_CUFFT_Z_temp(),
                                               Get_kappa(),
-                                              Get_ux_sgx(),
                                               Get_ddx_k_shift_neg(),
                                               Get_ddy_k_shift_neg(),
                                               Get_ddz_k_shift_neg());
@@ -1012,11 +1003,11 @@ void TKSpaceFirstOrder3DSolver::Compute_duxyz()
   Get_CUFFT_Z_temp().Compute_FFT_3D_C2R(Get_duzdz());
 
   //-----------------------------------------------------------------------//
-  //--------------------- Non linear grid ---------------------------------//
+  //--------------------- Non-uniform grid ---------------------------------//
   //-----------------------------------------------------------------------//
   if (Parameters->Get_nonuniform_grid_flag() != 0)
   {
-    cuda_implementations->Compute_duxyz_non_linear(Get_duxdx(),
+    cuda_implementations->Compute_duxyz_non_uniform(Get_duxdx(),
                                                    Get_duydy(),
                                                    Get_duzdz(),
                                                    Get_dxudxn(),
@@ -1034,32 +1025,32 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_nonlinear()
   // Scalar
   if (Parameters->Get_rho0_scalar())
   {
-    cuda_implementations->Compute_rhoxyz_nonlinear_scalar(Get_rhox(),
-                                                         Get_rhoy(),
-                                                         Get_rhoz(),
-                                                         Get_pml_x(),
-                                                         Get_pml_y(),
-                                                         Get_pml_z(),
-                                                         Get_duxdx(),
-                                                         Get_duydy(),
-                                                         Get_duzdz(),
-                                                         Parameters->Get_dt(),
-                                                         Parameters->Get_rho0_scalar());
-  }
-  else
-  {
-    // rho0 is a matrix
-     cuda_implementations->Compute_rhoxyz_nonlinear_matrix(Get_rhox(),
-                                                          Get_rhoy(),
-                                                          Get_rhoz(),
-                                                          Get_pml_x(),
-                                                          Get_pml_y(),
-                                                          Get_pml_z(),
-                                                          Get_duxdx(),
-                                                          Get_duydy(),
-                                                          Get_duzdz(),
-                                                          Parameters->Get_dt(),
-                                                          Get_rho0());
+    cuda_implementations->Compute_rhoxyz_nonlinear_homogeneous(Get_rhox(),
+                                                               Get_rhoy(),
+                                                               Get_rhoz(),
+                                                               Get_pml_x(),
+                                                               Get_pml_y(),
+                                                               Get_pml_z(),
+                                                               Get_duxdx(),
+                                                               Get_duydy(),
+                                                               Get_duzdz(),
+                                                               Parameters->Get_dt(),
+                                                               Parameters->Get_rho0_scalar());
+}
+else
+{
+  // rho0 is a matrix
+  cuda_implementations->Compute_rhoxyz_nonlinear_heterogeneous(Get_rhox(),
+                                                               Get_rhoy(),
+                                                               Get_rhoz(),
+                                                               Get_pml_x(),
+                                                               Get_pml_y(),
+                                                               Get_pml_z(),
+                                                               Get_duxdx(),
+                                                               Get_duydy(),
+                                                               Get_duzdz(),
+                                                               Parameters->Get_dt(),
+                                                               Get_rho0());
   } // end matrix
 }// end of Compute_rhoxyz
 //------------------------------------------------------------------------------
@@ -1073,32 +1064,32 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_linear()
   // Scalar
   if (Parameters->Get_rho0_scalar())
   {
-    cuda_implementations->Compute_rhoxyz_linear_scalar(Get_rhox(),
-                                                       Get_rhoy(),
-                                                       Get_rhoz(),
-                                                       Get_pml_x(),
-                                                       Get_pml_y(),
-                                                       Get_pml_z(),
-                                                       Get_duxdx(),
-                                                       Get_duydy(),
-                                                       Get_duzdz(),
-                                                       Parameters->Get_dt(),
-                                                       Parameters->Get_rho0_scalar());
+    cuda_implementations->Compute_rhoxyz_linear_homogeneous(Get_rhox(),
+                                                            Get_rhoy(),
+                                                            Get_rhoz(),
+                                                            Get_pml_x(),
+                                                            Get_pml_y(),
+                                                            Get_pml_z(),
+                                                            Get_duxdx(),
+                                                            Get_duydy(),
+                                                            Get_duzdz(),
+                                                            Parameters->Get_dt(),
+                                                            Parameters->Get_rho0_scalar());
   }
   else
   {
     // rho0 is a matrix
-    cuda_implementations->Compute_rhoxyz_linear_matrix(Get_rhox(),
-                                                       Get_rhoy(),
-                                                       Get_rhoz(),
-                                                       Get_pml_x(),
-                                                       Get_pml_y(),
-                                                       Get_pml_z(),
-                                                       Get_duxdx(),
-                                                       Get_duydy(),
-                                                       Get_duzdz(),
-                                                       Parameters->Get_dt(),
-                                                       Get_rho0());
+    cuda_implementations->Compute_rhoxyz_linear_heterogeneous(Get_rhox(),
+                                                              Get_rhoy(),
+                                                              Get_rhoz(),
+                                                              Get_pml_x(),
+                                                              Get_pml_y(),
+                                                              Get_pml_z(),
+                                                              Get_duxdx(),
+                                                              Get_duydy(),
+                                                              Get_duzdz(),
+                                                              Parameters->Get_dt(),
+                                                              Get_rho0());
   } // end matrix
 }// end of Compute_rhoxyz
 //------------------------------------------------------------------------------
