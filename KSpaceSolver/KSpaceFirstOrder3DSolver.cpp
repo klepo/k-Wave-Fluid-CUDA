@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        12 July     2012, 10:27 (created)\n
- *              21 December 2014, 16:19 (revised)
+ *              21 December 2014, 20:10 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -1099,20 +1099,15 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_linear()
  * linear absorbing case.
  * @param [out] Sum_rhoxyz    -rhox_sgx + rhoy_sgy + rhoz_sgz
  * @param [out] Sum_rho0_du   - rho0* (duxdx + duydy + duzdz);
+ * @todo needs a bit of polishing
  */
 void TKSpaceFirstOrder3DSolver::Calculate_SumRho_SumRhoDu(TRealMatrix& Sum_rhoxyz,
                                                           TRealMatrix& Sum_rho0_du)
 {
-  const size_t TotalElementCount = Parameters->GetFullDimensionSizes().GetElementCount();
 
-  const float * rho0_data = NULL;
-
-  const float rho0_data_el = Parameters->Get_rho0_scalar();
-  if (!Parameters->Get_rho0_scalar_flag())
-  {
-    rho0_data = Get_rho0().GetRawDeviceData();
-  }
-
+  const float   rho0_scalar =  Parameters->Get_rho0_scalar();
+  const float * rho0_matrix = (Parameters->Get_rho0_scalar_flag()) ? NULL :
+                                                                   Get_rho0().GetRawDeviceData();
   cuda_implementations->Calculate_SumRho_SumRhoDu(Sum_rhoxyz,
                                                   Sum_rho0_du,
                                                   Get_rhox(),
@@ -1121,10 +1116,9 @@ void TKSpaceFirstOrder3DSolver::Calculate_SumRho_SumRhoDu(TRealMatrix& Sum_rhoxy
                                                   Get_duxdx(),
                                                   Get_duydy(),
                                                   Get_duzdz(),
-                                                  rho0_data,
-                                                  rho0_data_el,
-                                                  TotalElementCount,
-                                                  Parameters->Get_rho0_scalar_flag());
+                                                  rho0_scalar,
+                                                  rho0_matrix,
+                                                  (Parameters->Get_rho0_scalar_flag()) ? 0 : 1);
 }// end of Calculate_SumRho_SumRhoDu
 //------------------------------------------------------------------------------
 
@@ -1134,6 +1128,7 @@ void TKSpaceFirstOrder3DSolver::Calculate_SumRho_SumRhoDu(TRealMatrix& Sum_rhoxy
  * @param [in] Absorb_eta_temp  -   BonA + rho ^2 / 2 rho0  +
  *                                      (rhox_sgx + rhoy_sgy + rhoz_sgz)
  * @param [in] BonA_temp        -   rho0* (duxdx + duydy + duzdz)
+ * @tode revise this routine
  */
 void TKSpaceFirstOrder3DSolver::Sum_Subterms_nonlinear(TRealMatrix& Absorb_tau_temp,
                                                        TRealMatrix& Absorb_eta_temp,
@@ -1180,8 +1175,8 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_nonlinear(TRealMatrix& Absorb_tau_t
     tau_eta_shift = 1;
   }
 
-  cuda_implementations->Sum_Subterms_nonlinear(BonA_temp,
-                                               Get_p(),
+  cuda_implementations->Sum_Subterms_nonlinear(Get_p(),
+                                               BonA_temp,
                                                c2_data_scalar,
                                                c2_data_matrix,
                                                c2_shift,
@@ -1201,6 +1196,7 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_nonlinear(TRealMatrix& Absorb_tau_t
  * @param [in] Absorb_tau_temp - sub-term with absorb_tau
  * @param [in] Absorb_eta_temp - sub-term with absorb_eta
  * @param [in] Sum_rhoxyz      - rhox_sgx + rhoy_sgy + rhoz_sgz
+ * @todo need to be reviewed - constant memory
  */
 void TKSpaceFirstOrder3DSolver::Sum_Subterms_linear(TRealMatrix& Absorb_tau_temp,
                                                     TRealMatrix& Absorb_eta_temp,
@@ -1216,8 +1212,6 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_linear(TRealMatrix& Absorb_tau_temp
 
   size_t c2_shift = 0;
   size_t tau_eta_shift = 0;
-
-  const size_t total_element_count = Parameters->GetFullDimensionSizes().GetElementCount();
 
   // c2 scalar
   if (Parameters->Get_c0_scalar_flag())
@@ -1245,37 +1239,32 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_linear(TRealMatrix& Absorb_tau_temp
     tau_eta_shift = 1;
   }
 
-  cuda_implementations->Sum_Subterms_linear(Absorb_tau_temp,
+  cuda_implementations->Sum_Subterms_linear(Get_p(),
+                                            Absorb_tau_temp,
                                             Absorb_eta_temp,
                                             Sum_rhoxyz,
-                                            Get_p(),
-                                            total_element_count,
+                                            c2_data_scalar,
+                                            c2_data_matrix,
                                             c2_shift,
-                                            tau_eta_shift,
                                             tau_data_scalar,
                                             tau_data_matrix,
                                             eta_data_scalar,
                                             eta_data_matrix,
-                                            c2_data_scalar,
-                                            c2_data_matrix);
-
+                                            tau_eta_shift);
 }// end of Sum_Subterms_linear
 //------------------------------------------------------------------------------
 
 /*
  * Sum sub-terms for new p, non-linear lossless case.
+ *
+ * @todo this needs revision
  */
 void TKSpaceFirstOrder3DSolver::Sum_new_p_nonlinear_lossless()
 {
-  const size_t TotalElementCount = Parameters->GetFullDimensionSizes().GetElementCount();
+  float * c2_data_matrix = NULL;
+  float   c2_data_scalar;
+  size_t  c2_shift;
 
-  const float * rhox_data = Get_rhox().GetRawDeviceData();
-  const float * rhoy_data = Get_rhoy().GetRawDeviceData();
-  const float * rhoz_data = Get_rhoz().GetRawDeviceData();
-
-  float* c2_data_matrix;
-  float c2_data_scalar;
-  size_t c2_shift;
 
   if (Parameters->Get_c0_scalar_flag())
   {
@@ -1288,8 +1277,8 @@ void TKSpaceFirstOrder3DSolver::Sum_new_p_nonlinear_lossless()
     c2_shift = 1;
   }
 
-  float* BonA_data_matrix;
-  float BonA_data_scalar;
+  float* BonA_data_matrix = NULL;
+  float  BonA_data_scalar;
   size_t BonA_shift;
 
   if (Parameters->Get_BonA_scalar_flag())
@@ -1318,11 +1307,10 @@ void TKSpaceFirstOrder3DSolver::Sum_new_p_nonlinear_lossless()
     rho0_shift = 1;
   }
 
-  cuda_implementations->Sum_new_p_nonlinear_lossless(TotalElementCount,
-                                                     Get_p(),
-                                                     rhox_data,
-                                                     rhoy_data,
-                                                     rhoz_data,
+  cuda_implementations->Sum_new_p_nonlinear_lossless(Get_p(),
+                                                     Get_rhox(),
+                                                     Get_rhoy(),
+                                                     Get_rhoz(),
                                                      c2_data_scalar,
                                                      c2_data_matrix,
                                                      c2_shift,
@@ -1342,27 +1330,17 @@ void TKSpaceFirstOrder3DSolver::Sum_new_p_nonlinear_lossless()
  */
 void TKSpaceFirstOrder3DSolver::Sum_new_p_linear_lossless()
 {
-  const size_t total_element_count = Parameters->GetFullDimensionSizes().GetElementCount();
+  const float   c2_scalar =  Parameters->Get_c0_scalar();
+  const float * c2_matrix = (Parameters->Get_c0_scalar_flag()) ? NULL :
+                                                                 Get_c2().GetRawDeviceData();
 
-  if (Parameters->Get_c0_scalar_flag())
-  {
-    const float c2_element = Parameters->Get_c0_scalar();
-    cuda_implementations->Sum_new_p_linear_lossless_scalar(Get_p(),
-                                                           Get_rhox(),
-                                                           Get_rhoy(),
-                                                           Get_rhoz(),
-                                                           total_element_count,
-                                                           c2_element);
-  }
-  else
-  {
-    cuda_implementations->Sum_new_p_linear_lossless_matrix(Get_p(),
-                                                           Get_rhox(),
-                                                           Get_rhoy(),
-                                                           Get_rhoz(),
-                                                           total_element_count,
-                                                           Get_c2());
-  }
+  cuda_implementations->Sum_new_p_linear_lossless(Get_p(),
+                                                  Get_rhox(),
+                                                  Get_rhoy(),
+                                                  Get_rhoz(),
+                                                  c2_scalar,
+                                                  c2_matrix,
+                                                 (Parameters->Get_c0_scalar_flag()) ? 0 : 1);
 
 }// end of Sum_new_p_linear_lossless
 //------------------------------------------------------------------------------
@@ -1374,6 +1352,8 @@ void TKSpaceFirstOrder3DSolver::Sum_new_p_linear_lossless()
  * @param [out] RHO_Temp  - rhox_sgx + rhoy_sgy + rhoz_sgz
  * @param [out] BonA_Temp - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
  * @param [out] Sum_du    - rho0* (duxdx + duydy + duzdz)
+ *
+ * @todo revise this method.
  */
 void TKSpaceFirstOrder3DSolver::Calculate_SumRho_BonA_SumDu(TRealMatrix& RHO_Temp,
                                                             TRealMatrix& BonA_Temp,
@@ -1450,10 +1430,10 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_nonlinear()
     Get_CUFFT_Y_temp().Compute_FFT_3D_R2C(Sum_rhoxyz);
 
 
-    cuda_implementations->Compute_Absorb_nabla1_2(Get_absorb_nabla1(),
-                                                  Get_absorb_nabla2(),
-                                                  Get_CUFFT_X_temp(),
-                                                  Get_CUFFT_Y_temp());
+    cuda_implementations->Compute_Absorb_nabla1_2(Get_CUFFT_X_temp(),
+                                                  Get_CUFFT_Y_temp(),
+                                                  Get_absorb_nabla1(),
+                                                  Get_absorb_nabla2());
 
 
     Get_CUFFT_X_temp().Compute_FFT_3D_C2R(Absorb_tau_temp);
@@ -1492,10 +1472,10 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_linear()
     Get_CUFFT_X_temp().Compute_FFT_3D_R2C(Sum_rho0_du);
     Get_CUFFT_Y_temp().Compute_FFT_3D_R2C(Sum_rhoxyz);
 
-    cuda_implementations->Compute_Absorb_nabla1_2(Get_absorb_nabla1(),
-                                                  Get_absorb_nabla2(),
-                                                  Get_CUFFT_X_temp(),
-                                                  Get_CUFFT_Y_temp());
+    cuda_implementations->Compute_Absorb_nabla1_2(Get_CUFFT_X_temp(),
+                                                  Get_CUFFT_Y_temp(),
+                                                  Get_absorb_nabla1(),
+                                                  Get_absorb_nabla2());
 
     Get_CUFFT_X_temp().Compute_FFT_3D_C2R(Absorb_tau_temp);
     Get_CUFFT_Y_temp().Compute_FFT_3D_C2R(Absorb_eta_temp);
@@ -1633,9 +1613,9 @@ void TKSpaceFirstOrder3DSolver::Add_p_source()
                                        Get_rhoz(),
                                        Get_p_source_input(),
                                        Get_p_source_index(),
-                                       Parameters->Get_p_source_many(),
+                                       t_index,
                                        Parameters->Get_p_source_mode(),
-                                       t_index);
+                                       Parameters->Get_p_source_many());
   }// if do at all
 }// end of Add_p_source
 //------------------------------------------------------------------------------

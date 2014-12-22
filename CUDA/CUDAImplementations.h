@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        11 March    2013, 13:10 (created) \n
- *              21 December 2014, 16:19 (revised)
+ *              22 December 2014, 17:46 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -160,7 +160,7 @@ class TCUDAImplementations
                                                   const TRealMatrix& dzudzn_sgz,
                                                   const TRealMatrix& pml);
 
-  //-----------------------u transducers -------------------------------------//
+  //------------------------ transducers -------------------------------------//
 
   /// Add transducer data  source to X component.
   void AddTransducerSource(TRealMatrix       & ux_sgx,
@@ -175,6 +175,16 @@ class TCUDAImplementations
                     const size_t        t_index,
                     const size_t        u_source_mode,
                     const size_t        u_source_many);
+
+  /// Add in pressure source term
+  void Add_p_source(TRealMatrix       & rhox,
+                    TRealMatrix       & rhoy,
+                    TRealMatrix       & rhoz,
+                    const TRealMatrix & p_source_input,
+                    const TIndexMatrix& p_source_index,
+                    const size_t        t_index,
+                    const size_t        p_source_mode,
+                    const size_t        p_source_many);
 
   //------------------velocity spectral operations ---------------------------//
   /// Compute u = dt ./ rho0_sg .* ifft (FFT).
@@ -299,103 +309,97 @@ class TCUDAImplementations
                                              const float        dt,
                                              const TRealMatrix& rho0);
 
-        void Add_p_source(TRealMatrix& rhox,
-                          TRealMatrix& rhoy,
-                          TRealMatrix& rhoz,
-                          TRealMatrix& p_source_input,
-                          TIndexMatrix& p_source_index,
-                          size_t p_source_many,
-                          size_t p_source_mode,
-                          size_t t_index);
+    //----------------------- new value of pressure --------------------------//
+  /// Calculate three temporary sums in the new pressure formula, non-linear absorbing case.
+  void Calculate_SumRho_BonA_SumDu(TRealMatrix      & rho_sum,
+                                   TRealMatrix      & BonA_sum,
+                                   TRealMatrix      & du_sum,
+                                   const TRealMatrix& rhox,
+                                   const TRealMatrix& rhoy,
+                                   const TRealMatrix& rhoz,
+                                   const TRealMatrix& duxdx,
+                                   const TRealMatrix& duydy,
+                                   const TRealMatrix& duzdz,
+                                   const float        BonA_scalar,
+                                   const float*       BonA_matrix,
+                                   const size_t       BonA_shift,
+                                   const float        rho0_scalar,
+                                   const float*       rho0_matrix,
+                                   const size_t       rho0_shift);
 
-        void Calculate_SumRho_BonA_SumDu(TRealMatrix& RHO_Temp,
-                                         TRealMatrix& BonA_Temp,
-                                         TRealMatrix& Sum_du,
-                                         TRealMatrix& rhox,
-                                         TRealMatrix& rhoy,
-                                         TRealMatrix& rhoz,
-                                         TRealMatrix& duxdx,
-                                         TRealMatrix& duydy,
-                                         TRealMatrix& duzdz,
-                                         const float  BonA_data_scalar,
-                                         const float* BonA_data_matrix,
-                                         const size_t BonA_shift,
-                                         const float  rho0_data_scalar,
-                                         const float* rho0_data_matrix,
-                                         const size_t rho0_shift);
+  /// Compute absorbing term with abosrb_nabla1 and absorb_nabla2.
+  void Compute_Absorb_nabla1_2(TCUFFTComplexMatrix& FFT_1,
+                               TCUFFTComplexMatrix& FFT_2,
+                               const TRealMatrix  & absorb_nabla1,
+                               const TRealMatrix  & absorb_nabla2);
 
-        void Compute_Absorb_nabla1_2(TRealMatrix& absorb_nabla1,
-                                     TRealMatrix& absorb_nabla2,
-                                     TCUFFTComplexMatrix& FFT_1,
-                                     TCUFFTComplexMatrix& FFT_2);
+  /// Sum sub-terms to calculate new pressure, non-linear case.
+  void Sum_Subterms_nonlinear(TRealMatrix      & p,
+                              const TRealMatrix& BonA_temp,
+                              const float        c2_scalar,
+                              const float      * c2_matrix,
+                              const size_t       c2_shift,
+                              const float      * Absorb_tau,
+                              const float        tau_scalar,
+                              const float      * tau_matrix,
+                              const float      * Absorb_eta,
+                              const float        eta_scalar,
+                              const float      * eta_matrix,
+                              const size_t       tau_eta_shift);
 
-        void Sum_Subterms_nonlinear(TRealMatrix& BonA_temp,
-                                    TRealMatrix& p,
-                                    const float  c2_data_scalar,
-                                    const float* c2_data_matrix,
-                                    const size_t c2_shift,
-                                    const float* Absorb_tau_data,
-                                    const float  tau_data_scalar,
-                                    const float* tau_data_matrix,
-                                    const float* Absorb_eta_data,
-                                    const float  eta_data_scalar,
-                                    const float* eta_data_matrix,
-                                    const size_t tau_eta_shift);
+    /// Sum sub-terms to calculate new pressure, linear case.
+    void Sum_Subterms_linear(TRealMatrix      & p,
+                             const TRealMatrix& Absorb_tau_temp,
+                             const TRealMatrix& Absorb_eta_temp,
+                             const TRealMatrix& Sum_rhoxyz,
+                             const float        c2_scalar,
+                             const float      * c2_matrix,
+                             const size_t       c2_shift,
+                             const float        tau_scalar,
+                             const float      * tau_matrix,
+                             const float        eta_scalar,
+                             const float      * eta_matrix,
+                             const size_t       tau_eta_shift);
 
-        void Sum_new_p_nonlinear_lossless(const size_t TotalElementCount,
-                                          TRealMatrix& p,
-                                          const float* rhox_data,
-                                          const float* rhoy_data,
-                                          const float* rhoz_data,
-                                          const float  c2_data_scalar,
-                                          const float* c2_data_matrix,
-                                          const size_t c2_shift,
-                                          const float  BonA_data_scalar,
-                                          const float* BonA_data_matrix,
-                                          const size_t BonA_shift,
-                                          const float  rho0_data_scalar,
-                                          const float* rho0_data_matrix,
-                                          const size_t rho0_shift);
+    /// Sum sub-terms for new p, linear lossless case.
+    void Sum_new_p_nonlinear_lossless(TRealMatrix      & p,
+                                      const TRealMatrix& rhox,
+                                      const TRealMatrix& rhoy,
+                                      const TRealMatrix& rhoz,
+                                      const float        c2_scalar,
+                                      const float      * c2_matrix,
+                                      const size_t       c2_shift,
+                                      const float        BonA_scalar,
+                                      const float      * BonA_matrix,
+                                      const size_t       BonA_shift,
+                                      const float        rho0_scalar,
+                                      const float      * rho0_matrix,
+                                      const size_t       rho0_shift);
 
-        void Calculate_SumRho_SumRhoDu(TRealMatrix& Sum_rhoxyz,
-                                       TRealMatrix& Sum_rho0_du,
-                                       TRealMatrix& rhox,
-                                       TRealMatrix& rhoy,
-                                       TRealMatrix& rhoz,
-                                       TRealMatrix& duxdx,
-                                       TRealMatrix& duydy,
-                                       TRealMatrix& duzdz,
-                                       const float* rho0_data,
-                                       const float  rho0_data_el,
-                                       const size_t TotalElementCount,
-                                       const bool   rho0_scalar_flag);
+    /// Calculate two temporary sums in the new pressure formula, linear absorbing case.
+    void Calculate_SumRho_SumRhoDu(TRealMatrix      & Sum_rhoxyz,
+                                   TRealMatrix      & Sum_rho0_du,
+                                   const TRealMatrix& rhox,
+                                   const TRealMatrix& rhoy,
+                                   const TRealMatrix& rhoz,
+                                   const TRealMatrix& duxdx,
+                                   const TRealMatrix& duydy,
+                                   const TRealMatrix& duzdz,
+                                   const float        rho0_scalar,
+                                   const float      * rho0_matrix,
+                                   const size_t       rho0_shift);
 
-        void Sum_Subterms_linear(TRealMatrix& Absorb_tau_temp,
-                                 TRealMatrix& Absorb_eta_temp,
-                                 TRealMatrix& Sum_rhoxyz,
-                                 TRealMatrix& p,
-                                 const size_t total_element_count,
-                                 const size_t c2_shift,
-                                 const size_t tau_eta_shift,
-                                 const float  tau_data_scalar,
-                                 const float* tau_data_matrix,
-                                 const float  eta_data_scalar,
-                                 const float* eta_data_matrix,
-                                 const float  c2_data_scalar,
-                                 const float* c2_data_matrix);
+    /// Sum sub-terms for new p, linear lossless case.
+    void Sum_new_p_linear_lossless(TRealMatrix      & p,
+                                   const TRealMatrix& rhox,
+                                   const TRealMatrix& rhoy,
+                                   const TRealMatrix& rhoz,
+                                   const float        c2_scalar,
+                                   const float      * c2_matrix,
+                                   const size_t       c2_shift);
 
-        void Sum_new_p_linear_lossless_scalar(TRealMatrix& p,
-                                              TRealMatrix& rhox,
-                                              TRealMatrix& rhoy,
-                                              TRealMatrix& rhoz,
-                                              const size_t total_element_count,
-                                              const float c2_element);
-        void Sum_new_p_linear_lossless_matrix(TRealMatrix& p,
-                                              TRealMatrix& rhox,
-                                              TRealMatrix& rhoy,
-                                              TRealMatrix& rhoz,
-                                              const size_t total_element_count,
-                                              TRealMatrix& c2);
+    //------------------- sampling kernels -----------------------------------//
+
 
         void StoreSensorData_store_p_max(TRealMatrix& p,
                                          TRealMatrix& p_sensor_max,

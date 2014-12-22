@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        11 March    2013, 13:10 (created) \n
- *              21 December 2014, 16:19 (revised)
+ *              21 December 2014, 20:10 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -916,11 +916,11 @@ void TCUDAImplementations::Add_u_source(TRealMatrix       & uxyz_sgxyz,
                                         const size_t        u_source_mode,
                                         const size_t        u_source_many)
 {
-  size_t u_source_index_size = u_source_index.GetTotalElementCount();
+  const size_t u_source_index_size = u_source_index.GetTotalElementCount();
 
   // Grid size is calculated based on the source size
-  int CUDABlockSize1D = CUDATuner->GetNumberOfThreadsFor1D();
-  int CUDAGridSize1D  = (u_source_index_size  + CUDABlockSize1D - 1 ) / CUDABlockSize1D;
+  const int CUDABlockSize1D = CUDATuner->GetNumberOfThreadsFor1D();
+  const int CUDAGridSize1D  = (u_source_index_size  + CUDABlockSize1D - 1 ) / CUDABlockSize1D;
   //@todo here should be a test not to generate too much blocks, and balance workload
 
   CUDAAdd_u_source<<< CUDAGridSize1D, CUDABlockSize1D>>>
@@ -935,6 +935,119 @@ void TCUDAImplementations::Add_u_source(TRealMatrix       & uxyz_sgxyz,
   // check for errors
   gpuErrchk(cudaGetLastError());
 }// end of Add_u_source
+//------------------------------------------------------------------------------
+
+/**
+ * CUDA kernel to add p_source to acoustic density
+ * @param [out] rhox - acoustic density
+ * @param [out] rhoy - acoustic density
+ * @param [out] rhoz - acoustic density
+ * @param [in]  p_source_input - source input to add
+ * @param [in]  p_source_index - index matrix with source
+ * @param [in]  t_index        - actual timestep
+ * @param [in]  p_source_mode  - Mode 0 = dirichlet boundary, 1 = add in
+ * @param [in]  p_source_many  - 0 = One series, 1 = multiple series
+ */
+__global__ void CUDAAdd_p_source(float       * rhox,
+                                 float       * rhoy,
+                                 float       * rhoz,
+                                 const float * p_source_input,
+                                 const size_t* p_source_index,
+                                 const size_t  p_source_index_size,
+                                 const size_t  t_index,
+                                 const size_t  p_source_mode,
+                                 const size_t  p_source_many)
+{
+  // Set 1D or 2D step for source
+  size_t index2D = (p_source_many == 0) ? t_index : t_index * p_source_index_size;
+
+  if (p_source_mode == 0)
+  {
+    if (p_source_many == 0)
+    { // single signal
+      for (size_t i = GetX(); i < p_source_index_size; i += GetX_Stride())
+      {
+        rhox[p_source_index[i]] = p_source_input[index2D];
+        rhoy[p_source_index[i]] = p_source_input[index2D];
+        rhoz[p_source_index[i]] = p_source_input[index2D];
+      }
+    }
+    else
+    { // multiple signals
+      for (size_t i = GetX(); i < p_source_index_size; i += GetX_Stride())
+      {
+        rhox[p_source_index[i]] = p_source_input[index2D + i];
+        rhoy[p_source_index[i]] = p_source_input[index2D + i];
+        rhoz[p_source_index[i]] = p_source_input[index2D + i];
+      }
+    }
+  }// end mode == 0 (Cauchy)
+
+  if (p_source_mode == 1)
+  {
+    if (p_source_many == 0)
+    { // single signal
+      for (size_t i = GetX(); i < p_source_index_size; i += GetX_Stride())
+      {
+        rhox[p_source_index[i]] += p_source_input[index2D];
+        rhoy[p_source_index[i]] += p_source_input[index2D];
+        rhoz[p_source_index[i]] += p_source_input[index2D];
+      }
+    }
+    else
+    { // multiple signals
+      for (size_t i = GetX(); i < p_source_index_size; i += GetX_Stride())
+      {
+        rhox[p_source_index[i]] += p_source_input[index2D + i];
+        rhoy[p_source_index[i]] += p_source_input[index2D + i];
+        rhoz[p_source_index[i]] += p_source_input[index2D + i];
+      }
+    }
+  }// end mode == 0 (Dirichlet)
+}// end of CUDAAdd_p_source
+//------------------------------------------------------------------------------
+
+/**
+ * Interface to kernel which adds in pressure source (to acoustic density).
+ * @param [out] rhox - acoustic density
+ * @param [out] rhoy - acoustic density
+ * @param [out] rhoz - acoustic density
+ * @param [in]  p_source_input - source input to add
+ * @param [in]  p_source_index - index matrix with source
+ * @param [in]  t_index        - actual timestep
+ * @param [in]  p_source_mode  - Mode 0 = dirichlet boundary, 1 = add in
+ * @param [in]  p_source_many  - 0 = One series, 1 = multiple series
+ */
+void TCUDAImplementations::Add_p_source(TRealMatrix       & rhox,
+                                        TRealMatrix       & rhoy,
+                                        TRealMatrix       & rhoz,
+                                        const TRealMatrix & p_source_input,
+                                        const TIndexMatrix& p_source_index,
+                                        const size_t        t_index,
+                                        const size_t        p_source_mode,
+                                        const size_t        p_source_many)
+{
+  const size_t p_source_index_size = p_source_index.GetTotalElementCount();
+
+  // Grid size is calculated based on the source size
+  int CUDABlockSize1D = CUDATuner->GetNumberOfThreadsFor1D();
+  int CUDAGridSize1D  = (p_source_index_size  + CUDABlockSize1D - 1 ) / CUDABlockSize1D;
+  //@todo here should be a test not to generate too much blocks, and balance workload
+
+  CUDAAdd_p_source<<<CUDAGridSize1D,CUDABlockSize1D>>>
+                  (rhox.GetRawDeviceData(),
+                   rhoy.GetRawDeviceData(),
+                   rhoz.GetRawDeviceData(),
+                   p_source_input.GetRawDeviceData(),
+                   p_source_index.GetRawDeviceData(),
+                   p_source_index_size,
+                   t_index,
+                   p_source_mode,
+                   p_source_many);
+
+  // check for errors
+  gpuErrchk(cudaGetLastError());
+}// end of Add_p_source
 //------------------------------------------------------------------------------
 
 /**
@@ -1978,687 +2091,597 @@ void TCUDAImplementations::Compute_rhoxyz_linear_heterogeneous(TRealMatrix      
 //------------------------------------------------------------------------------
 
 
-
-
-__global__ void CudaAdd_p_sourceReplacement(
-        float* rhox_data,
-        float* rhoy_data,
-        float* rhoz_data,
-        const float* p_source_input_data,
-        const size_t* p_source_index_data,
-        const size_t index2D,
-        const size_t p_source_many,
-        const size_t max_i)
+/**
+ *
+ * CUDA kernel which calculates three temporary sums in the new pressure formula \n
+ * non-linear absorbing case.
+ *
+ * @param [out] rho_sum      - rhox_sgx + rhoy_sgy + rhoz_sgz
+ * @param [out] BonA_sum     - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
+ * @param [out] du_sum       - rho0* (duxdx + duydy + duzdz)
+ * @param [in]  duxdx        - gradient of velocity
+ * @param [in]  duydy
+ * @param [in]  duzdz
+ * @param [in]  BonA_scalar  - scalar value for BonA
+ * @param [in]  BonA_matrix  - heterogeneous value for BonA
+ * @param [in]  BonA_shift   - scalar or matrix
+ * @param [in]  rho0_scalar  - scalar value for rho0
+ * @param [in]  rho0_matrix  - heterogeneous value for rho0
+ * @param [in]  rho0_shift   - scalar or matrix
+ *
+ * @todo revise parameter names, and put scalars to constant memory
+ */
+__global__ void CUDACalculate_SumRho_BonA_SumDu(float       * rho_sum,
+                                                float       * BonA_sum,
+                                                float       * du_sum,
+                                                const float * rhox,
+                                                const float * rhoy,
+                                                const float * rhoz,
+                                                const float * duxdx,
+                                                const float * duydy,
+                                                const float * duzdz,
+                                                const float   BonA_scalar,
+                                                const float * BonA_matrix,
+                                                const size_t  BonA_shift,
+                                                const float   rho0_scalar,
+                                                const float * rho0_matrix,
+                                                const size_t  rho0_shift)
 {
-    size_t i = threadIdx.x + blockIdx.x*blockDim.x;
-    size_t istride = blockDim.x * gridDim.x;
+  for (size_t i = GetX(); i < DeviceConstants.TotalElementCount; i += GetX_Stride())
+  {
+    const float BonA = (BonA_shift == 0) ? BonA_scalar : BonA_matrix[i];
+    const float rho0 = (rho0_shift == 0) ? rho0_scalar : rho0_matrix[i];
 
-    if (p_source_many != 0){
-        for (; i < max_i; i += istride){
+    const float rho_xyz_el = rhox[i] + rhoy[i] + rhoz[i];
 
-            rhox_data[p_source_index_data[i]] = p_source_input_data[index2D+i];
-            rhoy_data[p_source_index_data[i]] = p_source_input_data[index2D+i];
-            rhoz_data[p_source_index_data[i]] = p_source_input_data[index2D+i];
-
-        }
+    rho_sum[i]  = rho_xyz_el;
+    BonA_sum[i] = ((BonA * (rho_xyz_el * rho_xyz_el)) / (2.0f * rho0)) + rho_xyz_el;
+    du_sum[i]   = rho0 * (duxdx[i] + duydy[i] + duzdz[i]);
     }
-    else{
-        for (; i < max_i; i += istride){
+}// end of CUDACalculate_SumRho_BonA_SumDu
+//--------------------------------------------------------------------------
 
-            rhox_data[p_source_index_data[i]] = p_source_input_data[index2D];
-            rhoy_data[p_source_index_data[i]] = p_source_input_data[index2D];
-            rhoz_data[p_source_index_data[i]] = p_source_input_data[index2D];
-
-        }
-    }
-}
-
-__global__ void CudaAdd_p_sourceAddition(
-        float* rhox_data,
-        float* rhoy_data,
-        float* rhoz_data,
-        const float* p_source_input_data,
-        const size_t* p_source_index_data,
-        const size_t index2D,
-        const size_t p_source_many,
-        const size_t max_i)
+/**
+ *
+ * Interface to kernel which calculates three temporary sums in the new pressure formula \n
+ * non-linear absorbing case.
+ *
+ * @param [out] rho_sum      - rhox_sgx + rhoy_sgy + rhoz_sgz
+ * @param [out] BonA_sum     - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
+ * @param [out] du_sum       - rho0* (duxdx + duydy + duzdz)
+ * @param [in]  duxdx        - gradient of velocity
+ * @param [in]  duydy
+ * @param [in]  duzdz
+ * @param [in]  BonA_scalar  - scalar value for BonA
+ * @param [in]  BonA_matrix  - heterogeneous value for BonA
+ * @param [in]  BonA_shift   - scalar or matrix
+ * @param [in]  rho0_scalar  - scalar value for rho0
+ * @param [in]  rho0_matrix  - heterogeneous value for rho0
+ * @param [in]  rho0_shift   - scalar or matrix
+ *
+ * @todo revise parameter names, and put scalars to constant memory
+ */
+void TCUDAImplementations::Calculate_SumRho_BonA_SumDu(TRealMatrix      & rho_sum,
+                                                       TRealMatrix      & BonA_sum,
+                                                       TRealMatrix      & du_sum,
+                                                       const TRealMatrix& rhox,
+                                                       const TRealMatrix& rhoy,
+                                                       const TRealMatrix& rhoz,
+                                                       const TRealMatrix& duxdx,
+                                                       const TRealMatrix& duydy,
+                                                       const TRealMatrix& duzdz,
+                                                       const float        BonA_scalar,
+                                                       const float*       BonA_matrix,
+                                                       const size_t       BonA_shift,
+                                                       const float        rho0_scalar,
+                                                       const float*       rho0_matrix,
+                                                       const size_t       rho0_shift)
 {
-    size_t i = threadIdx.x + blockIdx.x*blockDim.x;
-    size_t istride = blockDim.x * gridDim.x;
+  CUDACalculate_SumRho_BonA_SumDu<<<CUDATuner->GetNumberOfBlocksFor1D(),
+                                    CUDATuner->GetNumberOfThreadsFor1D()>>>
+                                (rho_sum.GetRawDeviceData(),
+                                 BonA_sum.GetRawDeviceData(),
+                                 du_sum.GetRawDeviceData(),
+                                 rhox.GetRawDeviceData(),
+                                 rhoy.GetRawDeviceData(),
+                                 rhoz.GetRawDeviceData(),
+                                 duxdx.GetRawDeviceData(),
+                                 duydy.GetRawDeviceData(),
+                                 duzdz.GetRawDeviceData(),
+                                 BonA_scalar,
+                                 BonA_matrix,
+                                 BonA_shift,
+                                 rho0_scalar,
+                                 rho0_matrix,
+                                 rho0_shift);
 
-    if (p_source_many != 0){
-        for (; i < max_i; i += istride){
+  // check for errors
+  gpuErrchk(cudaGetLastError());
+}// end of Calculate_SumRho_BonA_SumDu
+//------------------------------------------------------------------------------
 
-            rhox_data[p_source_index_data[i]] += p_source_input_data[index2D+i];
-            rhoy_data[p_source_index_data[i]] += p_source_input_data[index2D+i];
-            rhoz_data[p_source_index_data[i]] += p_source_input_data[index2D+i];
 
-        }
-    }
-    else{
-        for (; i < max_i; i += istride){
-
-            rhox_data[p_source_index_data[i]] += p_source_input_data[index2D];
-            rhoy_data[p_source_index_data[i]] += p_source_input_data[index2D];
-            rhoz_data[p_source_index_data[i]] += p_source_input_data[index2D];
-
-        }
-    }
-}
-
-void TCUDAImplementations::Add_p_source(TRealMatrix& rhox,
-        TRealMatrix& rhoy,
-        TRealMatrix& rhoz,
-        TRealMatrix& p_source_input,
-        TIndexMatrix& p_source_index,
-        size_t p_source_many,
-        size_t p_source_mode,
-        size_t t_index)
+/**
+ * Interface to kernel which computes absorbing term with abosrb_nabla1 and
+ * absorb_nabla2, SSE2 version. \n
+ * Calculate fft_1 = absorb_nabla1 .* fft_1 \n
+ * Calculate fft_2 = absorb_nabla2 .* fft_2 \n
+ *
+ * @param [in,out] FFT_1
+ * @param [in,out] FFT_2
+ * @param [in]     absorb_nabla1
+ * @param [in]     absorb_nabla2
+ */
+__global__ void CUDACompute_Absorb_nabla1_2(float2     * FFT_1,
+                                            float2     * FFT_2,
+                                            const float* nabla1,
+                                            const float* nabla2)
 {
-    float * rhox_data = rhox.GetRawDeviceData();
-    float * rhoy_data = rhoy.GetRawDeviceData();
-    float * rhoz_data = rhoz.GetRawDeviceData();
+  for(size_t i = GetX(); i < DeviceConstants.ComplexTotalElementCount; i += GetX_Stride())
+  {
+    const float nabla_data1 = nabla1[i];
+    const float nabla_data2 = nabla2[i];
 
-    const float * p_source_input_data = p_source_input.GetRawDeviceData();
-    const size_t  * p_source_index_data = p_source_index.GetRawDeviceData();
+    float2 FFT_1_el = FFT_1[i];
+    float2 FFT_2_el = FFT_2[i];
 
-    size_t index2D = t_index;
+    FFT_1_el.x *= nabla_data1;
+    FFT_1_el.y *= nabla_data1;
 
-    if (p_source_many != 0) { // is 2D
-        index2D = t_index * p_source_index.GetTotalElementCount();
-    }
+    FFT_2_el.x *= nabla_data2;
+    FFT_2_el.y *= nabla_data2;
 
-    // replacement
-    if (p_source_mode == 0){
-        CudaAdd_p_sourceReplacement
-            <<< CUDATuner->GetNumberOfBlocksForSubmatrixWithSize(
-                            p_source_index.GetTotalElementCount()),
-                //CUDATuner->GetNumberOfBlocksFor1D(),
-                CUDATuner->GetNumberOfThreadsFor1D() >>>
-                (rhox_data,
-                 rhoy_data,
-                 rhoz_data,
-                 p_source_input_data,
-                 p_source_index_data,
-                 index2D,
-                 p_source_many,
-                 p_source_index.GetTotalElementCount());
-        // Addition
-    }else{
-        CudaAdd_p_sourceAddition
-            <<< CUDATuner->GetNumberOfBlocksForSubmatrixWithSize(
-                            p_source_index.GetTotalElementCount()),
-                //CUDATuner->GetNumberOfBlocksFor1D(),
-                CUDATuner->GetNumberOfThreadsFor1D() >>>
-                (rhox_data,
-                 rhoy_data,
-                 rhoz_data,
-                 p_source_input_data,
-                 p_source_index_data,
-                 index2D,
-                 p_source_many,
-                 p_source_index.GetTotalElementCount());
-    }// type of replacement
-}
+    FFT_1[i] = FFT_1_el;
+    FFT_2[i] = FFT_2_el;
+  }
+}// end of CUDACompute_Absorb_nabla1_2
+//------------------------------------------------------------------------------
 
-__global__ void CudaCalculate_SumRho_BonA_SumDu(float*       RHO_Temp_Data,
-                                                float*       BonA_Temp_Data,
-                                                float*       SumDU_Temp_Data,
-                                                const float* rhox_data,
-                                                const float* rhoy_data,
-                                                const float* rhoz_data,
-                                                const float* dux_data,
-                                                const float* duy_data,
-                                                const float* duz_data,
-                                                const float  BonA_data_scalar,
-                                                const float* BonA_data_matrix,
-                                                const size_t BonA_shift,
-                                                const float  rho0_data_scalar,
-                                                const float* rho0_data_matrix,
-                                                const size_t rho0_shift,
-                                                const size_t max_i)
+
+/**
+ * Interface to kernel which computes absorbing term with abosrb_nabla1 and
+ * absorb_nabla2, SSE2 version. \n
+ * Calculate fft_1 = absorb_nabla1 .* fft_1 \n
+ * Calculate fft_2 = absorb_nabla2 .* fft_2 \n
+ *
+ * @param [in,out] FFT_1
+ * @param [in,out] FFT_2
+ * @param [in]     absorb_nabla1
+ * @param [in]     absorb_nabla2
+ */
+void TCUDAImplementations::Compute_Absorb_nabla1_2(TCUFFTComplexMatrix& FFT_1,
+                                                   TCUFFTComplexMatrix& FFT_2,
+                                                   const TRealMatrix  & absorb_nabla1,
+                                                   const TRealMatrix  & absorb_nabla2)
 {
+  CUDACompute_Absorb_nabla1_2<<<CUDATuner->GetNumberOfBlocksFor1D(),
+                                CUDATuner->GetNumberOfThreadsFor1D()>>>
+                            (reinterpret_cast<float2 *> (FFT_1.GetRawDeviceData()),
+                             reinterpret_cast<float2 *> (FFT_2.GetRawDeviceData()),
+                             absorb_nabla1.GetRawDeviceData(),
+                             absorb_nabla2.GetRawDeviceData());
 
-    size_t i = threadIdx.x + blockIdx.x*blockDim.x;
-    size_t istride = blockDim.x * gridDim.x;
+  // check for errors
+  gpuErrchk(cudaGetLastError());
+}// end of Compute_Absorb_nabla1_2
+//------------------------------------------------------------------------------
 
-    for (; i < max_i; i += istride){
-        float BonA_data, rho0_data;
 
-        if(BonA_shift == 0){
-            BonA_data = BonA_data_scalar;
-        }
-        else{
-            BonA_data = BonA_data_matrix[i];
-        }
-
-        if(rho0_shift == 0){
-            rho0_data = rho0_data_scalar;
-        }
-        else{
-            rho0_data = rho0_data_matrix[i];
-        }
-
-        register const float rho_xyz_el = rhox_data[i] +
-            rhoy_data[i] +
-            rhoz_data[i];
-        RHO_Temp_Data[i]   = rho_xyz_el;
-        BonA_Temp_Data[i]  = ((BonA_data * (rho_xyz_el * rho_xyz_el))
-                / (2.0f * rho0_data)) + rho_xyz_el;
-        SumDU_Temp_Data[i] = rho0_data * (dux_data[i] +
-                duy_data[i] +
-                duz_data[i]);
-    }
-}
-
-void TCUDAImplementations::Calculate_SumRho_BonA_SumDu(
-        TRealMatrix& RHO_Temp,
-        TRealMatrix& BonA_Temp,
-        TRealMatrix& Sum_du,
-        TRealMatrix& rhox,
-        TRealMatrix& rhoy,
-        TRealMatrix& rhoz,
-        TRealMatrix& duxdx,
-        TRealMatrix& duydy,
-        TRealMatrix& duzdz,
-        const float  BonA_data_scalar,
-        const float* BonA_data_matrix,
-        const size_t BonA_shift,
-        const float  rho0_data_scalar,
-        const float* rho0_data_matrix,
-        const size_t rho0_shift)
+/**
+ * CUDA Sum sub-terms to calculate new pressure, non-linear case.
+ * @@todo needs revision
+ * @param [out] p           - new value of pressure
+ * @param [in] BonA_temp    - rho0 * (duxdx + duydy + duzdz)
+ * @param [in] c2_scalar
+ * @param [in] c2_matrix
+ * @param [in] c2_shift
+ * @param [in] Absorb_tau
+ * @param [in] tau_scalar
+ * @param [in] tau_matrix
+ * @param [in] Absorb_eta   - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
+ * @param [in] eta_scalar
+ * @param [in] eta_matrix
+ * @param [in]tau_eta_shift
+ */
+__global__ void CUDASum_Subterms_nonlinear(float       * p,
+                                           const float * BonA_temp,
+                                           const float   c2_scalar,
+                                           const float * c2_matrix,
+                                           const size_t  c2_shift,
+                                           const float * Absorb_tau,
+                                           const float   tau_scalar,
+                                           const float * tau_matrix,
+                                           const float * Absorb_eta,
+                                           const float   eta_scalar,
+                                           const float * eta_matrix,
+                                           const size_t  tau_eta_shift)
 {
-    const float* rhox_data = rhox.GetRawDeviceData();
-    const float* rhoy_data = rhoy.GetRawDeviceData();
-    const float* rhoz_data = rhoz.GetRawDeviceData();
+  for(size_t i = GetX(); i < DeviceConstants.TotalElementCount; i += GetX_Stride())
+  {
+    const float c2  = (c2_shift == 0)      ? c2_scalar  : c2_matrix[i];
+    const float tau = (tau_eta_shift == 0) ? tau_scalar : tau_matrix[i];
+    const float eta = (tau_eta_shift == 0) ? eta_scalar : eta_matrix[i];
 
-    const float* dux_data = duxdx.GetRawDeviceData();
-    const float* duy_data = duydy.GetRawDeviceData();
-    const float* duz_data = duzdz.GetRawDeviceData();
+    p[i] = c2 * (BonA_temp[i] + (DeviceConstants.Divider *
+                ((Absorb_tau[i] * tau) - (Absorb_eta[i] * eta))));
+  }
+}// end of CUDASum_Subterms_nonlinear
+//------------------------------------------------------------------------------
 
-          float* RHO_Temp_Data  = RHO_Temp.GetRawDeviceData();
-          float* BonA_Temp_Data = BonA_Temp.GetRawDeviceData();
-          float* SumDU_Temp_Data= Sum_du.GetRawDeviceData();
 
-    CudaCalculate_SumRho_BonA_SumDu
-        <<< CUDATuner->GetNumberOfBlocksFor1D(),
-            CUDATuner->GetNumberOfThreadsFor1D() >>>
-            (RHO_Temp_Data,
-             BonA_Temp_Data,
-             SumDU_Temp_Data,
-             rhox_data,
-             rhoy_data,
-             rhoz_data,
-             dux_data,
-             duy_data,
-             duz_data,
-             BonA_data_scalar,
-             BonA_data_matrix,
-             BonA_shift,
-             rho0_data_scalar,
-             rho0_data_matrix,
-             rho0_shift,
-             RHO_Temp.GetTotalElementCount());
-}
-
-__global__ void CudaCompute_Absorb_nabla1_2(float* FFT_1_data,
-        float* FFT_2_data,
-        const float* nabla1,
-        const float* nabla2,
-        const size_t max_i)
+/**
+ * Interface to CUDA Sum sub-terms to calculate new pressure, non-linear case.
+ * @param [in,out] p        - new value of pressure
+ * @param [in] BonA_temp    - rho0 * (duxdx + duydy + duzdz)
+ * @param [in] c2_scalar
+ * @param [in] c2_matrix
+ * @param [in] c2_shift
+ * @param [in] Absorb_tau
+ * @param [in] tau_scalar
+ * @param [in] tau_matrix
+ * @param [in] Absorb_eta   - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
+ * @param [in] eta_scalar
+ * @param [in] eta_matrix
+ * @param [in]tau_eta_shift
+ */
+void TCUDAImplementations::Sum_Subterms_nonlinear(TRealMatrix      & p,
+                                                  const TRealMatrix& BonA_temp,
+                                                  const float        c2_scalar,
+                                                  const float      * c2_matrix,
+                                                  const size_t       c2_shift,
+                                                  const float      * Absorb_tau,
+                                                  const float        tau_scalar,
+                                                  const float      * tau_matrix,
+                                                  const float      * Absorb_eta,
+                                                  const float        eta_scalar,
+                                                  const float      * eta_matrix,
+                                                  const size_t       tau_eta_shift)
 {
+  CUDASum_Subterms_nonlinear<<<CUDATuner->GetNumberOfBlocksFor1D(),
+                               CUDATuner->GetNumberOfThreadsFor1D()>>>
+                            (p.GetRawDeviceData(),
+                             BonA_temp.GetRawDeviceData(),
+                             c2_scalar,
+                             c2_matrix,
+                             c2_shift,
+                             Absorb_tau,
+                             tau_scalar,
+                             tau_matrix,
+                             Absorb_eta,
+                             eta_scalar,
+                             eta_matrix,
+                             tau_eta_shift);
 
-    size_t i = threadIdx.x + blockIdx.x*blockDim.x;
-    size_t istride = blockDim.x * gridDim.x;
+  // check for errors
+  gpuErrchk(cudaGetLastError());
+}// end of Sum_Subterms_nonlinear
+//------------------------------------------------------------------------------
 
-    for (; i < max_i; i += istride){
-        float nabla_data1 = nabla1[i];
-        FFT_1_data[(i<<1)]   *= nabla_data1;
-        FFT_1_data[(i<<1)+1] *= nabla_data1;
 
-        float nabla_data2 = nabla2[i];
-        FFT_2_data[(i<<1)]   *= nabla_data2;
-        FFT_2_data[(i<<1)+1] *= nabla_data2;
-    }
-}
-
-void TCUDAImplementations::Compute_Absorb_nabla1_2(TRealMatrix& absorb_nabla1,
-        TRealMatrix& absorb_nabla2,
-        TCUFFTComplexMatrix& FFT_1,
-        TCUFFTComplexMatrix& FFT_2)
+/**
+ * CUDA kernel that sums sub-terms to calculate new pressure, linear case.
+ * @param [out] p              - new value of p
+ * @param [in] Absorb_tau_temp - sub-term with absorb_tau
+ * @param [in] Absorb_eta_temp - sub-term with absorb_eta
+ * @param [in] Sum_rhoxyz      - rhox_sgx + rhoy_sgy + rhoz_sgz
+ * @param [in] c2_scalar
+ * @param [in] c2_matrix
+ * @param [in] c2_shift
+ * @param [in] tau_scalar
+ * @param [in] tau_matrix
+ * @param [in] eta_scalar
+ * @param [in] eta_matrix
+ * @param [in] tau_eta_shift
+ */
+__global__ void CUDASum_Subterms_linear(float       * p,
+                                        const float * Absorb_tau_temp,
+                                        const float * Absorb_eta_temp,
+                                        const float * Sum_rhoxyz,
+                                        const float   c2_scalar,
+                                        const float * c2_matrix,
+                                        const size_t  c2_shift,
+                                        const float   tau_scalar,
+                                        const float * tau_matrix,
+                                        const float   eta_scalar,
+                                        const float * eta_matrix,
+                                        const size_t  tau_eta_shift)
 {
-    const float * nabla1 = absorb_nabla1.GetRawDeviceData();
-    const float * nabla2 = absorb_nabla2.GetRawDeviceData();
+  for(size_t i = GetX(); i < DeviceConstants.TotalElementCount; i += GetX_Stride())
+  {
+    const float c2  = (c2_shift == 0)      ? c2_scalar  : c2_matrix[i];
+    const float tau = (tau_eta_shift == 0) ? tau_scalar : tau_matrix[i];
+    const float eta = (tau_eta_shift == 0) ? eta_scalar : eta_matrix[i];
 
-    float * FFT_1_data  = FFT_1.GetRawDeviceData();
-    float * FFT_2_data  = FFT_2.GetRawDeviceData();
+    p[i] = c2 * (Sum_rhoxyz[i] + (DeviceConstants.Divider *
+                (Absorb_tau_temp[i] * tau - Absorb_eta_temp[i] * eta)));
+  }
+}// end of CUDASum_Subterms_linear
+//------------------------------------------------------------------------------
 
-    CudaCompute_Absorb_nabla1_2
-        <<< CUDATuner->GetNumberOfBlocksFor1D(),
-        CUDATuner->GetNumberOfThreadsFor1D() >>>
-            (FFT_1_data,
-             FFT_2_data,
-             nabla1,
-             nabla2,
-             FFT_1.GetTotalElementCount());
-}
 
-__global__ void CudaSum_Subterms_nonlinear(float*       p_data,
-        const float* BonA_data,
-        const float  c2_data_scalar,
-        const float* c2_data_matrix,
-        const size_t c2_shift,
-        const float* Absorb_tau_data,
-        const float  tau_data_scalar,
-        const float* tau_data_matrix,
-        const float* Absorb_eta_data,
-        const float  eta_data_scalar,
-        const float* eta_data_matrix,
-        const size_t tau_eta_shift,
-        const size_t max_i)
+/**
+ * Interface to kernel that sums sub-terms to calculate new pressure, linear case.
+ * @param [out] p              - new value of p
+ * @param [in] Absorb_tau_temp - sub-term with absorb_tau
+ * @param [in] Absorb_eta_temp - sub-term with absorb_eta
+ * @param [in] Sum_rhoxyz      - rhox_sgx + rhoy_sgy + rhoz_sgz
+ * @param [in] c2_scalar
+ * @param [in] c2_matrix
+ * @param [in] c2_shift
+ * @param [in] tau_scalar
+ * @param [in] tau_matrix
+ * @param [in] eta_scalar
+ * @param [in] eta_matrix
+ * @param [in] tau_eta_shift
+ */
+void TCUDAImplementations::Sum_Subterms_linear(TRealMatrix      & p,
+                                               const TRealMatrix& Absorb_tau_temp,
+                                               const TRealMatrix& Absorb_eta_temp,
+                                               const TRealMatrix& Sum_rhoxyz,
+                                               const float        c2_scalar,
+                                               const float      * c2_matrix,
+                                               const size_t       c2_shift,
+                                               const float        tau_scalar,
+                                               const float      * tau_matrix,
+                                               const float        eta_scalar,
+                                               const float      * eta_matrix,
+                                               const size_t       tau_eta_shift)
 {
-    const float divider = 1.0f / (float) max_i;
+  CUDASum_Subterms_linear<<<CUDATuner->GetNumberOfBlocksFor1D(),
+                            CUDATuner->GetNumberOfThreadsFor1D() >>>
+                        (p.GetRawDeviceData(),
+                         Absorb_tau_temp.GetRawDeviceData(),
+                         Absorb_eta_temp.GetRawDeviceData(),
+                         Sum_rhoxyz.GetRawDeviceData(),
+                         c2_scalar,
+                         c2_matrix,
+                         c2_shift,
+                         tau_scalar,
+                         tau_matrix,
+                         eta_scalar,
+                         eta_matrix,
+                         tau_eta_shift);
 
-    size_t i = threadIdx.x + blockIdx.x*blockDim.x;
-    size_t istride = blockDim.x * gridDim.x;
+  // check for errors
+  gpuErrchk(cudaGetLastError());
+}// end of Sum_Subterms_linear
+//------------------------------------------------------------------------------
 
-    for (; i < max_i; i += istride){
 
-        float c2_data, eta_data, tau_data;
-
-        if(c2_shift == 0){
-            c2_data = c2_data_scalar;
-        }
-        else{
-            c2_data = c2_data_matrix[i];
-        }
-
-        if(tau_eta_shift == 0){
-            tau_data = tau_data_scalar;
-            eta_data = eta_data_scalar;
-        }
-        else{
-            tau_data = tau_data_matrix[i];
-            eta_data = eta_data_matrix[i];
-        }
-
-        p_data[i] = c2_data *(BonA_data[i] +
-                (divider * ((Absorb_tau_data[i] * tau_data) -
-                            (Absorb_eta_data[i] * eta_data))));
-    }
-}
-
-void TCUDAImplementations::Sum_Subterms_nonlinear(TRealMatrix& BonA_temp,
-        TRealMatrix& p,
-        const float  c2_data_scalar,
-        const float* c2_data_matrix,
-        const size_t c2_shift,
-        const float* Absorb_tau_data,
-        const float  tau_data_scalar,
-        const float* tau_data_matrix,
-        const float* Absorb_eta_data,
-        const float  eta_data_scalar,
-        const float* eta_data_matrix,
-        const size_t tau_eta_shift){
-
-    const size_t TotalElementCount = p.GetTotalElementCount();
-
-    const float * BonA_data = BonA_temp.GetRawDeviceData();
-    float * p_data  = p.GetRawDeviceData();
-
-    CudaSum_Subterms_nonlinear
-        <<< CUDATuner->GetNumberOfBlocksFor1D(),
-            CUDATuner->GetNumberOfThreadsFor1D() >>>
-            (p_data,
-             BonA_data,
-             c2_data_scalar,
-             c2_data_matrix,
-             c2_shift,
-             Absorb_tau_data,
-             tau_data_scalar,
-             tau_data_matrix,
-             Absorb_eta_data,
-             eta_data_scalar,
-             eta_data_matrix,
-             tau_eta_shift,
-             p.GetTotalElementCount());
-}
-
-__global__ void CudaSum_new_p_nonlinear_lossless(
-        const size_t TotalElementCount,
-        float*       p_data,
-        const float* rhox_data,
-        const float* rhoy_data,
-        const float* rhoz_data,
-        const float  c2_data_scalar,
-        const float* c2_data_matrix,
-        const size_t c2_shift,
-        const float  BonA_data_scalar,
-        const float* BonA_data_matrix,
-        const size_t BonA_shift,
-        const float  rho0_data_scalar,
-        const float* rho0_data_matrix,
-        const size_t rho0_shift
-        )
+/**
+ * CUDA kernel that sums sub-terms for new p, non-linear lossless case.
+ * @param [out] p           - new value of pressure
+ * @param [in]  rhox
+ * @param [in]  rhoy
+ * @param [in]  rhoz
+ * @param [in]  c2_scalar
+ * @param [in]  c2_matrix
+ * @param [in]  c2_shift
+ * @param [in]  BonA_scalar
+ * @param [in]  BonA_matrix
+ * @param [in]  BonA_shift
+ * @param [in]  rho0_scalar
+ * @param [in]  rho0_matrix
+ * @param [in]  rho0_shift
+ */
+__global__ void CUDASum_new_p_nonlinear_lossless(float       * p,
+                                                 const float * rhox,
+                                                 const float * rhoy,
+                                                 const float * rhoz,
+                                                 const float   c2_scalar,
+                                                 const float * c2_matrix,
+                                                 const size_t  c2_shift,
+                                                 const float   BonA_scalar,
+                                                 const float * BonA_matrix,
+                                                 const size_t  BonA_shift,
+                                                 const float   rho0_scalar,
+                                                 const float * rho0_matrix,
+                                                 const size_t  rho0_shift)
 {
-    size_t i = threadIdx.x + blockIdx.x*blockDim.x;
-    size_t istride = blockDim.x * gridDim.x;
+  for(size_t i = GetX(); i < DeviceConstants.TotalElementCount; i += GetX_Stride())
+  {
+    const float c2   = (c2_shift   == 0) ? c2_scalar   : c2_matrix[i];
+    const float BonA = (BonA_shift == 0) ? BonA_scalar : BonA_matrix[i];
+    const float rho0 = (rho0_shift == 0) ? rho0_scalar : rho0_matrix[i];
 
-    for (; i < TotalElementCount; i += istride){
+    const float sum_rho = rhox[i] + rhoy[i] + rhoz[i];
 
-        float c2_data;
-        float BonA_data;
-        float rho0_data;
+    p[i] = c2 * (sum_rho + (BonA * (sum_rho * sum_rho) / (2.0f * rho0)));
+  }
+}// end of CUDASum_new_p_nonlinear_lossless
+//------------------------------------------------------------------------------
 
-        if (c2_shift == 0){
-            c2_data = c2_data_scalar;
-        }
-        else {
-            c2_data = c2_data_matrix[i];
-        }
-        if (BonA_shift == 0){
-            BonA_data = BonA_data_scalar;
-        }
-        else {
-            BonA_data = BonA_data_matrix[i];
-        }
-        if (rho0_shift == 0){
-            rho0_data = rho0_data_scalar;
-        }
-        else {
-            rho0_data = rho0_data_matrix[i];
-        }
-
-        const float sum_rho = rhox_data[i] + rhoy_data[i] + rhoz_data[i];
-        p_data[i] = c2_data *(
-                sum_rho +
-                (BonA_data * (sum_rho* sum_rho) /
-                 (2.0f* rho0_data))
-                );
-    }
-}
-
-void TCUDAImplementations::Sum_new_p_nonlinear_lossless(
-        size_t       TotalElementCount,
-        TRealMatrix& p,
-        const float* rhox_data,
-        const float* rhoy_data,
-        const float* rhoz_data,
-        const float  c2_data_scalar,
-        const float* c2_data_matrix,
-        const size_t c2_shift,
-        const float  BonA_data_scalar,
-        const float* BonA_data_matrix,
-        const size_t BonA_shift,
-        const float  rho0_data_scalar,
-        const float* rho0_data_matrix,
-        const size_t rho0_shift)
+/**
+ * Interface to kernel that sums sub-terms for new p, non-linear lossless case.
+ * @param [out] p           - new value of pressure
+ * @param [in]  rhox
+ * @param [in]  rhoy
+ * @param [in]  rhoz
+ * @param [in]  c2_scalar
+ * @param [in]  c2_matrix
+ * @param [in]  c2_shift
+ * @param [in]  BonA_scalar
+ * @param [in]  BonA_matrix
+ * @param [in]  BonA_shift
+ * @param [in]  rho0_scalar
+ * @param [in]  rho0_matrix
+ * @param [in]  rho0_shift
+ */
+void TCUDAImplementations::Sum_new_p_nonlinear_lossless(TRealMatrix      & p,
+                                                        const TRealMatrix& rhox,
+                                                        const TRealMatrix& rhoy,
+                                                        const TRealMatrix& rhoz,
+                                                        const float        c2_scalar,
+                                                        const float      * c2_matrix,
+                                                        const size_t       c2_shift,
+                                                        const float        BonA_scalar,
+                                                        const float      * BonA_matrix,
+                                                        const size_t       BonA_shift,
+                                                        const float        rho0_scalar,
+                                                        const float      * rho0_matrix,
+                                                        const size_t       rho0_shift)
 {
-    float * p_data  = p.GetRawDeviceData();
+  CUDASum_new_p_nonlinear_lossless<<<CUDATuner->GetNumberOfBlocksFor1D(),
+                                     CUDATuner->GetNumberOfThreadsFor1D()>>>
+                                  (p.GetRawDeviceData(),
+                                   rhox.GetRawDeviceData(),
+                                   rhoy.GetRawDeviceData(),
+                                   rhoz.GetRawDeviceData(),
+                                   c2_scalar,
+                                   c2_matrix,
+                                   c2_shift,
+                                   BonA_scalar,
+                                   BonA_matrix,
+                                   BonA_shift,
+                                   rho0_scalar,
+                                   rho0_matrix,
+                                   rho0_shift);
 
-    CudaSum_new_p_nonlinear_lossless
-        <<< CUDATuner->GetNumberOfBlocksFor1D(),
-            CUDATuner->GetNumberOfThreadsFor1D() >>>
-            (TotalElementCount,
-             p_data,
-             rhox_data,
-             rhoy_data,
-             rhoz_data,
-             c2_data_scalar,
-             c2_data_matrix,
-             c2_shift,
-             BonA_data_scalar,
-             BonA_data_matrix,
-             BonA_shift,
-             rho0_data_scalar,
-             rho0_data_matrix,
-             rho0_shift);
-}
+  // check for errors
+  gpuErrchk(cudaGetLastError());
+}// end of Sum_new_p_nonlinear_lossless
+//------------------------------------------------------------------------------
 
-__global__ void CudaCalculate_SumRho_SumRhoDu(float* Sum_rhoxyz_data,
-        float* Sum_rho0_du_data,
-        const float* rhox_data,
-        const float* rhoy_data,
-        const float* rhoz_data,
-        const float* dux_data,
-        const float* duy_data,
-        const float* duz_data,
-        const float* rho0_data,
-        const float rho0_data_el,
-        const size_t TotalElementCount,
-        bool rho0_scalar_flag)
+
+/**
+ * CUDA kernel that Calculates two temporary sums in the new pressure
+ * formula, linear absorbing case.
+ * @param [out] Sum_rhoxyz  - rhox_sgx + rhoy_sgy + rhoz_sgz
+ * @param [out] Sum_rho0_du - rho0* (duxdx + duydy + duzdz);
+ * @param [in]  rhox
+ * @param [in]  rhoy
+ * @param [in]  rhoz
+ * @param [in]  duxdx
+ * @param [in]  duydy
+ * @param [in]  duzdz
+ * @param [in]  rho0_scalar
+ * @param [in]  rho0_matrix
+ * @param [in]  rho0_shift
+ */
+__global__ void CUDACalculate_SumRho_SumRhoDu(float      * Sum_rhoxyz,
+                                              float      * Sum_rho0_du,
+                                              const float* rhox,
+                                              const float* rhoy,
+                                              const float* rhoz,
+                                              const float* dux,
+                                              const float* duy,
+                                              const float* duz,
+                                              const float  rho0_scalar,
+                                              const float* rho0_matrix,
+                                              const size_t rho0_shift)
 {
+  for(size_t i = GetX(); i < DeviceConstants.TotalElementCount; i += GetX_Stride())
+  {
+    const float rho0 = (rho0_shift == 0) ? rho0_scalar : rho0_matrix[i];
 
-    size_t istart = threadIdx.x + blockIdx.x*blockDim.x;
-    size_t istride = blockDim.x * gridDim.x;
+    Sum_rhoxyz[i]  = rhox[i] + rhoy[i] + rhoz[i];
+    Sum_rho0_du[i] = rho0 * (dux[i] + duy[i] + duz[i]);
+  }
+}// end of CUDACalculate_SumRho_SumRhoDu
+//------------------------------------------------------------------------------
 
-    for (size_t i = istart; i < TotalElementCount; i += istride){
-        Sum_rhoxyz_data[i] = rhox_data[i] + rhoy_data[i] + rhoz_data[i];
-    }
-
-    if (rho0_scalar_flag){ // scalar
-        for (size_t i = istart; i < TotalElementCount; i += istride){
-            Sum_rho0_du_data[i] = rho0_data_el *
-                (dux_data[i] + duy_data[i] + duz_data[i]);
-        }
-    }
-    else
-    { // matrix
-        for (size_t i = istart; i < TotalElementCount; i += istride){
-            Sum_rho0_du_data[i] = rho0_data[i] *
-                (dux_data[i] + duy_data[i] + duz_data[i]);
-        }
-    }
-}
-
-void TCUDAImplementations::Calculate_SumRho_SumRhoDu(
-        TRealMatrix& Sum_rhoxyz,
-        TRealMatrix& Sum_rho0_du,
-        TRealMatrix& rhox,
-        TRealMatrix& rhoy,
-        TRealMatrix& rhoz,
-        TRealMatrix& duxdx,
-        TRealMatrix& duydy,
-        TRealMatrix& duzdz,
-        const float* rho0_data,
-        const float  rho0_data_el,
-        const size_t TotalElementCount,
-        const bool   rho0_scalar_flag)
+/**
+ * Interface to kernel that Calculates two temporary sums in the new pressure
+ * formula, linear absorbing case.
+ * @param [out] Sum_rhoxyz  - rhox_sgx + rhoy_sgy + rhoz_sgz
+ * @param [out] Sum_rho0_du - rho0* (duxdx + duydy + duzdz);
+ * @param [in]  rhox
+ * @param [in]  rhoy
+ * @param [in]  rhoz
+ * @param [in]  duxdx
+ * @param [in]  duydy
+ * @param [in]  duzdz
+ * @param [in]  rho0_scalar
+ * @param [in]  rho0_matrix
+ * @param [in]  rho0_shift
+ */
+void TCUDAImplementations::Calculate_SumRho_SumRhoDu(TRealMatrix      & Sum_rhoxyz,
+                                                     TRealMatrix      & Sum_rho0_du,
+                                                     const TRealMatrix& rhox,
+                                                     const TRealMatrix& rhoy,
+                                                     const TRealMatrix& rhoz,
+                                                     const TRealMatrix& duxdx,
+                                                     const TRealMatrix& duydy,
+                                                     const TRealMatrix& duzdz,
+                                                     const float        rho0_scalar,
+                                                     const float      * rho0_matrix,
+                                                     const size_t       rho0_shift)
 {
-    const float * rhox_data = rhox.GetRawDeviceData();
-    const float * rhoy_data = rhoy.GetRawDeviceData();
-    const float * rhoz_data = rhoz.GetRawDeviceData();
+   CUDACalculate_SumRho_SumRhoDu<<<CUDATuner->GetNumberOfBlocksFor1D(),
+                                   CUDATuner->GetNumberOfThreadsFor1D()>>>
+                                (Sum_rhoxyz.GetRawDeviceData(),
+                                 Sum_rho0_du.GetRawDeviceData(),
+                                 rhox.GetRawDeviceData(),
+                                 rhoy.GetRawDeviceData(),
+                                 rhoz.GetRawDeviceData(),
+                                 duxdx.GetRawDeviceData(),
+                                 duydy.GetRawDeviceData(),
+                                 duzdz.GetRawDeviceData(),
+                                 rho0_scalar,
+                                 rho0_matrix,
+                                 rho0_shift);
+  // check for errors
+  gpuErrchk(cudaGetLastError());
+}// end of Calculate_SumRho_SumRhoDu
+//------------------------------------------------------------------------------
 
-    const float * dux_data = duxdx.GetRawDeviceData();
-    const float * duy_data = duydy.GetRawDeviceData();
-    const float * duz_data = duzdz.GetRawDeviceData();
-
-    float * Sum_rhoxyz_data  = Sum_rhoxyz.GetRawDeviceData();
-    float * Sum_rho0_du_data = Sum_rho0_du.GetRawDeviceData();
-
-    CudaCalculate_SumRho_SumRhoDu
-        <<< CUDATuner->GetNumberOfBlocksFor1D(),
-            CUDATuner->GetNumberOfThreadsFor1D() >>>
-            (Sum_rhoxyz_data,
-             Sum_rho0_du_data,
-             rhox_data,
-             rhoy_data,
-             rhoz_data,
-             dux_data,
-             duy_data,
-             duz_data,
-             rho0_data,
-             rho0_data_el,
-             TotalElementCount,
-             rho0_scalar_flag);
-}
-
-__global__ void CudaSum_Subterms_linear(const float* Absorb_tau_data,
-        const float* Absorb_eta_data,
-        const float* Sum_rhoxyz_data,
-              float* p_data,
-        const size_t total_element_count,
-        const size_t c2_shift,
-        const size_t tau_eta_shift,
-        const float  tau_data_scalar,
-        const float* tau_data_matrix,
-        const float  eta_data_scalar,
-        const float* eta_data_matrix,
-        const float  c2_data_scalar,
-        const float* c2_data_matrix)
+/**
+ * CUDA kernel that sums sub-terms for new p, linear lossless case.
+ * @param [out] p
+ * @param [in]  rhox
+ * @param [in]  rhoy
+ * @param [in]  rhoz
+ * @param [in]  c2_scalar
+ * @param [in]  c2_matrix
+ * @param [in]  c2_shift
+ */
+__global__ void CUDASum_new_p_linear_lossless(float       * p,
+                                              const float * rhox,
+                                              const float * rhoy,
+                                              const float * rhoz,
+                                              const float   c2_scalar,
+                                              const float * c2_matrix,
+                                              const size_t  c2_shift)
 {
+  for(size_t i = GetX(); i < DeviceConstants.TotalElementCount; i += GetX_Stride())
+  {
+    const float c2 = (c2_shift == 0) ? c2_scalar : c2_matrix[i];
+    p[i] = c2 * (rhox[i] + rhoy[i] + rhoz[i]);
+  }
+}// end of
 
-    size_t i = threadIdx.x + blockIdx.x*blockDim.x;
-    size_t istride = blockDim.x * gridDim.x;
-
-    const float divider = 1.0f / (float) total_element_count;
-
-    for (; i < total_element_count; i += istride){
-
-        float c2_data;
-        float tau_data;
-        float eta_data;
-
-        //if c2 is a scalar use that element else use correct matrix element
-        if(c2_shift == 0){
-            c2_data = c2_data_scalar;
-        }
-        else{
-            c2_data = c2_data_matrix[i];
-        }
-        //same as above but if tau is scalar then so too is eta
-        if(tau_eta_shift == 0){
-            tau_data = tau_data_scalar;
-            eta_data = eta_data_scalar;
-        }
-        else{
-            tau_data = tau_data_matrix[i];
-            eta_data = eta_data_matrix[i];
-        }
-
-        p_data[i] = c2_data *(
-                Sum_rhoxyz_data[i] +
-                (divider * (Absorb_tau_data[i] * tau_data -
-                            Absorb_eta_data[i] * eta_data)));
-    }
-}
-
-void TCUDAImplementations::Sum_Subterms_linear(TRealMatrix& Absorb_tau_temp,
-        TRealMatrix& Absorb_eta_temp,
-        TRealMatrix& Sum_rhoxyz,
-        TRealMatrix& p,
-        const size_t total_element_count,
-        size_t       c2_shift,
-        size_t       tau_eta_shift,
-        const float  tau_data_scalar,
-        const float* tau_data_matrix,
-        const float  eta_data_scalar,
-        const float* eta_data_matrix,
-        const float  c2_data_scalar,
-        const float* c2_data_matrix)
+/**
+ * Interface to kernel that sums sub-terms for new p, linear lossless case.
+ * @param [out] p
+ * @param [in]  rhox
+ * @param [in]  rhoy
+ * @param [in]  rhoz
+ * @param [in]  c2_scalar
+ * @param [in]  c2_matrix
+ * @param [in]  c2_shift
+ */
+void TCUDAImplementations::Sum_new_p_linear_lossless(TRealMatrix      & p,
+                                                     const TRealMatrix& rhox,
+                                                     const TRealMatrix& rhoy,
+                                                     const TRealMatrix& rhoz,
+                                                     const float        c2_scalar,
+                                                     const float      * c2_matrix,
+                                                     const size_t       c2_shift)
 {
-    const float *  Absorb_tau_data = Absorb_tau_temp.GetRawDeviceData();
-    const float *  Absorb_eta_data = Absorb_eta_temp.GetRawDeviceData();
+  CUDASum_new_p_linear_lossless<<<CUDATuner->GetNumberOfBlocksFor1D(),
+                                  CUDATuner->GetNumberOfThreadsFor1D()>>>
+                               (p.GetRawDeviceData(),
+                                rhox.GetRawDeviceData(),
+                                rhoy.GetRawDeviceData(),
+                                rhoz.GetRawDeviceData(),
+                                c2_scalar,
+                                c2_matrix,
+                                c2_shift);
+  // check for errors
+  gpuErrchk(cudaGetLastError());
+}// end of Sum_new_p_linear_lossless
+//------------------------------------------------------------------------------
 
-    const float * Sum_rhoxyz_data = Sum_rhoxyz.GetRawDeviceData();
-    float * p_data  = p.GetRawDeviceData();
-
-    CudaSum_Subterms_linear
-        <<< CUDATuner->GetNumberOfBlocksFor1D(),
-            CUDATuner->GetNumberOfThreadsFor1D() >>>
-            (Absorb_tau_data,
-             Absorb_eta_data,
-             Sum_rhoxyz_data,
-             p_data,
-             total_element_count,
-             c2_shift,
-             tau_eta_shift,
-             tau_data_scalar,
-             tau_data_matrix,
-             eta_data_scalar,
-             eta_data_matrix,
-             c2_data_scalar,
-             c2_data_matrix);
-}
-
-__global__ void CudaSum_new_p_linear_lossless_scalar(float* p_data,
-        const float* rhox_data,
-        const float* rhoy_data,
-        const float* rhoz_data,
-        const size_t total_element_count,
-        const float  c2_element)
-{
-    size_t i = threadIdx.x + blockIdx.x*blockDim.x;
-    size_t istride = blockDim.x * gridDim.x;
-
-    for (; i < total_element_count; i += istride){
-        p_data[i] = c2_element * ( rhox_data[i] + rhoy_data[i] + rhoz_data[i]);
-    }
-}
-
-void TCUDAImplementations::Sum_new_p_linear_lossless_scalar(
-        TRealMatrix& p,
-        TRealMatrix& rhox,
-        TRealMatrix& rhoy,
-        TRealMatrix& rhoz,
-        const size_t total_element_count,
-        const float c2_element
-        )
-{
-    float * p_data = p.GetRawDeviceData();
-    const float * rhox_data = rhox.GetRawDeviceData();
-    const float * rhoy_data = rhoy.GetRawDeviceData();
-    const float * rhoz_data = rhoz.GetRawDeviceData();
-
-    CudaSum_new_p_linear_lossless_scalar
-        <<< CUDATuner->GetNumberOfBlocksFor1D(),
-            CUDATuner->GetNumberOfThreadsFor1D() >>>
-        (p_data,
-         rhox_data,
-         rhoy_data,
-         rhoz_data,
-         total_element_count,
-         c2_element);
-}
-
-__global__ void CudaSum_new_p_linear_lossless_matrix(float* p_data,
-        const float* rhox_data,
-        const float* rhoy_data,
-        const float* rhoz_data,
-        const size_t total_element_count,
-        const float* c2_data)
-{
-    size_t i = threadIdx.x + blockIdx.x*blockDim.x;
-    size_t istride = blockDim.x * gridDim.x;
-
-    for (; i < total_element_count; i += istride){
-        p_data[i] = c2_data[i] * ( rhox_data[i] + rhoy_data[i] + rhoz_data[i]);
-    }
-}
-
-void TCUDAImplementations::Sum_new_p_linear_lossless_matrix(TRealMatrix& p,
-        TRealMatrix& rhox,
-        TRealMatrix& rhoy,
-        TRealMatrix& rhoz,
-        const size_t total_element_count,
-        TRealMatrix& c2)
-{
-          float* p_data = p.GetRawDeviceData();
-    const float* rhox_data = rhox.GetRawDeviceData();
-    const float* rhoy_data = rhoy.GetRawDeviceData();
-    const float* rhoz_data = rhoz.GetRawDeviceData();
-    const float* c2_data = c2.GetRawDeviceData();
-
-    CudaSum_new_p_linear_lossless_matrix
-        <<< CUDATuner->GetNumberOfBlocksFor1D(),
-            CUDATuner->GetNumberOfThreadsFor1D() >>>
-            (p_data,
-             rhox_data,
-             rhoy_data,
-             rhoz_data,
-             total_element_count,
-             c2_data);
-}
 
 __global__ void CudaStoreSensorData_store_p_max(const float* p_data,
         float* p_max,
