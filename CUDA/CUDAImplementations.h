@@ -401,63 +401,7 @@ class TCUDAImplementations
     //------------------- sampling kernels -----------------------------------//
 
 
-        void StoreSensorData_store_p_max(TRealMatrix& p,
-                                         TRealMatrix& p_sensor_max,
-                                         TIndexMatrix& sensor_mask_index);
 
-        void StoreSensorData_store_p_rms(TRealMatrix& p,
-                                         TRealMatrix& p_sensor_rms,
-                                         TIndexMatrix& sensor_mask_index);
-
-        void StoreSensorData_store_u_max(TRealMatrix& ux_sgx,
-                                         TRealMatrix& uy_sgy,
-                                         TRealMatrix& uz_sgz,
-                                         TRealMatrix& ux_sensor_max,
-                                         TRealMatrix& uy_sensor_max,
-                                         TRealMatrix& uz_sensor_max,
-                                         TIndexMatrix& sensor_mask_index);
-
-        void StoreSensorData_store_u_rms(TRealMatrix& ux_sgx,
-                                         TRealMatrix& uy_sgy,
-                                         TRealMatrix& uz_sgz,
-                                         TRealMatrix& ux_sensor_rms,
-                                         TRealMatrix& uy_sensor_rms,
-                                         TRealMatrix& uz_sensor_rms,
-                                         TIndexMatrix& sensor_mask_index);
-
-        void StoreIntensityData_first_step(const size_t sensor_size,
-                                           const TDimensionSizes Dims,
-                                           const size_t * index,
-                                           const float* ux,
-                                           const float* uy,
-                                           const float* uz,
-                                           const float* p,
-                                           float * ux_i_1,
-                                           float * uy_i_1,
-                                           float * uz_i_1,
-                                           float * p_i_1);
-
-        void StoreIntensityData_other_step(const size_t sensor_size,
-                                           const TDimensionSizes Dims,
-                                           const size_t * index,
-                                           const float* ux,
-                                           const float* uy,
-                                           const float* uz,
-                                           const float* p,
-                                           float* ux_i_1,
-                                           float* uy_i_1,
-                                           float* uz_i_1,
-                                           float* p_i_1,
-                                           float* Ix_avg,
-                                           float* Iy_avg,
-                                           float* Iz_avg,
-                                           float* Ix_max,
-                                           float* Iy_max,
-                                           float* Iz_max,
-                                           bool store_I_avg,
-                                           bool store_I_max,
-                                           size_t Nt,
-                                           size_t start_time_index);
   private:
     /// Default constructor for a singleton class
     TCUDAImplementations() : CUDATuner(NULL)  {};
