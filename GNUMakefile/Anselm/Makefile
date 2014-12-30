@@ -88,9 +88,12 @@ KWAVE_GIT_HASH=$(shell git rev-parse HEAD)
 #GNU version
 CXX	   = nvcc
 
-CXXFLAGS = -Xcompiler="-mtune=native -march=native -mavx -O3 -fopenmp -ffast-math -fassociative-math " \
-           -std=c++11  -I$(HDF5_INC_DIR)  -I. \
-	   -D__KWAVE_GIT_HASH__=\"$(KWAVE_GIT_HASH)\"
+KW = "abcd"
+
+CXXFLAGS = -Xcompiler="-mtune=native -march=native -mavx -O3 -fopenmp -ffast-math -fassociative-math" \
+           -std=c++11  -I$(HDF5_INC_DIR)  -I. -Xptxas -v 
+           #-D__KWAVE_GIT_HASH__="aa1234"            
+           #\"$(KWAVE_GIT_HASH)\"
   
 LDFLAGS  = -Xcompiler="-fopenmp" -Xlinker="-rpath,$(HDF5_LIB_DIR):$(CUDADIR)/lib64" -std=c++11  -L$(HDF5_LIB_DIR)
 LIBS     = -lhdf5 -lhdf5_hl -lz -lcufft
@@ -120,14 +123,13 @@ $(TARGET):	CUDA/CUDAImplementations.o \
 		MatrixClasses/CUFFTComplexMatrix.o \
 		MatrixClasses/ComplexMatrix.o \
 		MatrixClasses/IndexMatrix.o \
-		MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.o \
-		MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.o \
-		MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.o \
 		MatrixClasses/RealMatrix.o \
+		OutputHDF5Streams/BaseOutputHDF5Stream.o \
+		OutputHDF5Streams/IndexOutputHDF5Stream.o \
+		OutputHDF5Streams/WholeDomainOutputHDF5Stream.o \
 		Parameters/CommandLineParameters.o \
 		Parameters/Parameters.o \
 		main.o
-
 
 
 	$(CXX) $(LDFLAGS) main.o	\
@@ -143,15 +145,14 @@ $(TARGET):	CUDA/CUDAImplementations.o \
 		MatrixClasses/CUFFTComplexMatrix.o \
 		MatrixClasses/ComplexMatrix.o \
 		MatrixClasses/IndexMatrix.o \
-		MatrixClasses/OutputHDF5Stream/BaseOutputHDF5Stream.o \
-		MatrixClasses/OutputHDF5Stream/IndexOutputHDF5Stream.o \
-		MatrixClasses/OutputHDF5Stream/WholeDomainOutputHDF5Stream.o \
 		MatrixClasses/RealMatrix.o \
+		OutputHDF5Streams/BaseOutputHDF5Stream.o \
+		OutputHDF5Streams/IndexOutputHDF5Stream.o \
+		OutputHDF5Streams/WholeDomainOutputHDF5Stream.o \
 		Parameters/CommandLineParameters.o \
 		Parameters/Parameters.o \
 		$(LIBS)			\
 		-o $@
-
 
 $(TARGET).o : $(TARGET).cpp 
 	$(CXX) $(CXXFLAGS) -c $(TARGET).cpp 
@@ -160,6 +161,6 @@ $(TARGET).o : $(TARGET).cpp
 CUDA/CUDAImplementations.o : CUDA/CUDAImplementations.cu
 	$(CXX) $(CXXFLAGS) -c CUDA/CUDAImplementations.cu -o CUDA/CUDAImplementations.o
 clean:
-	rm -f *.o HDF5/*.o KSpaceSolver/*.o MatrixClasses/*.o Parameters/*.o Containers/*.o  CUDA/*.o MatrixClasses/OutputHDF5Stream/*.o $(TARGET)
+	rm -f *.o HDF5/*.o KSpaceSolver/*.o MatrixClasses/*.o Parameters/*.o Containers/*.o  CUDA/*.o OutputHDF5Stream/*.o $(TARGET)
 
 
