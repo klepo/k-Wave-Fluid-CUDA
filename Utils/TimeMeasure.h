@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.3
  * @date        15 August   2012, 09:35 (created) \n
- *              06 November 2014, 15:08 (revised)
+ *              02 January  2015, 15:08 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -39,7 +39,15 @@
 #ifdef _OPENMP
   #include <omp.h>
 #else
-  #include <sys/time.h>
+  // Linux build
+  #ifdef __linux__
+    #include <sys/time.h>
+  #endif
+  // Windows build
+  #ifdef _WIN64
+    #include <Windows.h>
+    #include <time.h>
+  #endif
 #endif
 
 /**
@@ -95,9 +103,15 @@ class TTimeMeasure
       #ifdef _OPENMP
         StartTime = omp_get_wtime();
       #else
-        timeval ActTime;
-        gettimeofday(&ActTime, NULL);
-        StartTime = ActTime.tv_sec + ActTime.tv_usec * 1.0e-6;
+        // Linux build
+        #ifdef __linux__
+          timeval ActTime;
+          gettimeofday(&ActTime, NULL);
+          StartTime = ActTime.tv_sec + ActTime.tv_usec * 1.0e-6;
+        #endif
+        #ifdef _WIN64
+          StartTime = clock() / (double) CLOCKS_PER_SEC;
+        #endif
       #endif
     };
 
@@ -107,9 +121,15 @@ class TTimeMeasure
       #ifdef _OPENMP
         StopTime = omp_get_wtime();
       #else
-        timeval ActTime;
-        gettimeofday(&ActTime, NULL);
-        StopTime = ActTime.tv_sec + ActTime.tv_usec * 1.0e-6;
+        // Linux build
+        #ifdef __linux__
+          timeval ActTime;
+          gettimeofday(&ActTime, NULL);
+          StopTime = ActTime.tv_sec + ActTime.tv_usec * 1.0e-6;
+        #endif
+        #ifdef _WIN64
+          StopTime = clock() / (double) CLOCKS_PER_SEC;
+        #endif
       #endif
     };
 
