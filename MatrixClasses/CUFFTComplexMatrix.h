@@ -8,7 +8,7 @@
  * @brief       The header file containing the class that implements
  *              3D FFT using the FFTW interface.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2011, 13:10 (created) \n
  *              28 November  2014, 15:15 (revised)
  *

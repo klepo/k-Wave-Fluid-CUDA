@@ -8,7 +8,7 @@
  * @brief       The header file containing the base class for
  *              64b-wide integers (long for Linux/ size_t for Windows).
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        26 July     2011, 14:17 (created) \n
  *              12 November 2014, 15:55 (revised)
  *

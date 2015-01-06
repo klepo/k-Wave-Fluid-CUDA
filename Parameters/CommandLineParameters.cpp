@@ -7,7 +7,7 @@
  *
  * @brief       The implementation file containing the command line parameters.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        29 August   2012, 11:25 (created) \n
  *              19 December 2014, 21:19 (revised)
  *

@@ -7,7 +7,7 @@
  *
  * @brief       The header file containing the class for 64b integer matrices.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        26 July     2011, 15:16 (created) \n
  *              13 November 2014, 15:16 (revised)
  *

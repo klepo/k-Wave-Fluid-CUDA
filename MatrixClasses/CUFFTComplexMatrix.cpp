@@ -8,7 +8,7 @@
  * @brief       The implementation file containing the class that implements
  *              3D FFT using the FFTW interface.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2011, 13:10 (created) \n
  *              28 November  2014, 15:28 (revised)
  *
@@ -116,7 +116,7 @@ std::map<cufftResult, TErrorMessage> TCUFFTComplexMatrix::cuFFTErrorMessages
 //----------------------------------------------------------------------------//
 
 /**
- * 
+ *
  * Create an cuFFT plan for 3D Real-to-Complex. \n
  * This version doesn't need any scratch place for planning.
  * @param [in] InMatrixDims - the dimension sizes of the input matrix

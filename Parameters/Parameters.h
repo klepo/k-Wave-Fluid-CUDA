@@ -7,7 +7,7 @@
  *
  * @brief       The header file containing the parameters of the simulation.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        08 December 2011, 16:34 (created)      \n
  *              17 December 2014, 21:19 (revised)
  *

@@ -7,7 +7,7 @@
  *
  * @brief       The header file with the class for complex matrices.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        11 July     2011, 14:02 (created) \n
  *              13 November 2014, 15:47 (revised)
  *

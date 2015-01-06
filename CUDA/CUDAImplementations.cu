@@ -8,7 +8,7 @@
  * @brief       The header file containing the all CUDA kernels
  *              for the GPU implementation
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        11 March    2013, 13:10 (created) \n
  *              21 December 2014, 20:10 (revised)
  *

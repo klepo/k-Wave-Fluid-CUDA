@@ -7,9 +7,9 @@
  *
  * @brief       The header file storing names of all variables.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        14 September 2012, 17:28 (created) \n
- *              04 November  2014, 15:08W (revised)
+ *              04 November  2014, 15:08 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox

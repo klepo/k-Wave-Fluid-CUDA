@@ -7,7 +7,7 @@
  *
  * @brief       The implementation file containing parameters of the simulation.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2012, 13:39 (created) \n
  *              17 December  2014, 20:37 (revised)
  *

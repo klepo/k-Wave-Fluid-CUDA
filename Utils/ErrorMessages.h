@@ -7,7 +7,7 @@
  *
  * @brief       The header file containing all error messages of the project.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        09 August   2011, 12:34 (created) \n
  *              17 December 2014, 13:18 (revised)
  *

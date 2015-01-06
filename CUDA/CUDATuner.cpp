@@ -8,7 +8,7 @@
  * @brief       The implementation file for the class for setting CUDA kernel
  *              parameters.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        04 November 2014, 14:40 (created) \n
  *              15 December 2014, 20:36 (revised)
  *

@@ -8,7 +8,7 @@
  * @brief       The header file containing the main class of the
  *              project responsible for the entire simulation.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
  *              05 December 2014, 13:40 (revised)
  *

@@ -7,7 +7,7 @@
  *
  * @brief       The header file containing the command line parameters.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        29 August   2012, 11:25 (created) \n
  *              17 December 2014, 12:40 (revised)
  *

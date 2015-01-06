@@ -8,7 +8,7 @@
  * @brief       The header file of the class saving index data into
  *              the output HDF5 file.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        28 August   2014, 10:20 (created)
  *              04 December 2014, 18:26 (revised)
  *

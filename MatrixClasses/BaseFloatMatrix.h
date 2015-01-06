@@ -8,7 +8,7 @@
  * @brief       The header file containing the base class for
  *              single precisions floating point numbers (floats).
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2011, 12:13 (created) \n
  *              12 November  2014, 13:58 (revised)
  *

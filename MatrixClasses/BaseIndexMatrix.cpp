@@ -8,7 +8,7 @@
  * @brief       The implementation file containing the base class for
  *              64b-wide integers (long for Linux/ size_t for Windows).
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        26 July     2011, 14:17 (created) \n
  *              13 November 2014, 14:22 (revised)
  *

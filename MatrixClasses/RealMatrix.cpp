@@ -7,7 +7,7 @@
  *
  * @brief       The implementation file containing the class for real matrices.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2011, 10:30 (created) \n
  *              13 November  2014, 15:23 (revised)
  *

@@ -8,9 +8,9 @@
  * @brief       The implementation file containing the main class of the
  *              project responsible for the entire simulation.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              21 December 2014, 20:10 (revised)
+ *              06 January  2015, 13:00 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -398,7 +398,7 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense(FILE * file)
 {
   fprintf(file,"\n");
   fprintf(file,"+----------------------------------------------------+\n");
-  fprintf(file,"| Build Number:     kspaceFirstOrder3D v3.3          |\n");
+  fprintf(file,"| Build Number:     kspaceFirstOrder3D v3.4          |\n");
   fprintf(file,"| Build date:       %*.*s                      |\n", 10,11,__DATE__);
   fprintf(file,"| Build time:       %*.*s                         |\n", 8,8,__TIME__);
   #if (defined (__KWAVE_GIT_HASH__))
