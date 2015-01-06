@@ -7,7 +7,7 @@
  *
  * @brief       The main file for the kspaceFirstOrder3D-CUDA.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        11 July     2012, 10:57 (created) \n
  *              19 December 2014, 17:31 (revised)
  *
@@ -33,7 +33,7 @@
  *
  *
  *
- * @mainpage kspaceFirstOrder3D-OMP
+ * @mainpage kspaceFirstOrder3D-CUDA
  *
  * @section Overview 1 Overview
  *

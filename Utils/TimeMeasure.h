@@ -7,7 +7,7 @@
  *
  * @brief        The header file for class with time measurement
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        15 August   2012, 09:35 (created) \n
  *              02 January  2015, 15:08 (revised)
  *
