@@ -8,9 +8,9 @@
  * @brief       The header file containing the matrix and container and related
  *              matrix record.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        02 December  2014, 16:17 (created) \n
- *              02 December  2014, 16:17 (revised)
+ *              09 February  2015, 20:23 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -140,9 +140,9 @@ class TMatrixContainer
     void StoreDataIntoCheckpointHDF5File(THDF5_File & HDF5_File);
 
     /// Copy host (CPU) matrices to GPU Device memory.
-    void CopyAllMatricesToGPU();
+    void CopyAllMatricesToDevice();
     /// Copy GPU Device memory matrices to host (CPU) memory.
-    void CopyAllMatricesFromGPU();
+    void CopyAllMatricesFromDevice();
 
     /**
      * Get matrix record

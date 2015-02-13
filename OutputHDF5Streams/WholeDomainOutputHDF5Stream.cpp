@@ -10,9 +10,8 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        28 August   2014, 11:15 (created)
- *              04 December 2014, 18:29 (revised)
+ *              12 February 2015, 16:38 (revised)
  *
- * @todo        review the whole class!!
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -35,6 +34,8 @@
 
 #include <OutputHDF5Streams/WholeDomainOutputHDF5Stream.h>
 #include <Parameters/Parameters.h>
+
+#include <OutputHDF5Streams/OutputStreamsCUDAKernels.h>
 
 using namespace std;
 
@@ -62,9 +63,8 @@ using namespace std;
 TWholeDomainOutputHDF5Stream::TWholeDomainOutputHDF5Stream(THDF5_File &             HDF5_File,
                                                            const char *             HDF5_DatasetName,
                                                            TRealMatrix &            SourceMatrix,
-                                                           const TReductionOperator ReductionOp,
-                                                           float *                  BufferToReuse)
-        : TBaseOutputHDF5Stream(HDF5_File, HDF5_DatasetName, SourceMatrix, ReductionOp, BufferToReuse),
+                                                           const TReductionOperator ReductionOp)
+        : TBaseOutputHDF5Stream(HDF5_File, HDF5_DatasetName, SourceMatrix, ReductionOp),
           HDF5_DatasetId(H5I_BADID),
           SampledTimeStep(0)
 {
@@ -81,8 +81,8 @@ TWholeDomainOutputHDF5Stream::TWholeDomainOutputHDF5Stream(THDF5_File &         
 TWholeDomainOutputHDF5Stream::~TWholeDomainOutputHDF5Stream()
 {
   Close();
-  // free memory only if it was allocated
-  if (!BufferReuse) FreeMemory();
+  // free memory
+  FreeMemory();
 }// end of Destructor
 //------------------------------------------------------------------------------
 
@@ -113,8 +113,8 @@ void TWholeDomainOutputHDF5Stream::Create()
   // Set buffer size
   BufferSize = SourceMatrix.GetTotalElementCount();
 
-  // Allocate memory if needed
-  if (!BufferReuse) AllocateMemory();
+  // Allocate memory
+  AllocateMemory();
 }//end of Create
 //------------------------------------------------------------------------------
 
@@ -129,8 +129,8 @@ void TWholeDomainOutputHDF5Stream::Reopen()
   // Set buffer size
   BufferSize = SourceMatrix.GetTotalElementCount();
 
-  // Allocate memory if needed
-  if (!BufferReuse) AllocateMemory();
+  // Allocate memory
+  AllocateMemory();
 
   // Open the dataset under the root group
   HDF5_DatasetId = HDF5_File.OpenDataset(HDF5_File.GetRootGroup(),
@@ -139,15 +139,21 @@ void TWholeDomainOutputHDF5Stream::Reopen()
   SampledTimeStep = 0;
   if (ReductionOp == roNONE)
   { // seek in the dataset
-    SampledTimeStep = ((Params->Get_t_index() - Params->GetStartTimeIndex()) < 0) ?
-                          0 : (Params->Get_t_index() - Params->GetStartTimeIndex());
+    SampledTimeStep = (Params->Get_t_index() < Params->GetStartTimeIndex()) ?
+                        0 : (Params->Get_t_index() - Params->GetStartTimeIndex());
   }
   else
   { // reload data
-    HDF5_File.ReadCompleteDataset(HDF5_File.GetRootGroup(),
-                                  HDF5_RootObjectName,
-                                  SourceMatrix.GetDimensionSizes(),
-                                  StoreBuffer);
+    // Read data from disk only if there were anything stored there (t_index > start_index) (one step ahead)
+    if (TParameters::GetInstance()->Get_t_index() > TParameters::GetInstance()->GetStartTimeIndex())
+    {
+      HDF5_File.ReadCompleteDataset(HDF5_File.GetRootGroup(),
+                                    HDF5_RootObjectName,
+                                    SourceMatrix.GetDimensionSizes(),
+                                    HostStoreBuffer);
+      // Send data to device
+      CopyDataToDevice();
+    }
   }
 }// end of Reopen
 //------------------------------------------------------------------------------
@@ -159,16 +165,14 @@ void TWholeDomainOutputHDF5Stream::Reopen()
  */
 void TWholeDomainOutputHDF5Stream::Sample()
 {
-
-  SourceMatrix.CopyFromDevice();
-
-  const float * SourceData = SourceMatrix.GetRawData();
-
   switch (ReductionOp)
   {
     case roNONE :
     {
-      /* We use here direct HDF5 offload using MEMSPACE - seems to be faster for bigger datasets*/
+      // Copy all data from GPU to CPU (no need to use a kernel)
+      SourceMatrix.CopyFromDevice();
+
+      // We use here direct HDF5 offload using MEMSPACE - seems to be faster for bigger datasets
       const TDimensionSizes DatasetPosition(0,0,0,SampledTimeStep); //4D position in the dataset
 
       TDimensionSizes CuboidSize(SourceMatrix.GetDimensionSizes());// Size of the cuboid
@@ -189,31 +193,25 @@ void TWholeDomainOutputHDF5Stream::Sample()
 
     case roRMS  :
     {
-      #pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
-      for (size_t i = 0; i < BufferSize; i++)
-      {
-        StoreBuffer[i] += (SourceData[i] * SourceData[i]);
-      }
+      OutputStreamsCUDAKernels::SampleRMSAll(DeviceStoreBuffer,
+                                             SourceMatrix.GetRawDeviceData(),
+                                             SourceMatrix.GetTotalElementCount());
       break;
     }// case roRMS
 
     case roMAX  :
     {
-      #pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
-      for (size_t i = 0; i < BufferSize; i++)
-      {
-        if (StoreBuffer[i] < SourceData[i])  StoreBuffer[i] = SourceData[i];
-      }
+      OutputStreamsCUDAKernels::SampleMaxAll(DeviceStoreBuffer,
+                                             SourceMatrix.GetRawDeviceData(),
+                                             SourceMatrix.GetTotalElementCount());
       break;
     }//case roMAX
 
     case roMIN  :
     {
-      #pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
-      for (size_t i = 0; i < BufferSize; i++)
-      {
-        if (StoreBuffer[i] > SourceData[i]) StoreBuffer[i] = SourceData[i];
-      }
+      OutputStreamsCUDAKernels::SampleMinAll(DeviceStoreBuffer,
+                                               SourceMatrix.GetRawDeviceData(),
+                                               SourceMatrix.GetTotalElementCount());
       break;
     } //case roMIN
   }// switch
@@ -228,8 +226,16 @@ void TWholeDomainOutputHDF5Stream::PostProcess()
 {
   // run inherited method
   TBaseOutputHDF5Stream::PostProcess();
+
   // When no reduction operator is applied, the data is flushed after every time step
-  if (ReductionOp != roNONE) FlushBufferToFile();
+  // which means it has been done before
+  if (ReductionOp != roNONE)
+  {
+    // Copy data from GPU matrix
+    CopyDataFromDevice();
+
+    FlushBufferToFile();
+  }
 }// end of PostProcessing
 //------------------------------------------------------------------------------
 
@@ -238,6 +244,9 @@ void TWholeDomainOutputHDF5Stream::PostProcess()
  */
 void TWholeDomainOutputHDF5Stream::Checkpoint()
 {
+  // copy data on the CPU
+    CopyDataFromDevice();
+
   // raw data has already been flushed, others has to be flushed here
   if (ReductionOp != roNONE) FlushBufferToFile();
 }// end of Checkpoint
@@ -270,8 +279,6 @@ void TWholeDomainOutputHDF5Stream::Close()
  */
 void TWholeDomainOutputHDF5Stream::FlushBufferToFile()
 {
-  SourceMatrix.CopyFromDevice();
-
   TDimensionSizes Size = SourceMatrix.GetDimensionSizes();
   TDimensionSizes Position(0,0,0);
 
@@ -285,7 +292,7 @@ void TWholeDomainOutputHDF5Stream::FlushBufferToFile()
   HDF5_File.WriteHyperSlab(HDF5_DatasetId,
                            Position,
                            Size,
-                           StoreBuffer);
+                           HostStoreBuffer);
   SampledTimeStep++;
 }// end of FlushToFile
 //------------------------------------------------------------------------------

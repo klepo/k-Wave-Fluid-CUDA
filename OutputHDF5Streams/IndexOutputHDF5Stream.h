@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        28 August   2014, 10:00 (created)
- *              04 December 2014, 18:12 (revised)
+ *              27 January  2015, 18:57 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -52,8 +52,7 @@ class TIndexOutputHDF5Stream : public TBaseOutputHDF5Stream
                            const char *             HDF5_ObjectName,
                            TRealMatrix &            SourceMatrix,
                            TIndexMatrix &           SensorMask,
-                           const TReductionOperator ReductionOp,
-                           float *                  BufferToReuse = NULL);
+                           const TReductionOperator ReductionOp);
 
 
     /// Destructor.
@@ -67,6 +66,9 @@ class TIndexOutputHDF5Stream : public TBaseOutputHDF5Stream
 
     /// Sample data into buffer, apply reduction or flush to disk - based on a sensor mask.
     virtual void Sample();
+
+    /// Flush data to disk (from raw streams only).
+    virtual void FlushRaw();
 
     /// Apply post-processing on the buffer and flush it to the file.
     virtual void PostProcess();
@@ -90,6 +92,9 @@ class TIndexOutputHDF5Stream : public TBaseOutputHDF5Stream
 
     /// Time step to store (N/A for aggregated)
     size_t SampledTimeStep;
+
+    /// Has the sampling finished?
+    cudaEvent_t EventSamplingFinished;
 
 } ; // end of TIndexOutputHDF5Stream
 //------------------------------------------------------------------------------

@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        28 August   2014, 10:20 (created)
- *              04 December 2014, 18:26 (revised)
+ *              09 February 2015, 20:28 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -48,8 +48,7 @@ class TWholeDomainOutputHDF5Stream : public TBaseOutputHDF5Stream
     TWholeDomainOutputHDF5Stream(THDF5_File &             HDF5_File,
                                  const char *             HDF5_DatasetName,
                                  TRealMatrix &            SourceMatrix,
-                                 const TReductionOperator ReductionOp,
-                                 float *                  BufferToReuse = NULL);
+                                 const TReductionOperator ReductionOp);
 
     /// Destructor.
     virtual ~TWholeDomainOutputHDF5Stream();
@@ -60,8 +59,11 @@ class TWholeDomainOutputHDF5Stream : public TBaseOutputHDF5Stream
     /// Reopen the output stream after restart and reload data.
     virtual void Reopen();
 
-    /// Sample data into buffer and apply reduction, or flush to disk - based on a sensor mask.
+    /// Sample data (copy from GPU memory and then flush - no overlapping implemented!)
     virtual void Sample();
+
+    /// Flush data to disk (from raw streams only) - empty routine (no overlapping implemented)
+    virtual void FlushRaw() {};
 
     /// Apply post-processing on the buffer and flush it to the file.
     virtual void PostProcess();

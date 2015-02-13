@@ -7,9 +7,9 @@
  *
  * @brief       The header file defining the output stream container.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        04 December  2014, 11:00 (created)
- *              04 December  2014, 17:50 (revised)
+ *              09 February  2015, 19:50 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -46,14 +46,18 @@
 /**
  * @enum TOutputStreamID
  * @brief Output streams identifiers in k-Wave
+ * @warning the order of IDs is mandatory! it determines the order of sampling
+ *          and is used for hiding the PCI-E latency
  */
 enum TOutputStreamID
 {
-  p_sensor_raw,  p_sensor_rms, p_sensor_max, p_sensor_min,
-  p_sensor_max_all, p_sensor_min_all,
-
-  ux_sensor_raw, uy_sensor_raw, uz_sensor_raw,
+  // raw quantities are sampled at first - to allow some degree of asynchronous copies
+  p_sensor_raw,  ux_sensor_raw, uy_sensor_raw, uz_sensor_raw,
   ux_shifted_sensor_raw, uy_shifted_sensor_raw, uz_shifted_sensor_raw,
+
+  // then we sample aggregated quantities
+  p_sensor_rms, p_sensor_max, p_sensor_min,
+  p_sensor_max_all, p_sensor_min_all,
 
   ux_sensor_rms, uy_sensor_rms, uz_sensor_rms,
   ux_sensor_max, uy_sensor_max, uz_sensor_max,
@@ -109,8 +113,11 @@ class TOutputStreamContainer
     /// Reopen streams after checkpoint file (datasets).
     void ReopenStreams();
 
-    /// Sample all streams.
+    /// Sample all streams (only sample, no disk operations).
     void SampleStreams();
+    /// Flush streams to disk - only raw streams!.
+    void FlushRawStreams();
+
     /// Post-process all streams and flush them to the file.
     void PostProcessStreams();
     /// Checkpoint streams.
@@ -118,17 +125,15 @@ class TOutputStreamContainer
 
     /// Close all streams.
     void CloseStreams();
-
     /// Free all streams - destroy them.
-    void FreeAllStreams();
+    void FreeStreams();
 
   protected:
     /// Create a new output stream
     TBaseOutputHDF5Stream* CreateNewOutputStream(TMatrixContainer & MatrixContainer,
                                                  const TMatrixID    SampledMatrixID,
                                                  const char *       HDF5_DatasetName,
-                                                 const TBaseOutputHDF5Stream::TReductionOperator ReductionOp,
-                                                 float *            BufferToReuse = NULL);
+                                                 const TBaseOutputHDF5Stream::TReductionOperator ReductionOp);
 
     /// Copy constructor not allowed for public.
     TOutputStreamContainer(const TOutputStreamContainer &);

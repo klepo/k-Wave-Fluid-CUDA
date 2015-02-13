@@ -72,42 +72,13 @@ class TBaseOutputHDF5Stream
     };
 
     /**
-     * Constructor - there is no sensor mask by default!
-     * it links the HDF5 dataset, source (sampled matrix) and the reduction
-     * operator together. The constructor DOES NOT allocate memory because the
-     * size of the sensor mask is not known at the time the instance of
-     * the class is being created.
-     *
-     * @param [in] HDF5_File           - Handle to the HDF5 (output) file
-     * @param [in] HDF5_RootObjectName - The root object that stores the sample
-     *                                   data (dataset or group)
-     * @param [in] SourceMatrix        - The source matrix (only real matrices
-     *                                   are supported)
-     * @param [in] ReductionOp         - Reduction operator
-     * @param [in] BufferToReuse       - An external buffer can be used to line
-     *                                   up the grid points
+     * Constructor - it links the HDF5 dataset, source (sampled matrix) and the reduction
+     * operator together.
      */
     TBaseOutputHDF5Stream(THDF5_File &             HDF5_File,
                           const char *             HDF5_RootObjectName,
                           TRealMatrix &            SourceMatrix,
-                          const TReductionOperator ReductionOp,
-                          float *                   BufferToReuse = NULL)
-            : HDF5_File          (HDF5_File),
-              HDF5_RootObjectName(NULL),
-              SourceMatrix       (SourceMatrix),
-              ReductionOp        (ReductionOp),
-              BufferReuse        (BufferToReuse != NULL),
-              BufferSize         (0),
-              StoreBuffer        (BufferToReuse)
-{
-  // copy the dataset name (just for sure)
-  this->HDF5_RootObjectName = new char[strlen(HDF5_RootObjectName)];
-  strcpy(this->HDF5_RootObjectName, HDF5_RootObjectName);
-
-  ///@todo What is this?????
-  cuda_implementations = TCUDAImplementations::GetInstance();
-
-  };
+                          const TReductionOperator ReductionOp);
 
     /**
      * @brief Destructor.
@@ -124,8 +95,11 @@ class TBaseOutputHDF5Stream
     /// Reopen the output stream after restart.
     virtual void Reopen() = 0;
 
-    /// Sample data into buffer, apply reduction or flush to disk - based on a sensor mask.
+    /// Sample data into buffer, apply reduction - based on a sensor mask (no data flushed to disk).
     virtual void Sample() = 0;
+
+    /// Flush raw data to disk.
+    virtual void FlushRaw() = 0;
 
     /// Apply post-processing on the buffer and flush it to the file.
     virtual void PostProcess();
@@ -149,6 +123,11 @@ class TBaseOutputHDF5Stream
     /// A generic function to free memory - not used in the base class.
     virtual void FreeMemory();
 
+    /// Copy data  HostStoreBuffer -> DeviceStoreBuffer
+    virtual void CopyDataToDevice();
+    /// Copy data  DeviceStoreBuffer -> HostStoreBuffer
+    virtual void CopyDataFromDevice();
+
     /// HDF5 file handle.
     THDF5_File& HDF5_File;
 
@@ -166,21 +145,19 @@ class TBaseOutputHDF5Stream
     /// Position in the dataset
     TDimensionSizes Position;
 
-    /// if true, the container reuses e.g. Temp_1_RS3D, Temp_2_RS3D, Temp_3_RS3D
-    bool    BufferReuse;
     /// Buffer size
     size_t  BufferSize;
-    /// Temporary buffer for store - only if Buffer Reuse = false!
-    float * StoreBuffer;
+
+    /// Temporary buffer for store on the GPU side
+    float * HostStoreBuffer;
+    /// Temporary buffer on the GPU side - only for aggregated quantities
+    float * DeviceStoreBuffer;
 
     /// chunk size of 4MB in number of float elements
     static const size_t ChunkSize_4MB = 1048576;
 
     /// The minimum number of elements to start sampling in parallel (4MB)
     static const size_t MinGridpointsToSampleInParallel = 1048576;
-
-    /// DO I NEE THIS???
-    TCUDAImplementations* cuda_implementations;
 
 };// end of TBaseOutputHDF5Stream
 

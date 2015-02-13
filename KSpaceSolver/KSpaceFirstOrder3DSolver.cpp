@@ -79,7 +79,7 @@ using namespace std;
  */
 TKSpaceFirstOrder3DSolver::TKSpaceFirstOrder3DSolver() :
         cuda_implementations(NULL), MatrixContainer(), OutputStreamContainer(),
-        ActPercent(0), Parameters(NULL),
+        ActPercent(0), IsTimestepRightAfterRestore(false), Parameters(NULL),
         TotalTime(), PreProcessingTime(), DataLoadTime(), SimulationTime(),
         PostProcessingTime(), IterationTime()
 {
@@ -102,6 +102,9 @@ TKSpaceFirstOrder3DSolver::~TKSpaceFirstOrder3DSolver()
 
   // Free memory
   FreeMemory();
+
+  //Reset device after the run - recommended by CUDA SDK
+  cudaDeviceReset();
 }// end of ~TKSpace3DSolver
 //------------------------------------------------------------------------------
 
@@ -165,7 +168,7 @@ void TKSpaceFirstOrder3DSolver::AllocateMemory()
 void TKSpaceFirstOrder3DSolver::FreeMemory()
 {
   MatrixContainer.FreeAllMatrices();
-  OutputStreamContainer.FreeAllStreams();
+  OutputStreamContainer.FreeStreams();
 }// end of FreeMemory
 //------------------------------------------------------------------------------
 
@@ -1631,13 +1634,15 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
   // set ActPercent to correspond the t_index after recovery
   if (Parameters->Get_t_index() > 0)
   {
+    // We're restarting after checkpoint
+    IsTimestepRightAfterRestore = true;
     ActPercent = (Parameters->Get_t_index() / (Parameters->Get_Nt() / 100));
   }
 
   PrintOutputHeader();
 
   // Initial copy of data to the GPU
-  MatrixContainer.CopyAllMatricesToGPU();
+  MatrixContainer.CopyAllMatricesToDevice();
 
   IterationTime.Start();
 
@@ -1690,13 +1695,19 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
 
 
 
-     StoreSensorData();
-     PrintStatistics();
-     Parameters->Increment_t_index();
+    StoreSensorData();
+    PrintStatistics();
+
+    Parameters->Increment_t_index();
+    IsTimestepRightAfterRestore = false;
   }
 
-  // WHAT THE HELL IS THIS!!!! - checkpoint??
-  MatrixContainer.CopyAllMatricesFromGPU();
+    // Since disk operations are one step delayed, we have to do the last one here.
+    // However we need to check if the loop wasn't skipped due to very short checkpoint interval
+    if (Parameters->Get_t_index() > Parameters->GetStartTimeIndex() && (!IsTimestepRightAfterRestore))
+    {
+      OutputStreamContainer.FlushRawStreams();
+    }
 }// end of ComputeMainLoop()
 //------------------------------------------------------------------------------
 
@@ -1769,6 +1780,7 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
 {
   if (Parameters->IsStore_p_final())
   {
+    Get_p().CopyFromDevice();
     Get_p().WriteDataToHDF5File(Parameters->HDF5_OutputFile,
                                 p_final_Name,
                                 Parameters->GetCompressionLevel());
@@ -1776,6 +1788,10 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
 
   if (Parameters->IsStore_u_final())
   {
+    Get_ux_sgx().CopyFromDevice();
+    Get_uy_sgy().CopyFromDevice();
+    Get_uz_sgz().CopyFromDevice();
+
     Get_ux_sgx().WriteDataToHDF5File(Parameters->HDF5_OutputFile,
                                      ux_final_Name,
                                      Parameters->GetCompressionLevel());
@@ -1787,7 +1803,7 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
                                      Parameters->GetCompressionLevel());
   }// u_final
 
-  // Apply post-processing and close
+  // Apply post-processing, flush data on disk/
   OutputStreamContainer.PostProcessStreams();
   OutputStreamContainer.CloseStreams();
 
@@ -1813,16 +1829,31 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
 
 /*
  * Store sensor data.
- * @todo this must be reworked to be done on the GPU side
+ * This routine exploits asynchronous behavior. It first performs IO from the i-1th
+ * step while waiting for ith step to come to the point of sampling.
+ *
  */
 void TKSpaceFirstOrder3DSolver::StoreSensorData()
 {
-  // Unless the time for sampling has come, exit
+  // Unless the time for sampling has come, exit.
   if (Parameters->Get_t_index() >= Parameters->GetStartTimeIndex())
   {
+
+    // Read event for t_index-1. If sampling did not occur by then, ignored it.
+    // if it did store data on disk (flush) - the GPU is running asynchronously.
+    // But be careful, flush has to be one step delayed to work correctly.
+    // when restoring from checkpoint we have to skip the first flush
+    if (Parameters->Get_t_index() > Parameters->GetStartTimeIndex() && !IsTimestepRightAfterRestore)
+    {
+      OutputStreamContainer.FlushRawStreams();
+    }
+
+    // Sample data for step t  (store event for sampling in next turn)
     OutputStreamContainer.SampleStreams();
+
+    // the last step (or data after) checkpoint are flushed in the main loop
   }
-}// end of StoreData
+}// end of StoreSensorData
 //------------------------------------------------------------------------------
 
 /**
@@ -1831,9 +1862,6 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData()
  */
 void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
 {
-
-  // @todo Here it should download data from GPU...
-
   // Create Checkpoint file
   THDF5_File & HDF5_CheckpointFile = Parameters->HDF5_CheckpointFile;
   // if it happens and the file is opened (from the recovery, close it)
@@ -1873,8 +1901,8 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
 
   HDF5_CheckpointFile.Close();
 
-  // checkpoint only if necessary (t_index >= start_index)
-  if (Parameters->Get_t_index() >= Parameters->GetStartTimeIndex())
+  // checkpoint only if necessary (t_index > start_index), we're here one step ahead!
+  if (Parameters->Get_t_index() > Parameters->GetStartTimeIndex())
   {
     OutputStreamContainer.CheckpointStreams();
   }

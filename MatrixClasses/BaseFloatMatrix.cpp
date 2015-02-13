@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2011, 12:13 (created) \n
- *              12 November  2014, 14:58 (revised)
+ *              08 January   2015, 12:40 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,7 +50,7 @@
 using std::string;
 
 /**
-* Check errors of the CUDA routines and print error.
+ * Check errors of the CUDA routines and print error.
  * @param [in] code  - error code of last routine
  * @param [in] file  - The name of the file, where the error was raised
  * @param [in] line  - What is the line

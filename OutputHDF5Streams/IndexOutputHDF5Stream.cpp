@@ -10,9 +10,9 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        29 August   2014, 10:10 (created)
- *              04 December 2014, 18:26 (revised)
+ *              12 February 2015, 16:38 (revised)
  *
- * @todo        Has to be completely rewritten!!
+ *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
  * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
@@ -35,6 +35,8 @@
 #include <OutputHDF5Streams/IndexOutputHDF5Stream.h>
 #include <Parameters/Parameters.h>
 
+#include <OutputHDF5Streams/OutputStreamsCUDAKernels.h>
+
 using namespace std;
 
 //--------------------------------------------------------------------------//
@@ -44,6 +46,37 @@ using namespace std;
 //--------------------------------------------------------------------------//
 //                              Definitions                                 //
 //--------------------------------------------------------------------------//
+
+//----------------------------------------------------------------------------//
+//--------------------------------- Macros -----------------------------------//
+//----------------------------------------------------------------------------//
+
+/**
+ * Check errors of the CUDA routines and print error.
+ * @param [in] code  - error code of last routine
+ * @param [in] file  - The name of the file, where the error was raised
+ * @param [in] line  - What is the line
+ * @param [in] Abort - Shall the code abort?
+ * @todo - check this routine and do it differently!
+ */
+inline void gpuAssert(cudaError_t code,
+                      string file,
+                      int line)
+{
+  if (code != cudaSuccess)
+  {
+    char ErrorMessage[256];
+    sprintf(ErrorMessage,"GPUassert: %s %s %d\n",cudaGetErrorString(code),file.c_str(),line);
+
+    // Throw exception
+     throw std::runtime_error(ErrorMessage);
+  }
+}// end of gpuAssert
+//------------------------------------------------------------------------------
+
+/// Define to get the usage easier
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+
 
 //--------------------------------------------------------------------------//
 //                              Implementation                              //
@@ -68,21 +101,20 @@ using namespace std;
  *                               supported)
  * @param [in] SensorMask      - Index based sensor mask
  * @param [in] ReductionOp     - Reduction operator
- * @param [in] BufferToReuse   - An external buffer can be used to line up
- *                               the grid points
  */
 TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File &             HDF5_File,
                                                const char *             HDF5_ObjectName,
                                                TRealMatrix &            SourceMatrix,
                                                TIndexMatrix &           SensorMask,
-                                               const TReductionOperator ReductionOp,
-                                               float *                  BufferToReuse)
-        : TBaseOutputHDF5Stream(HDF5_File, HDF5_ObjectName, SourceMatrix, ReductionOp, BufferToReuse),
+                                               const TReductionOperator ReductionOp)
+        : TBaseOutputHDF5Stream(HDF5_File, HDF5_ObjectName, SourceMatrix, ReductionOp),
           SensorMask(SensorMask),
           HDF5_DatasetId(H5I_BADID),
-          SampledTimeStep(0)
+          SampledTimeStep(0),
+          EventSamplingFinished()
 {
-
+  // Create event for sampling
+  gpuErrchk(cudaEventCreate(&EventSamplingFinished));
 }// end of TIndexOutputHDF5Stream
 //------------------------------------------------------------------------------
 
@@ -93,10 +125,12 @@ TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File &             HDF5_Fil
  */
 TIndexOutputHDF5Stream::~TIndexOutputHDF5Stream()
 {
-  Close();
+  // Destroy sampling event
+  gpuErrchk(cudaEventDestroy(EventSamplingFinished));
 
-  // free memory only if it was allocated
-  if (!BufferReuse) FreeMemory();
+  Close();
+  // free memory
+  FreeMemory();
 }// end of Destructor
 //------------------------------------------------------------------------------
 
@@ -144,13 +178,14 @@ void TIndexOutputHDF5Stream::Create()
   // Set buffer size
   BufferSize = NumberOfSampledElementsPerStep;
 
-  // Allocate memory if needed
-  if (!BufferReuse) AllocateMemory();
+  // Allocate memory
+  AllocateMemory();
 }// end of Create
 //------------------------------------------------------------------------------
 
 /**
  * Reopen the output stream after restart.
+ *
  */
 void TIndexOutputHDF5Stream::Reopen()
 {
@@ -160,8 +195,8 @@ void TIndexOutputHDF5Stream::Reopen()
   // Set buffer size
   BufferSize = SensorMask.GetTotalElementCount();
 
-  // Allocate memory if needed
-  if (!BufferReuse) AllocateMemory();
+  // Allocate memory
+   AllocateMemory();
 
   // Reopen the dataset
   HDF5_DatasetId = HDF5_File.OpenDataset(HDF5_File.GetRootGroup(),
@@ -170,7 +205,7 @@ void TIndexOutputHDF5Stream::Reopen()
 
   if (ReductionOp == roNONE)
   { // raw time series - just seek to the right place in the dataset
-    SampledTimeStep = ((Params->Get_t_index() - Params->GetStartTimeIndex()) < 0) ?
+    SampledTimeStep = (Params->Get_t_index() < Params->GetStartTimeIndex()) ?
                         0 : (Params->Get_t_index() - Params->GetStartTimeIndex());
 
   }
@@ -178,101 +213,129 @@ void TIndexOutputHDF5Stream::Reopen()
   { // aggregated quantities - reload data
     SampledTimeStep = 0;
 
-    // Since there is only a single timestep in the dataset, I can read the whole dataset
-    HDF5_File.ReadCompleteDataset(HDF5_File.GetRootGroup(),
-                                  HDF5_RootObjectName,
-                                  TDimensionSizes(BufferSize, 1, 1),
-                                  StoreBuffer);
+    // Read data from disk only if there were anything stored there (t_index >= start_index)
+    if (TParameters::GetInstance()->Get_t_index() > TParameters::GetInstance()->GetStartTimeIndex())
+    {
+      // Since there is only a single timestep in the dataset, I can read the whole dataset
+      HDF5_File.ReadCompleteDataset(HDF5_File.GetRootGroup(),
+                                    HDF5_RootObjectName,
+                                    TDimensionSizes(BufferSize, 1, 1),
+                                    HostStoreBuffer);
+
+      // Send data to device
+      CopyDataToDevice();
+    }
   }
 }// end of Reopen
 //------------------------------------------------------------------------------
 
 
 /**
- * Sample grid points, line them up in the buffer an flush to the disk unless a
- * reduction operator is applied.
+ * Sample grid points, line them up in the buffer, if necessary a  reduction
+ * operator is applied.
+ * @warning data is not flushed, there is no sync.
  */
 void TIndexOutputHDF5Stream::Sample()
 {
-  // Copy data from GPU matrix
-  SourceMatrix.CopyFromDevice();
-
-  const float  * SourceData = SourceMatrix.GetRawData();
-  const size_t * SensorData = SensorMask.GetRawData();
-
   switch (ReductionOp)
   {
     case roNONE :
     {
-      #pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
-      for (size_t i = 0; i < BufferSize; i++)
-      {
-        StoreBuffer[i] = SourceData[SensorData[i]];
-      }
-      // only raw time series are flushed down to the disk every time step
-      FlushBufferToFile();
+      OutputStreamsCUDAKernels::SampleRawIndex(DeviceStoreBuffer,
+                                               SourceMatrix.GetRawDeviceData(),
+                                               SensorMask.GetRawDeviceData(),
+                                               SensorMask.GetTotalElementCount());
+
+      // Record an event when the data has been copied over.
+      gpuErrchk(cudaEventRecord(EventSamplingFinished));
 
       break;
     }// case roNONE
 
     case roRMS :
     {
-      #pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
-      for (size_t i = 0; i < BufferSize; i++)
-        {
-          StoreBuffer[i] += (SourceData[SensorData[i]] * SourceData[SensorData[i]]);
-        }
+      OutputStreamsCUDAKernels::SampleRMSIndex(DeviceStoreBuffer,
+                                               SourceMatrix.GetRawDeviceData(),
+                                               SensorMask.GetRawDeviceData(),
+                                               SensorMask.GetTotalElementCount());
+
       break;
-      }// case roRMS
+    }// case roRMS
 
     case roMAX :
     {
-      #pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
-      for (size_t i = 0; i < BufferSize; i++)
-      {
-        if (StoreBuffer[i] < SourceData[SensorData[i]])
-          StoreBuffer[i] = SourceData[SensorData[i]];
-      }
+      OutputStreamsCUDAKernels::SampleMaxIndex(DeviceStoreBuffer,
+                                               SourceMatrix.GetRawDeviceData(),
+                                               SensorMask.GetRawDeviceData(),
+                                               SensorMask.GetTotalElementCount());
       break;
     }// case roMAX
 
     case roMIN :
     {
-      #pragma omp parallel for if (BufferSize > MinGridpointsToSampleInParallel)
-      for (size_t i = 0; i < BufferSize; i++)
-      {
-        if (StoreBuffer[i] > SourceData[SensorData[i]])
-          StoreBuffer[i] = SourceData[SensorData[i]];
-        }
-        break;
-      } //case roMIN
-    }// switch
+      OutputStreamsCUDAKernels::SampleMinIndex(DeviceStoreBuffer,
+                                               SourceMatrix.GetRawDeviceData(),
+                                               SensorMask.GetRawDeviceData(),
+                                               SensorMask.GetTotalElementCount());
+      break;
+    } //case roMIN
+  }// switch
 }// end of Sample
 //------------------------------------------------------------------------------
+
+
+/**
+ * Flush data for the timestep. Only applicable on RAW data series.
+ */
+void TIndexOutputHDF5Stream::FlushRaw()
+{
+  if (ReductionOp == roNONE)
+  {
+    // make sure the data has been copied from the GPU
+    cudaEventSynchronize(EventSamplingFinished);
+
+    // only raw time series are flushed down to the disk every time step
+    FlushBufferToFile();
+  }
+}// end of Flush
+//------------------------------------------------------------------------------
+
 
 /**
  * Apply post-processing on the buffer and flush it to the file.
  */
 void TIndexOutputHDF5Stream::PostProcess()
 {
-  // Copy data from GPU matrix -- this is nonsence
-  SourceMatrix.CopyFromDevice();
-
   // run inherited method
   TBaseOutputHDF5Stream::PostProcess();
+
   // When no reduction operator is applied, the data is flushed after every time step
-  if (ReductionOp != roNONE) FlushBufferToFile();
+  // which means it has been done before
+  if (ReductionOp != roNONE)
+  {
+    // Copy data from GPU matrix
+    CopyDataFromDevice();
+
+    FlushBufferToFile();
+  }
 }// end of PostProcessing
 //------------------------------------------------------------------------------
 
 
 /**
  * Checkpoint the stream and close.
+ *
  */
 void TIndexOutputHDF5Stream::Checkpoint()
 {
-  // raw data has already been flushed, others has to be fushed here
-  if (ReductionOp != roNONE) FlushBufferToFile();
+  // raw data has already been flushed, others has to be flushed here
+  if (ReductionOp != roNONE)
+  {
+    // copy data from the device
+    CopyDataFromDevice();
+    // flush to disk
+    FlushBufferToFile();
+  }
 }// end of Checkpoint
 //------------------------------------------------------------------------------
 
@@ -305,7 +368,7 @@ void TIndexOutputHDF5Stream::FlushBufferToFile()
   HDF5_File.WriteHyperSlab(HDF5_DatasetId,
                            TDimensionSizes(0,SampledTimeStep,0),
                            TDimensionSizes(BufferSize,1,1),
-                           StoreBuffer);
+                           HostStoreBuffer);
   SampledTimeStep++;
 }// end of FlushToFile
 //------------------------------------------------------------------------------

@@ -7,9 +7,9 @@
  *
  * @brief       The implementation file containing the matrix container.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        02 December  2014, 16:17 (created) \n
- *              04 December  2014, 11:19 (revised)
+ *              09 February  2015, 20:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -446,6 +446,9 @@ void TMatrixContainer::StoreDataIntoCheckpointHDF5File(THDF5_File & HDF5_File)
   {
     if (it->second.Checkpoint)
     {
+      // Copy data from device first
+      it->second.MatrixPtr->CopyFromDevice();
+      // store data to the checkpoint file
       it->second.MatrixPtr->WriteDataToHDF5File(HDF5_File,
                                                 it->second.HDF5MatrixName.c_str(),
                                                 TParameters::GetInstance()->GetCompressionLevel());
@@ -473,7 +476,7 @@ void TMatrixContainer::FreeAllMatrices()
 /**
  * Copy all matrices over to the GPU.
  */
-void TMatrixContainer::CopyAllMatricesToGPU()
+void TMatrixContainer::CopyAllMatricesToDevice()
 {
   for (auto it = MatrixContainer.begin(); it != MatrixContainer.end(); it++)
   {
@@ -486,7 +489,7 @@ void TMatrixContainer::CopyAllMatricesToGPU()
  * Copy all matrices back over to CPU
  * @todo Why do I need to copy all matrices back???
  */
-void TMatrixContainer::CopyAllMatricesFromGPU()
+void TMatrixContainer::CopyAllMatricesFromDevice()
 {
   for (auto it = MatrixContainer.begin(); it != MatrixContainer.end(); it++)
   {
