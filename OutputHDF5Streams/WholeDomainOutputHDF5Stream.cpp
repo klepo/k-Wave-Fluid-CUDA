@@ -170,7 +170,8 @@ void TWholeDomainOutputHDF5Stream::Sample()
     case roNONE :
     {
       // Copy all data from GPU to CPU (no need to use a kernel)
-      SourceMatrix.CopyFromDevice();
+      // this violates the const prerequisite, however this routine is still NOT used in the code
+      const_cast<TRealMatrix &> (SourceMatrix).CopyFromDevice();
 
       // We use here direct HDF5 offload using MEMSPACE - seems to be faster for bigger datasets
       const TDimensionSizes DatasetPosition(0,0,0,SampledTimeStep); //4D position in the dataset

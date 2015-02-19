@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        28 August   2014, 10:00 (created)
- *              27 January  2015, 18:57 (revised)
+ *              18 February 2015, 14:08 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,8 +50,8 @@ class TIndexOutputHDF5Stream : public TBaseOutputHDF5Stream
     /// Constructor - links the HDF5 dataset, SourceMatrix, and SensorMask together
     TIndexOutputHDF5Stream(THDF5_File &             HDF5_File,
                            const char *             HDF5_ObjectName,
-                           TRealMatrix &            SourceMatrix,
-                           TIndexMatrix &           SensorMask,
+                           const TRealMatrix &      SourceMatrix,
+                           const TIndexMatrix &     SensorMask,
                            const TReductionOperator ReductionOp);
 
 
@@ -64,7 +64,7 @@ class TIndexOutputHDF5Stream : public TBaseOutputHDF5Stream
     /// Reopen the output stream after restart and reload data.
     virtual void Reopen();
 
-    /// Sample data into buffer, apply reduction or flush to disk - based on a sensor mask.
+    /// Sample data into buffer, apply reduction or copy to the CPU side
     virtual void Sample();
 
     /// Flush data to disk (from raw streams only).
@@ -85,7 +85,7 @@ class TIndexOutputHDF5Stream : public TBaseOutputHDF5Stream
     virtual void FlushBufferToFile();
 
     /// Sensor mask to sample data.
-    TIndexMatrix & SensorMask;
+    const TIndexMatrix & SensorMask;
 
     /// Handle to a HDF5 dataset.
     hid_t  HDF5_DatasetId;

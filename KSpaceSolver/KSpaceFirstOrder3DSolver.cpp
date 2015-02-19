@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              06 January  2015, 13:00 (revised)
+ *              18 February 2015, 14:06 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -511,11 +511,10 @@ void TKSpaceFirstOrder3DSolver::PreProcessingPhase()
     Get_sensor_mask_index().RecomputeIndicesToCPP();
   }
 
-  /* not yet implemented
   if (Parameters->Get_sensor_mask_type() == TParameters::smt_corners)
   {
     Get_sensor_mask_corners().RecomputeIndicesToCPP();
-  }*/
+  }
 
   if ((Parameters->Get_transducer_source_flag() != 0) ||
       (Parameters->Get_ux_source_flag() != 0)         ||
@@ -1816,13 +1815,13 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
       Get_sensor_mask_index().WriteDataToHDF5File(Parameters->HDF5_OutputFile,sensor_mask_index_Name,
                                                   Parameters->GetCompressionLevel());
     }
-    //@todo implement this
-    /*if (Parameters->Get_sensor_mask_type() == TParameters::smt_corners)
+
+    if (Parameters->Get_sensor_mask_type() == TParameters::smt_corners)
     {
       Get_sensor_mask_corners().RecomputeIndicesToMatlab();
       Get_sensor_mask_corners().WriteDataToHDF5File(Parameters->HDF5_OutputFile,sensor_mask_corners_Name,
                                                     Parameters->GetCompressionLevel());
-    }*/
+    }
   }
 }// end of PostProcessing
 //------------------------------------------------------------------------------

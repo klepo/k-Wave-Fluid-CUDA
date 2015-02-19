@@ -33,9 +33,9 @@
  */
 
 #include <OutputHDF5Streams/IndexOutputHDF5Stream.h>
-#include <Parameters/Parameters.h>
-
 #include <OutputHDF5Streams/OutputStreamsCUDAKernels.h>
+
+#include <Parameters/Parameters.h>
 
 using namespace std;
 
@@ -83,10 +83,6 @@ inline void gpuAssert(cudaError_t code,
 //                              public methods                              //
 //--------------------------------------------------------------------------//
 
-//----------------------------------------------------------------------------//
-//                TIndexOutputHDF5Stream implementation                      //
-//                              public methods                                //
-//----------------------------------------------------------------------------//
 
 /**
  * Constructor - links the HDF5 dataset, source (sampled matrix), Sensor mask
@@ -104,8 +100,8 @@ inline void gpuAssert(cudaError_t code,
  */
 TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File &             HDF5_File,
                                                const char *             HDF5_ObjectName,
-                                               TRealMatrix &            SourceMatrix,
-                                               TIndexMatrix &           SensorMask,
+                                               const TRealMatrix &      SourceMatrix,
+                                               const TIndexMatrix &     SensorMask,
                                                const TReductionOperator ReductionOp)
         : TBaseOutputHDF5Stream(HDF5_File, HDF5_ObjectName, SourceMatrix, ReductionOp),
           SensorMask(SensorMask),
@@ -297,7 +293,7 @@ void TIndexOutputHDF5Stream::FlushRaw()
     // only raw time series are flushed down to the disk every time step
     FlushBufferToFile();
   }
-}// end of Flush
+}// end of FlushRaw
 //------------------------------------------------------------------------------
 
 

@@ -11,7 +11,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2012, 10:30 (created) \n
- *              04 December  2014, 18:01 (revised)
+ *              18 February  2015, 14:04 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -77,7 +77,7 @@ class TBaseOutputHDF5Stream
      */
     TBaseOutputHDF5Stream(THDF5_File &             HDF5_File,
                           const char *             HDF5_RootObjectName,
-                          TRealMatrix &            SourceMatrix,
+                          const TRealMatrix &      SourceMatrix,
                           const TReductionOperator ReductionOp);
 
     /**
@@ -135,7 +135,7 @@ class TBaseOutputHDF5Stream
     char* HDF5_RootObjectName;
 
     /// Source matrix to be sampled.
-    TRealMatrix& SourceMatrix;
+    const TRealMatrix& SourceMatrix;
 
     /// HDF5 dataset handle.
     hid_t HDF5_Dataset_id;

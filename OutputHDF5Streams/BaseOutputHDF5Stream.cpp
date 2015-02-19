@@ -106,7 +106,7 @@ inline void gpuAssert(cudaError_t code,
      */
   TBaseOutputHDF5Stream::TBaseOutputHDF5Stream(THDF5_File &             HDF5_File,
                                                const char *             HDF5_RootObjectName,
-                                               TRealMatrix &            SourceMatrix,
+                                               const TRealMatrix &      SourceMatrix,
                                                const TReductionOperator ReductionOp)
             : HDF5_File          (HDF5_File),
               HDF5_RootObjectName(NULL),

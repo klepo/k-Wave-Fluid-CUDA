@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        04 December  2014, 11:41 (created)
- *              09 February  2015, 19:56 (revised)
+ *              17 February  2015, 14:46 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -35,6 +35,7 @@
 
 #include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
 #include <OutputHDF5Streams/IndexOutputHDF5Stream.h>
+#include <OutputHDF5Streams/CuboidOutputHDF5Stream.h>
 #include <OutputHDF5Streams/WholeDomainOutputHDF5Stream.h>
 
 
@@ -364,7 +365,6 @@ void TOutputStreamContainer::FreeStreams()
  *
  * @return - new output stream with defined links
  *
- * @todo implement CUBOID streams!!
  */
 TBaseOutputHDF5Stream * TOutputStreamContainer::CreateNewOutputStream(TMatrixContainer & MatrixContainer,
                                                                       const TMatrixID    SampledMatrixID,
@@ -383,18 +383,14 @@ TBaseOutputHDF5Stream * TOutputStreamContainer::CreateNewOutputStream(TMatrixCon
                                         MatrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_index),
                                         ReductionOp);
   }
-    /*
-    }
-    else
-    {
-        Stream = new TCuboidOutputHDF5Stream(Params->HDF5_OutputFile,
-                HDF5_DatasetName,
-                MatrixContainer.GetRealMatrix(SampledMatrixID),
-                MatrixContainer.GetLongMatrix(sensor_mask_corners),
-                ReductionOp,
-                BufferToReuse);
-    }
-    */
+  else
+  {
+    Stream = new TCuboidOutputHDF5Stream(Params->HDF5_OutputFile,
+                                         HDF5_DatasetName,
+                                         MatrixContainer.GetMatrix<TRealMatrix>(SampledMatrixID),
+                                         MatrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_corners),
+                                         ReductionOp);
+  }
   return Stream;
 }// end of CreateNewOutputStream
 //------------------------------------------------------------------------------

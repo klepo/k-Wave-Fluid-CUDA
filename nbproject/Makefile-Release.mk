@@ -49,6 +49,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/MatrixClasses/IndexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/RealMatrix.o \
 	${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o \
+	${OBJECTDIR}/OutputHDF5Streams/CuboidOutputHDF5Stream.o \
 	${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o \
 	${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o \
 	${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o \
@@ -150,6 +151,11 @@ ${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o: OutputHDF5Streams/BaseOut
 	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o OutputHDF5Streams/BaseOutputHDF5Stream.cpp
+
+${OBJECTDIR}/OutputHDF5Streams/CuboidOutputHDF5Stream.o: OutputHDF5Streams/CuboidOutputHDF5Stream.cpp 
+	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OutputHDF5Streams/CuboidOutputHDF5Stream.o OutputHDF5Streams/CuboidOutputHDF5Stream.cpp
 
 ${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o: OutputHDF5Streams/IndexOutputHDF5Stream.cpp 
 	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams

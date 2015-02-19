@@ -11,7 +11,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        27 January   2015, 16:25 (created) \n
- *              27 January   2015, 16:25 (revised)
+ *              18 February  2015, 14:05 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -70,6 +70,40 @@ namespace OutputStreamsCUDAKernels
                       const size_t   NumberOfSamples);
 
 
+  /// Kernel to sample raw quantities inside one cuboid
+  void SampleRawCuboid(      float  * SamplingBuffer,
+                       const float  * SourceData,
+                       const dim3     TopLeftCorner,
+                       const dim3     BottomRightCorner,
+                       const dim3     DimensionSizes,
+                       const size_t   NumberOfSamples);
+
+  /// Kernel to sample max quantities inside one cuboid
+  void SampleMaxCuboid(      float  * SamplingBuffer,
+                       const float  * SourceData,
+                       const dim3     TopLeftCorner,
+                       const dim3     BottomRightCorner,
+                       const dim3     DimensionSizes,
+                       const size_t   NumberOfSamples);
+
+
+  /// Kernel to sample min quantities inside one cuboid
+  void SampleMinCuboid(      float  * SamplingBuffer,
+                       const float  * SourceData,
+                       const dim3     TopLeftCorner,
+                       const dim3     BottomRightCorner,
+                       const dim3     DimensionSizes,
+                       const size_t   NumberOfSamples);
+
+
+
+  /// Kernel to sample rms quantities inside one cuboid
+  void SampleRMSCuboid(      float  * SamplingBuffer,
+                       const float  * SourceData,
+                       const dim3     TopLeftCorner,
+                       const dim3     BottomRightCorner,
+                       const dim3     DimensionSizes,
+                       const size_t   NumberOfSamples);
 
 
   /// Kernel to sample max of the quantity on the whole domain
@@ -92,7 +126,6 @@ namespace OutputStreamsCUDAKernels
   void PostProcessingRMS(      float * SamplingBuffer,
                          const float   ScalingCoeff,
                          const size_t  NumberOfSamples);
-
 
 }
 

@@ -51,6 +51,8 @@
                    projectFiles="true">
       <itemPath>OutputHDF5Streams/BaseOutputHDF5Stream.cpp</itemPath>
       <itemPath>OutputHDF5Streams/BaseOutputHDF5Stream.h</itemPath>
+      <itemPath>OutputHDF5Streams/CuboidOutputHDF5Stream.cpp</itemPath>
+      <itemPath>OutputHDF5Streams/CuboidOutputHDF5Stream.h</itemPath>
       <itemPath>OutputHDF5Streams/IndexOutputHDF5Stream.cpp</itemPath>
       <itemPath>OutputHDF5Streams/IndexOutputHDF5Stream.h</itemPath>
       <itemPath>OutputHDF5Streams/OutputStreamsCUDAKernels.cu</itemPath>
@@ -111,6 +113,7 @@
       </toolsSet>
       <compileType>
         <ccTool>
+          <developmentMode>5</developmentMode>
           <standard>8</standard>
           <incDir>
             <pElem>./</pElem>
@@ -203,6 +206,16 @@
             flavor2="0">
       </item>
       <item path="OutputHDF5Streams/BaseOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/CuboidOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/CuboidOutputHDF5Stream.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -351,6 +364,16 @@
             flavor2="0">
       </item>
       <item path="OutputHDF5Streams/BaseOutputHDF5Stream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/CuboidOutputHDF5Stream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputHDF5Streams/CuboidOutputHDF5Stream.h"
             ex="false"
             tool="3"
             flavor2="0">
