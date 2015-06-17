@@ -49,13 +49,13 @@
 
 using namespace std;
 
-//--------------------------------------------------------------------------//
-//                            Constants                                     //
-//--------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//                              Constants                                     //
+//----------------------------------------------------------------------------//
 
-//--------------------------------------------------------------------------//
-//                            Definitions                                   //
-//--------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//                              Definitions                                   //
+//----------------------------------------------------------------------------//
 
 bool TParameters::ParametersInstanceFlag = false;
 
@@ -66,7 +66,7 @@ TParameters* TParameters::ParametersSingleInstance = NULL;
 //                            public methods                                //
 //--------------------------------------------------------------------------//
 
-/*
+/**
  * Get instance of singleton class.
  */
 TParameters* TParameters::GetInstance()
@@ -84,7 +84,7 @@ TParameters* TParameters::GetInstance()
 }// end of GetInstance()
 //----------------------------------------------------------------------------
 
-/*
+/**
  * Parse command line.
  * @param [in] argc
  * @param [in] argv
@@ -174,6 +174,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
 
   HDF5_FileHeader.ReadHeaderFromInputFile(HDF5_InputFile);
 
+  // check file type
   if (HDF5_FileHeader.GetFileType() != THDF5_FileHeader::hdf5_ft_input)
   {
     char ErrorMessage[256] = "";
@@ -183,6 +184,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
     throw ios::failure(ErrorMessage);
   }
 
+  // check version
   if (!HDF5_FileHeader.CheckMajorFileVersion())
   {
     char ErrorMessage[256] = "";
@@ -251,18 +253,27 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
   if (HDF5_FileHeader.GetFileVersion() == THDF5_FileHeader::hdf5_fv_11)
   {
     // read sensor mask type as a size_t value to enum
-    size_t SensorMaskTypeLongValue = 0;
-    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, sensor_mask_type_Name, SensorMaskTypeLongValue);
+    size_t SensorMaskTypeNumericValue = 0;
+    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, sensor_mask_type_Name, SensorMaskTypeNumericValue);
 
     // convert the long value on
-    switch (SensorMaskTypeLongValue)
+    switch (SensorMaskTypeNumericValue)
     {
-      case 0: sensor_mask_type = smt_index;
+      case 0:
+      {
+        sensor_mask_type = smt_index;
         break;
-      case 1: sensor_mask_type = smt_corners;
+      }
+      case 1:
+      {
+        sensor_mask_type = smt_corners;
         break;
-      default: throw ios::failure(Parameters_ERR_FMT_WrongSensorMaskType);
+      }
+      default:
+      {
+        throw ios::failure(Parameters_ERR_FMT_WrongSensorMaskType);
         break;
+      }
     }//case
 
     // read the input mask size
@@ -381,7 +392,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
 }// end of ReadScalarsFromHDF5InputFile
 //----------------------------------------------------------------------------
 
-/*
+/**
  * Save scalars into the output HDF5 file.
  * @param [in] HDF5_OutputFile - Handle to an opened output file where to store
  */
@@ -443,15 +454,33 @@ void TParameters::SaveScalarsToHDF5File(THDF5_File & HDF5_OutputFile)
   {
     HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, alpha_power_Name, alpha_power);
   }
+
+  // if copy sensor mask, then copy the mask type
+  if (IsCopySensorMask())
+  {
+    size_t SensorMaskTypeNumericValue = 0;
+
+    switch (sensor_mask_type)
+    {
+      case smt_index: SensorMaskTypeNumericValue = 0;
+        break;
+      case smt_corners: SensorMaskTypeNumericValue = 1;
+        break;
+    }// switch
+
+    HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, sensor_mask_type_Name, SensorMaskTypeNumericValue);
+  }
+
 }// end of SaveScalarsToHDF5File
+
 //------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------//
-//                              Implementation                              //
-//                            protected methods                             //
-//--------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//                              Implementation                                //
+//                            protected methods                               //
+//----------------------------------------------------------------------------//
 
-/*
+/**
  * Constructor
  */
 TParameters::TParameters() :
@@ -482,8 +511,8 @@ TParameters::TParameters() :
 //                              private methods                             //
 //--------------------------------------------------------------------------//
 
-/*
- * print usage end exit.
+/**
+ * Print usage end exit.
  */
 void TParameters::PrintUsageAndExit()
 {
