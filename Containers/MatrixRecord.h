@@ -8,7 +8,7 @@
  * @brief       The header file containing data about matrces stored in
  *              matrix container (TMatrixRecord)
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        02 December 2014, 15:44 (created) \n
  *              02 December 2014, 15:44 (revised)
  *

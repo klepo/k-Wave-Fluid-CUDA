@@ -1,4 +1,4 @@
-/**
+ /**
  * @file        OutputStreamContainer.cpp
  * @author      Jiri Jaros & Beau Johnston \n
  *              Faculty of Information Technology \n
@@ -7,9 +7,9 @@
  *
  * @brief       The implementation file for the output stream container.
  *
- * @version     kspaceFirstOrder3D 3.3
+ * @version     kspaceFirstOrder3D 3.4
  * @date        04 December  2014, 11:41 (created)
- *              04 December  2014, 11:41 (revised)
+ *              17 February  2015, 14:46 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -35,6 +35,7 @@
 
 #include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
 #include <OutputHDF5Streams/IndexOutputHDF5Stream.h>
+#include <OutputHDF5Streams/CuboidOutputHDF5Stream.h>
 #include <OutputHDF5Streams/WholeDomainOutputHDF5Stream.h>
 
 
@@ -58,7 +59,7 @@ TOutputStreamContainer::~TOutputStreamContainer()
 
 /**
  * Add all streams in simulation in the container, set all streams records here!
- * Please note, the Matrixcontainer has to be populated before calling this routine.
+ * Please note, the Matrix container has to be populated before calling this routine.
  *
  * @param [in] MatrixContainer - matrix container to link the steams with
  *                               sampled matrices and sensor masks
@@ -67,18 +68,13 @@ void TOutputStreamContainer::AddStreamsIntoContainer(TMatrixContainer & MatrixCo
 {
   TParameters * Params = TParameters::GetInstance();
 
-  float * TempBufferX = MatrixContainer.GetMatrix<TRealMatrix>(Temp_1_RS3D).GetRawData();
-  float * TempBufferY = MatrixContainer.GetMatrix<TRealMatrix>(Temp_2_RS3D).GetRawData();
-  float * TempBufferZ = MatrixContainer.GetMatrix<TRealMatrix>(Temp_3_RS3D).GetRawData();
-
-  //--------------------- Pressure ------------------/
+  //----------------------------- pressure  ----------------------------------//
   if (Params->IsStore_p_raw())
   {
     OutputStreamContainer[p_sensor_raw] = CreateNewOutputStream(MatrixContainer,
                                                                 p,
                                                                 p_Name,
-                                                                TBaseOutputHDF5Stream::roNONE,
-                                                                TempBufferX);
+                                                                TBaseOutputHDF5Stream::roNONE);
   }// IsStore_p_raw
 
   if (Params->IsStore_p_rms())
@@ -112,7 +108,7 @@ void TOutputStreamContainer::AddStreamsIntoContainer(TMatrixContainer & MatrixCo
                                              p_max_all_Name,
                                              MatrixContainer.GetMatrix<TRealMatrix>(p),
                                              TBaseOutputHDF5Stream::roMAX);
-    }
+  }
 
   if (Params->IsStore_p_min_all())
   {
@@ -123,24 +119,21 @@ void TOutputStreamContainer::AddStreamsIntoContainer(TMatrixContainer & MatrixCo
                                              TBaseOutputHDF5Stream::roMIN);
   }
 
-  //--------------------- Velocity ------------------/
+  //----------------------------- velocity  ----------------------------------//
   if (Params->IsStore_u_raw())
   {
     OutputStreamContainer[ux_sensor_raw] = CreateNewOutputStream(MatrixContainer,
                                                                  ux_sgx,
                                                                  ux_Name,
-                                                                 TBaseOutputHDF5Stream::roNONE,
-                                                                 TempBufferX);
+                                                                 TBaseOutputHDF5Stream::roNONE);
     OutputStreamContainer[uy_sensor_raw] = CreateNewOutputStream(MatrixContainer,
                                                                  uy_sgy,
                                                                  uy_Name,
-                                                                 TBaseOutputHDF5Stream::roNONE,
-                                                                 TempBufferY);
+                                                                 TBaseOutputHDF5Stream::roNONE);
     OutputStreamContainer[uz_sensor_raw] = CreateNewOutputStream(MatrixContainer,
                                                                  uz_sgz,
                                                                  uz_Name,
-                                                                 TBaseOutputHDF5Stream::roNONE,
-                                                                 TempBufferZ);
+                                                                 TBaseOutputHDF5Stream::roNONE);
   }
 
   if (Params->IsStore_u_rms())
@@ -159,7 +152,7 @@ void TOutputStreamContainer::AddStreamsIntoContainer(TMatrixContainer & MatrixCo
                                                                  TBaseOutputHDF5Stream::roRMS);
   }
 
-  if (Params->IsStore_u_max())
+   if (Params->IsStore_u_max())
   {
     OutputStreamContainer[ux_sensor_max] = CreateNewOutputStream(MatrixContainer,
                                                                  ux_sgx,
@@ -264,6 +257,7 @@ void TOutputStreamContainer::ReopenStreams()
 
 /**
  * Sample all streams.
+ * @warning In GPU implementation, no data is flushed on disk (just data is sampled)
  */
 void TOutputStreamContainer::SampleStreams()
 {
@@ -277,6 +271,22 @@ void TOutputStreamContainer::SampleStreams()
 }// end of SampleStreams
 //------------------------------------------------------------------------------
 
+/**
+ * Flush stream data to disk
+ * @warning In GPU implementation, data from raw streams is flushed here. Aggregated
+ * streams are ignored.
+ */
+void TOutputStreamContainer::FlushRawStreams()
+{
+  for (auto it = OutputStreamContainer.begin(); it != OutputStreamContainer.end(); it++)
+  {
+    if (it->second)
+    {
+      (it->second)->FlushRaw();
+    }
+  }
+}// end of SampleStreams
+//------------------------------------------------------------------------------
 
 /**
  * Checkpoint streams without post-processing (flush to the file).
@@ -325,9 +335,9 @@ void TOutputStreamContainer::CloseStreams()
 //------------------------------------------------------------------------------
 
 /**
- *  Free all streams- destroy them.
+ *  Free all streams - destroy them.
  */
-void TOutputStreamContainer::FreeAllStreams()
+void TOutputStreamContainer::FreeStreams()
 {
   for (auto it = OutputStreamContainer.begin(); it != OutputStreamContainer.end(); it++)
   {
@@ -352,16 +362,14 @@ void TOutputStreamContainer::FreeAllStreams()
  * @param [in] SampledMatrixID  - code id of the matrix
  * @param [in] HDF5_DatasetName - name of the HDF5 dataset or group
  * @param [in] ReductionOp      - reduction operator
- * @param [in] BufferToReuse   - buffer to reuse
+ *
  * @return - new output stream with defined links
  *
- * @todo implement CUBOID streams!!
  */
 TBaseOutputHDF5Stream * TOutputStreamContainer::CreateNewOutputStream(TMatrixContainer & MatrixContainer,
                                                                       const TMatrixID    SampledMatrixID,
                                                                       const char *       HDF5_DatasetName,
-                                                                      const TBaseOutputHDF5Stream::TReductionOperator  ReductionOp,
-                                                                      float *            BufferToReuse)
+                                                                      const TBaseOutputHDF5Stream::TReductionOperator  ReductionOp)
 {
   TParameters * Params = TParameters::GetInstance();
 
@@ -373,21 +381,16 @@ TBaseOutputHDF5Stream * TOutputStreamContainer::CreateNewOutputStream(TMatrixCon
                                         HDF5_DatasetName,
                                         MatrixContainer.GetMatrix<TRealMatrix>(SampledMatrixID),
                                         MatrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_index),
-                                        ReductionOp,
-                                        BufferToReuse);
+                                        ReductionOp);
   }
-    /*
-    }
-    else
-    {
-        Stream = new TCuboidOutputHDF5Stream(Params->HDF5_OutputFile,
-                HDF5_DatasetName,
-                MatrixContainer.GetRealMatrix(SampledMatrixID),
-                MatrixContainer.GetLongMatrix(sensor_mask_corners),
-                ReductionOp,
-                BufferToReuse);
-    }
-    */
+  else
+  {
+    Stream = new TCuboidOutputHDF5Stream(Params->HDF5_OutputFile,
+                                         HDF5_DatasetName,
+                                         MatrixContainer.GetMatrix<TRealMatrix>(SampledMatrixID),
+                                         MatrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_corners),
+                                         ReductionOp);
+  }
   return Stream;
 }// end of CreateNewOutputStream
 //------------------------------------------------------------------------------

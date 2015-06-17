@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        04 November 2014, 14:40 (created) \n
- *              15 December 2014, 20:36 (revised)
+ *              07 January  2015, 12:40 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -194,6 +194,9 @@ void TCUDATuner::SetDevice(const int DeviceIdx)
 
   // set the device and copy it's properties
   gpuErrchk(cudaSetDevice(this->DeviceIdx));
+  // Enable mapped memory
+  gpuErrchk(cudaSetDeviceFlags(cudaDeviceMapHost));
+
 
     // Get Device name
   cudaDeviceProp DeviceProperties;

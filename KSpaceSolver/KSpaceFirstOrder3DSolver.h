@@ -609,6 +609,9 @@ private:
     /// Percentage of the simulation done
     size_t ActPercent;
 
+    /// This variable is true when calculating first time step after restore from checkpoint (to allow asynchronous IO)
+    bool IsTimestepRightAfterRestore;
+
     /// Global parameters of the simulation
     TParameters* Parameters;
 

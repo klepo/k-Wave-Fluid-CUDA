@@ -24,12 +24,18 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" --version</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5 -o Data/test_out.h5</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5 -o Data/test_out.h5 --p_max_all --p_min_all --u_max_all --u_min_all --p_max --p_min --p_rms --u_max --u_min --u_rms --p_final --u_final -p -u </runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5 -o Data/test_out.h5 --p_max_all --p_min_all --u_max_all --u_min_all --p_max --p_min --p_rms --u_max --u_min --u_rms --p_final --u_final -p -u --checkpoint_interval 1 --checkpoint_file /tmp/check.h5</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5 -o Data/test_out.h5 --p_max_all --p_min_all --u_max_all --u_min_all --p_max --p_min --p_rms --u_max --u_min --u_rms --p_final --u_final -p -u --checkpoint_interval 2 --checkpoint_file /tmp/check.h5</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5 -o Data/test_out.h5 --p_max_all --p_min_all --u_max_all --u_min_all --p_max --p_min --p_rms --u_max --u_min --u_rms --p_final --u_final -p -u --checkpoint_interval 5 --checkpoint_file /tmp/check.h5</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5 -o Data/test_out.h5 --p_max_all --p_min_all --u_max_all --u_min_all --p_max --p_min --p_rms --u_max --u_min --u_rms --p_final --u_final -p -u --checkpoint_interval 6 --checkpoint_file /tmp/check.h5</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5 -o Data/test_out.h5 --p_max_all --p_min_all --u_max_all --u_min_all --p_max --p_min --p_rms --u_max --u_min --u_rms --p_final --u_final -p -u --checkpoint_interval 4 --checkpoint_file /tmp/check.h5 -s 10</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5 -o Data/test_out.h5 --p_max_all --p_min_all --u_max_all --u_min_all --p_max --p_min --p_rms --u_max --u_min --u_rms --p_final --u_final -p -u --checkpoint_interval 6 --checkpoint_file /tmp/check.h5 -s 10</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5 -o Data/test_out.h5 --p_max_all --p_min_all --u_max_all --u_min_all --p_max --p_min --p_rms --u_max --u_min --u_rms --p_final --u_final -p -u --checkpoint_interval 1 --checkpoint_file /tmp/check.h5 -s 310</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5 -o Data/test_out.h5 --p_max_all --p_min_all --u_max_all --u_min_all --p_max --p_min --p_rms --u_max --u_min --u_rms --p_final --u_final -p -u --checkpoint_interval 4 --checkpoint_file /tmp/check.h5 -s 310</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5 -o Data/test_out.h5 --p_max_all --p_min_all --u_max_all --u_min_all --p_max --p_min --p_rms --u_max --u_min --u_rms --p_final --u_final -p -u --checkpoint_interval 5 --checkpoint_file /tmp/check.h5 -s 310</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5 -o Data/test_out.h5</runcommand>
+        <runcommand>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5 -o Data/test_out.h5 --p_max_all --p_min_all --u_max_all --u_min_all --p_max --p_min --p_rms --u_max --u_min --u_rms --p_final --u_final -p -u --checkpoint_interval 5 --checkpoint_file /tmp/check.h5 -s 310</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
