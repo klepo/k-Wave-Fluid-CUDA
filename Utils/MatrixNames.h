@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        14 September 2012, 17:28 (created) \n
- *              04 November  2014, 15:08 (revised)
+ *              17 June      2015, 12:27 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -197,6 +197,13 @@ const char * const  ux_sgx_Name         = "ux_sgx";
 const char * const  uy_sgy_Name         = "uy_sgy";
 /// uz_sgz variable name
 const char * const  uz_sgz_Name         = "uz_sgz";
+
+/// ux_non_staggered variable name
+const char * const  ux_non_staggered_Name = "ux_non_staggered";
+/// uy_non_staggered variable name
+const char * const  uy_non_staggered_Name = "uy_non_staggered";
+/// uz_non_staggered variable name
+const char * const  uz_non_staggered_Name = "uz_non_staggered";
 
 /// duxdx variable name
 const char * const  duxdx_Name          = "duxdx";

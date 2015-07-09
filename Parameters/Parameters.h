@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        08 December 2011, 16:34 (created)      \n
- *              17 December 2014, 21:19 (revised)
+ *              17 June     2015, 10:08 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -51,8 +51,9 @@ class TParameters
   public:
 
     /**
-     * @enum SensorMaskType
-     * @brief Sensor mask type (linear or corners)
+     * @enum TSensorMaskType
+     * @brief   Sensor mask type (linear indices or cuboid corners).
+     * @details Sensor mask type (linear indices or cuboid corners).
      */
     enum TSensorMaskType {smt_index = 0, smt_corners = 1};
 

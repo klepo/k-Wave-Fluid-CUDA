@@ -91,7 +91,7 @@ CXX = nvcc
  
 # Set compiler flags and header files directories
 CXXFLAGS = -Xcompiler="-mtune=native -march=native -O3 -fopenmp -ffast-math -fassociative-math" \
-           -std=c++11  -I$(HDF5_DIR)/include  -I. -Xptxas -v   -ccbin=g++-4.8 -arch=compute_20 -code=sm_20
+           -std=c++11  -I$(HDF5_DIR)/include  -I. -Xptxas -v   -ccbin=g++-4.8 -arch=compute_52 -code=sm_52
   
 LDFLAGS  = -Xcompiler="-fopenmp" -Xlinker="-rpath,$(HDF5_DIR)/lib:$(CUDA_DIR)/lib64" -std=c++11  -L$(HDF5_DIR)/lib  -L$(CUDA_DIR)/lib64 
 #LIBS     = -lhdf5 -lhdf5_hl -lz -lcufft

@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        04 December  2014, 11:41 (created)
- *              17 February  2015, 14:46 (revised)
+ *              17 June      2015, 12:27 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -134,6 +134,22 @@ void TOutputStreamContainer::AddStreamsIntoContainer(TMatrixContainer & MatrixCo
                                                                  uz_sgz,
                                                                  uz_Name,
                                                                  TBaseOutputHDF5Stream::roNONE);
+  }
+
+  if (Params->IsStore_u_non_staggered_raw())
+  {
+    OutputStreamContainer[ux_shifted_sensor_raw] = CreateNewOutputStream(MatrixContainer,
+                                                                         ux_shifted,
+                                                                         ux_non_staggered_Name,
+                                                                         TBaseOutputHDF5Stream::roNONE);
+    OutputStreamContainer[uy_shifted_sensor_raw] = CreateNewOutputStream(MatrixContainer,
+                                                                         uy_shifted,
+                                                                         uy_non_staggered_Name,
+                                                                         TBaseOutputHDF5Stream::roNONE);
+    OutputStreamContainer[uz_shifted_sensor_raw] = CreateNewOutputStream(MatrixContainer,
+                                                                         uz_shifted,
+                                                                         uz_non_staggered_Name,
+                                                                         TBaseOutputHDF5Stream::roNONE);
   }
 
   if (Params->IsStore_u_rms())
