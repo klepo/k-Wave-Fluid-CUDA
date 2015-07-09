@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        29 August   2012, 11:25 (created) \n
- *              17 December 2014, 12:40 (revised)
+ *              17 June     2015, 10:00 (revised)
  *
  * @section Params Command Line Parameters
  * The CUDA/C++ code requires two mandatory parameters and accepts a few optional
@@ -190,8 +190,8 @@ Output flags:
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef TCOMMANDLINESPARAMETERS_H
-#define TCOMMANDLINESPARAMETERS_H
+#ifndef TCOMMAND_LINE_PARAMETERS_H
+#define TCOMMAND_LINE_PARAMETERS_H
 
 #include <cstdlib>
 #include <string>

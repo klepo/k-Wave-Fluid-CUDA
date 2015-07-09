@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2011, 13:10 (created) \n
- *              28 November  2014, 15:15 (revised)
+ *              08 July      2015, 16:47 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -57,10 +57,25 @@ class TCUFFTComplexMatrix : public TComplexMatrix
     /// Destructor (Inherited from TComplexMatrix).
     virtual ~TCUFFTComplexMatrix(){};
 
-    /// Create static FFTW plan for Real-to-Complex.
+    /// Create static cuFFT plan for Real-to-Complex.
     static void Create_FFT_Plan_3D_R2C(const TDimensionSizes& InMatrixDims);
-    /// Create static FFTW plan for Complex-to-Real.
+    /// Create static cuFFT plan for Complex-to-Real.
     static void Create_FFT_Plan_3D_C2R(const TDimensionSizes& OutMatrixDims);
+
+    /// Create static cuFFT plan for Real-to-Complex in the X dimension.
+    static void Create_FFT_Plan_1DX_R2C(const TDimensionSizes& InMatrixDims);
+    /// Create static cuFFT plan for Real-to-Complex in the Y dimension.
+    static void Create_FFT_Plan_1DY_R2C(const TDimensionSizes& InMatrixDims);
+    /// Create static cuFFT plan for Real-to-Complex in the Z dimension.
+    static void Create_FFT_Plan_1DZ_R2C(const TDimensionSizes& InMatrixDims);
+
+    /// Create static cuFFT plan for Complex-to-Real in the X dimension.
+    static void Create_FFT_Plan_1DX_C2R(const TDimensionSizes& OutMatrixDims);
+    /// Create static cuFFT plan for Complex-to-Real in the Y dimension.
+    static void Create_FFT_Plan_1DY_C2R(const TDimensionSizes& OutMatrixDims);
+    /// Create static cuFFT plan for Complex-to-Real in the Z dimension.
+    static void Create_FFT_Plan_1DZ_C2R(const TDimensionSizes& OutMatrixDims);
+
 
     /// Destroy all static plans and error messages.
     static void DestroyAllPlansAndStaticData();
@@ -70,6 +85,20 @@ class TCUFFTComplexMatrix : public TComplexMatrix
     /// Compute 3D out-of-place Complex-to-Real FFT.
     void Compute_FFT_3D_C2R(TRealMatrix& OutMatrix);
 
+    /// Compute 1D out-of-place Real-to-Complex FFT in the X dimension.
+    void Compute_FFT_1DX_R2C(TRealMatrix& InMatrix);
+    /// Compute 1D out-of-place Real-to-Complex FFT in the Y dimension.
+    void Compute_FFT_1DY_R2C(TRealMatrix& InMatrix);
+    /// Compute 1D out-of-place Real-to-Complex FFT in the Z dimension.
+    void Compute_FFT_1DZ_R2C(TRealMatrix& InMatrix);
+
+    /// Compute 1D out-of-place Complex-to-Real FFT in the X dimension.
+    void Compute_FFT_1DX_C2R(TRealMatrix& OutMatrix);
+    /// Compute 1D out-of-place Complex-to-Real FFT in the Y dimension.
+    void Compute_FFT_1DY_C2R(TRealMatrix& OutMatrix);
+    /// Compute 1D out-of-place Complex-to-Real FFT in the Z dimension.
+    void Compute_FFT_1DZ_C2R(TRealMatrix& OutMatrix);
+
 
   protected:
 
@@ -78,10 +107,24 @@ class TCUFFTComplexMatrix : public TComplexMatrix
     /// Operator = not allowed for public.
     TCUFFTComplexMatrix & operator = (const TCUFFTComplexMatrix& src);
 
-    /// CUFFT plan for the 3D Real-to-Complex transform.
+    /// cuFFT plan for the 3D Real-to-Complex transform.
     static cufftHandle cufft_plan_3D_R2C;
-    /// CUFFT plan for the 3D Real-to-Complex transform.
+    /// cuFFT plan for the 3D Complex-to-Real transform.
     static cufftHandle cufft_plan_3D_C2R;
+
+    /// cuFFT plan for the 1D Real-to-Complex transform in the X dimension.
+    static cufftHandle cufft_plan_1DX_R2C;
+    /// cuFFT plan for the 3D Real-to-Complex transform in the Y dimension.
+    static cufftHandle cufft_plan_1DY_R2C;
+    /// cuFFT plan for the 3D Real-to-Complex transform in the Z dimension.
+    static cufftHandle cufft_plan_1DZ_R2C;
+
+    /// cuFFT plan for the 3D Complex-to-Real transform in the X dimension.
+    static cufftHandle cufft_plan_1DX_C2R;
+    /// cuFFT plan for the 3D Complex-to-Real transform in the Y dimension.
+    static cufftHandle cufft_plan_1DY_C2R;
+    /// cuFFT plan for the 3Z Complex-to-Real transform in the Z dimension.
+    static cufftHandle cufft_plan_1DZ_C2R;
 
   private:
 

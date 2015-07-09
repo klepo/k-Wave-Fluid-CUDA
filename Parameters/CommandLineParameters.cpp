@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        29 August   2012, 11:25 (created) \n
- *              19 December 2014, 21:19 (revised)
+ *              17 June     2015, 10:01 (revised)
  *
  *
  * @section License
@@ -175,7 +175,6 @@ void TCommandLineParameters::PrintUsageAndExit()
  */
 void TCommandLineParameters::PrintSetup()
 {
-
   printf("List of enabled parameters:\n");
 
   printf("  Input  file               %s\n",InputFileName.c_str());
@@ -481,8 +480,8 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         //-- velocity related flags
         else if (strcmp("u_non_staggered_raw", longOpts[longIndex].name) == 0)
         {
-          fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoCheckpointFile);
-          PrintUsageAndExit();
+          Store_u_non_staggered_raw = true;
+          break;
         }
 
         if(strcmp("u_rms", longOpts[longIndex].name) == 0)

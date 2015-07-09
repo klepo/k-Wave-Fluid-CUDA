@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 March    2013, 13:10 (created) \n
- *              22 December 2014, 17:46 (revised)
+ *              08 July     2015, 16:06 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -82,6 +82,12 @@ class TCUDAImplementations
       size_t ComplexSlabSize;
       /// normalization constant for 3D FFT.
       float  Divider;
+      /// normalization constant for 1D FFT over X.
+      float  DividerX;
+      /// normalization constant for 1D FFT over Y.
+      float  DividerY;
+      /// normalization constant for 1D FFT over Z.
+      float  DividerZ;
     };
 
   /// Get instance of singleton class.
@@ -398,8 +404,27 @@ class TCUDAImplementations
                                    const float      * c2_matrix,
                                    const size_t       c2_shift);
 
-    //------------------- sampling kernels -----------------------------------//
+    //------------------- unstaggered velocity ------------------------------//
 
+    /// Transpose a real 3D matrix in the X-Y direction
+    void TrasposeReal3DMatrixXY(float       * OutputMatrixData,
+                                const float * InputMatrixData,
+                                const dim3  & DimSizes);
+
+    /// Transpose a real 3D matrix in the X-Y direction
+    void TrasposeReal3DMatrixXZ(float       * OutputMatrixData,
+                                const float * InputMatrixData,
+                                const dim3  & DimSizes);
+
+    /// Compute the velocity shift in Fourier space over the X axis
+    void ComputeVelocityShiftInX(TCUFFTComplexMatrix & FFT_shift_temp,
+                                 const TComplexMatrix& x_shift_neg_r);
+    /// Compute the velocity shift in Fourier space over the Y axis
+    void ComputeVelocityShiftInY(TCUFFTComplexMatrix & FFT_shift_temp,
+                                 const TComplexMatrix& y_shift_neg_r);
+    /// Compute the velocity shift in Fourier space over the Z axis
+    void ComputeVelocityShiftInZ(TCUFFTComplexMatrix & FFT_shift_temp,
+                                 const TComplexMatrix& z_shift_neg_r);
 
 
   private:

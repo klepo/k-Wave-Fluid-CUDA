@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              18 February 2015, 14:06 (revised)
+ *              08 July     2015, 16:45 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -494,6 +494,23 @@ void TKSpaceFirstOrder3DSolver::InitializeFFTPlans()
  // create complex to real plans
   TCUFFTComplexMatrix::Create_FFT_Plan_3D_C2R(Parameters->GetFullDimensionSizes());
 
+  // if necessary, create 1D shift plans.
+  // in this case, the matrix has a bit bigger dimensions to be able to store
+  // shifted matrices.
+  if (TParameters::GetInstance()->IsStore_u_non_staggered_raw())
+  {
+    // X shifts
+    TCUFFTComplexMatrix::Create_FFT_Plan_1DX_R2C(Parameters->GetFullDimensionSizes());
+    TCUFFTComplexMatrix::Create_FFT_Plan_1DX_C2R(Parameters->GetFullDimensionSizes());
+
+    // Y shifts
+    TCUFFTComplexMatrix::Create_FFT_Plan_1DY_R2C(Parameters->GetFullDimensionSizes());
+    TCUFFTComplexMatrix::Create_FFT_Plan_1DY_C2R(Parameters->GetFullDimensionSizes());
+
+    // Z shifts
+    TCUFFTComplexMatrix::Create_FFT_Plan_1DZ_R2C(Parameters->GetFullDimensionSizes());
+    TCUFFTComplexMatrix::Create_FFT_Plan_1DZ_C2R(Parameters->GetFullDimensionSizes());
+  }// end u_non_staggered
 }// end of InitializeFFTPlans
 //------------------------------------------------------------------------------
 
@@ -1622,6 +1639,36 @@ void TKSpaceFirstOrder3DSolver::Add_p_source()
 }// end of Add_p_source
 //------------------------------------------------------------------------------
 
+
+/**
+ * Calculated shifted velocities.
+ * \n
+ * ux_shifted = real(ifft(bsxfun(\@times, x_shift_neg, fft(ux_sgx, [], 1)), [], 1)); \n
+ * uy_shifted = real(ifft(bsxfun(\@times, y_shift_neg, fft(uy_sgy, [], 2)), [], 2)); \n
+ * uz_shifted = real(ifft(bsxfun(\@times, z_shift_neg, fft(uz_sgz, [], 3)), [], 3)); \n
+ */
+
+void TKSpaceFirstOrder3DSolver::Calculate_shifted_velocity()
+{
+  // ux_shifted
+  Get_CUFFT_shift_temp().Compute_FFT_1DX_R2C(Get_ux_sgx());
+  cuda_implementations->ComputeVelocityShiftInX(Get_CUFFT_shift_temp(), Get_x_shift_neg_r());
+  Get_CUFFT_shift_temp().Compute_FFT_1DX_C2R(Get_ux_shifted());
+
+  // uy_shifted
+  Get_CUFFT_shift_temp().Compute_FFT_1DY_R2C(Get_uy_sgy());
+  cuda_implementations->ComputeVelocityShiftInY(Get_CUFFT_shift_temp(), Get_y_shift_neg_r());
+  Get_CUFFT_shift_temp().Compute_FFT_1DY_C2R(Get_uy_shifted());
+
+  // uz_shifted
+  Get_CUFFT_shift_temp().Compute_FFT_1DZ_R2C(Get_uz_sgz());
+  cuda_implementations->ComputeVelocityShiftInZ(Get_CUFFT_shift_temp(), Get_z_shift_neg_r());
+  Get_CUFFT_shift_temp().Compute_FFT_1DZ_C2R(Get_uz_shifted());
+
+}// end of Calculate_shifted_velocity
+//------------------------------------------------------------------------------
+
+
 /*
  * Compute the main time loop of KSpaceFirstOrder3D.
  */
@@ -1845,6 +1892,12 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData()
     if (Parameters->Get_t_index() > Parameters->GetStartTimeIndex() && !IsTimestepRightAfterRestore)
     {
       OutputStreamContainer.FlushRawStreams();
+    }
+
+    // if --u_non_staggered is switched on, calculate unstaggered velocity.
+    if (Parameters->IsStore_u_non_staggered_raw())
+    {
+      Calculate_shifted_velocity();
     }
 
     // Sample data for step t  (store event for sampling in next turn)

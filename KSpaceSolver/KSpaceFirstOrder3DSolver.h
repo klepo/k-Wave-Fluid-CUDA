@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              05 December 2014, 13:40 (revised)
+ *              29 JUne     2015, 13:27 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -218,6 +218,9 @@ protected:
 
     /// Sum sub-terms for new p, linear lossless case.
     void Sum_new_p_linear_lossless();
+
+    /// Calculate ux_shifted, uy_shifted and uz_shifted.
+    void Calculate_shifted_velocity();
 
     /// Print progress statistics.
     void PrintStatistics();
@@ -592,6 +595,11 @@ protected:
       return MatrixContainer.GetMatrix<TCUFFTComplexMatrix>(CUFFT_Z_temp);
     };
 
+    /// Get the FFT_shift_temp the container.
+    TCUFFTComplexMatrix& Get_CUFFT_shift_temp()
+    {
+      return MatrixContainer.GetMatrix<TCUFFTComplexMatrix>(CUFFT_shift_temp);
+    };
 
 private:
 
