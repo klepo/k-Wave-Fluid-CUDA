@@ -72,8 +72,8 @@ TCommandLineParameters::TCommandLineParameters() :
         #endif
 
         GPUDeviceIdx(-1), // default is undefined -1
-        BlockSize1D(128), // needs to be done differently
-        BlockSize3DX(128), BlockSize3DY(1), BlockSize3DZ(1),
+        BlockSize1D(256), // needs to be done differently
+        BlockSize3DX(32), BlockSize3DY(8), BlockSize3DZ(1),
 
         VerboseInterval(DefaultVerboseInterval),
         CompressionLevel(DefaultCompressionLevel),

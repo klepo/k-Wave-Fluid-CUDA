@@ -40,9 +40,10 @@
 #include <Utils/DimensionSizes.h>
 
 /**
- * @class CUDATnuer
- * @brief Class responsible cuda blocks and grid seizes
- * @details Class responsible cuda blocks and grid seizes and device selection
+ * @class   CUDATnuer
+ * @brief   Class responsible for CUDA runtime setup
+ * @details Class responsible selecting a CUDA device and setting CUDA blocks
+ *          and threads
  *
  * @todo - needs a bit of investigation -> Move to TParameters?
  *         There is a collision with TCommandline parameters
@@ -133,7 +134,7 @@ class TCUDATuner
     /// Default device -1 - let the class to choose
     static const int  DefaultDeviceIdx   = -1;
     /// Default size of 1D block (empirically tested of Fermi and Kepler)
-    static const int  DefaultNumberOfThreads1D = 128;
+    static const int  DefaultNumberOfThreads1D = 256;
     /// Default size of 3D block (empirically tested of Fermi and Kepler)
     static const dim3 DefaultNumberOfThreads3D; //initialized in the cpp file= {128, 1, 1};
 

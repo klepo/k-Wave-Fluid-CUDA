@@ -207,10 +207,13 @@ TErrorMessage KSpaceFirstOrder3DSolver_ERR_FMT_OutputDimensionsDoNotMatch
 //----------------------------------- CUDATuner Class  -----------------------//
 
 /// CUDATuner error message
-TErrorMessage CUDATuner_ERR_FMT_WrongDeviceIdx = "Error: Wrong CUDA Device Idx %d. Allowed Devices 0-%d!\n";
-
+TErrorMessage CUDATuner_ERR_FMT_WrongDeviceIdx    = "Error: Wrong CUDA device idx %d. Allowed devices 0-%d!\n";
 /// CUDATuner error message
-TErrorMessage CUDATuner_ERR_FMT_InvalidDimensions = "ERROR: Invalid simulation dimensions (zero when generating the execution model)!\n";
+TErrorMessage CUDATuner_ERR_FMT_NoFreeDevice      = "Error: All CUDA-capable devices are busy or unavailable!\n";
+/// CUDATuner error message
+TErrorMessage CUDATuner_ERR_FMT_DeviceIsBusy      = "Error: CUDA device idx %d is busy or unavailable! \n";
+/// CUDATuner error message
+TErrorMessage CUDATuner_ERR_FMT_InvalidDimensions = "Error: Invalid simulation dimensions (zero when generating the execution model)!\n";
 
 #endif	/* ERRORMESSAGES_H */
 

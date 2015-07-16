@@ -87,7 +87,7 @@ bool TCUDATuner::InstanceFlag = false;
 TCUDATuner* TCUDATuner::Instance = NULL;
 
 // Set default size of the 3D block (use initialization list)
-const dim3 TCUDATuner::DefaultNumberOfThreads3D {128, 1, 1};
+const dim3 TCUDATuner::DefaultNumberOfThreads3D {32, 8, 1};
 
 //----------------------------------------------------------------------------//
 //---------------------------------- Public ----------------------------------//
@@ -138,7 +138,7 @@ void TCUDATuner::SetBlockSize3D(const int x, const int y, const int z)
 
 /**
  * Selects GPU device for the code execution.
- * By default the device with most memory is used.
+ * By default it chooses the first available device
  *
  * @param [in] DeviceIdx - this device will be used for execution.
  *                         If set to -1, let this routine to choose.
@@ -152,51 +152,61 @@ void TCUDATuner::SetDevice(const int DeviceIdx)
   //choose the GPU device with the most global memory
   int NumOfDevices;
   gpuErrchk(cudaGetDeviceCount(&NumOfDevices));
+  cudaGetLastError();
 
-  //set a cuda complient gpu device if none was set by the user (as a command line argument)
+  //if the user does not provided a specific GPU, use the first one
   if (DeviceIdx == DefaultDeviceIdx)
   {
-    // more than one device
-    if (NumOfDevices > 1)
+    bool DeviceFound = false;
+
+    for (int testDevice = 0; testDevice < NumOfDevices; testDevice++)
     {
-      size_t MaxGlobalMemory = 0;
-      int    BestDevice = 0;
-      for (int ActualDevice = 0; ActualDevice < NumOfDevices; ActualDevice++)
-      {
-        // Get properties
-        cudaDeviceProp DeviceProperties;
-        gpuErrchk(cudaGetDeviceProperties(&DeviceProperties, ActualDevice));
-
-        if (MaxGlobalMemory < DeviceProperties.totalGlobalMem)
-        {
-          MaxGlobalMemory = DeviceProperties.totalGlobalMem;
-          BestDevice = ActualDevice;
-        }
+      // try to set and reset a device
+      gpuErrchk(cudaSetDevice(testDevice));
+      if (cudaDeviceReset() == cudaSuccess)
+      { // success
+        this->DeviceIdx = testDevice;
+        DeviceFound = true;
+        break;
       }
-      this->DeviceIdx = BestDevice;
+      // if the device was busy, clear errors
+      cudaGetLastError();
     }
-    else
-    { //there is only 1 gpu so use it
-      this->DeviceIdx = 0;
-    }
-  }// select device by memory
 
-  // check if the specified device is acceptable -
-  // not busy, input parameter not out of bounds
-  if ((this->DeviceIdx > NumOfDevices - 1) || (this->DeviceIdx < 0))
+    if (!DeviceFound)
+    {
+      throw std::runtime_error(CUDATuner_ERR_FMT_NoFreeDevice);
+    }
+  }
+  else // select a device the user wants
   {
-    char ErrorMessage[256];
-    sprintf(ErrorMessage, CUDATuner_ERR_FMT_WrongDeviceIdx, this->DeviceIdx, NumOfDevices);
+    // check if the specified device is acceptable -
+    // not busy, input parameter not out of bounds
+    if ((this->DeviceIdx > NumOfDevices - 1) || (this->DeviceIdx < 0))
+    {
+      char ErrorMessage[256];
+      sprintf(ErrorMessage, CUDATuner_ERR_FMT_WrongDeviceIdx, this->DeviceIdx, NumOfDevices-1);
+      // Throw exception
+      throw std::runtime_error(ErrorMessage);
+     }
 
-    // Throw exception
-     throw std::runtime_error(ErrorMessage);
+    // set the device and copy it's properties
+    gpuErrchk(cudaSetDevice(this->DeviceIdx));
+    if (cudaDeviceReset() != cudaSuccess)
+    {
+      char ErrorMessage[256];
+      sprintf(ErrorMessage, CUDATuner_ERR_FMT_DeviceIsBusy, this->DeviceIdx);
+      throw std::runtime_error(ErrorMessage);
+    }
+    cudaGetLastError();
   }
 
-  // set the device and copy it's properties
-  gpuErrchk(cudaSetDevice(this->DeviceIdx));
+  // Read the device that was allocated
+  gpuErrchk(cudaGetDevice(&this->DeviceIdx));
+  gpuErrchk(cudaGetLastError());
+
   // Enable mapped memory
   gpuErrchk(cudaSetDeviceFlags(cudaDeviceMapHost));
-
 
     // Get Device name
   cudaDeviceProp DeviceProperties;
@@ -261,11 +271,21 @@ void TCUDATuner::GenerateExecutionModelForMatrixSize(const TDimensionSizes & Ful
   size_t ElementCount = FullDimensionSizes.GetElementCount();
 
   // 1D Block
-  NumberOfBlocks1D = ElementCount / NumberOfThreads1D;
-  if (ElementCount % NumberOfThreads1D > 0) NumberOfBlocks1D++; // add one block for the rest
+  NumberOfBlocks1D = 256;/*ElementCount / NumberOfThreads1D;
+  if (ElementCount % NumberOfThreads1D > 0) NumberOfBlocks1D++; // add one block for the rest*/
 
   //3D block
-  NumberOfBlocks3D.x = FullDimensionSizes.X / NumberOfThreads3D.x;
+  NumberOfBlocks3D.x = 2;//FullDimensionSizes.X / NumberOfThreads3D.x;
+  NumberOfBlocks3D.y = 8;//FullDimensionSizes.Y / NumberOfThreads3D.y;
+  NumberOfBlocks3D.z = 32;//FullDimensionSizes.Z / NumberOfThreads3D.z;
+
+  NumberOfBlocks3DComplex.x = 2;
+  NumberOfBlocks3DComplex.y = 8;
+  NumberOfBlocks3DComplex.z = 32;
+
+
+
+/*  NumberOfBlocks3D.x = FullDimensionSizes.X / NumberOfThreads3D.x;
   NumberOfBlocks3D.y = FullDimensionSizes.Y / NumberOfThreads3D.y;
   NumberOfBlocks3D.z = FullDimensionSizes.Z / NumberOfThreads3D.z;
 
@@ -284,7 +304,9 @@ void TCUDATuner::GenerateExecutionModelForMatrixSize(const TDimensionSizes & Ful
   if (ReducedDimensionSizes.Z % NumberOfThreads3D.z > 0) NumberOfBlocks3DComplex.z++;
 
   CheckAndAdjustGridSize3DToDeviceProperties();
+*/
 
+  //printf("Number of threads %d \n", GetNumberOfThreadsFor1D());
 }// end of GenerateExecutionModelForMatrixSize
 //------------------------------------------------------------------------------
 
@@ -355,6 +377,6 @@ TCUDATuner::TCUDATuner() :
         NumberOfBlocks3DComplex(0,0,0),
         DeviceName()
 {
-
+//printf("Number of threads %d \n", GetNumberOfThreadsFor1D());
 }// end of TCUDATuner()
 //------------------------------------------------------------------------------
