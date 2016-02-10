@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 March    2013, 13:10 (created) \n
- *              08 June     2015, 16:42 (revised)
+ *              10 February 2016, 13:12 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -199,20 +199,6 @@ TCUDAImplementations::~TCUDAImplementations()
 //------------------------------------------------------------------------------
 
 
-/**
- * Set up execution model based on simulation size
- * @param FullDimensionSizes
- * @param ReducedDimensionSizes
- */
-void TCUDAImplementations::SetUpExecutionModelWithTuner(const TDimensionSizes & FullDimensionSizes,
-                                                        const TDimensionSizes & ReducedDimensionSizes)
-{
-  //@todo why you create CUDATuner here???
-  CUDATuner = TCUDATuner::GetInstance();
-
-  CUDATuner->GenerateExecutionModelForMatrixSize(FullDimensionSizes, ReducedDimensionSizes);
-}// end of SetUpExecutionModelWithTuner
-//------------------------------------------------------------------------------
 
 /**
  * Set up device constants??
@@ -243,8 +229,81 @@ void TCUDAImplementations::SetUpDeviceConstants(const TDimensionSizes & FullDime
   ConstantsToTransfer.DividerZ = 1.0f / FullDimensionSizes.Z;
 
   // transfer constants to CUDA constant memory
-  gpuErrchk(cudaMemcpyToSymbol(DeviceConstants, &ConstantsToTransfer, sizeof(TDeviceConstants)));
+  gpuErrchk(cudaMemcpyToSymbol(DeviceConstants, &ConstantsToTransfer, sizeof(TDeviceConstants)));     
 }// end of SetUpDeviceConstants
+//------------------------------------------------------------------------------
+
+
+/**
+ * Kernel to find out the version of the code
+ * The list of GPUs can be found at https://en.wikipedia.org/wiki/CUDA
+ * @param [out] cudaCodeVersion
+ */
+__global__ void CUDAGetCUDACodeVersion(int * cudaCodeVersion)
+{
+  *cudaCodeVersion = -1;
+
+  #if (__CUDA_ARCH__ == 530)
+    *cudaCodeVersion = 53;
+  #elif (__CUDA_ARCH__ == 520)
+    *cudaCodeVersion = 52;
+  #elif (__CUDA_ARCH__ == 500)
+    *cudaCodeVersion = 50;
+  #elif (__CUDA_ARCH__ == 370)
+    *cudaCodeVersion = 37;
+  #elif (__CUDA_ARCH__ == 350)
+    *cudaCodeVersion = 35;
+  #elif (__CUDA_ARCH__ == 320)
+    *cudaCodeVersion = 32;
+  #elif (__CUDA_ARCH__ == 300)
+    *cudaCodeVersion = 30;
+  #elif (__CUDA_ARCH__ == 210)
+    *cudaCodeVersion = 21;
+  #elif (__CUDA_ARCH__ == 200)
+    *cudaCodeVersion = 20;
+  #endif
+}// end of CUDAGetCodeVersion
+//------------------------------------------------------------------------------
+
+/**
+ * Get the CUDA architecture and GPU code version the code was compiled with
+ * @return  the CUDA code version the code was compiled for
+ */
+int TCUDAImplementations::GetCUDACodeVersion()
+{  
+  // host and device pointers, data copied over zero copy memory
+  int * hCudaCodeVersion;
+  int * dCudaCodeVersion;
+
+  // returned value
+  int cudaCodeVersion = 0;
+  cudaError_t cudaError;
+  
+  // allocate for zero copy
+  cudaError = cudaHostAlloc<int>(&hCudaCodeVersion, sizeof(int), cudaHostRegisterPortable | cudaHostRegisterMapped);
+  // if the device is busy, return 0 - the GPU is not supported
+  if (cudaError == cudaSuccess)
+  {
+    gpuErrchk(cudaHostGetDevicePointer<int>(&dCudaCodeVersion, hCudaCodeVersion, 0));
+
+    // find out the CUDA code version
+    CUDAGetCUDACodeVersion<<<1,1>>>(dCudaCodeVersion);
+    cudaDeviceSynchronize();   
+    if (cudaGetLastError() != cudaSuccess)
+    {
+      // The GPU architecture is not supported
+      cudaCodeVersion = 0;
+    }
+    else
+    {
+      cudaCodeVersion = *hCudaCodeVersion;
+    }
+  
+    gpuErrchk(cudaFreeHost(hCudaCodeVersion));
+  }
+  
+  return (cudaCodeVersion);
+}// end of GetCodeVersion
 //------------------------------------------------------------------------------
 
 
@@ -298,9 +357,9 @@ void TCUDAImplementations::Compute_ux_sgx_normalize(TRealMatrix& uxyz_sgxyz,
                                                     const TRealMatrix& FFT_p,
                                                     const TRealMatrix& dt_rho0,
                                                     const TRealMatrix& pml)
-{
-  CUDACompute_ux_sgx_normalize<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                 CUDATuner->GetNumberOfThreadsFor3D() >>>
+{ 
+  CUDACompute_ux_sgx_normalize<<<GetSolverGridSize3D(),
+                                 GetSolverBlockSize3D() >>>
                               (uxyz_sgxyz.GetRawDeviceData(),
                                FFT_p.GetRawDeviceData(),
                                dt_rho0.GetRawDeviceData(),
@@ -360,8 +419,8 @@ void TCUDAImplementations::Compute_ux_sgx_normalize_scalar_uniform(TRealMatrix& 
                                                                    const float        dt_rho0,
                                                                    const TRealMatrix& pml)
 {
-  CUDACompute_ux_sgx_normalize_scalar_uniform<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                                CUDATuner->GetNumberOfThreadsFor3D() >>>
+  CUDACompute_ux_sgx_normalize_scalar_uniform<<<GetSolverGridSize3D(),
+                                                GetSolverBlockSize3D() >>>
                                              (ux_sgx.GetRawDeviceData(),
                                               FFT_p.GetRawDeviceData(),
                                               dt_rho0,
@@ -424,8 +483,8 @@ void TCUDAImplementations::Compute_ux_sgx_normalize_scalar_nonuniform(TRealMatri
                                                                       const TRealMatrix& dxudxn_sgx,
                                                                       const TRealMatrix& pml)
 {
-  CUDACompute_ux_sgx_normalize_scalar_nonuniform<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                                   CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_ux_sgx_normalize_scalar_nonuniform<<<GetSolverGridSize3D(),
+                                                   GetSolverBlockSize3D()>>>
                                                 (ux_sgx.GetRawDeviceData(),
                                                  FFT_p.GetRawDeviceData(),
                                                  dt_rho0,
@@ -484,8 +543,8 @@ void TCUDAImplementations::Compute_uy_sgy_normalize(TRealMatrix      & uy_sgy,
                                                     const TRealMatrix& dt_rho0,
                                                     const TRealMatrix& pml)
 {
-  CUDACompute_uy_sgy_normalize<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                 CUDATuner->GetNumberOfThreadsFor3D() >>>
+  CUDACompute_uy_sgy_normalize<<<GetSolverGridSize3D(),
+                                 GetSolverBlockSize3D() >>>
                               (uy_sgy.GetRawDeviceData(),
                                FFT_p.GetRawDeviceData(),
                                dt_rho0.GetRawDeviceData(),
@@ -543,8 +602,8 @@ void TCUDAImplementations::Compute_uy_sgy_normalize_scalar_uniform(TRealMatrix  
                                                                    const float        dt_rho0,
                                                                    const TRealMatrix& pml)
 {
-  CUDACompute_uy_sgy_normalize_scalar_uniform<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                                CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_uy_sgy_normalize_scalar_uniform<<<GetSolverGridSize3D(),
+                                                GetSolverBlockSize3D()>>>
                                              (uy_sgy.GetRawDeviceData(),
                                               FFT_p.GetRawDeviceData(),
                                               dt_rho0,
@@ -609,8 +668,8 @@ void TCUDAImplementations::Compute_uy_sgy_normalize_scalar_nonuniform(TRealMatri
                                                                       const TRealMatrix& dyudyn_sgy,
                                                                       const TRealMatrix& pml)
 {
-  CUDACompute_uy_sgy_normalize_scalar_nonuniform<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                                   CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_uy_sgy_normalize_scalar_nonuniform<<<GetSolverGridSize3D(),
+                                                   GetSolverBlockSize3D()>>>
                                                 (uy_sgy.GetRawDeviceData(),
                                                  FFT_p.GetRawDeviceData(),
                                                  dt_rho0,
@@ -667,8 +726,8 @@ void TCUDAImplementations::Compute_uz_sgz_normalize(TRealMatrix      & uz_sgz,
                                                     const TRealMatrix& dt_rho0,
                                                     const TRealMatrix& pml)
 {
-  CUDACompute_uz_sgz_normalize<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                 CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_uz_sgz_normalize<<<GetSolverGridSize3D(),
+                                 GetSolverBlockSize3D()>>>
                               (uz_sgz.GetRawDeviceData(),
                                FFT_p.GetRawDeviceData(),
                                dt_rho0.GetRawDeviceData(),
@@ -726,8 +785,8 @@ void TCUDAImplementations::Compute_uz_sgz_normalize_scalar_uniform(TRealMatrix  
                                                                    const float        dt_rho0,
                                                                    const TRealMatrix& pml)
 {
-  CUDACompute_uz_sgz_normalize_scalar_uniform<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                                CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_uz_sgz_normalize_scalar_uniform<<<GetSolverGridSize3D(),
+                                                GetSolverBlockSize3D()>>>
                                              (uz_sgz.GetRawDeviceData(),
                                               FFT_p.GetRawDeviceData(),
                                               dt_rho0,
@@ -791,8 +850,8 @@ void TCUDAImplementations::Compute_uz_sgz_normalize_scalar_nonuniform(TRealMatri
                                                                       const TRealMatrix& dzudzn_sgz,
                                                                       const TRealMatrix& pml)
 {
-  CUDACompute_uz_sgz_normalize_scalar_nonuniform<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                                   CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_uz_sgz_normalize_scalar_nonuniform<<<GetSolverGridSize3D(),
+                                                   GetSolverBlockSize3D()>>>
                                                 (uz_sgz.GetRawDeviceData(),
                                                  FFT_p.GetRawDeviceData(),
                                                  dt_rho0,
@@ -841,12 +900,11 @@ void TCUDAImplementations::AddTransducerSource(TRealMatrix       & ux_sgx,
   const size_t u_source_index_size = u_source_index.GetTotalElementCount();
 
   // Grid size is calculated based on the source size
-  int CUDABlockSize1D = CUDATuner->GetNumberOfThreadsFor1D();
-  int CUDAGridSize1D  = (u_source_index_size  + CUDABlockSize1D - 1 ) / CUDABlockSize1D;
+  int CUDAGridSize1D  = (u_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D();
   //@todo here should be a test not to generate too much blocks, and balance workload
 
   //@todo Source signal should go to constant memory
-  CUDAAddTransducerSource<<<CUDAGridSize1D, CUDABlockSize1D>>>
+  CUDAAddTransducerSource<<<CUDAGridSize1D, GetSolverBlockSize1D()>>>
                          (ux_sgx.GetRawDeviceData(),
                           u_source_index.GetRawDeviceData(),
                           u_source_index_size,
@@ -922,11 +980,10 @@ void TCUDAImplementations::Add_u_source(TRealMatrix       & uxyz_sgxyz,
   const size_t u_source_index_size = u_source_index.GetTotalElementCount();
 
   // Grid size is calculated based on the source size
-  const int CUDABlockSize1D = CUDATuner->GetNumberOfThreadsFor1D();
-  const int CUDAGridSize1D  = (u_source_index_size  + CUDABlockSize1D - 1 ) / CUDABlockSize1D;
+  const int CUDAGridSize1D  = (u_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D();
   //@todo here should be a test not to generate too much blocks, and balance workload
 
-  CUDAAdd_u_source<<< CUDAGridSize1D, CUDABlockSize1D>>>
+  CUDAAdd_u_source<<< CUDAGridSize1D, GetSolverBlockSize1D()>>>
                   (uxyz_sgxyz.GetRawDeviceData(),
                    u_source_input.GetRawDeviceData(),
                    u_source_index.GetRawDeviceData(),
@@ -1032,12 +1089,11 @@ void TCUDAImplementations::Add_p_source(TRealMatrix       & rhox,
 {
   const size_t p_source_index_size = p_source_index.GetTotalElementCount();
 
-  // Grid size is calculated based on the source size
-  int CUDABlockSize1D = CUDATuner->GetNumberOfThreadsFor1D();
-  int CUDAGridSize1D  = (p_source_index_size  + CUDABlockSize1D - 1 ) / CUDABlockSize1D;
+  // Grid size is calculated based on the source size  
+  int CUDAGridSize1D  = (p_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D();
   //@todo here should be a test not to generate too much blocks, and balance workload
 
-  CUDAAdd_p_source<<<CUDAGridSize1D,CUDABlockSize1D>>>
+  CUDAAdd_p_source<<<CUDAGridSize1D,GetSolverBlockSize1D()>>>
                   (rhox.GetRawDeviceData(),
                    rhoy.GetRawDeviceData(),
                    rhoz.GetRawDeviceData(),
@@ -1090,8 +1146,8 @@ void TCUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2(TRealMatrix        &
   // take the 3D ifft
   FFT.Compute_FFT_3D_C2R(uxyz_sgxyz);
 
-  CUDACompute_dt_rho_sg_mul_u<<<CUDATuner->GetNumberOfBlocksFor1D(),
-                                CUDATuner->GetNumberOfThreadsFor1D()>>>
+  CUDACompute_dt_rho_sg_mul_u<<<GetSolverGridSize1D(),
+                                GetSolverBlockSize1D()>>>
                             (uxyz_sgxyz.GetRawDeviceData(),
                              dt_rho0_sg.GetRawDeviceData());
 
@@ -1136,8 +1192,8 @@ void TCUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2(TRealMatrix        &
   // take the 3D ifft
   FFT.Compute_FFT_3D_C2R(uxyz_sgxyz);
 
-  CUDACompute_dt_rho_sg_mul_u<<<CUDATuner->GetNumberOfBlocksFor1D(),
-                                CUDATuner->GetNumberOfThreadsFor1D()>>>
+  CUDACompute_dt_rho_sg_mul_u<<<GetSolverGridSize1D(),
+                                GetSolverBlockSize1D()>>>
                              (uxyz_sgxyz.GetRawDeviceData(),
                               dt_rho0_sg);
 
@@ -1189,8 +1245,8 @@ void TCUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x(
   // take the 3D iFFT
   FFT.Compute_FFT_3D_C2R(ux_sgx);
 
-  CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                                             CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x<<<GetSolverGridSize3D(),
+                                                             GetSolverBlockSize3D()>>>
                                                           (ux_sgx.GetRawDeviceData(),
                                                            dt_rho0_sgx,
                                                            dxudxn_sgx.GetRawDeviceData());
@@ -1245,8 +1301,8 @@ void TCUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y(
   // take the 3D iFFT
   FFT.Compute_FFT_3D_C2R(uy_sgy);
 
-  CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                                             CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y<<<GetSolverGridSize3D(),
+                                                             GetSolverBlockSize3D()>>>
                                                           (uy_sgy.GetRawDeviceData(),
                                                            dt_rho0_sgy,
                                                            dyudyn_sgy.GetRawDeviceData());
@@ -1300,8 +1356,8 @@ void TCUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z(
   // take the D iFFT
   FFT.Compute_FFT_3D_C2R(uz_sgz);
 
-  CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                                             CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z<<<GetSolverGridSize3D(),
+                                                             GetSolverBlockSize3D()>>>
                                                           (uz_sgz.GetRawDeviceData(),
                                                            dt_rho0_sgz,
                                                            dzudzn_sgz.GetRawDeviceData());
@@ -1407,8 +1463,8 @@ void TCUDAImplementations::Compute_ddx_kappa_fft_p(TRealMatrix         & X_Matri
   // Compute FFT of X
   FFT_X.Compute_FFT_3D_R2C(X_Matrix);
 
-  CUDACompute_ddx_kappa_fft_p<<<CUDATuner->GetNumberOfBlocksFor3DComplex(),
-                                CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_ddx_kappa_fft_p<<<GetSolverComplexGridSize3D(),
+                                GetSolverBlockSize3D()>>>
                              (reinterpret_cast<float2 *>(FFT_X.GetRawDeviceData()),
                               reinterpret_cast<float2 *>( FFT_Y.GetRawDeviceData()),
                               reinterpret_cast<float2 *>( FFT_Z.GetRawDeviceData()),
@@ -1513,8 +1569,8 @@ void TCUDAImplementations::Compute_duxyz_uniform(TCUFFTComplexMatrix & FFT_X,
                                                  const TComplexMatrix& ddy_k_shift_neg,
                                                  const TComplexMatrix& ddz_k_shift_neg)
 {
-  CUDACompute_duxyz_uniform<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                              CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_duxyz_uniform<<<GetSolverGridSize3D(),
+                              GetSolverBlockSize3D()>>>
                           (reinterpret_cast<float2 *>(FFT_X.GetRawDeviceData()),
                            reinterpret_cast<float2 *>(FFT_Y.GetRawDeviceData()),
                            reinterpret_cast<float2 *>(FFT_Z.GetRawDeviceData()),
@@ -1580,8 +1636,8 @@ void TCUDAImplementations::Compute_duxyz_non_uniform(TRealMatrix      & duxdx,
                                                      const TRealMatrix& dyudyn,
                                                      const TRealMatrix& dzudzn)
 {
-  CUDACompute_duxyz_non_linear<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                 CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_duxyz_non_linear<<<GetSolverGridSize3D(),
+                                 GetSolverBlockSize3D()>>>
                               (duxdx.GetRawDeviceData(),
                                duydy.GetRawDeviceData(),
                                duzdz.GetRawDeviceData(),
@@ -1680,8 +1736,8 @@ void TCUDAImplementations::Calculate_p0_source_add_initial_pressure(TRealMatrix 
 {
   if (c2_shift == 0)
   {
-    CUDACalculate_p0_source_add_initial_pressure<<<CUDATuner->GetNumberOfBlocksFor1D(),
-                                                   CUDATuner->GetNumberOfThreadsFor1D()>>>
+    CUDACalculate_p0_source_add_initial_pressure<<<GetSolverGridSize1D(),
+                                                   GetSolverBlockSize1D()>>>
                                                 (p.GetRawDeviceData(),
                                                  rhox.GetRawDeviceData(),
                                                  rhoy.GetRawDeviceData(),
@@ -1692,8 +1748,8 @@ void TCUDAImplementations::Calculate_p0_source_add_initial_pressure(TRealMatrix 
 
   if (c2_shift == 1)
   {
-    CUDACalculate_p0_source_add_initial_pressure<<<CUDATuner->GetNumberOfBlocksFor1D(),
-                                                   CUDATuner->GetNumberOfThreadsFor1D()>>>
+    CUDACalculate_p0_source_add_initial_pressure<<<GetSolverGridSize1D(),
+                                                   GetSolverBlockSize1D()>>>
                                                 (p.GetRawDeviceData(),
                                                  rhox.GetRawDeviceData(),
                                                  rhoy.GetRawDeviceData(),
@@ -1788,8 +1844,8 @@ void TCUDAImplementations::Compute_rhoxyz_nonlinear_homogeneous(TRealMatrix     
   const float dt2 = 2.0f * dt;
   const float dt_rho0 = rho0 * dt;
 
-  CUDACompute_rhoxyz_nonlinear_homogeneous<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                             CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_rhoxyz_nonlinear_homogeneous<<<GetSolverGridSize3D(),
+                                             GetSolverBlockSize3D()>>>
                                           (rhox.GetRawDeviceData(),
                                            rhoy.GetRawDeviceData(),
                                            rhoz.GetRawDeviceData(),
@@ -1888,8 +1944,8 @@ void TCUDAImplementations::Compute_rhoxyz_nonlinear_heterogeneous(TRealMatrix&  
                                                                   const float        dt,
                                                                   const TRealMatrix& rho0)
 {
-  CUDACompute_rhoxyz_nonlinear_heterogeneous<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                               CUDATuner->GetNumberOfThreadsFor3D() >>>
+  CUDACompute_rhoxyz_nonlinear_heterogeneous<<<GetSolverGridSize3D(),
+                                               GetSolverBlockSize3D() >>>
                                               (rhox.GetRawDeviceData(),
                                                rhoy.GetRawDeviceData(),
                                                rhoz.GetRawDeviceData(),
@@ -1982,8 +2038,8 @@ void TCUDAImplementations::Compute_rhoxyz_linear_homogeneous(TRealMatrix      & 
 {
   const float dt_rho0 = rho0 * dt;
 
-  CUDACompute_rhoxyz_linear_homogeneous<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                          CUDATuner->GetNumberOfThreadsFor3D() >>>
+  CUDACompute_rhoxyz_linear_homogeneous<<<GetSolverGridSize3D(),
+                                          GetSolverBlockSize3D() >>>
                                       (rhox.GetRawDeviceData(),
                                        rhoy.GetRawDeviceData(),
                                        rhoz.GetRawDeviceData(),
@@ -2074,8 +2130,8 @@ void TCUDAImplementations::Compute_rhoxyz_linear_heterogeneous(TRealMatrix      
                                                                const float        dt,
                                                                const TRealMatrix& rho0)
 {
-  CUDACompute_rhoxyz_linear_heterogeneous<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                            CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDACompute_rhoxyz_linear_heterogeneous<<<GetSolverGridSize3D(),
+                                            GetSolverBlockSize3D()>>>
                                          (rhox.GetRawDeviceData(),
                                           rhoy.GetRawDeviceData(),
                                           rhoz.GetRawDeviceData(),
@@ -2180,8 +2236,8 @@ void TCUDAImplementations::Calculate_SumRho_BonA_SumDu(TRealMatrix      & rho_su
                                                        const float*       rho0_matrix,
                                                        const size_t       rho0_shift)
 {
-  CUDACalculate_SumRho_BonA_SumDu<<<CUDATuner->GetNumberOfBlocksFor1D(),
-                                    CUDATuner->GetNumberOfThreadsFor1D()>>>
+  CUDACalculate_SumRho_BonA_SumDu<<<GetSolverGridSize1D(),
+                                    GetSolverBlockSize1D()>>>
                                 (rho_sum.GetRawDeviceData(),
                                  BonA_sum.GetRawDeviceData(),
                                  du_sum.GetRawDeviceData(),
@@ -2257,8 +2313,8 @@ void TCUDAImplementations::Compute_Absorb_nabla1_2(TCUFFTComplexMatrix& FFT_1,
                                                    const TRealMatrix  & absorb_nabla1,
                                                    const TRealMatrix  & absorb_nabla2)
 {
-  CUDACompute_Absorb_nabla1_2<<<CUDATuner->GetNumberOfBlocksFor1D(),
-                                CUDATuner->GetNumberOfThreadsFor1D()>>>
+  CUDACompute_Absorb_nabla1_2<<<GetSolverGridSize1D(),
+                                GetSolverBlockSize1D()>>>
                             (reinterpret_cast<float2 *> (FFT_1.GetRawDeviceData()),
                              reinterpret_cast<float2 *> (FFT_2.GetRawDeviceData()),
                              absorb_nabla1.GetRawDeviceData(),
@@ -2340,8 +2396,8 @@ void TCUDAImplementations::Sum_Subterms_nonlinear(TRealMatrix      & p,
                                                   const float      * eta_matrix,
                                                   const size_t       tau_eta_shift)
 {
-  CUDASum_Subterms_nonlinear<<<CUDATuner->GetNumberOfBlocksFor1D(),
-                               CUDATuner->GetNumberOfThreadsFor1D()>>>
+  CUDASum_Subterms_nonlinear<<<GetSolverGridSize1D(),
+                               GetSolverBlockSize1D()>>>
                             (p.GetRawDeviceData(),
                              BonA_temp.GetRawDeviceData(),
                              c2_scalar,
@@ -2430,8 +2486,8 @@ void TCUDAImplementations::Sum_Subterms_linear(TRealMatrix      & p,
                                                const float      * eta_matrix,
                                                const size_t       tau_eta_shift)
 {
-  CUDASum_Subterms_linear<<<CUDATuner->GetNumberOfBlocksFor1D(),
-                            CUDATuner->GetNumberOfThreadsFor1D() >>>
+  CUDASum_Subterms_linear<<<GetSolverGridSize1D(),
+                            GetSolverBlockSize1D() >>>
                         (p.GetRawDeviceData(),
                          Absorb_tau_temp.GetRawDeviceData(),
                          Absorb_eta_temp.GetRawDeviceData(),
@@ -2524,8 +2580,8 @@ void TCUDAImplementations::Sum_new_p_nonlinear_lossless(TRealMatrix      & p,
                                                         const float      * rho0_matrix,
                                                         const size_t       rho0_shift)
 {
-  CUDASum_new_p_nonlinear_lossless<<<CUDATuner->GetNumberOfBlocksFor1D(),
-                                     CUDATuner->GetNumberOfThreadsFor1D()>>>
+  CUDASum_new_p_nonlinear_lossless<<<GetSolverGridSize1D(),
+                                     GetSolverBlockSize1D()>>>
                                   (p.GetRawDeviceData(),
                                    rhox.GetRawDeviceData(),
                                    rhoy.GetRawDeviceData(),
@@ -2610,8 +2666,8 @@ void TCUDAImplementations::Calculate_SumRho_SumRhoDu(TRealMatrix      & Sum_rhox
                                                      const float      * rho0_matrix,
                                                      const size_t       rho0_shift)
 {
-   CUDACalculate_SumRho_SumRhoDu<<<CUDATuner->GetNumberOfBlocksFor1D(),
-                                   CUDATuner->GetNumberOfThreadsFor1D()>>>
+   CUDACalculate_SumRho_SumRhoDu<<<GetSolverGridSize1D(),
+                                   GetSolverBlockSize1D()>>>
                                 (Sum_rhoxyz.GetRawDeviceData(),
                                  Sum_rho0_du.GetRawDeviceData(),
                                  rhox.GetRawDeviceData(),
@@ -2671,8 +2727,8 @@ void TCUDAImplementations::Sum_new_p_linear_lossless(TRealMatrix      & p,
                                                      const float      * c2_matrix,
                                                      const size_t       c2_shift)
 {
-  CUDASum_new_p_linear_lossless<<<CUDATuner->GetNumberOfBlocksFor1D(),
-                                  CUDATuner->GetNumberOfThreadsFor1D()>>>
+  CUDASum_new_p_linear_lossless<<<GetSolverGridSize1D(),
+                                  GetSolverBlockSize1D()>>>
                                (p.GetRawDeviceData(),
                                 rhox.GetRawDeviceData(),
                                 rhoy.GetRawDeviceData(),
@@ -2714,7 +2770,10 @@ __global__ void cudaTrasnposeReal3DMatrixXYSquare(float       * OutputData,
 {
   // this size is fixed shared memory
   // we transpose 4 tiles of 32*32 at the same time, +1 solves bank conflicts
-  __shared__ float shared_tile[4][32][32+1];
+  ///@todo - do I need volatile??
+  ///@todo - What about Warp shuffle?
+  ///@todo http://www.pixel.io/blog/2013/3/25/fast-matrix-transposition-on-kepler-without-using-shared-mem.html
+  volatile __shared__ float shared_tile[4][32][32+1];
 
   // run over all slabs, one block per slab
   for (auto slabIdx = blockIdx.x; slabIdx < Dimensions.z; slabIdx += gridDim.x)
@@ -2785,7 +2844,7 @@ __global__ void cudaTrasnposeReal3DMatrixXYRect(float       * OutputData,
 {
   // this size is fixed shared memory
   // we transpose 4 tiles of 32*32 at the same time, +1 solves bank conflicts
-  __shared__ float shared_tile[4][32][32+1];
+  volatile __shared__ float shared_tile[4][32][32+1];
 
   // run over all slabs, one block per slab
   for (auto slabIdx = blockIdx.x; slabIdx < Dimensions.z; slabIdx += gridDim.x)
@@ -2856,7 +2915,7 @@ __global__ void cudaTrasnposeReal3DMatrixXYRect(float       * OutputData,
                             (tileIdx.x   * 32)  + threadIdx.x];
       } // load
 
-      // go over the remainder tile in Y (and store only cullomns)
+      // go over the remainder tile in Y (and store only columns)
       if ((tileCount.y * 32 + threadIdx.x) < Dimensions.y)
       {
         for (auto row = 0; row < 32 ; row++)
@@ -2909,18 +2968,16 @@ void TCUDAImplementations::TrasposeReal3DMatrixXY(float       * OutputMatrixData
                                                   const float * InputMatrixData,
                                                   const dim3  & DimSizes)
 {
-  // fixed size at the moment, may be tuned based on the domain shape in the future
-
-  dim3 BlockSize {32, 4 , 1};
+  // fixed size at the moment, may be tuned based on the domain shape in the future  
   if ((DimSizes.x % 32 == 0) && (DimSizes.y % 32 == 0))
   {
-    // when the dims are multiples of 32, then use a faster implementation
-    cudaTrasnposeReal3DMatrixXYSquare<<<64,  BlockSize >>>
+    // when the dims are multiples of 32, then use a faster implementation    
+    cudaTrasnposeReal3DMatrixXYSquare<<<GetSolverTransposeGirdSize(),GetSolverTransposeBlockSize()  >>>
                               (OutputMatrixData, InputMatrixData, DimSizes);
   }
   else
   {
-    cudaTrasnposeReal3DMatrixXYRect<<<64,  BlockSize >>>
+    cudaTrasnposeReal3DMatrixXYRect<<<GetSolverTransposeGirdSize(), GetSolverTransposeBlockSize() >>>
                               (OutputMatrixData, InputMatrixData, DimSizes);
   }
 
@@ -2958,7 +3015,7 @@ __global__ void cudaTrasnposeReal3DMatrixXZSquare(float       * OutputData,
 {
   // this size is fixed shared memory
   // we transpose 4 tiles of 32*32 at the same time, +1 solves bank conflicts
-  __shared__ float shared_tile[4][32][32+1];
+  volatile __shared__ float shared_tile[4][32][32+1];
 
   // run over all XZ slabs, one block per slab
   for (auto row = blockIdx.x; row < Dimensions.y; row += gridDim.x)
@@ -3026,7 +3083,7 @@ __global__ void cudaTrasnposeReal3DMatrixXZRect(float       * OutputData,
 {
   // this size is fixed shared memory
   // we transpose 4 tiles of 32*32 at the same time, +1 solves bank conflicts
-  __shared__ float shared_tile[4][32][32+1];
+  volatile __shared__ float shared_tile[4][32][32+1];
 
   // run over all XZ slabs, one block per slab
   for (auto row = blockIdx.x; row < Dimensions.y; row += gridDim.x)
@@ -3154,17 +3211,16 @@ __global__ void cudaTrasnposeReal3DMatrixXZRect(float       * OutputData,
 void TCUDAImplementations::TrasposeReal3DMatrixXZ(float       * OutputMatrixData,
                                                   const float * InputMatrixData,
                                                   const dim3  & DimSizes)
-{
-  dim3 BlockSize {32, 4 , 1};
+{ 
   if ((DimSizes.x % 32 == 0) && (DimSizes.y % 32 == 0))
   {
     // when the dims are multiples of 32, then use a faster implementation
-    cudaTrasnposeReal3DMatrixXZSquare<<<64,  BlockSize >>>
+    cudaTrasnposeReal3DMatrixXZSquare<<<GetSolverTransposeGirdSize(), GetSolverTransposeBlockSize() >>>
                               (OutputMatrixData, InputMatrixData, DimSizes);
   }
   else
   {
-    cudaTrasnposeReal3DMatrixXZRect<<<64,  BlockSize >>>
+    cudaTrasnposeReal3DMatrixXZRect<<<GetSolverTransposeGirdSize(), GetSolverTransposeBlockSize() >>>
                               (OutputMatrixData, InputMatrixData, DimSizes);
   }
 
@@ -3219,8 +3275,8 @@ __global__ void CUDAComputeVelocityShiftInX(float2       * FFT_shift_temp,
 void TCUDAImplementations::ComputeVelocityShiftInX(TCUFFTComplexMatrix  & FFT_shift_temp,
                                                    const TComplexMatrix & x_shift_neg_r)
 {
-  CUDAComputeVelocityShiftInX<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDAComputeVelocityShiftInX<<<GetSolverGridSize3D(),
+                                GetSolverBlockSize3D()>>>
                              (reinterpret_cast<float2 *>       (FFT_shift_temp.GetRawDeviceData()),
                               reinterpret_cast<const float2 *> (x_shift_neg_r.GetRawDeviceData()));
   // check for errors
@@ -3275,8 +3331,8 @@ __global__ void CUDAComputeVelocityShiftInY(float2       * FFT_shift_temp,
 void TCUDAImplementations::ComputeVelocityShiftInY(TCUFFTComplexMatrix  & FFT_shift_temp,
                                                    const TComplexMatrix & y_shift_neg_r)
 {
-  CUDAComputeVelocityShiftInY<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDAComputeVelocityShiftInY<<<GetSolverGridSize3D(),
+                                GetSolverBlockSize3D()>>>
                              (reinterpret_cast<float2 *>       (FFT_shift_temp.GetRawDeviceData()),
                               reinterpret_cast<const float2 *> (y_shift_neg_r.GetRawDeviceData()));
   // check for errors
@@ -3330,8 +3386,8 @@ __global__ void CUDAComputeVelocityShiftInZ(float2       * FFT_shift_temp,
 void TCUDAImplementations::ComputeVelocityShiftInZ(TCUFFTComplexMatrix  & FFT_shift_temp,
                                                    const TComplexMatrix & z_shift_neg_r)
 {
-  CUDAComputeVelocityShiftInZ<<<CUDATuner->GetNumberOfBlocksFor3D(),
-                                CUDATuner->GetNumberOfThreadsFor3D()>>>
+  CUDAComputeVelocityShiftInZ<<<GetSolverGridSize3D(),
+                                GetSolverBlockSize3D()>>>
                              (reinterpret_cast<float2 *>       (FFT_shift_temp.GetRawDeviceData()),
                               reinterpret_cast<const float2 *> (z_shift_neg_r.GetRawDeviceData()));
   // check for errors

@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August   2011, 12:34 (created) \n
- *              17 December 2014, 13:18 (revised)
+ *              10 February 2016, 13:53 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -204,17 +204,21 @@ TErrorMessage KSpaceFirstOrder3DSolver_ERR_FMT_CheckpointDimensionsDoNotMatch
 TErrorMessage KSpaceFirstOrder3DSolver_ERR_FMT_OutputDimensionsDoNotMatch
   = "Error: The dimensions [%ld, %ld, %ld] of the output file don't match the simulation dimensions [%ld, %ld, %ld]!\n";
 
-//----------------------------------- CUDATuner Class  -----------------------//
 
+//------------------------------ CUDAParameters Class  -----------------------//
 /// CUDATuner error message
-TErrorMessage CUDATuner_ERR_FMT_WrongDeviceIdx    = "Error: Wrong CUDA device idx %d. Allowed devices 0-%d!\n";
+TErrorMessage CUDAParameters_ERR_FMT_WrongDeviceIdx    = "GPU Error: Wrong CUDA device idx %d. Allowed devices 0-%d!\n";
 /// CUDATuner error message
-TErrorMessage CUDATuner_ERR_FMT_NoFreeDevice      = "Error: All CUDA-capable devices are busy or unavailable!\n";
+TErrorMessage CUDAParameters_ERR_FMT_NoFreeDevice      = "GPU Error: All CUDA-capable devices are busy or unavailable!\n";
 /// CUDATuner error message
-TErrorMessage CUDATuner_ERR_FMT_DeviceIsBusy      = "Error: CUDA device idx %d is busy or unavailable! \n";
-/// CUDATuner error message
-TErrorMessage CUDATuner_ERR_FMT_InvalidDimensions = "Error: Invalid simulation dimensions (zero when generating the execution model)!\n";
+TErrorMessage CUDAParameters_ERR_FMT_DeviceIsBusy      = "GPU Error: CUDA device idx %d is busy or unavailable! \n";
 
+/// CUDAParameters error message
+TErrorMessage CUDAParameters_ERR_FMT_InsufficientCUDADriver = "GPU Error: Insufficient CUDA driver version! (The code needs CUDA version %d.%d but %d.%d is installed.)";
+/// CUDAParameters error message
+TErrorMessage CUDAParameters_ERR_FM_CannotReadCUDAVersion   = "GPU Error: Insufficient CUDA driver version! \n Install the latest drivers.";
+/// CUDAParameters error message
+TErrorMessage CUDAParameters_ERR_FM_GPUNotSupported         = "GPU Error: CUDA device idx %d is not supported by this k-Wave build.\n";
 #endif	/* ERRORMESSAGES_H */
 
 

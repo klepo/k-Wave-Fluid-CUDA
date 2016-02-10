@@ -119,13 +119,6 @@ Optional parameters:
   -g <device_number>              : GPU device to run on
                                       (default = device with most  memory)
 
-  --BlockSize1D <num_threads>     : Run 1D CUDA kernels with block size
-                                      (default is 256 threads per block)
-  --BlockSize3D <num_threads_x>   : Run 3D CUDA kernels with block size
-                <num_threads_y>        in x, y and z dimensions");
-                <num_threads_z>       (default is x=256 y=1 z=1 threads
-                                       per block)");
-
   -r <interval_in_%>              : Progress print interval
                                       (default = 5%)
   -c <comp_level>                 : Output file compression level <0,9>
@@ -220,16 +213,8 @@ class TCommandLineParameters
     std::string GetCheckpointFileName() const {return CheckpointFileName;};
 
 
-    /// Get GPU device ID
+    /// Get GPU device ID specified by the user (not necessary the one the code runs on)
     int GetGPUDeviceIdx()               const {return GPUDeviceIdx;};
-    /// Get size of 1D block
-    int GetBlockSize1D()                const {return BlockSize1D;};
-    /// Get X size of 3D block
-    int GetBlockSize3DX()               const {return BlockSize3DX;};
-    /// Get Y size of 3D block
-    int GetBlockSize3DY()               const {return BlockSize3DY;};
-    /// Get Z size of 3D block
-    int GetBlockSize3DZ()               const {return BlockSize3DZ;};
 
     /// Is --benchmark flag set?
     bool IsBenchmarkFlag()              const {return BenchmarkFlag;};
@@ -315,14 +300,6 @@ class TCommandLineParameters
 
     /// id of selected GPU devices.
     int GPUDeviceIdx;
-    /// size of 1D block.
-    int BlockSize1D;
-    /// x size of 3D block.
-    int BlockSize3DX;
-    /// y size of 3D block.
-    int BlockSize3DY;
-    /// z size of 3D block.
-    int BlockSize3DZ;
 
     /// VerboseInterval value.
     size_t VerboseInterval;

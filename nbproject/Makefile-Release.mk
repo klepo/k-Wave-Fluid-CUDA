@@ -21,7 +21,7 @@ FC=gfortran
 AS=as
 
 # Macros
-CND_PLATFORM=CUDA-Linux-x86
+CND_PLATFORM=CUDA-Linux
 CND_DLIB_EXT=so
 CND_CONF=Release
 CND_DISTDIR=dist
@@ -36,7 +36,6 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/CUDA/CUDAImplementations.o \
-	${OBJECTDIR}/CUDA/CUDATuner.o \
 	${OBJECTDIR}/Containers/MatrixContainer.o \
 	${OBJECTDIR}/Containers/MatrixRecord.o \
 	${OBJECTDIR}/Containers/OutputStreamContainer.o \
@@ -53,6 +52,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o \
 	${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o \
 	${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o \
+	${OBJECTDIR}/Parameters/CUDAParameters.o \
 	${OBJECTDIR}/Parameters/CommandLineParameters.o \
 	${OBJECTDIR}/Parameters/Parameters.o \
 	${OBJECTDIR}/main.o
@@ -62,8 +62,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=
-CXXFLAGS=
+CCFLAGS=-Xcompiler="-fopenmp -mavx" --resource-usage -arch=compute_52 -code=sm_52
+CXXFLAGS=-Xcompiler="-fopenmp -mavx" --resource-usage -arch=compute_52 -code=sm_52
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -72,11 +72,15 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=-L/usr/local/hdf5-serial/lib -L/usr/local/cuda/lib64 /usr/local/hdf5-serial/lib/libhdf5_hl.a /usr/local/hdf5-serial/lib/libhdf5.a -lz -lcufft
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
 	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda
+
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: /usr/local/hdf5-serial/lib/libhdf5_hl.a
+
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: /usr/local/hdf5-serial/lib/libhdf5.a
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
@@ -84,108 +88,87 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: ${OBJECTFILES}
 
 ${OBJECTDIR}/CUDA/CUDAImplementations.o: CUDA/CUDAImplementations.cu 
 	${MKDIR} -p ${OBJECTDIR}/CUDA
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CUDA/CUDAImplementations.o CUDA/CUDAImplementations.cu
-
-${OBJECTDIR}/CUDA/CUDATuner.o: CUDA/CUDATuner.cpp 
-	${MKDIR} -p ${OBJECTDIR}/CUDA
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CUDA/CUDATuner.o CUDA/CUDATuner.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/CUDA/CUDAImplementations.o CUDA/CUDAImplementations.cu
 
 ${OBJECTDIR}/Containers/MatrixContainer.o: Containers/MatrixContainer.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Containers
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Containers/MatrixContainer.o Containers/MatrixContainer.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/Containers/MatrixContainer.o Containers/MatrixContainer.cpp
 
 ${OBJECTDIR}/Containers/MatrixRecord.o: Containers/MatrixRecord.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Containers
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Containers/MatrixRecord.o Containers/MatrixRecord.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/Containers/MatrixRecord.o Containers/MatrixRecord.cpp
 
 ${OBJECTDIR}/Containers/OutputStreamContainer.o: Containers/OutputStreamContainer.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Containers
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Containers/OutputStreamContainer.o Containers/OutputStreamContainer.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/Containers/OutputStreamContainer.o Containers/OutputStreamContainer.cpp
 
 ${OBJECTDIR}/HDF5/HDF5_File.o: HDF5/HDF5_File.cpp 
 	${MKDIR} -p ${OBJECTDIR}/HDF5
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/HDF5/HDF5_File.o HDF5/HDF5_File.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/HDF5/HDF5_File.o HDF5/HDF5_File.cpp
 
 ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o: KSpaceSolver/KSpaceFirstOrder3DSolver.cpp 
 	${MKDIR} -p ${OBJECTDIR}/KSpaceSolver
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o KSpaceSolver/KSpaceFirstOrder3DSolver.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o KSpaceSolver/KSpaceFirstOrder3DSolver.cpp
 
 ${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o: MatrixClasses/BaseFloatMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o MatrixClasses/BaseFloatMatrix.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o MatrixClasses/BaseFloatMatrix.cpp
 
 ${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o: MatrixClasses/BaseIndexMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o MatrixClasses/BaseIndexMatrix.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o MatrixClasses/BaseIndexMatrix.cpp
 
 ${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o: MatrixClasses/CUFFTComplexMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o MatrixClasses/CUFFTComplexMatrix.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o MatrixClasses/CUFFTComplexMatrix.cpp
 
 ${OBJECTDIR}/MatrixClasses/ComplexMatrix.o: MatrixClasses/ComplexMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/ComplexMatrix.o MatrixClasses/ComplexMatrix.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/ComplexMatrix.o MatrixClasses/ComplexMatrix.cpp
 
 ${OBJECTDIR}/MatrixClasses/IndexMatrix.o: MatrixClasses/IndexMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/IndexMatrix.o MatrixClasses/IndexMatrix.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/IndexMatrix.o MatrixClasses/IndexMatrix.cpp
 
 ${OBJECTDIR}/MatrixClasses/RealMatrix.o: MatrixClasses/RealMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MatrixClasses/RealMatrix.o MatrixClasses/RealMatrix.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/RealMatrix.o MatrixClasses/RealMatrix.cpp
 
 ${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o: OutputHDF5Streams/BaseOutputHDF5Stream.cpp 
 	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o OutputHDF5Streams/BaseOutputHDF5Stream.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o OutputHDF5Streams/BaseOutputHDF5Stream.cpp
 
 ${OBJECTDIR}/OutputHDF5Streams/CuboidOutputHDF5Stream.o: OutputHDF5Streams/CuboidOutputHDF5Stream.cpp 
 	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OutputHDF5Streams/CuboidOutputHDF5Stream.o OutputHDF5Streams/CuboidOutputHDF5Stream.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/CuboidOutputHDF5Stream.o OutputHDF5Streams/CuboidOutputHDF5Stream.cpp
 
 ${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o: OutputHDF5Streams/IndexOutputHDF5Stream.cpp 
 	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o OutputHDF5Streams/IndexOutputHDF5Stream.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o OutputHDF5Streams/IndexOutputHDF5Stream.cpp
 
 ${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o: OutputHDF5Streams/OutputStreamsCUDAKernels.cu 
 	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o OutputHDF5Streams/OutputStreamsCUDAKernels.cu
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o OutputHDF5Streams/OutputStreamsCUDAKernels.cu
 
 ${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o: OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp 
 	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp
+
+${OBJECTDIR}/Parameters/CUDAParameters.o: Parameters/CUDAParameters.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Parameters
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/Parameters/CUDAParameters.o Parameters/CUDAParameters.cpp
 
 ${OBJECTDIR}/Parameters/CommandLineParameters.o: Parameters/CommandLineParameters.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Parameters
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Parameters/CommandLineParameters.o Parameters/CommandLineParameters.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/Parameters/CommandLineParameters.o Parameters/CommandLineParameters.cpp
 
 ${OBJECTDIR}/Parameters/Parameters.o: Parameters/Parameters.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Parameters
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Parameters/Parameters.o Parameters/Parameters.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/Parameters/Parameters.o Parameters/Parameters.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/main.o main.cpp
 
 # Subprojects
 .build-subprojects:
@@ -197,8 +180,3 @@ ${OBJECTDIR}/main.o: main.cpp
 
 # Subprojects
 .clean-subprojects:
-
-# Enable dependency checking
-.dep.inc: .depcheck-impl
-
-include .dep.inc

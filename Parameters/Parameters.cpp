@@ -41,10 +41,9 @@
 #include <stdexcept>
 
 #include <Parameters/Parameters.h>
+#include <Parameters/CUDAParameters.h>
 #include <Utils/MatrixNames.h>
 #include <Utils/ErrorMessages.h>
-
-#include <CUDA/CUDATuner.h>
 
 
 using namespace std;
@@ -94,6 +93,10 @@ void TParameters::ParseCommandLine(int argc, char** argv)
 
   CommandLinesParameters.ParseCommandLine(argc, argv);
 
+  // this must be here to read the GPU parameters and report a potential error
+  int DeviceIdx = CommandLinesParameters.GetGPUDeviceIdx();
+  CUDAParameters.SelectDevice(DeviceIdx); // throws an exception when wrong
+
   if (CommandLinesParameters.IsVersion())
   {
     return;
@@ -116,35 +119,6 @@ void TParameters::ParseCommandLine(int argc, char** argv)
     CommandLinesParameters.PrintUsageAndExit();
   }
 
-
-  // CUDA Tuner?
-  ///@todo Should this be really here?
-  TCUDATuner* Tuner = TCUDATuner::GetInstance();
-
-  int DeviceIdx = CommandLinesParameters.GetGPUDeviceIdx();
-  Tuner->SetDevice(DeviceIdx); // throws an exception when wrong
-
-  Tuner->SetBlockSize1D(CommandLinesParameters.GetBlockSize1D());
-
-  Tuner->SetBlockSize3D(CommandLinesParameters.GetBlockSize3DX(),
-                        CommandLinesParameters.GetBlockSize3DY(),
-                        CommandLinesParameters.GetBlockSize3DZ());
-
-  bool device_can_use_block_sizes = Tuner->CanDeviceHandleBlockSizes();
-
-  if(!device_can_use_block_sizes)
-  {
-    fprintf(stderr,
-            CUDA_ERR_FMT_BadBlocksSize,
-            DeviceIdx,
-
-            CommandLinesParameters.GetBlockSize1D(),
-            CommandLinesParameters.GetBlockSize3DX(),
-            CommandLinesParameters.GetBlockSize3DY(),
-            CommandLinesParameters.GetBlockSize3DZ());
-
-    exit(EXIT_FAILURE);
-  }
 }// end of ParseCommandLine
 //----------------------------------------------------------------------------
 
@@ -484,6 +458,7 @@ void TParameters::SaveScalarsToHDF5File(THDF5_File & HDF5_OutputFile)
  * Constructor
  */
 TParameters::TParameters() :
+        CUDAParameters(),
         HDF5_InputFile(), HDF5_OutputFile(), HDF5_CheckpointFile(), HDF5_FileHeader(),
         CommandLinesParameters(),
         Nt(0), t_index(0), dt(0.0f),

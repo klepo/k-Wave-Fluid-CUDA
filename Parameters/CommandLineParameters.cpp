@@ -72,8 +72,6 @@ TCommandLineParameters::TCommandLineParameters() :
         #endif
 
         GPUDeviceIdx(-1), // default is undefined -1
-        BlockSize1D(256), // needs to be done differently
-        BlockSize3DX(32), BlockSize3DY(8), BlockSize3DZ(1),
 
         VerboseInterval(DefaultVerboseInterval),
         CompressionLevel(DefaultCompressionLevel),
@@ -112,14 +110,6 @@ void TCommandLineParameters::PrintUsageAndExit()
 
   printf("  -g <device_number>              : GPU device to run on\n");
   printf("                                      (default = device with most memory)\n");
-
-  printf("  --BlockSize1D <num_threads>     : Run 1D CUDA kernels with block size \n");
-  printf("                                      (default is 256 threads per block)\n");
-  printf("  --BlockSize3D <num_threads_x>,  : Run 3D CUDA kernels with block size\n");
-  printf("                <num_threads_y>,       in x, y and z dimensions\n");
-  printf("                <num_threads_z>       (default is x=256 y=1 z=1 threads\n");
-  printf("                                      per block)\n");
-  printf("\n");
 
   printf("  -r Progress_report_interval_in_%%: Progress print interval\n");
   printf("                                      (default = %ld%%)\n",DefaultVerboseInterval);
@@ -183,25 +173,6 @@ void TCommandLineParameters::PrintSetup()
 
   printf("  GPU device number     %d\n", GPUDeviceIdx);
 
-  if (BlockSize1D == 0)
-  {
-    printf("  1D Block Size   =     default\n");
-  }
-  else
-  {
-    printf("  1D Block Size   =     %d\n", BlockSize1D);
-  }
-
-  if (BlockSize3DX == 0 || BlockSize3DY == 0 || BlockSize3DZ == 0)
-  {
-    printf("  3D Block Size   =     default\n");
-  }
-  else
-  {
-    printf("  3D Block Size X =     %d\n", BlockSize3DX);
-    printf("                Y =     %d\n", BlockSize3DY);
-    printf("                Z =     %d\n", BlockSize3DZ);
-  }
   printf("\n");
 
   printf("  Verbose interval[%%]      %ld\n", VerboseInterval);
@@ -254,9 +225,6 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
 
   const struct option longOpts[] =
   {
-    { "BlockSize1D",          required_argument, NULL, 0 },
-    { "BlockSize3D",          required_argument, NULL, 0 },
-
     { "benchmark",            required_argument, NULL, 0},
     { "help",                 no_argument, NULL,      'h'},
     { "version",              no_argument, NULL, 0 },
@@ -438,7 +406,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         if(strcmp("version", longOpts[longIndex].name) == 0)
         {
           PrintVersion = true;
-          return;
+          break;
         }
 
         if(strcmp("p_rms", longOpts[longIndex].name) == 0)
@@ -525,37 +493,6 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           CopySensorMask = true;
           break;
         }
-
-        if(strcmp("BlockSize1D",longOpts[longIndex].name) == 0)
-        {
-          if(optarg == NULL || atoi(optarg)<0)
-          {
-            PrintUsageAndExit();
-          }
-          BlockSize1D = atoi(optarg);
-          break;
-        }
-
-        if(strcmp("BlockSize3D",longOpts[longIndex].name) == 0)
-        {
-          string x,y,z;
-          std::istringstream liness(optarg);
-          getline(liness,x,',');
-          getline(liness,y,',');
-          getline(liness,z,',');
-          if (atoi(x.c_str()) == 0 &&
-              atoi(y.c_str()) == 0 &&
-              atoi(z.c_str()) == 0)
-          {
-            PrintUsageAndExit();
-          }
-
-          BlockSize3DX = atoi(x.c_str());
-          BlockSize3DY = atoi(y.c_str());
-          BlockSize3DZ = atoi(z.c_str());
-          break;
-        }
-
         //else
         PrintUsageAndExit();
         break;
@@ -567,6 +504,8 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
       }
     }
   }
+
+  if (PrintVersion) return;
 
   //-- Post checks --//
   if (InputFileName == "")
