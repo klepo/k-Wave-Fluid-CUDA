@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August     2011, 12:34 (created) \n
- *              06 November   2014, 14:46 (revised)
+ *              10 February   2016, 13:53 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -39,7 +39,13 @@
 
 using namespace std;
 
-#ifdef __AVX__
+#ifdef __AVX2__
+/**
+ * @var DATA_ALIGNMENT
+ * @brief memory alignment for AVX(32B)
+ */
+const int DATA_ALIGNMENT  = 32;
+#elif __AVX__
 /**
  * @var DATA_ALIGNMENT
  * @brief memory alignment for AVX(32B)

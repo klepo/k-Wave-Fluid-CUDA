@@ -8,7 +8,7 @@
 # * 
 # * @Tool        kspaceFirstOrder3D 3.4
 # * @Created     02 December  2014, 12:32 
-# * @LastModif   18 December  2014, 14:09
+# * @LastModif   10 February  2016, 14:36
 #
 # * @License: 
 # * This file is part of the C++ extension of the k-Wave Toolbox
@@ -89,21 +89,35 @@ KWAVE_GIT_HASH=$(shell git rev-parse HEAD)
 ############################## NVCC + GNU g++ ###################################
 CXX = nvcc
  
-# Set compiler flags and header files directories
-CXXFLAGS = -Xcompiler="-mtune=native -march=native -O3 -fopenmp -ffast-math -fassociative-math" \
-           -std=c++11  -I$(HDF5_DIR)/include  -I. -Xptxas -v   -ccbin=g++-4.8 -arch=compute_52 -code=sm_52
-  
-LDFLAGS  = -Xcompiler="-fopenmp" -Xlinker="-rpath,$(HDF5_DIR)/lib:$(CUDA_DIR)/lib64" -std=c++11  -L$(HDF5_DIR)/lib  -L$(CUDA_DIR)/lib64 
-#LIBS     = -lhdf5 -lhdf5_hl -lz -lcufft
-LIBS	  = $(HDF5_DIR)/lib/libhdf5_hl.a 	\
-            $(HDF5_DIR)/lib/libhdf5.a		\
-            -lz -lcufft
 
+# Set compiler flags and header files directories
+CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math -msse2" \
+           -std=c++11  -I$(HDF5_DIR)/include  -I. --resource-usage  -ccbin=g++-4.8 \
+	    --generate-code arch=compute_20,code=sm_20	\
+	    --generate-code arch=compute_20,code=sm_21	\
+	    --generate-code arch=compute_30,code=sm_30	\
+	    --generate-code arch=compute_32,code=sm_32	\
+	    --generate-code arch=compute_35,code=sm_35	\
+	    --generate-code arch=compute_37,code=sm_37	\
+	    --generate-code arch=compute_50,code=sm_50	\
+	    --generate-code arch=compute_52,code=sm_52	\
+	    --generate-code arch=compute_53,code=sm_53	
+
+
+  
+LDFLAGS  = -Xcompiler="-fopenmp" -Xlinker="-rpath,$(HDF5_DIR)/lib:$(CUDA_DIR)/lib64" -std=c++11  -L$(HDF5_DIR)/lib  -L$(CUDA_DIR)/lib64
+#LIBS     = -lhdf5 -lhdf5_hl -lz -lcufft 
 #LIBS	  = $(HDF5_DIR)/lib/libhdf5_hl.a 	\
 #            $(HDF5_DIR)/lib/libhdf5.a		\
-#            $(CUDA_DIR)/lib64/libcufft_static.a \
-#            $(CUDA_DIR)/lib64/libcufftw_static.a \
-#	    -lz -ldl
+#            -lz -lcufft
+
+LIBS	  = $(HDF5_DIR)/lib/libhdf5_hl.a 	\
+            $(HDF5_DIR)/lib/libhdf5.a		\
+            $(CUDA_DIR)/lib64/libcufft_static.a \
+            $(CUDA_DIR)/lib64/libculibos.a \
+            $(CUDA_DIR)/lib64/libculibos.a \
+            $(CUDA_DIR)/lib64/libcudart_static.a \
+	    -lz -ldl
 
   
 
@@ -115,7 +129,6 @@ all:		$(TARGET)
 
 
 $(TARGET):	CUDA/CUDAImplementations.o \
-		CUDA/CUDATuner.o \
 		Containers/MatrixContainer.o \
 		Containers/MatrixRecord.o \
 		Containers/OutputStreamContainer.o \
@@ -134,12 +147,12 @@ $(TARGET):	CUDA/CUDAImplementations.o \
 		OutputHDF5Streams/OutputStreamsCUDAKernels.o \
 		Parameters/CommandLineParameters.o \
 		Parameters/Parameters.o \
+		Parameters/CUDAParameters.o \
 		main.o
 
 
 	$(CXX) $(LDFLAGS) main.o	\
 		CUDA/CUDAImplementations.o \
-		CUDA/CUDATuner.o \
 		Containers/MatrixContainer.o \
 		Containers/MatrixRecord.o \
 		Containers/OutputStreamContainer.o \
@@ -158,6 +171,7 @@ $(TARGET):	CUDA/CUDAImplementations.o \
 		OutputHDF5Streams/OutputStreamsCUDAKernels.o \
 		Parameters/CommandLineParameters.o \
 		Parameters/Parameters.o \
+		Parameters/CUDAParameters.o \
 		$(LIBS)			\
 		-o $@
 

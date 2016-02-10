@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              08 July     2015, 16:45 (revised)
+ *              10 February 2016, 13:24 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -267,9 +267,8 @@ void TKSpaceFirstOrder3DSolver::Compute()
   //@todo  take look a this
   cuda_implementations = TCUDAImplementations::GetInstance();
 
-  // Set up kernel sizes (default grid and block sizes)
-  cuda_implementations->SetUpExecutionModelWithTuner(Parameters->GetFullDimensionSizes(),
-                                                     Parameters->GetReducedDimensionSizes());
+  // Set kernel configurations
+  Parameters->CUDAParameters.SetKernelConfiguration();
 
   // Set up constant memory - copy over to GPU
   cuda_implementations->SetUpDeviceConstants(Parameters->GetFullDimensionSizes(),
@@ -284,7 +283,25 @@ void TKSpaceFirstOrder3DSolver::Compute()
   fprintf(stdout,"Current Device memory in use: %3ldMB\n", GetDeviceMemoryUsageInMB());
   fprintf(stdout,"Elapsed time:             %8.2fs\n",      PreProcessingTime.GetElapsedTime());
 
+  /*
+   *@todo - add this as level 2 of verbosity
+  fprintf(stdout,
+          "1D configuration [Blocks, Threads]: [%d, %d]\n",
+          Parameters->CUDAParameters.GetSolverGridSize1D(),
+          Parameters->CUDAParameters.GetSolverBlockSize1D());
 
+  fprintf(stdout,
+          "3D Grid configuration : [X, Y, Z]: [%d, %d, %d]\n",
+          Parameters->CUDAParameters.GetSolverGridSize3D().x,
+          Parameters->CUDAParameters.GetSolverGridSize3D().y,
+          Parameters->CUDAParameters.GetSolverGridSize3D().z);
+
+  fprintf(stdout,
+          "3D Block configuration : [X, Y, Z]: [%d, %d, %d]\n",
+          Parameters->CUDAParameters.GetSolverBlockSize3D().x,
+          Parameters->CUDAParameters.GetSolverBlockSize3D().y,
+          Parameters->CUDAParameters.GetSolverBlockSize3D().z);
+*/
   SimulationTime.Start();
     ComputeMainLoop();
   SimulationTime.Stop();
@@ -337,12 +354,12 @@ void TKSpaceFirstOrder3DSolver::Compute()
  */
 void TKSpaceFirstOrder3DSolver::PrintParametersOfSimulation(FILE * file)
 {
-  fprintf(file, "Domain dims:     [%4ld, %4ld, %4ld]\n",
+  fprintf(file, "Domain dims:     [%4lu, %4lu, %4lu]\n",
                 Parameters->GetFullDimensionSizes().X,
                 Parameters->GetFullDimensionSizes().Y,
                 Parameters->GetFullDimensionSizes().Z);
 
-  fprintf(file,"Simulation time steps:  %11ld\n", Parameters->Get_Nt());
+  fprintf(file,"Simulation time steps:  %lu\n", Parameters->Get_Nt());
 }// end of PrintParametersOfTask
 //------------------------------------------------------------------------------
 
@@ -425,10 +442,6 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense(FILE * file)
   #ifdef __INTEL_COMPILER
     fprintf(file,"| Compiler name:    Intel C++ %d                   |\n", __INTEL_COMPILER);
   #endif
-  #ifdef __NVCC__
-    fprintf(file,"| Compiler name:    Nvidia CUDA %d                    |\n", __NVCC__);
-  #endif
-
       // instruction set
   #if (defined (__AVX2__))
     fprintf(file,"| Instruction set:  Intel AVX 2                      |\n");
@@ -445,7 +458,54 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense(FILE * file)
   #endif
 
   fprintf(file,"|                                                    |\n");
-  fprintf(file,"| Copyright (C) 2014 Jiri Jaros, Bradley Treeby and  |\n");
+
+ // CUDA detection
+  int cudaRuntimeVersion;
+  if (cudaRuntimeGetVersion(&cudaRuntimeVersion) != cudaSuccess)
+  {
+    fprintf(file,"| GPU Runtime:      N/A                              |\n");
+  }
+  else
+  {
+    fprintf(file,"| GPU Runtime:      %d.%d                              |\n",
+            cudaRuntimeVersion/1000, (cudaRuntimeVersion%100)/10);
+  }
+
+  int cudaDriverVersion;
+  cudaDriverGetVersion(&cudaDriverVersion);
+  fprintf(file,"| CUDA Driver:      %d.%d                              |\n",
+          cudaDriverVersion/1000, (cudaDriverVersion%100)/10);
+
+
+  // no GPU was found
+  if (Parameters->CUDAParameters.GetDeviceIdx() == -1)
+  {
+    fprintf(file,"| CUDA code arch:   N/A                              |\n");
+    fprintf(file,"|                                                    |\n");
+
+    fprintf(file,"| CUDA Device Idx:  N/A                              |\n");
+    fprintf(file,"| CUDA Device Name: N/A                              |\n");
+    fprintf(file,"| CUDA Capability:  N/A                              |\n");
+  }
+  else
+  {
+    fprintf(file,"| CUDA code arch:   %1.1f                              |\n",
+            cuda_implementations->GetCUDACodeVersion()/10.f);
+    fprintf(file,"|                                                    |\n");
+
+    fprintf(file,"| CUDA Device Idx:  %d                                |\n",
+            Parameters->CUDAParameters.GetDeviceIdx());
+
+    int paddingLength = 54 - ( 22 +   strlen(Parameters->CUDAParameters.GetDeviceName().c_str()));
+    fprintf(file,"| CUDA Device Name: %s %.*s| \n",
+            Parameters->CUDAParameters.GetDeviceName().c_str(),paddingLength,"                                        ");
+
+    fprintf(file,"| CUDA Capability:  %d.%d                              |\n",
+            Parameters->CUDAParameters.GetDeviceProperties().major, Parameters->CUDAParameters.GetDeviceProperties().minor);
+  }
+
+  fprintf(file,"|                                                    |\n");
+  fprintf(file,"| Copyright (C) 2015 Jiri Jaros, Bradley Treeby and  |\n");
   fprintf(file,"|                    Beau Johnston                   |\n");
   fprintf(file,"| http://www.k-wave.org                              |\n");
   fprintf(file,"+----------------------------------------------------+\n");

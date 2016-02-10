@@ -11,7 +11,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        27 January   2015, 17:21 (created) \n
- *              09 February  2015, 20:39 (revised)
+ *              10 February  2016, 13:26 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -39,14 +39,14 @@
 
 #include <OutputHDF5Streams/OutputStreamsCUDAKernels.h>
 
+#include <Parameters/Parameters.h>
+
 using namespace std;
 
 //----------------------------------------------------------------------------//
 //                                Constants                                   //
 //----------------------------------------------------------------------------//
 
-constexpr int CUDANumOfThreads = 256;
-constexpr int CUDANumOfBlocks  = 64;
 
 //----------------------------------------------------------------------------//
 //--------------------------------- Macros -----------------------------------//
@@ -84,6 +84,27 @@ inline void gpuAssert(cudaError_t code,
 //----------------------------------------------------------------------------//
 
 /**
+ * Get Sampler CUDA Block size
+ * @return CUDA block size
+ */
+int GetSamplerBlockSize()
+{
+  return TParameters::GetInstance()->CUDAParameters.GetSamplerBlockSize1D();
+}// end of GetSamplerBlockSize
+//------------------------------------------------------------------------------
+
+
+/**
+ * Get sampler CUDA grid size
+ * @return CUDA grid size
+ */
+int GetSamplerGridSize()
+{
+  return TParameters::GetInstance()->CUDAParameters.GetSamplerGridSize1D();
+}// end of GetSamplerGridSize
+//------------------------------------------------------------------------------
+
+/**
  * Get X coordinate for 3D CUDA block
  * @return X coordinate for 3D CUDA block
  */
@@ -98,7 +119,7 @@ inline __device__ size_t GetX()
  * @return X stride for 3D CUDA block
  */
 inline __device__ size_t GetX_Stride()
-{
+{ 
   return blockDim.x * gridDim.x;
 }// end of GetX_Stride
 //------------------------------------------------------------------------------
@@ -149,7 +170,7 @@ void OutputStreamsCUDAKernels::SampleRawIndex(      float  * SamplingBuffer,
                                               const size_t * SensorData,
                                               const size_t   NumberOfSamples)
 {
-  CUDASampleRawIndex<<<CUDANumOfBlocks,CUDANumOfThreads>>>
+  CUDASampleRawIndex<<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
                    (SamplingBuffer,
                     SourceData,
                     SensorData,
@@ -193,7 +214,7 @@ void OutputStreamsCUDAKernels::SampleMaxIndex(      float  * SamplingBuffer,
                                               const size_t * SensorData,
                                               const size_t   NumberOfSamples)
 {
- CUDASampleMaxIndex<<<CUDANumOfBlocks,CUDANumOfThreads>>>
+ CUDASampleMaxIndex<<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
                    (SamplingBuffer,
                     SourceData,
                     SensorData,
@@ -239,7 +260,7 @@ void OutputStreamsCUDAKernels::SampleMinIndex(      float  * SamplingBuffer,
                                               const size_t * SensorData,
                                               const size_t   NumberOfSamples)
 {
-  CUDASampleMinIndex<<<CUDANumOfBlocks,CUDANumOfThreads>>>
+  CUDASampleMinIndex<<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
                    (SamplingBuffer,
                     SourceData,
                     SensorData,
@@ -286,7 +307,7 @@ void OutputStreamsCUDAKernels::SampleRMSIndex(      float  * SamplingBuffer,
                                               const size_t * SensorData,
                                               const size_t   NumberOfSamples)
 {
-  CUDASampleRMSIndex<<<CUDANumOfBlocks,CUDANumOfThreads>>>
+  CUDASampleRMSIndex<<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
                    (SamplingBuffer,
                     SourceData,
                     SensorData,
@@ -388,7 +409,7 @@ void OutputStreamsCUDAKernels::SampleRawCuboid(      float  * SamplingBuffer,
                                                const dim3     DimensionSizes,
                                                const size_t   NumberOfSamples)
 {
-  CUDASampleRawCuboid<<<CUDANumOfBlocks,CUDANumOfThreads>>>
+  CUDASampleRawCuboid<<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
                    (SamplingBuffer,
                     SourceData,
                     TopLeftCorner,
@@ -448,7 +469,7 @@ void OutputStreamsCUDAKernels::SampleMaxCuboid(      float  * SamplingBuffer,
                                                const dim3     DimensionSizes,
                                                const size_t   NumberOfSamples)
 {
-  CUDASampleMaxCuboid<<<CUDANumOfBlocks,CUDANumOfThreads>>>
+  CUDASampleMaxCuboid<<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
                    (SamplingBuffer,
                     SourceData,
                     TopLeftCorner,
@@ -508,7 +529,7 @@ void OutputStreamsCUDAKernels::SampleMinCuboid(      float  * SamplingBuffer,
                                                const dim3     DimensionSizes,
                                                const size_t   NumberOfSamples)
 {
-  CUDASampleMinCuboid<<<CUDANumOfBlocks,CUDANumOfThreads>>>
+  CUDASampleMinCuboid<<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
                    (SamplingBuffer,
                     SourceData,
                     TopLeftCorner,
@@ -569,7 +590,7 @@ void OutputStreamsCUDAKernels::SampleRMSCuboid(      float  * SamplingBuffer,
                                                const dim3     DimensionSizes,
                                                const size_t   NumberOfSamples)
 {
-  CUDASampleRMSCuboid<<<CUDANumOfBlocks,CUDANumOfThreads>>>
+  CUDASampleRMSCuboid<<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
                    (SamplingBuffer,
                     SourceData,
                     TopLeftCorner,
@@ -618,7 +639,7 @@ void OutputStreamsCUDAKernels::SampleMaxAll(      float  * SamplingBuffer,
                                             const float  * SourceData,
                                             const size_t   NumberOfSamples)
 {
-  CUDASampleMaxAll<<<CUDANumOfBlocks,CUDANumOfThreads>>>
+  CUDASampleMaxAll<<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
                  (SamplingBuffer,
                   SourceData,
                   NumberOfSamples);
@@ -657,7 +678,7 @@ void OutputStreamsCUDAKernels::SampleMinAll(      float  * SamplingBuffer,
                                             const float  * SourceData,
                                             const size_t   NumberOfSamples)
 {
-  CUDASampleMinAll<<<CUDANumOfBlocks,CUDANumOfThreads>>>
+  CUDASampleMinAll<<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
                  (SamplingBuffer,
                   SourceData,
                   NumberOfSamples);
@@ -696,7 +717,7 @@ void OutputStreamsCUDAKernels::SampleRMSAll(      float  * SamplingBuffer,
                                             const float  * SourceData,
                                             const size_t   NumberOfSamples)
 {
-  CUDASampleRMSAll<<<CUDANumOfBlocks,CUDANumOfThreads>>>
+  CUDASampleRMSAll<<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
                  (SamplingBuffer,
                   SourceData,
                   NumberOfSamples);
@@ -739,7 +760,7 @@ void OutputStreamsCUDAKernels::PostProcessingRMS(      float  * SamplingBuffer,
                                                  const float    ScalingCoeff,
                                                  const size_t   NumberOfSamples)
 {
-  CUDAPostProcessingRMS<<<CUDANumOfBlocks,CUDANumOfThreads>>>
+  CUDAPostProcessingRMS<<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
                        (SamplingBuffer,
                         ScalingCoeff,
                         NumberOfSamples);

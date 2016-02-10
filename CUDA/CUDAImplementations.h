@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 March    2013, 13:10 (created) \n
- *              08 July     2015, 16:06 (revised)
+ *              10 February 2016, 13:11 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -42,7 +42,9 @@
 #include <MatrixClasses/CUFFTComplexMatrix.h>
 
 #include <Utils/DimensionSizes.h>
-#include <CUDA/CUDATuner.h>
+
+#include <Parameters/Parameters.h>
+#include <Parameters/CUDAParameters.h>
 
 /**
  * @class TCUDAImplementations
@@ -95,15 +97,13 @@ class TCUDAImplementations
   /// Destructor - may be virtual (once we merge OMP and CUDA).
   virtual ~TCUDAImplementations();
 
-  /// Set up execution model with tuner - block and threads - take a look
-  void SetUpExecutionModelWithTuner(const TDimensionSizes& FullDimensionSizes,
-                                    const TDimensionSizes& ReducedDimensionSizes);
-
   /// Set up constant memory
   void SetUpDeviceConstants(const TDimensionSizes& FullDimensionSizes,
                             const TDimensionSizes& ReducedDimensionSizes);
 
 
+  /// Get the CUDA architecture and GPU code version the code was compiled with
+  int GetCUDACodeVersion();
 
   //----------------------- ux calculation------------------------------------//
 
@@ -429,15 +429,77 @@ class TCUDAImplementations
 
   private:
     /// Default constructor for a singleton class
-    TCUDAImplementations() : CUDATuner(NULL)  {};
+    TCUDAImplementations() {};
+
+    /**
+     * Get block size for 1D kernels
+     * @return 1D block size
+     */
+    int GetSolverBlockSize1D() const
+    {
+      return TParameters::GetInstance()->CUDAParameters.GetSolverBlockSize1D();
+    };
+
+    /**
+     * Get grid size for 1D kernels
+     * @return 1D grid size
+     */
+    int GetSolverGridSize1D() const
+    {
+      return TParameters::GetInstance()->CUDAParameters.GetSolverGridSize1D();
+    };
+
+    /**
+     * Get block size for 3D kernels
+     * @return 3D size
+     */
+    dim3 GetSolverBlockSize3D() const
+    {
+      return TParameters::GetInstance()->CUDAParameters.GetSolverBlockSize3D();
+    };
+
+    /**
+     * Get grid size for 3D kernels
+     * @return 3D grid size
+     */
+    dim3 GetSolverGridSize3D() const
+    {
+      return TParameters::GetInstance()->CUDAParameters.GetSolverGridSize3D();
+    };
+
+    /**
+     * Get grid size for complex 3D kernels
+     * @return 3D grid size
+     */
+    dim3 GetSolverComplexGridSize3D() const
+    {
+      return TParameters::GetInstance()->CUDAParameters.GetSolverComplexGridSize3D();
+    };
+
+
+    /**
+     * Get block size for the transposition kernels
+     * @return 3D grid size
+     */
+    dim3 GetSolverTransposeBlockSize() const
+    {
+      return TParameters::GetInstance()->CUDAParameters.GetSolverTransposeBlockSize();
+    };
+
+    /**
+     * Get grid size for complex 3D kernels
+     * @return 3D grid size
+     */
+    dim3 GetSolverTransposeGirdSize() const
+    {
+      return TParameters::GetInstance()->CUDAParameters.GetSolverTransposeGirdSize();
+    };
 
     /// Singleton instance flag
     static bool InstanceFlag;
     /// Singleton instance
     static TCUDAImplementations *Instance;
 
-    /// Pointer to CUDA tuner with parameters
-    TCUDATuner* CUDATuner;
 };
 
 #endif /* CUDA_IMPLEMENTATIONS_H */

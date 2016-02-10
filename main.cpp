@@ -9,8 +9,8 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July     2012, 10:57 (created) \n
- *              08 July     2015, 17:03 (revised)
- * 
+ *              10 February 2016, 13:10 (revised)
+ *
  *
  *
  *
@@ -632,7 +632,7 @@ These are only defined if (p_source_flag == 1)
 `p_rms'                         (Nsens, 1, 1)      `float'      `real'          if (--p_rms)
 `p_max'                         (Nsens, 1, 1)      `float'      `real'          if (--p_max)
 `p_final'                       (Nx, Ny, Nz)       `float'      `real'          if (--p_final)
---------------------------------------------------------------------------------------------------------------
+---------------------------------------z-----------------------------------------------------------------------
 5.2 Simulation Results - Particle Velocity
 --------------------------------------------------------------------------------------------------------------
 `ux'                            (Nsens, Nt - s, 1) `float'      `real'          if (-u) || (--u_raw)
@@ -699,25 +699,44 @@ int main(int argc, char** argv)
   // Create parameters and parse command line
   TParameters* Parameters = TParameters::GetInstance();
 
-  Parameters->ParseCommandLine(argc, argv);
-  if (Parameters->IsVersion())
+  try
   {
-    KSpaceSolver.PrintFullNameCodeAndLicense(stdout);
-    return EXIT_SUCCESS;
+    fprintf(stdout, "Selected GPU device id:   ");
+    fflush(stdout);
+   // parse commandline and set GPU
+    Parameters->ParseCommandLine(argc, argv);
+
+    fprintf(stdout, "%9d\n", Parameters->CUDAParameters.GetDeviceIdx());
+    fprintf(stdout,
+          "GPU Device info: %18s\n",
+          Parameters->CUDAParameters.GetDeviceName().c_str());
+
+    // Must be here, after the GPU was acquired
+    if (Parameters->IsVersion())
+    {
+      KSpaceSolver.PrintFullNameCodeAndLicense(stdout);
+      return EXIT_SUCCESS;
+    }
   }
+  catch (exception &e)
+  {
+    // must be repeated in case the GPU we want to printout the codeversion
+    // and all GPUs are busy
+    if (Parameters->IsVersion())
+    {
+      KSpaceSolver.PrintFullNameCodeAndLicense(stdout);
+    }
+
+    fprintf(stdout, "\nK-Wave panic in initialisation: \n %s\n", e.what());
+    return EXIT_FAILURE;
+  }
+
 
   // set number of threads and bind them to cores
   #ifdef _OPENMP
     KSpaceSolver.SetProcessorAffinity();
     omp_set_num_threads(Parameters->GetNumberOfThreads());
   #endif
-
-  // CUDA Tuner from Beau's code. Not sure what this is
-  TCUDATuner* Tuner = TCUDATuner::GetInstance();
-  fprintf(stdout, "Selected GPU device id:   %9d\n", Tuner->GetDevice());
-  fprintf(stdout,
-          "GPU Device info: %18s\n",
-          Tuner->GetDeviceName().c_str());
 
   fprintf(stdout,
           "Number of CPU threads:    %9ld\n",

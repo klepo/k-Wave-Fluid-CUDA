@@ -35,6 +35,7 @@
 
 #include <string>
 
+#include <Parameters/CUDAParameters.h>
 #include <Parameters/CommandLineParameters.h>
 #include <Utils/DimensionSizes.h>
 #include <HDF5/HDF5_File.h>
@@ -253,6 +254,9 @@ class TParameters
 
     /// is --copy_mask set
     bool IsCopySensorMask()            const {return CommandLinesParameters.IsCopySensorMask();};
+
+    /// Class with CUDA Parameters (runtime setup)
+    TCUDAParameters CUDAParameters;
 
     /// Handle to the input HDF5 file.
     THDF5_File HDF5_InputFile;
