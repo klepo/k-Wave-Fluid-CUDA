@@ -35,6 +35,7 @@
 #include <cuda_runtime.h>
 
 #include <Parameters/CUDAParameters.h>
+#include <Parameters/CUDADeviceConstants.cuh>
 #include <Parameters/Parameters.h>
 
 #include <Utils/ErrorMessages.h>
@@ -44,15 +45,15 @@
 
 
 /**
- * Constructor 
+ * Constructor
  */
 TCUDAParameters::TCUDAParameters() :
         DeviceIdx(DefaultDeviceIdx),
         SolverBlockSize1D(UndefinedSize), SolverGridSize1D(UndefinedSize),
-        SolverBlockSize3D(UndefinedSize), 
+        SolverBlockSize3D(UndefinedSize),
         SolverGridSize3D (UndefinedSize), SolverComplexGridSize3D(UndefinedSize),
         SolverTransposeBlockSize(UndefinedSize), SolverTransposeGirdSize(UndefinedSize),
-        SamplerBlockSize1D(UndefinedSize), SamplerGridSize1D(UndefinedSize),            
+        SamplerBlockSize1D(UndefinedSize), SamplerGridSize1D(UndefinedSize),
         DeviceProperties()
 {
 }// end of default constructor
@@ -104,8 +105,8 @@ inline void gpuAssert(cudaError_t code,
 //----------------------------------------------------------------------------//
 
 /**
- * Select cuda device for execution. If no device is specified, the first free is 
- * chosen. The routine also checks whether the CUDA runtime and driver version 
+ * Select cuda device for execution. If no device is specified, the first free is
+ * chosen. The routine also checks whether the CUDA runtime and driver version
  * match and whether the GPU is supported by the code.
  * If there is no free device is present, the code terminates
  * @param [in] DeviceIdx - Device index (default -1)
@@ -114,9 +115,9 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
 {
 
   // check CUDA driver version and if not sufficient, terminate
-  CheckCUDAVersion(); 
-  
-  this->DeviceIdx = DeviceIdx; 
+  CheckCUDAVersion();
+
+  this->DeviceIdx = DeviceIdx;
 
   //choose the GPU device with the most global memory
   int NumOfDevices;
@@ -128,19 +129,19 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
   if (DeviceIdx == DefaultDeviceIdx)
   {
     bool DeviceFound = false;
-   
+
     for (int testDevice = 0; testDevice < NumOfDevices; testDevice++)
     {
       // try to set the GPU and reset it
-      lastError = cudaSetDevice(testDevice);      
+      lastError = cudaSetDevice(testDevice);
       //printf("\ncudaSetDevice for Idx   %d \t Error id %d \t error message \"%s\" \n", testDevice, lastError,  cudaGetErrorString(lastError));
-      
+
       lastError = cudaDeviceReset();
       //printf("cudaDeviceReset for Idx %d \t Error id %d \t error message \"%s\" \n", testDevice, lastError, cudaGetErrorString(lastError));
-      
+
       lastError = cudaGetLastError();
-      //printf("GetLastError after Reset for Idx %d \t Error id %d \t error message \"%s\" \n", testDevice, lastError, cudaGetErrorString(lastError));      
-      
+      //printf("GetLastError after Reset for Idx %d \t Error id %d \t error message \"%s\" \n", testDevice, lastError, cudaGetErrorString(lastError));
+
       // Reset was done properly, test CUDA code version
       if (lastError == cudaSuccess)
       {
@@ -148,7 +149,7 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
         bool cudaCodeVersionOK = CheckCUDACodeVersion();
         lastError = cudaGetLastError();
         //printf("CheckCUDACodeVersion for Idx %d \t Error id %d \t error message %s \n", testDevice, lastError, cudaGetErrorString(lastError));
-               
+
         if (cudaCodeVersionOK && (lastError == cudaSuccess))
         {
           // acquirte the GPU
@@ -157,11 +158,11 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
           break;
         }
       }
-            
+
       // GPU was busy, reset and continue
-      lastError = cudaDeviceReset();      
-      //printf("cudaDeviceReset after unsuccessful allocation Idx %d \t Error id %d \t error message \"%s\" \n", testDevice, lastError, cudaGetErrorString(lastError));                  
-      
+      lastError = cudaDeviceReset();
+      //printf("cudaDeviceReset after unsuccessful allocation Idx %d \t Error id %d \t error message \"%s\" \n", testDevice, lastError, cudaGetErrorString(lastError));
+
       //clear last error
       cudaGetLastError();
     }
@@ -186,128 +187,186 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
     // set the device and copy it's properties
     lastError = cudaSetDevice(this->DeviceIdx);
     //printf("\ncudaSetDevice for Idx   %d \t Error id %d \t error message \"%s\" \n", this->DeviceIdx, lastError,  cudaGetErrorString(lastError));
-     
+
     lastError = cudaDeviceReset();
     //printf("cudaDeviceReset for Idx %d \t Error id %d \t error message \"%s\" \n", this->DeviceIdx, lastError, cudaGetErrorString(lastError));
-    
+
     lastError = cudaGetLastError();
-    //printf("GetLastError after Reset for Idx %d \t Error id %d \t error message \"%s\" \n", this->DeviceIdx, lastError, cudaGetErrorString(lastError));      
+    //printf("GetLastError after Reset for Idx %d \t Error id %d \t error message \"%s\" \n", this->DeviceIdx, lastError, cudaGetErrorString(lastError));
 
     bool cudaCodeVersionOK = CheckCUDACodeVersion();
     lastError = cudaGetLastError();
     //printf("CheckCUDACodeVersion for Idx %d \t Error id %d \t error message %s \n", this->DeviceIdx, lastError, cudaGetErrorString(lastError));
-    
+
     if ((lastError != cudaSuccess) || (!cudaCodeVersionOK))
     {
       lastError = cudaDeviceReset();
       //printf("cudaDeviceReset for Idx %d \t Error id %d \t error message \"%s\" \n", this->DeviceIdx, lastError, cudaGetErrorString(lastError));
-    
+
       char ErrorMessage[256];
       sprintf(ErrorMessage, CUDAParameters_ERR_FMT_DeviceIsBusy, this->DeviceIdx);
       throw std::runtime_error(ErrorMessage);
-    }        
+    }
   }
 
   // Read the device that was allocated
   gpuErrchk(cudaGetDevice(&this->DeviceIdx));
-  gpuErrchk(cudaGetLastError());    
-  
+  gpuErrchk(cudaGetLastError());
+
   // Reset the device to be able to set the flags
   gpuErrchk(cudaDeviceReset());
-  gpuErrchk(cudaGetLastError());    
-  
+  gpuErrchk(cudaGetLastError());
+
   // Enable mapped memory
   gpuErrchk(cudaSetDeviceFlags(cudaDeviceMapHost));
 
     // Get Device name
-  gpuErrchk(cudaGetDeviceProperties(&DeviceProperties, this->DeviceIdx));  
-  
+  gpuErrchk(cudaGetDeviceProperties(&DeviceProperties, this->DeviceIdx));
+
   /// Check the GPU version
   if (!CheckCUDACodeVersion())
   {
     char ErrorMessage[256];
     sprintf(ErrorMessage, CUDAParameters_ERR_FM_GPUNotSupported, this->DeviceIdx);
     throw std::runtime_error(ErrorMessage);
-  }    
+  }
 }// end of SelectCUDADevice
 //------------------------------------------------------------------------------
 
 
 /**
- * Set kernel configuration. 
+ * Set kernel configuration.
  * Based on the dimension sizes, sensors masks, and the GPU architecture, adequate
  * CUDA kernel configurations are selected.
  */
 void TCUDAParameters::SetKernelConfiguration()
 {
   TParameters * Parameters = TParameters::GetInstance();
-  
+
   TDimensionSizes FullDims(Parameters->GetFullDimensionSizes());
-    
+
   // Set kernel configuration for 1D kernels
-  // The goal here is to have blocks of size 256 threads and at least 8 x times 
-  // more blocks than SM processors - This gives us full potential on all 
-  // Fermi, Kepler, Maxwell still not compromising the maximum number of blocks 
+  // The goal here is to have blocks of size 256 threads and at least 8 x times
+  // more blocks than SM processors - This gives us full potential on all
+  // Fermi, Kepler, Maxwell still not compromising the maximum number of blocks
   // and threads.
-        
+
   SolverBlockSize1D = 256;
-  // Grid size is calculated based on the number of SM processors  
+  // Grid size is calculated based on the number of SM processors
   SolverGridSize1D  = DeviceProperties.multiProcessorCount * 8;
-  
+
   // the grid size is to small, get 1 gridpoint per thread
-  if ((size_t(SolverGridSize1D) * size_t(SolverBlockSize1D)) > FullDims.GetElementCount())  
+  if ((size_t(SolverGridSize1D) * size_t(SolverBlockSize1D)) > FullDims.GetElementCount())
   {
     SolverGridSize1D  = int((FullDims.GetElementCount()  + size_t(SolverBlockSize1D) - 1 ) / size_t(SolverBlockSize1D));
   }
-  
+
   // Now solve 3D kernel size
   // 3D block has a shape of 1x8x32 which yield the best performance
-  // there will always be a single block in X, then 4 in Y and Z will be set 
-  // accordingly to the number of SMs to get the total number of blocks 8 times 
-  // higher than the number of SMs   
+  // there will always be a single block in X, then 4 in Y and Z will be set
+  // accordingly to the number of SMs to get the total number of blocks 8 times
+  // higher than the number of SMs
   SolverBlockSize3D =  dim3(32,8,1);
 
-  SolverGridSize3D = (DeviceProperties.multiProcessorCount > 1) 
+  SolverGridSize3D = (DeviceProperties.multiProcessorCount > 1)
                      ? dim3(1,4, DeviceProperties.multiProcessorCount * 2)
                      : dim3(1,2,4);
- 
-  SolverComplexGridSize3D  = (DeviceProperties.multiProcessorCount > 1) 
+
+  SolverComplexGridSize3D  = (DeviceProperties.multiProcessorCount > 1)
                       ?  dim3(1,4, DeviceProperties.multiProcessorCount * 2)
                       :  dim3(1,2,4);
 
-  
 
-  
+
+
   // Transposition works by processing for tiles of 32x32 by 4 warps. Every block
   // is responsible for one 2D slab.
   // Block size for the transposition kernels (only 128 threads)
   SolverTransposeBlockSize = dim3(32, 4 , 1);
   // Grid size for the transposition kernels
   SolverTransposeGirdSize = dim3(DeviceProperties.multiProcessorCount * 16, 1, 1);
-  
-  
+
+
   // Set configuration for Streaming kernels. We always use 1D kernels of 256 threads
-  // and create as many blocks as necessary to fully utilise the GPU. 
-  // The size of the grid is only tuned for linear sensor mask, 
-  // since in this execution phase, we don't 
+  // and create as many blocks as necessary to fully utilise the GPU.
+  // The size of the grid is only tuned for linear sensor mask,
+  // since in this execution phase, we don't
   // know how many elements there are in the cuboid sensor mask
-  SamplerBlockSize1D = 256;    
-  
+  SamplerBlockSize1D = 256;
+
   SamplerGridSize1D  = DeviceProperties.multiProcessorCount * 8;
-  
+
   // tune number of blocks for index based sensor mask
   if (Parameters->Get_sensor_mask_type() == TParameters::TSensorMaskType::smt_index)
   {
     // the sensor mask is smaller than 2048 * SMs than use a smaller number of blocks
-    if ((size_t(SamplerGridSize1D) * size_t(SamplerBlockSize1D)) > Parameters->Get_sensor_mask_index_size())  
+    if ((size_t(SamplerGridSize1D) * size_t(SamplerBlockSize1D)) > Parameters->Get_sensor_mask_index_size())
     {
-      SamplerGridSize1D  = int((Parameters->Get_sensor_mask_index_size()  + size_t(SamplerBlockSize1D) - 1 ) 
+      SamplerGridSize1D  = int((Parameters->Get_sensor_mask_index_size()  + size_t(SamplerBlockSize1D) - 1 )
                                / size_t(SamplerBlockSize1D));
-    }    
-  }     
-  
+    }
+  }
+
 }// end of SetKernelConfiguration
 //------------------------------------------------------------------------------
+
+
+
+
+/**
+ * Upload useful simulation constants into device constant memory
+ */
+void TCUDAParameters::SetUpDeviceConstants()
+{
+   TCUDADeviceConstants ConstantsToTransfer;
+
+   TParameters * Params = TParameters::GetInstance();
+   TDimensionSizes  FullDimensionSizes = Params->GetFullDimensionSizes();
+   TDimensionSizes  ReducedDimensionSizes = Params->GetReducedDimensionSizes();
+
+  // Set values for constant memory
+  ConstantsToTransfer.Nx  = FullDimensionSizes.X;
+  ConstantsToTransfer.Ny  = FullDimensionSizes.Y;
+  ConstantsToTransfer.Nz  = FullDimensionSizes.Z;
+  ConstantsToTransfer.TotalElementCount = FullDimensionSizes.GetElementCount();
+  ConstantsToTransfer.SlabSize = FullDimensionSizes.X * FullDimensionSizes.Y;
+
+  ConstantsToTransfer.Complex_Nx = ReducedDimensionSizes.X;
+  ConstantsToTransfer.Complex_Ny = ReducedDimensionSizes.Y;
+  ConstantsToTransfer.Complex_Nz = ReducedDimensionSizes.Z;
+  ConstantsToTransfer.ComplexTotalElementCount = ReducedDimensionSizes.GetElementCount();
+  ConstantsToTransfer.ComplexSlabSize = ReducedDimensionSizes.X * ReducedDimensionSizes.Y;
+
+  ConstantsToTransfer.FFTDivider  = 1.0f / FullDimensionSizes.GetElementCount();
+  ConstantsToTransfer.FFTDividerX = 1.0f / FullDimensionSizes.X;
+  ConstantsToTransfer.FFTDividerY = 1.0f / FullDimensionSizes.Y;
+  ConstantsToTransfer.FFTDividerZ = 1.0f / FullDimensionSizes.Z;
+
+
+
+  ConstantsToTransfer.dt  = Params->Get_dt();
+  ConstantsToTransfer.dt2 = Params->Get_dt() * 2.0f;
+  ConstantsToTransfer.dt_rho0_scalar  = Params->Get_rho0_scalar() * Params->Get_dt();
+  ConstantsToTransfer.rho0_sgx_scalar = Params->Get_rho0_sgx_scalar();
+  ConstantsToTransfer.rho0_sgy_scalar = Params->Get_rho0_sgy_scalar(),
+  ConstantsToTransfer.rho0_sgz_scalar = Params->Get_rho0_sgz_scalar(),
+
+  /// source masks
+  ConstantsToTransfer.p_source_index_size = Params->Get_p_source_index_size();
+  ConstantsToTransfer.p_source_mode       = Params->Get_p_source_mode();
+  ConstantsToTransfer.p_source_many       = Params->Get_p_source_many();
+
+  ConstantsToTransfer.u_source_index_size = Params->Get_u_source_index_size();
+  ConstantsToTransfer.u_source_mode       = Params->Get_u_source_mode();
+  ConstantsToTransfer.u_source_many       = Params->Get_u_source_many();
+
+
+
+
+  ConstantsToTransfer.SetUpCUDADeviceConstatns();
+}// end of SetUpDeviceConstants
+//------------------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------------//
 //---------------------------------- Protected -------------------------------//
@@ -315,31 +374,31 @@ void TCUDAParameters::SetKernelConfiguration()
 
 
 /**
- * Check whether the CUDA driver version installed is sufficient for the code. 
+ * Check whether the CUDA driver version installed is sufficient for the code.
  * If anything goes wrong, throw an exception and exit/
- * @return 
- * @throw runtime_error when the CUDA driver is to old. 
+ * @return
+ * @throw runtime_error when the CUDA driver is to old.
  */
 void TCUDAParameters::CheckCUDAVersion()
 {
   int cudaRuntimeVersion;
   int cudaDriverVersion;
 
-  if (cudaRuntimeGetVersion(&cudaRuntimeVersion) != cudaSuccess) 
-  {
-    throw std::runtime_error(CUDAParameters_ERR_FM_CannotReadCUDAVersion);    
-  }
-        
-  if (cudaDriverGetVersion(&cudaDriverVersion) != cudaSuccess) 
+  if (cudaRuntimeGetVersion(&cudaRuntimeVersion) != cudaSuccess)
   {
     throw std::runtime_error(CUDAParameters_ERR_FM_CannotReadCUDAVersion);
   }
-  
+
+  if (cudaDriverGetVersion(&cudaDriverVersion) != cudaSuccess)
+  {
+    throw std::runtime_error(CUDAParameters_ERR_FM_CannotReadCUDAVersion);
+  }
+
   if (cudaDriverVersion < cudaRuntimeVersion)
-  {    
+  {
     char ErrorMessage[256];
     sprintf(ErrorMessage,
-            CUDAParameters_ERR_FMT_InsufficientCUDADriver, 
+            CUDAParameters_ERR_FMT_InsufficientCUDADriver,
             cudaRuntimeVersion / 1000, (cudaRuntimeVersion % 100) / 10,
             cudaDriverVersion  / 1000, (cudaDriverVersion  % 100) / 10);
     throw std::runtime_error(ErrorMessage);
@@ -348,7 +407,7 @@ void TCUDAParameters::CheckCUDAVersion()
 //------------------------------------------------------------------------------
 
 /**
- * 
+ *
  * @return The GPU version
  */
 bool TCUDAParameters::CheckCUDACodeVersion()
@@ -360,3 +419,4 @@ bool TCUDAParameters::CheckCUDACodeVersion()
 //----------------------------------------------------------------------------//
 //---------------------------------- Private ---------------------------------//
 //----------------------------------------------------------------------------//
+

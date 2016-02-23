@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 November 2015, 16:49 (created) \n
- *              12 November 2015, 16:49 (revised)
+ *              23 February 2016, 13:47 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -92,6 +92,9 @@ class TCUDAParameters
     void SelectDevice(const int DeviceIdx = DefaultDeviceIdx);
     /// Set kernel configurations based on the simulation parameters
     void SetKernelConfiguration();
+
+    /// Upload useful simulation constants into device constant memory
+    void SetUpDeviceConstants();
 
     /// Return properties of currently used GPU
     cudaDeviceProp GetDeviceProperties() const {return DeviceProperties;};

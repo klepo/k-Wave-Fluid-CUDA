@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 March    2013, 13:10 (created) \n
- *              10 February 2016, 13:11 (revised)
+ *              13 February 2016, 13:47 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -55,52 +55,10 @@ class TCUDAImplementations
 {
   public:
 
-    /**
-     * @struct TDeviceConstants
-     * @brief  Structure for CUDA parameters to be placed in constant memory
-     * @todo this must be moved somewhere else.
-     */
-    struct TDeviceConstants
-    {
-      /// size of X dimension.
-      size_t X_Size;
-      /// size of Y dimension.
-      size_t Y_Size;
-      /// size of Z dimension.
-      size_t Z_Size;
-      /// total number of elements.
-      size_t TotalElementCount;
-      /// 2D Slab size
-      size_t SlabSize;
-      /// size of complex X dimension.
-      size_t Complex_X_Size;
-      /// size of complex Y dimension.
-      size_t Complex_Y_Size;
-      /// size of complex Z dimension.
-      size_t Complex_Z_Size;
-      /// complex number of elements.
-      size_t ComplexTotalElementCount;
-      /// complex slab size.
-      size_t ComplexSlabSize;
-      /// normalization constant for 3D FFT.
-      float  Divider;
-      /// normalization constant for 1D FFT over X.
-      float  DividerX;
-      /// normalization constant for 1D FFT over Y.
-      float  DividerY;
-      /// normalization constant for 1D FFT over Z.
-      float  DividerZ;
-    };
-
   /// Get instance of singleton class.
   static TCUDAImplementations* GetInstance();
   /// Destructor - may be virtual (once we merge OMP and CUDA).
   virtual ~TCUDAImplementations();
-
-  /// Set up constant memory
-  void SetUpDeviceConstants(const TDimensionSizes& FullDimensionSizes,
-                            const TDimensionSizes& ReducedDimensionSizes);
-
 
   /// Get the CUDA architecture and GPU code version the code was compiled with
   int GetCUDACodeVersion();
@@ -116,13 +74,11 @@ class TCUDAImplementations
   /// Compute a new value of ux_sgx, scalar, uniform case.
   void Compute_ux_sgx_normalize_scalar_uniform(TRealMatrix      & ux_sgx,
                                                const TRealMatrix& FFT_p,
-                                               const float        dt_rho0,
                                                const TRealMatrix& pml);
 
   /// Compute a new value of ux_sgx, scalar, non-uniform case.
   void Compute_ux_sgx_normalize_scalar_nonuniform(TRealMatrix      & ux_sgx,
                                                   const TRealMatrix& FFT_p,
-                                                  const float        dt_rho0,
                                                   const TRealMatrix& dxudxn_sgx,
                                                   const TRealMatrix& pml);
 
@@ -136,13 +92,11 @@ class TCUDAImplementations
   /// Compute a new value of uy_sgy, scalar, uniform case.
   void Compute_uy_sgy_normalize_scalar_uniform(TRealMatrix      & uy_sgy,
                                                const TRealMatrix& FFT_p,
-                                               const float        dt_rho0,
                                                const TRealMatrix& pml);
 
   /// Compute a new value of uy_sgy, scalar, non-uniform case.
   void Compute_uy_sgy_normalize_scalar_nonuniform(TRealMatrix      & uy_sgy,
                                                   const TRealMatrix& FFT_p,
-                                                  const float        dt_rho0,
                                                   const TRealMatrix& dyudyn_sgy,
                                                   const TRealMatrix& pml);
 
@@ -156,13 +110,11 @@ class TCUDAImplementations
   /// Compute a new value of uz_sgz, scalar, uniform case.
   void Compute_uz_sgz_normalize_scalar_uniform(TRealMatrix      & uz_sgz,
                                                const TRealMatrix& FFT_p,
-                                               const float        dt_rho0,
                                                const TRealMatrix& pml);
 
   /// Compute a new value of uz_sgz, scalar, non-uniform case.
   void Compute_uz_sgz_normalize_scalar_nonuniform(TRealMatrix&       uz_sgz,
                                                   const TRealMatrix& FFT_p,
-                                                  const float        dt_rho0,
                                                   const TRealMatrix& dzudzn_sgz,
                                                   const TRealMatrix& pml);
 
@@ -178,9 +130,7 @@ class TCUDAImplementations
   void Add_u_source(TRealMatrix       & uxyz_sgxyz,
                     const TRealMatrix & u_source_input,
                     const TIndexMatrix& u_source_index,
-                    const size_t        t_index,
-                    const size_t        u_source_mode,
-                    const size_t        u_source_many);
+                    const size_t        t_index);
 
   /// Add in pressure source term
   void Add_p_source(TRealMatrix       & rhox,
@@ -188,9 +138,7 @@ class TCUDAImplementations
                     TRealMatrix       & rhoz,
                     const TRealMatrix & p_source_input,
                     const TIndexMatrix& p_source_index,
-                    const size_t        t_index,
-                    const size_t        p_source_mode,
-                    const size_t        p_source_many);
+                    const size_t        t_index);
 
   //------------------velocity spectral operations ---------------------------//
   /// Compute u = dt ./ rho0_sg .* ifft (FFT).
@@ -272,9 +220,7 @@ class TCUDAImplementations
                                               const TRealMatrix& pml_z,
                                               const TRealMatrix& duxdx,
                                               const TRealMatrix& duydy,
-                                              const TRealMatrix& duzdz,
-                                              const float        dt,
-                                              const float        rho0);
+                                              const TRealMatrix& duzdz);
 
     /// Calculate new values of rhox, rhoy and rhoz for non-linear case, heterogenous case.
     void Compute_rhoxyz_nonlinear_heterogeneous(TRealMatrix&       rhox,
@@ -286,7 +232,6 @@ class TCUDAImplementations
                                                 const TRealMatrix& duxdx,
                                                 const TRealMatrix& duydy,
                                                 const TRealMatrix& duzdz,
-                                                const float        dt,
                                                 const TRealMatrix& rho0);
 
     /// Calculate new values of rhox, rhoy and rhoz for linear case, homogenous case.
@@ -298,9 +243,7 @@ class TCUDAImplementations
                                            const TRealMatrix& pml_z,
                                            const TRealMatrix& duxdx,
                                            const TRealMatrix& duydy,
-                                           const TRealMatrix& duzdz,
-                                           const float dt,
-                                           const float rho0);
+                                           const TRealMatrix& duzdz);
 
     /// Calculate new values of rhox, rhoy and rhoz for linear case, heterogeneous case.
     void Compute_rhoxyz_linear_heterogeneous(TRealMatrix      & rhox,
@@ -312,7 +255,6 @@ class TCUDAImplementations
                                              const TRealMatrix& duxdx,
                                              const TRealMatrix& duydy,
                                              const TRealMatrix& duzdz,
-                                             const float        dt,
                                              const TRealMatrix& rho0);
 
     //----------------------- new value of pressure --------------------------//

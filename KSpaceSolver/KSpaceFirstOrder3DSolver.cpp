@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              10 February 2016, 13:24 (revised)
+ *              23 February 2016, 13:53 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -267,17 +267,17 @@ void TKSpaceFirstOrder3DSolver::Compute()
   //@todo  take look a this
   cuda_implementations = TCUDAImplementations::GetInstance();
 
-  // Set kernel configurations
-  Parameters->CUDAParameters.SetKernelConfiguration();
-
-  // Set up constant memory - copy over to GPU
-  cuda_implementations->SetUpDeviceConstants(Parameters->GetFullDimensionSizes(),
-                                             Parameters->GetReducedDimensionSizes());
-
+  /// preprocessing is done on CPU and must pretend the CUDA configuration
   PreProcessingPhase();
   PreProcessingTime.Stop();
   fprintf(stdout,"Done \n");
 
+  // Set kernel configurations
+  Parameters->CUDAParameters.SetKernelConfiguration();
+
+  // Set up constant memory - copy over to GPU
+  // Constant memory uses some variables calculated during preprocessing
+  Parameters->CUDAParameters.SetUpDeviceConstants();
 
   fprintf(stdout,"Current Host memory in use:   %3ldMB\n", GetHostMemoryUsageInMB());
   fprintf(stdout,"Current Device memory in use: %3ldMB\n", GetDeviceMemoryUsageInMB());
@@ -987,6 +987,7 @@ void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
   {
     if (Parameters->Get_nonuniform_grid_flag())
     { // non uniform grid
+    ////@TODO merge to a single kernel!
       cuda_implementations->Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x(
                         Get_ux_sgx(),
                         Parameters->Get_rho0_sgx_scalar(),
@@ -1005,6 +1006,7 @@ void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
     }
     else
     { //uniform grid, heterogeneous
+      ////@TODO merge to a single kernel!
       cuda_implementations->Compute_dt_rho_sg_mul_ifft_div_2(Get_ux_sgx(),
                                                              Parameters->Get_rho0_sgx_scalar(),
                                                              Get_CUFFT_X_temp());
@@ -1020,6 +1022,7 @@ void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
   {
     // homogeneous, non-unifrom grid
     // divide the matrix by 2 and multiply with st./rho0_sg
+    ////@TODO merge to a single kernel!
   cuda_implementations->Compute_dt_rho_sg_mul_ifft_div_2(Get_ux_sgx(),
                                                          Get_dt_rho0_sgx(),
                                                          Get_CUFFT_X_temp());
@@ -1112,9 +1115,7 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_nonlinear()
                                                                Get_pml_z(),
                                                                Get_duxdx(),
                                                                Get_duydy(),
-                                                               Get_duzdz(),
-                                                               Parameters->Get_dt(),
-                                                               Parameters->Get_rho0_scalar());
+                                                               Get_duzdz())                                                               ;
 }
 else
 {
@@ -1128,7 +1129,6 @@ else
                                                                Get_duxdx(),
                                                                Get_duydy(),
                                                                Get_duzdz(),
-                                                               Parameters->Get_dt(),
                                                                Get_rho0());
   } // end matrix
 }// end of Compute_rhoxyz
@@ -1151,9 +1151,7 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_linear()
                                                             Get_pml_z(),
                                                             Get_duxdx(),
                                                             Get_duydy(),
-                                                            Get_duzdz(),
-                                                            Parameters->Get_dt(),
-                                                            Parameters->Get_rho0_scalar());
+                                                            Get_duzdz());
   }
   else
   {
@@ -1167,7 +1165,6 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_linear()
                                                               Get_duxdx(),
                                                               Get_duydy(),
                                                               Get_duzdz(),
-                                                              Parameters->Get_dt(),
                                                               Get_rho0());
   } // end matrix
 }// end of Compute_rhoxyz
@@ -1593,17 +1590,14 @@ void TKSpaceFirstOrder3DSolver::Compute_uxyz()
     {
       cuda_implementations->Compute_ux_sgx_normalize_scalar_nonuniform(Get_ux_sgx(),
                                                                        Get_Temp_1_RS3D(),
-                                                                       Parameters->Get_rho0_sgx_scalar(),
                                                                        Get_dxudxn_sgx(),
                                                                        Get_pml_x_sgx());
       cuda_implementations->Compute_uy_sgy_normalize_scalar_nonuniform(Get_uy_sgy(),
                                                                        Get_Temp_2_RS3D(),
-                                                                       Parameters->Get_rho0_sgy_scalar(),
                                                                        Get_dyudyn_sgy(),
                                                                        Get_pml_y_sgy());
       cuda_implementations->Compute_uz_sgz_normalize_scalar_nonuniform(Get_uz_sgz(),
                                                                        Get_Temp_3_RS3D(),
-                                                                       Parameters->Get_rho0_sgz_scalar(),
                                                                        Get_dzudzn_sgz(),
                                                                        Get_pml_z_sgz());
     }
@@ -1611,15 +1605,12 @@ void TKSpaceFirstOrder3DSolver::Compute_uxyz()
     {
       cuda_implementations->Compute_ux_sgx_normalize_scalar_uniform(Get_ux_sgx(),
                                                                     Get_Temp_1_RS3D(),
-                                                                    Parameters->Get_rho0_sgx_scalar(),
                                                                     Get_pml_x_sgx());
       cuda_implementations->Compute_uy_sgy_normalize_scalar_uniform(Get_uy_sgy(),
                                                                     Get_Temp_2_RS3D(),
-                                                                    Parameters->Get_rho0_sgy_scalar(),
                                                                     Get_pml_y_sgy());
       cuda_implementations->Compute_uz_sgz_normalize_scalar_uniform(Get_uz_sgz(),
                                                                     Get_Temp_3_RS3D(),
-                                                                    Parameters->Get_rho0_sgz_scalar(),
                                                                     Get_pml_z_sgz());
     }
   }
@@ -1653,27 +1644,21 @@ void TKSpaceFirstOrder3DSolver::Add_u_source()
     cuda_implementations->Add_u_source(Get_ux_sgx(),
                                        Get_ux_source_input(),
                                        Get_u_source_index(),
-                                       t_index,
-                                       Parameters->Get_u_source_mode(),
-                                       Parameters->Get_u_source_many());
+                                       t_index);
   }
   if (Parameters->Get_uy_source_flag() > t_index)
   {
     cuda_implementations->Add_u_source(Get_uy_sgy(),
                                        Get_uy_source_input(),
                                        Get_u_source_index(),
-                                       t_index,
-                                       Parameters->Get_u_source_mode(),
-                                       Parameters->Get_u_source_many());
+                                       t_index);
   }
   if (Parameters->Get_uz_source_flag() > t_index)
   {
       cuda_implementations->Add_u_source(Get_uz_sgz(),
                                          Get_uz_source_input(),
                                          Get_u_source_index(),
-                                         t_index,
-                                         Parameters->Get_u_source_mode(),
-                                         Parameters->Get_u_source_many());
+                                         t_index);
   }
 }// end of Add_u_source
 //------------------------------------------------------------------------------
@@ -1692,9 +1677,7 @@ void TKSpaceFirstOrder3DSolver::Add_p_source()
                                        Get_rhoz(),
                                        Get_p_source_input(),
                                        Get_p_source_index(),
-                                       t_index,
-                                       Parameters->Get_p_source_mode(),
-                                       Parameters->Get_p_source_many());
+                                       t_index);
   }// if do at all
 }// end of Add_p_source
 //------------------------------------------------------------------------------

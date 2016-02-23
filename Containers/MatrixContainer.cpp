@@ -216,7 +216,7 @@ void TMatrixContainer::AddMatricesIntoContainer()
     MatrixContainer[p0_source_input].SetAllValues(NULL, TMatrixRecord::mdtReal, FullDims, LOAD, NOCHECKPOINT, p0_source_input_Name);
   }
 
-  // us_index
+  // u_source_index
   if ((Params->Get_transducer_source_flag() != 0) ||
       (Params->Get_ux_source_flag() != 0)         ||
       (Params->Get_uy_source_flag() != 0)         ||

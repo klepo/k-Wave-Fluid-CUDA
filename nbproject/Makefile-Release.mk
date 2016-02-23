@@ -14,14 +14,14 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=nvcc
-CCC=nvcc
-CXX=nvcc
+CC=gcc
+CCC=g++
+CXX=g++
 FC=gfortran
 AS=as
 
 # Macros
-CND_PLATFORM=CUDA-Linux
+CND_PLATFORM=GNU-Linux
 CND_DLIB_EXT=so
 CND_CONF=Release
 CND_DISTDIR=dist
@@ -52,6 +52,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o \
 	${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o \
 	${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o \
+	${OBJECTDIR}/Parameters/CUDADeviceConstants.o \
 	${OBJECTDIR}/Parameters/CUDAParameters.o \
 	${OBJECTDIR}/Parameters/CommandLineParameters.o \
 	${OBJECTDIR}/Parameters/Parameters.o \
@@ -153,6 +154,10 @@ ${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o: OutputHDF5Streams/Out
 ${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o: OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp 
 	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
 	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp
+
+${OBJECTDIR}/Parameters/CUDADeviceConstants.o: Parameters/CUDADeviceConstants.cu 
+	${MKDIR} -p ${OBJECTDIR}/Parameters
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/Parameters/CUDADeviceConstants.o Parameters/CUDADeviceConstants.cu
 
 ${OBJECTDIR}/Parameters/CUDAParameters.o: Parameters/CUDAParameters.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Parameters
