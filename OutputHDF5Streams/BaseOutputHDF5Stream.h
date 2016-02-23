@@ -44,7 +44,6 @@
 #include <MatrixClasses/IndexMatrix.h>
 #include <HDF5/HDF5_File.h>
 
-#include <CUDA/CUDAImplementations.h>
 
 
 using namespace std;

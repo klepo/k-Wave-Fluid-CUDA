@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2011, 13:10 (created) \n
- *              08 July      2015, 16:54 (revised)
+ *              23 February  2016, 15:14 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -41,7 +41,7 @@
 #include <MatrixClasses/CUFFTComplexMatrix.h>
 #include <MatrixClasses/RealMatrix.h>
 #include <Utils/ErrorMessages.h>
-#include <CUDA/CUDAImplementations.h>
+#include <KSpaceSolver/SolverCUDAKernels.cuh>
 
 
 using namespace std;
@@ -607,9 +607,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_R2C(TRealMatrix& InMatrix)
                 InMatrix.GetDimensionSizes().Y,
                 InMatrix.GetDimensionSizes().Z);
 
-  TCUDAImplementations::GetInstance()->TrasposeReal3DMatrixXY(pdMatrixData,
-                                                              InMatrix.GetRawDeviceData(),
-                                                              DimSizes);
+  SolverCUDAKernels::TrasposeReal3DMatrixXY(pdMatrixData,
+                                            InMatrix.GetRawDeviceData(),
+                                            DimSizes);
 
   // Compute forward cuFFT (if the plan does not exist, it also returns error).
   // the FFT is calculated in-place (may be a bit slower than out-of-place, however
@@ -633,7 +633,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_R2C(TRealMatrix& InMatrix)
 {
   /// Transpose a real 3D matrix in the X-Z direction
   dim3 DimSizes(InMatrix.GetDimensionSizes().X, InMatrix.GetDimensionSizes().Y, InMatrix.GetDimensionSizes().Z);
-  TCUDAImplementations::GetInstance()->TrasposeReal3DMatrixXZ(pdMatrixData, InMatrix.GetRawDeviceData(), DimSizes);
+  SolverCUDAKernels::TrasposeReal3DMatrixXZ(pdMatrixData,
+                                            InMatrix.GetRawDeviceData(),
+                                            DimSizes);
 
   // Compute forward cuFFT (if the plan does not exist, it also returns error).
   // the FFT is calculated in-place (may be a bit slower than out-of-place, however
@@ -687,9 +689,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_C2R(TRealMatrix& OutMatrix)
                 OutMatrix.GetDimensionSizes().X,
                 OutMatrix.GetDimensionSizes().Z);
 
-  TCUDAImplementations::GetInstance()->TrasposeReal3DMatrixXY(OutMatrix.GetRawDeviceData(),
-                                                              pdMatrixData,
-                                                              DimSizes);
+  SolverCUDAKernels::TrasposeReal3DMatrixXY(OutMatrix.GetRawDeviceData(),
+                                            pdMatrixData,
+                                            DimSizes);
 }// end of Compute_FFT_1DY_C2R
 //------------------------------------------------------------------------------
 
@@ -714,7 +716,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_C2R(TRealMatrix& OutMatrix)
 
   /// Transpose a real 3D matrix in the Z<->X direction
   dim3 DimSizes(OutMatrix.GetDimensionSizes().Z, OutMatrix.GetDimensionSizes().Y, OutMatrix.GetDimensionSizes().X);
-  TCUDAImplementations::GetInstance()->TrasposeReal3DMatrixXZ(OutMatrix.GetRawDeviceData(), GetRawDeviceData(), DimSizes);
+  SolverCUDAKernels::TrasposeReal3DMatrixXZ(OutMatrix.GetRawDeviceData(),
+                                            GetRawDeviceData(),
+                                            DimSizes);
 }// end of Compute_FFT_1DZ_C2R
 //------------------------------------------------------------------------------
 

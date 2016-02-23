@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2012, 10:30 (created) \n
- *              09 February  2015, 20:25 (revised)
+ *              23 February  2016, 14:36 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -36,7 +36,7 @@
 #include <immintrin.h>
 
 #include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
-#include <OutputHDF5Streams/OutputStreamsCUDAKernels.h>
+#include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
 #include <Utils/ErrorMessages.h>
 #include <Parameters/Parameters.h>

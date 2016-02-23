@@ -40,7 +40,7 @@
 
 #include <Utils/ErrorMessages.h>
 
-#include <CUDA/CUDAImplementations.h>
+#include <KSpaceSolver/SolverCUDAKernels.cuh>
 
 
 
@@ -412,7 +412,7 @@ void TCUDAParameters::CheckCUDAVersion()
  */
 bool TCUDAParameters::CheckCUDACodeVersion()
 {
-  return (TCUDAImplementations::GetInstance()->GetCUDACodeVersion() >= 20);
+  return (SolverCUDAKernels::GetCUDACodeVersion() >= 20);
 }// end of CheckCUDACodeVersion
 //------------------------------------------------------------------------------
 

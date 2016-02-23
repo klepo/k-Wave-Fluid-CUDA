@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        28 August   2014, 11:15 (created)
- *              12 February 2015, 16:38 (revised)
+ *              23 February 2016, 14:41 (revised)
  *
  *
  * @section License
@@ -35,7 +35,7 @@
 #include <OutputHDF5Streams/WholeDomainOutputHDF5Stream.h>
 #include <Parameters/Parameters.h>
 
-#include <OutputHDF5Streams/OutputStreamsCUDAKernels.h>
+#include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
 using namespace std;
 

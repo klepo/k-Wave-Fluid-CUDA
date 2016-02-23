@@ -35,9 +35,10 @@
 
 #include <string>
 #include <stdexcept>
+#include <cuda.h>
 #include <cuda_runtime.h>
 
-#include <OutputHDF5Streams/OutputStreamsCUDAKernels.h>
+#include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
 #include <Parameters/Parameters.h>
 
@@ -119,7 +120,7 @@ inline __device__ size_t GetX()
  * @return X stride for 3D CUDA block
  */
 inline __device__ size_t GetX_Stride()
-{ 
+{
   return blockDim.x * gridDim.x;
 }// end of GetX_Stride
 //------------------------------------------------------------------------------

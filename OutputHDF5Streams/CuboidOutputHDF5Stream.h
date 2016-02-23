@@ -34,6 +34,8 @@
 #ifndef CUBOID_OUTPUT_HDF5_STREAM_H
 #define	CUBOID_OUTPUT_HDF5_STREAM_H
 
+#include <cuda_runtime.h>
+
 #include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
 
 /**

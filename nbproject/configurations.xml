@@ -10,8 +10,6 @@
       <itemPath>Containers/OutputStreamContainer.h</itemPath>
     </logicalFolder>
     <logicalFolder name="CUDA" displayName="CUDA" projectFiles="true">
-      <itemPath>CUDA/CUDAImplementations.cu</itemPath>
-      <itemPath>CUDA/CUDAImplementations.h</itemPath>
     </logicalFolder>
     <logicalFolder name="HDF5" displayName="HDF5" projectFiles="true">
       <itemPath>HDF5/HDF5_File.cpp</itemPath>
@@ -26,6 +24,8 @@
                    projectFiles="true">
       <itemPath>KSpaceSolver/KSpaceFirstOrder3DSolver.cpp</itemPath>
       <itemPath>KSpaceSolver/KSpaceFirstOrder3DSolver.h</itemPath>
+      <itemPath>KSpaceSolver/SolverCUDAKernels.cu</itemPath>
+      <itemPath>KSpaceSolver/SolverCUDAKernels.cuh</itemPath>
     </logicalFolder>
     <logicalFolder name="MatrixClasses"
                    displayName="MatrixClasses"
@@ -54,7 +54,7 @@
       <itemPath>OutputHDF5Streams/IndexOutputHDF5Stream.cpp</itemPath>
       <itemPath>OutputHDF5Streams/IndexOutputHDF5Stream.h</itemPath>
       <itemPath>OutputHDF5Streams/OutputStreamsCUDAKernels.cu</itemPath>
-      <itemPath>OutputHDF5Streams/OutputStreamsCUDAKernels.h</itemPath>
+      <itemPath>OutputHDF5Streams/OutputStreamsCUDAKernels.cuh</itemPath>
       <itemPath>OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp</itemPath>
       <itemPath>OutputHDF5Streams/WholeDomainOutputHDF5Stream.h</itemPath>
     </logicalFolder>
@@ -137,10 +137,6 @@
           <commandLine>-Xcompiler="-Wall -fopenmp -mavx -g" --resource-usage -arch=compute_52 -code=sm_52</commandLine>
         </linkerTool>
       </compileType>
-      <item path="CUDA/CUDAImplementations.cu" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="CUDA/CUDAImplementations.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -169,6 +165,10 @@
             ex="false"
             tool="3"
             flavor2="0">
+      </item>
+      <item path="KSpaceSolver/SolverCUDAKernels.cu" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="KSpaceSolver/SolverCUDAKernels.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseFloatMatrix.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -234,7 +234,7 @@
             tool="1"
             flavor2="0">
       </item>
-      <item path="OutputHDF5Streams/OutputStreamsCUDAKernels.h"
+      <item path="OutputHDF5Streams/OutputStreamsCUDAKernels.cuh"
             ex="false"
             tool="3"
             flavor2="0">
@@ -308,10 +308,6 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
-      <item path="CUDA/CUDAImplementations.cu" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="CUDA/CUDAImplementations.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -340,6 +336,10 @@
             ex="false"
             tool="3"
             flavor2="0">
+      </item>
+      <item path="KSpaceSolver/SolverCUDAKernels.cu" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="KSpaceSolver/SolverCUDAKernels.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseFloatMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -405,7 +405,7 @@
             tool="1"
             flavor2="8">
       </item>
-      <item path="OutputHDF5Streams/OutputStreamsCUDAKernels.h"
+      <item path="OutputHDF5Streams/OutputStreamsCUDAKernels.cuh"
             ex="false"
             tool="3"
             flavor2="0">

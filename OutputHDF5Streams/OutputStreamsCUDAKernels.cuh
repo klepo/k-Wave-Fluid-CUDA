@@ -1,5 +1,5 @@
 /**
- * @file        OutputStreamsCUDAKernles.h
+ * @file        OutputStreamsCUDAKernles.cuh
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -11,7 +11,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        27 January   2015, 16:25 (created) \n
- *              18 February  2015, 14:05 (revised)
+ *              23 February  2016, 14:35 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -33,9 +33,11 @@
  */
 
 
-#ifndef OUTPUT_STREAMS_CUDA_KERNELS_H
-#define	OUTPUT_STREAMS_CUDA_KERNELS_H
+#ifndef OUTPUT_STREAMS_CUDA_KERNELS_CUH
+#define	OUTPUT_STREAMS_CUDA_KERNELS_CUH
 
+#include <cuda_runtime.h>
+#include <cuda.h>
 
 /**
  * @namespace   OutputStreamsCUDAKernels

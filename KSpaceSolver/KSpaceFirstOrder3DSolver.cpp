@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              23 February 2016, 13:53 (revised)
+ *              23 February 2016, 15:05 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -60,7 +60,7 @@
 #include <KSpaceSolver/KSpaceFirstOrder3DSolver.h>
 
 #include <Utils/ErrorMessages.h>
-#include <CUDA/CUDAImplementations.h>
+#include <KSpaceSolver/SolverCUDAKernels.cuh>
 #include <Containers/MatrixContainer.h>
 
 
@@ -78,7 +78,7 @@ using namespace std;
  * Constructor of the class.
  */
 TKSpaceFirstOrder3DSolver::TKSpaceFirstOrder3DSolver() :
-        cuda_implementations(NULL), MatrixContainer(), OutputStreamContainer(),
+        MatrixContainer(), OutputStreamContainer(),
         ActPercent(0), IsTimestepRightAfterRestore(false), Parameters(NULL),
         TotalTime(), PreProcessingTime(), DataLoadTime(), SimulationTime(),
         PostProcessingTime(), IterationTime()
@@ -262,10 +262,6 @@ void TKSpaceFirstOrder3DSolver::Compute()
 
   fprintf(stdout,"Done \n");
   fprintf(stdout,"Pre-processing phase..........."); fflush(stdout);
-
-  //initialise the cpu and gpu computation handler
-  //@todo  take look a this
-  cuda_implementations = TCUDAImplementations::GetInstance();
 
   /// preprocessing is done on CPU and must pretend the CUDA configuration
   PreProcessingPhase();
@@ -490,7 +486,7 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense(FILE * file)
   else
   {
     fprintf(file,"| CUDA code arch:   %1.1f                              |\n",
-            cuda_implementations->GetCUDACodeVersion()/10.f);
+            SolverCUDAKernels::GetCUDACodeVersion()/10.f);
     fprintf(file,"|                                                    |\n");
 
     fprintf(file,"| CUDA Device Idx:  %d                                |\n",
@@ -962,43 +958,43 @@ void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
   }
 
   //-- add the initial pressure to rho as a mass source --//
-  cuda_implementations->Calculate_p0_source_add_initial_pressure(Get_p(),
-                                                                 Get_rhox(),
-                                                                 Get_rhoy(),
-                                                                 Get_rhoz(),
-                                                                 Get_p0_source_input(),
-                                                                 c2,
-                                                                 c2_shift);
+  SolverCUDAKernels::Calculate_p0_source_add_initial_pressure(Get_p(),
+                                                              Get_rhox(),
+                                                              Get_rhoy(),
+                                                              Get_rhoz(),
+                                                              Get_p0_source_input(),
+                                                              c2,
+                                                              c2_shift);
 
   //-----------------------------------------------------------------------//
   //--compute u(t = t1 + dt/2) based on the assumption u(dt/2) = -u(-dt/2)-//
   //--    which forces u(t = t1) = 0                                      -//
   //-----------------------------------------------------------------------//
-  cuda_implementations->Compute_ddx_kappa_fft_p(Get_p(),
-                                                Get_CUFFT_X_temp(),
-                                                Get_CUFFT_Y_temp(),
-                                                Get_CUFFT_Z_temp(),
-                                                Get_kappa(),
-                                                Get_ddx_k_shift_pos(),
-                                                Get_ddy_k_shift_pos(),
-                                                Get_ddz_k_shift_pos());
+  SolverCUDAKernels::Compute_ddx_kappa_fft_p(Get_p(),
+                                             Get_CUFFT_X_temp(),
+                                             Get_CUFFT_Y_temp(),
+                                             Get_CUFFT_Z_temp(),
+                                             Get_kappa(),
+                                             Get_ddx_k_shift_pos(),
+                                             Get_ddy_k_shift_pos(),
+                                             Get_ddz_k_shift_pos());
 
   if (Parameters->Get_rho0_scalar_flag())
   {
     if (Parameters->Get_nonuniform_grid_flag())
     { // non uniform grid
     ////@TODO merge to a single kernel!
-      cuda_implementations->Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x(
+      SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x(
                         Get_ux_sgx(),
                         Parameters->Get_rho0_sgx_scalar(),
                         Get_dxudxn_sgx(),
                         Get_CUFFT_X_temp());
-      cuda_implementations->Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y(
+      SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y(
                         Get_uy_sgy(),
                         Parameters->Get_rho0_sgy_scalar(),
                         Get_dyudyn_sgy(),
                         Get_CUFFT_Y_temp());
-      cuda_implementations->Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z(
+      SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z(
                         Get_uz_sgz(),
                         Parameters->Get_rho0_sgz_scalar(),
                         Get_dzudzn_sgz(),
@@ -1007,15 +1003,15 @@ void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
     else
     { //uniform grid, heterogeneous
       ////@TODO merge to a single kernel!
-      cuda_implementations->Compute_dt_rho_sg_mul_ifft_div_2(Get_ux_sgx(),
-                                                             Parameters->Get_rho0_sgx_scalar(),
-                                                             Get_CUFFT_X_temp());
-      cuda_implementations->Compute_dt_rho_sg_mul_ifft_div_2(Get_uy_sgy(),
-                                                             Parameters->Get_rho0_sgy_scalar(),
-                                                             Get_CUFFT_Y_temp());
-      cuda_implementations->Compute_dt_rho_sg_mul_ifft_div_2(Get_uz_sgz(),
-                                                             Parameters->Get_rho0_sgz_scalar(),
-                                                             Get_CUFFT_Z_temp());
+      SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(Get_ux_sgx(),
+                                                          Parameters->Get_rho0_sgx_scalar(),
+                                                          Get_CUFFT_X_temp());
+      SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(Get_uy_sgy(),
+                                                          Parameters->Get_rho0_sgy_scalar(),
+                                                          Get_CUFFT_Y_temp());
+      SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(Get_uz_sgz(),
+                                                          Parameters->Get_rho0_sgz_scalar(),
+                                                          Get_CUFFT_Z_temp());
     }
   }
   else
@@ -1023,15 +1019,15 @@ void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
     // homogeneous, non-unifrom grid
     // divide the matrix by 2 and multiply with st./rho0_sg
     ////@TODO merge to a single kernel!
-  cuda_implementations->Compute_dt_rho_sg_mul_ifft_div_2(Get_ux_sgx(),
-                                                         Get_dt_rho0_sgx(),
-                                                         Get_CUFFT_X_temp());
-  cuda_implementations->Compute_dt_rho_sg_mul_ifft_div_2(Get_uy_sgy(),
-                                                         Get_dt_rho0_sgy(),
-                                                         Get_CUFFT_Y_temp());
-  cuda_implementations->Compute_dt_rho_sg_mul_ifft_div_2(Get_uz_sgz(),
-                                                         Get_dt_rho0_sgz(),
-                                                         Get_CUFFT_Z_temp());
+  SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(Get_ux_sgx(),
+                                                      Get_dt_rho0_sgx(),
+                                                      Get_CUFFT_X_temp());
+  SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(Get_uy_sgy(),
+                                                      Get_dt_rho0_sgy(),
+                                                      Get_CUFFT_Y_temp());
+  SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(Get_uz_sgz(),
+                                                      Get_dt_rho0_sgz(),
+                                                      Get_CUFFT_Z_temp());
   }
 }// end of Calculate_p0_source
 //------------------------------------------------------------------------------
@@ -1072,13 +1068,13 @@ void TKSpaceFirstOrder3DSolver::Compute_duxyz()
   Get_CUFFT_Z_temp().Compute_FFT_3D_R2C(Get_uz_sgz());
 
   /// calculate duxyz on uniform grid
-  cuda_implementations->Compute_duxyz_uniform(Get_CUFFT_X_temp(),
-                                              Get_CUFFT_Y_temp(),
-                                              Get_CUFFT_Z_temp(),
-                                              Get_kappa(),
-                                              Get_ddx_k_shift_neg(),
-                                              Get_ddy_k_shift_neg(),
-                                              Get_ddz_k_shift_neg());
+  SolverCUDAKernels::Compute_duxyz_uniform(Get_CUFFT_X_temp(),
+                                           Get_CUFFT_Y_temp(),
+                                           Get_CUFFT_Z_temp(),
+                                           Get_kappa(),
+                                           Get_ddx_k_shift_neg(),
+                                           Get_ddy_k_shift_neg(),
+                                           Get_ddz_k_shift_neg());
 
   Get_CUFFT_X_temp().Compute_FFT_3D_C2R(Get_duxdx());
   Get_CUFFT_Y_temp().Compute_FFT_3D_C2R(Get_duydy());
@@ -1089,12 +1085,12 @@ void TKSpaceFirstOrder3DSolver::Compute_duxyz()
   //-----------------------------------------------------------------------//
   if (Parameters->Get_nonuniform_grid_flag() != 0)
   {
-    cuda_implementations->Compute_duxyz_non_uniform(Get_duxdx(),
-                                                   Get_duydy(),
-                                                   Get_duzdz(),
-                                                   Get_dxudxn(),
-                                                   Get_dyudyn(),
-                                                   Get_dzudzn());
+    SolverCUDAKernels::Compute_duxyz_non_uniform(Get_duxdx(),
+                                                 Get_duydy(),
+                                                 Get_duzdz(),
+                                                 Get_dxudxn(),
+                                                 Get_dyudyn(),
+                                                 Get_dzudzn());
   }// nonlinear
 }// end of Compute_duxyz
 //------------------------------------------------------------------------------
@@ -1107,29 +1103,29 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_nonlinear()
   // Scalar
   if (Parameters->Get_rho0_scalar())
   {
-    cuda_implementations->Compute_rhoxyz_nonlinear_homogeneous(Get_rhox(),
-                                                               Get_rhoy(),
-                                                               Get_rhoz(),
-                                                               Get_pml_x(),
-                                                               Get_pml_y(),
-                                                               Get_pml_z(),
-                                                               Get_duxdx(),
-                                                               Get_duydy(),
-                                                               Get_duzdz())                                                               ;
+    SolverCUDAKernels::Compute_rhoxyz_nonlinear_homogeneous(Get_rhox(),
+                                                            Get_rhoy(),
+                                                            Get_rhoz(),
+                                                            Get_pml_x(),
+                                                            Get_pml_y(),
+                                                            Get_pml_z(),
+                                                            Get_duxdx(),
+                                                            Get_duydy(),
+                                                            Get_duzdz())                                                               ;
 }
 else
 {
   // rho0 is a matrix
-  cuda_implementations->Compute_rhoxyz_nonlinear_heterogeneous(Get_rhox(),
-                                                               Get_rhoy(),
-                                                               Get_rhoz(),
-                                                               Get_pml_x(),
-                                                               Get_pml_y(),
-                                                               Get_pml_z(),
-                                                               Get_duxdx(),
-                                                               Get_duydy(),
-                                                               Get_duzdz(),
-                                                               Get_rho0());
+  SolverCUDAKernels::Compute_rhoxyz_nonlinear_heterogeneous(Get_rhox(),
+                                                            Get_rhoy(),
+                                                            Get_rhoz(),
+                                                            Get_pml_x(),
+                                                            Get_pml_y(),
+                                                            Get_pml_z(),
+                                                            Get_duxdx(),
+                                                            Get_duydy(),
+                                                            Get_duzdz(),
+                                                            Get_rho0());
   } // end matrix
 }// end of Compute_rhoxyz
 //------------------------------------------------------------------------------
@@ -1143,29 +1139,29 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_linear()
   // Scalar
   if (Parameters->Get_rho0_scalar())
   {
-    cuda_implementations->Compute_rhoxyz_linear_homogeneous(Get_rhox(),
-                                                            Get_rhoy(),
-                                                            Get_rhoz(),
-                                                            Get_pml_x(),
-                                                            Get_pml_y(),
-                                                            Get_pml_z(),
-                                                            Get_duxdx(),
-                                                            Get_duydy(),
-                                                            Get_duzdz());
+    SolverCUDAKernels::Compute_rhoxyz_linear_homogeneous(Get_rhox(),
+                                                         Get_rhoy(),
+                                                         Get_rhoz(),
+                                                         Get_pml_x(),
+                                                         Get_pml_y(),
+                                                         Get_pml_z(),
+                                                         Get_duxdx(),
+                                                         Get_duydy(),
+                                                         Get_duzdz());
   }
   else
   {
     // rho0 is a matrix
-    cuda_implementations->Compute_rhoxyz_linear_heterogeneous(Get_rhox(),
-                                                              Get_rhoy(),
-                                                              Get_rhoz(),
-                                                              Get_pml_x(),
-                                                              Get_pml_y(),
-                                                              Get_pml_z(),
-                                                              Get_duxdx(),
-                                                              Get_duydy(),
-                                                              Get_duzdz(),
-                                                              Get_rho0());
+    SolverCUDAKernels::Compute_rhoxyz_linear_heterogeneous(Get_rhox(),
+                                                           Get_rhoy(),
+                                                           Get_rhoz(),
+                                                           Get_pml_x(),
+                                                           Get_pml_y(),
+                                                           Get_pml_z(),
+                                                           Get_duxdx(),
+                                                           Get_duydy(),
+                                                           Get_duzdz(),
+                                                           Get_rho0());
   } // end matrix
 }// end of Compute_rhoxyz
 //------------------------------------------------------------------------------
@@ -1184,17 +1180,17 @@ void TKSpaceFirstOrder3DSolver::Calculate_SumRho_SumRhoDu(TRealMatrix& Sum_rhoxy
   const float   rho0_scalar =  Parameters->Get_rho0_scalar();
   const float * rho0_matrix = (Parameters->Get_rho0_scalar_flag()) ? NULL :
                                                                    Get_rho0().GetRawDeviceData();
-  cuda_implementations->Calculate_SumRho_SumRhoDu(Sum_rhoxyz,
-                                                  Sum_rho0_du,
-                                                  Get_rhox(),
-                                                  Get_rhoy(),
-                                                  Get_rhoz(),
-                                                  Get_duxdx(),
-                                                  Get_duydy(),
-                                                  Get_duzdz(),
-                                                  rho0_scalar,
-                                                  rho0_matrix,
-                                                  (Parameters->Get_rho0_scalar_flag()) ? 0 : 1);
+  SolverCUDAKernels::Calculate_SumRho_SumRhoDu(Sum_rhoxyz,
+                                               Sum_rho0_du,
+                                               Get_rhox(),
+                                               Get_rhoy(),
+                                               Get_rhoz(),
+                                               Get_duxdx(),
+                                               Get_duydy(),
+                                               Get_duzdz(),
+                                               rho0_scalar,
+                                               rho0_matrix,
+                                               (Parameters->Get_rho0_scalar_flag()) ? 0 : 1);
 }// end of Calculate_SumRho_SumRhoDu
 //------------------------------------------------------------------------------
 
@@ -1251,19 +1247,18 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_nonlinear(TRealMatrix& Absorb_tau_t
     tau_eta_shift = 1;
   }
 
-  cuda_implementations->Sum_Subterms_nonlinear(Get_p(),
-                                               BonA_temp,
-                                               c2_data_scalar,
-                                               c2_data_matrix,
-                                               c2_shift,
-                                               Absorb_tau_data,
-                                               tau_data_scalar,
-                                               tau_data_matrix,
-                                               Absorb_eta_data,
-                                               eta_data_scalar,
-                                               eta_data_matrix,
-                                               tau_eta_shift);
-
+  SolverCUDAKernels::Sum_Subterms_nonlinear(Get_p(),
+                                            BonA_temp,
+                                            c2_data_scalar,
+                                            c2_data_matrix,
+                                            c2_shift,
+                                            Absorb_tau_data,
+                                            tau_data_scalar,
+                                            tau_data_matrix,
+                                            Absorb_eta_data,
+                                            eta_data_scalar,
+                                            eta_data_matrix,
+                                            tau_eta_shift);
 }// end of Sum_Subterms_nonlinear
 //------------------------------------------------------------------------------
 
@@ -1315,18 +1310,18 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_linear(TRealMatrix& Absorb_tau_temp
     tau_eta_shift = 1;
   }
 
-  cuda_implementations->Sum_Subterms_linear(Get_p(),
-                                            Absorb_tau_temp,
-                                            Absorb_eta_temp,
-                                            Sum_rhoxyz,
-                                            c2_data_scalar,
-                                            c2_data_matrix,
-                                            c2_shift,
-                                            tau_data_scalar,
-                                            tau_data_matrix,
-                                            eta_data_scalar,
-                                            eta_data_matrix,
-                                            tau_eta_shift);
+  SolverCUDAKernels::Sum_Subterms_linear(Get_p(),
+                                         Absorb_tau_temp,
+                                         Absorb_eta_temp,
+                                         Sum_rhoxyz,
+                                         c2_data_scalar,
+                                         c2_data_matrix,
+                                         c2_shift,
+                                         tau_data_scalar,
+                                         tau_data_matrix,
+                                         eta_data_scalar,
+                                         eta_data_matrix,
+                                         tau_eta_shift);
 }// end of Sum_Subterms_linear
 //------------------------------------------------------------------------------
 
@@ -1383,19 +1378,19 @@ void TKSpaceFirstOrder3DSolver::Sum_new_p_nonlinear_lossless()
     rho0_shift = 1;
   }
 
-  cuda_implementations->Sum_new_p_nonlinear_lossless(Get_p(),
-                                                     Get_rhox(),
-                                                     Get_rhoy(),
-                                                     Get_rhoz(),
-                                                     c2_data_scalar,
-                                                     c2_data_matrix,
-                                                     c2_shift,
-                                                     BonA_data_scalar,
-                                                     BonA_data_matrix,
-                                                     BonA_shift,
-                                                     rho0_data_scalar,
-                                                     rho0_data_matrix,
-                                                     rho0_shift);
+  SolverCUDAKernels::Sum_new_p_nonlinear_lossless(Get_p(),
+                                                  Get_rhox(),
+                                                  Get_rhoy(),
+                                                  Get_rhoz(),
+                                                  c2_data_scalar,
+                                                  c2_data_matrix,
+                                                  c2_shift,
+                                                  BonA_data_scalar,
+                                                  BonA_data_matrix,
+                                                  BonA_shift,
+                                                  rho0_data_scalar,
+                                                  rho0_data_matrix,
+                                                  rho0_shift);
 
 }// end of Sum_new_p_nonlinear_lossless
 //------------------------------------------------------------------------------
@@ -1410,13 +1405,13 @@ void TKSpaceFirstOrder3DSolver::Sum_new_p_linear_lossless()
   const float * c2_matrix = (Parameters->Get_c0_scalar_flag()) ? NULL :
                                                                  Get_c2().GetRawDeviceData();
 
-  cuda_implementations->Sum_new_p_linear_lossless(Get_p(),
-                                                  Get_rhox(),
-                                                  Get_rhoy(),
-                                                  Get_rhoz(),
-                                                  c2_scalar,
-                                                  c2_matrix,
-                                                 (Parameters->Get_c0_scalar_flag()) ? 0 : 1);
+  SolverCUDAKernels::Sum_new_p_linear_lossless(Get_p(),
+                                               Get_rhox(),
+                                               Get_rhoy(),
+                                               Get_rhoz(),
+                                               c2_scalar,
+                                               c2_matrix,
+                                              (Parameters->Get_c0_scalar_flag()) ? 0 : 1);
 
 }// end of Sum_new_p_linear_lossless
 //------------------------------------------------------------------------------
@@ -1467,21 +1462,21 @@ void TKSpaceFirstOrder3DSolver::Calculate_SumRho_BonA_SumDu(TRealMatrix& RHO_Tem
     rho0_shift = 1;
   }
 
-  cuda_implementations->Calculate_SumRho_BonA_SumDu(RHO_Temp,
-                                                    BonA_Temp,
-                                                    Sum_du,
-                                                    Get_rhox(),
-                                                    Get_rhoy(),
-                                                    Get_rhoz(),
-                                                    Get_duxdx(),
-                                                    Get_duydy(),
-                                                    Get_duzdz(),
-                                                    BonA_data_scalar,
-                                                    BonA_data_matrix,
-                                                    BonA_shift,
-                                                    rho0_data_scalar,
-                                                    rho0_data_matrix,
-                                                    rho0_shift);
+  SolverCUDAKernels::Calculate_SumRho_BonA_SumDu(RHO_Temp,
+                                                 BonA_Temp,
+                                                 Sum_du,
+                                                 Get_rhox(),
+                                                 Get_rhoy(),
+                                                 Get_rhoz(),
+                                                 Get_duxdx(),
+                                                 Get_duydy(),
+                                                 Get_duzdz(),
+                                                 BonA_data_scalar,
+                                                 BonA_data_matrix,
+                                                 BonA_shift,
+                                                 rho0_data_scalar,
+                                                 rho0_data_matrix,
+                                                 rho0_shift);
 
 }// end of Calculate_SumRho_BonA_SumDu
 //------------------------------------------------------------------------------
@@ -1506,10 +1501,10 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_nonlinear()
     Get_CUFFT_Y_temp().Compute_FFT_3D_R2C(Sum_rhoxyz);
 
 
-    cuda_implementations->Compute_Absorb_nabla1_2(Get_CUFFT_X_temp(),
-                                                  Get_CUFFT_Y_temp(),
-                                                  Get_absorb_nabla1(),
-                                                  Get_absorb_nabla2());
+    SolverCUDAKernels::Compute_Absorb_nabla1_2(Get_CUFFT_X_temp(),
+                                               Get_CUFFT_Y_temp(),
+                                               Get_absorb_nabla1(),
+                                               Get_absorb_nabla2());
 
 
     Get_CUFFT_X_temp().Compute_FFT_3D_C2R(Absorb_tau_temp);
@@ -1548,10 +1543,10 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_linear()
     Get_CUFFT_X_temp().Compute_FFT_3D_R2C(Sum_rho0_du);
     Get_CUFFT_Y_temp().Compute_FFT_3D_R2C(Sum_rhoxyz);
 
-    cuda_implementations->Compute_Absorb_nabla1_2(Get_CUFFT_X_temp(),
-                                                  Get_CUFFT_Y_temp(),
-                                                  Get_absorb_nabla1(),
-                                                  Get_absorb_nabla2());
+    SolverCUDAKernels::Compute_Absorb_nabla1_2(Get_CUFFT_X_temp(),
+                                               Get_CUFFT_Y_temp(),
+                                               Get_absorb_nabla1(),
+                                               Get_absorb_nabla2());
 
     Get_CUFFT_X_temp().Compute_FFT_3D_C2R(Absorb_tau_temp);
     Get_CUFFT_Y_temp().Compute_FFT_3D_C2R(Absorb_eta_temp);
@@ -1571,14 +1566,14 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_linear()
  */
 void TKSpaceFirstOrder3DSolver::Compute_uxyz()
 {
-  cuda_implementations->Compute_ddx_kappa_fft_p(Get_p(),
-                                                Get_CUFFT_X_temp(),
-                                                Get_CUFFT_Y_temp(),
-                                                Get_CUFFT_Z_temp(),
-                                                Get_kappa(),
-                                                Get_ddx_k_shift_pos(),
-                                                Get_ddy_k_shift_pos(),
-                                                Get_ddz_k_shift_pos());
+  SolverCUDAKernels::Compute_ddx_kappa_fft_p(Get_p(),
+                                             Get_CUFFT_X_temp(),
+                                             Get_CUFFT_Y_temp(),
+                                             Get_CUFFT_Z_temp(),
+                                             Get_kappa(),
+                                             Get_ddx_k_shift_pos(),
+                                             Get_ddy_k_shift_pos(),
+                                              Get_ddz_k_shift_pos());
 
   Get_CUFFT_X_temp().Compute_FFT_3D_C2R(Get_Temp_1_RS3D());
   Get_CUFFT_Y_temp().Compute_FFT_3D_C2R(Get_Temp_2_RS3D());
@@ -1588,46 +1583,46 @@ void TKSpaceFirstOrder3DSolver::Compute_uxyz()
   { // scalars
     if (Parameters->Get_nonuniform_grid_flag())
     {
-      cuda_implementations->Compute_ux_sgx_normalize_scalar_nonuniform(Get_ux_sgx(),
-                                                                       Get_Temp_1_RS3D(),
-                                                                       Get_dxudxn_sgx(),
-                                                                       Get_pml_x_sgx());
-      cuda_implementations->Compute_uy_sgy_normalize_scalar_nonuniform(Get_uy_sgy(),
-                                                                       Get_Temp_2_RS3D(),
-                                                                       Get_dyudyn_sgy(),
-                                                                       Get_pml_y_sgy());
-      cuda_implementations->Compute_uz_sgz_normalize_scalar_nonuniform(Get_uz_sgz(),
-                                                                       Get_Temp_3_RS3D(),
-                                                                       Get_dzudzn_sgz(),
-                                                                       Get_pml_z_sgz());
+      SolverCUDAKernels::Compute_ux_sgx_normalize_scalar_nonuniform(Get_ux_sgx(),
+                                                                    Get_Temp_1_RS3D(),
+                                                                    Get_dxudxn_sgx(),
+                                                                    Get_pml_x_sgx());
+      SolverCUDAKernels::Compute_uy_sgy_normalize_scalar_nonuniform(Get_uy_sgy(),
+                                                                    Get_Temp_2_RS3D(),
+                                                                    Get_dyudyn_sgy(),
+                                                                    Get_pml_y_sgy());
+      SolverCUDAKernels::Compute_uz_sgz_normalize_scalar_nonuniform(Get_uz_sgz(),
+                                                                    Get_Temp_3_RS3D(),
+                                                                    Get_dzudzn_sgz(),
+                                                                    Get_pml_z_sgz());
     }
     else
     {
-      cuda_implementations->Compute_ux_sgx_normalize_scalar_uniform(Get_ux_sgx(),
-                                                                    Get_Temp_1_RS3D(),
-                                                                    Get_pml_x_sgx());
-      cuda_implementations->Compute_uy_sgy_normalize_scalar_uniform(Get_uy_sgy(),
-                                                                    Get_Temp_2_RS3D(),
-                                                                    Get_pml_y_sgy());
-      cuda_implementations->Compute_uz_sgz_normalize_scalar_uniform(Get_uz_sgz(),
-                                                                    Get_Temp_3_RS3D(),
-                                                                    Get_pml_z_sgz());
+      SolverCUDAKernels::Compute_ux_sgx_normalize_scalar_uniform(Get_ux_sgx(),
+                                                                 Get_Temp_1_RS3D(),
+                                                                 Get_pml_x_sgx());
+      SolverCUDAKernels::Compute_uy_sgy_normalize_scalar_uniform(Get_uy_sgy(),
+                                                                 Get_Temp_2_RS3D(),
+                                                                 Get_pml_y_sgy());
+      SolverCUDAKernels::Compute_uz_sgz_normalize_scalar_uniform(Get_uz_sgz(),
+                                                                 Get_Temp_3_RS3D(),
+                                                                 Get_pml_z_sgz());
     }
   }
   else
   {// matrices
-    cuda_implementations->Compute_ux_sgx_normalize(Get_ux_sgx(),
-                                                   Get_Temp_1_RS3D(),
-                                                   Get_dt_rho0_sgx(),
-                                                   Get_pml_x_sgx());
-    cuda_implementations->Compute_uy_sgy_normalize(Get_uy_sgy(),
-                                                   Get_Temp_2_RS3D(),
-                                                   Get_dt_rho0_sgy(),
-                                                   Get_pml_y_sgy());
-    cuda_implementations->Compute_uz_sgz_normalize(Get_uz_sgz(),
-                                                   Get_Temp_3_RS3D(),
-                                                   Get_dt_rho0_sgz(),
-                                                   Get_pml_z_sgz());
+    SolverCUDAKernels::Compute_ux_sgx_normalize(Get_ux_sgx(),
+                                                Get_Temp_1_RS3D(),
+                                                Get_dt_rho0_sgx(),
+                                                Get_pml_x_sgx());
+    SolverCUDAKernels::Compute_uy_sgy_normalize(Get_uy_sgy(),
+                                                Get_Temp_2_RS3D(),
+                                                Get_dt_rho0_sgy(),
+                                                Get_pml_y_sgy());
+    SolverCUDAKernels::Compute_uz_sgz_normalize(Get_uz_sgz(),
+                                                Get_Temp_3_RS3D(),
+                                                Get_dt_rho0_sgz(),
+                                                Get_pml_z_sgz());
   }
 }// end of Compute_uxyz()
 //------------------------------------------------------------------------------
@@ -1641,24 +1636,24 @@ void TKSpaceFirstOrder3DSolver::Add_u_source()
 
   if (Parameters->Get_ux_source_flag() > t_index)
   {
-    cuda_implementations->Add_u_source(Get_ux_sgx(),
-                                       Get_ux_source_input(),
-                                       Get_u_source_index(),
-                                       t_index);
+    SolverCUDAKernels::Add_u_source(Get_ux_sgx(),
+                                    Get_ux_source_input(),
+                                    Get_u_source_index(),
+                                    t_index);
   }
   if (Parameters->Get_uy_source_flag() > t_index)
   {
-    cuda_implementations->Add_u_source(Get_uy_sgy(),
-                                       Get_uy_source_input(),
-                                       Get_u_source_index(),
-                                       t_index);
+    SolverCUDAKernels::Add_u_source(Get_uy_sgy(),
+                                    Get_uy_source_input(),
+                                    Get_u_source_index(),
+                                    t_index);
   }
   if (Parameters->Get_uz_source_flag() > t_index)
   {
-      cuda_implementations->Add_u_source(Get_uz_sgz(),
-                                         Get_uz_source_input(),
-                                         Get_u_source_index(),
-                                         t_index);
+    SolverCUDAKernels::Add_u_source(Get_uz_sgz(),
+                                    Get_uz_source_input(),
+                                    Get_u_source_index(),
+                                    t_index);
   }
 }// end of Add_u_source
 //------------------------------------------------------------------------------
@@ -1672,12 +1667,12 @@ void TKSpaceFirstOrder3DSolver::Add_p_source()
 
   if (Parameters->Get_p_source_flag() > t_index)
   {
-    cuda_implementations->Add_p_source(Get_rhox(),
-                                       Get_rhoy(),
-                                       Get_rhoz(),
-                                       Get_p_source_input(),
-                                       Get_p_source_index(),
-                                       t_index);
+    SolverCUDAKernels::Add_p_source(Get_rhox(),
+                                    Get_rhoy(),
+                                    Get_rhoz(),
+                                    Get_p_source_input(),
+                                    Get_p_source_index(),
+                                    t_index);
   }// if do at all
 }// end of Add_p_source
 //------------------------------------------------------------------------------
@@ -1695,17 +1690,17 @@ void TKSpaceFirstOrder3DSolver::Calculate_shifted_velocity()
 {
   // ux_shifted
   Get_CUFFT_shift_temp().Compute_FFT_1DX_R2C(Get_ux_sgx());
-  cuda_implementations->ComputeVelocityShiftInX(Get_CUFFT_shift_temp(), Get_x_shift_neg_r());
+  SolverCUDAKernels::ComputeVelocityShiftInX(Get_CUFFT_shift_temp(), Get_x_shift_neg_r());
   Get_CUFFT_shift_temp().Compute_FFT_1DX_C2R(Get_ux_shifted());
 
   // uy_shifted
   Get_CUFFT_shift_temp().Compute_FFT_1DY_R2C(Get_uy_sgy());
-  cuda_implementations->ComputeVelocityShiftInY(Get_CUFFT_shift_temp(), Get_y_shift_neg_r());
+  SolverCUDAKernels::ComputeVelocityShiftInY(Get_CUFFT_shift_temp(), Get_y_shift_neg_r());
   Get_CUFFT_shift_temp().Compute_FFT_1DY_C2R(Get_uy_shifted());
 
   // uz_shifted
   Get_CUFFT_shift_temp().Compute_FFT_1DZ_R2C(Get_uz_sgz());
-  cuda_implementations->ComputeVelocityShiftInZ(Get_CUFFT_shift_temp(), Get_z_shift_neg_r());
+  SolverCUDAKernels::ComputeVelocityShiftInZ(Get_CUFFT_shift_temp(), Get_z_shift_neg_r());
   Get_CUFFT_shift_temp().Compute_FFT_1DZ_C2R(Get_uz_shifted());
 
 }// end of Calculate_shifted_velocity
@@ -1748,10 +1743,10 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
     // add in the transducer source term (t = t1) to ux
     if (Parameters->Get_transducer_source_flag() > t_index)
     {
-      cuda_implementations->AddTransducerSource(Get_ux_sgx(),
-                                                Get_u_source_index(),
-                                                Get_delay_mask(),
-                                                Get_transducer_source_input());
+      SolverCUDAKernels::AddTransducerSource(Get_ux_sgx(),
+                                             Get_u_source_index(),
+                                             Get_delay_mask(),
+                                             Get_transducer_source_input());
     }
 
     Compute_duxyz();

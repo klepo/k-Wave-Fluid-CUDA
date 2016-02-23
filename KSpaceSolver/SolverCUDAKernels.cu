@@ -1,11 +1,11 @@
 /**
- * @file        CUDAImplementations.cpp
+ * @file        SolverCUDAKernels.cpp
  * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
  *              jarosjir@fit.vutbr.cz
  *
- * @brief       The header file containing the all CUDA kernels
+ * @brief       The implementation file containing the all CUDA kernels
  *              for the GPU implementation
  *
  * @version     kspaceFirstOrder3D 3.4
@@ -31,7 +31,7 @@
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
-#include <CUDA/CUDAImplementations.h>
+#include <KSpaceSolver/SolverCUDAKernels.cuh>
 #include <Parameters/CUDADeviceConstants.cuh>
 
 
@@ -71,11 +71,9 @@ inline void gpuAssert(cudaError_t code,
 //----------------------------------------------------------------------------//
 
 
-
 //----------------------------------------------------------------------------//
 //-------------------------------- Variables ---------------------------------//
 //----------------------------------------------------------------------------//
-
 
 /**
  * @variable CUDADeviceConstants
@@ -88,7 +86,76 @@ extern __constant__ TCUDADeviceConstants CUDADeviceConstants;
 
 
 //----------------------------------------------------------------------------//
-//----------------------------- Global routines ------------------------------//
+//---------------------------- Global CUDA routines --------------------------//
+//----------------------------------------------------------------------------//
+
+/**
+ * Get block size for 1D kernels
+ * @return 1D block size
+ */
+int GetSolverBlockSize1D()
+{
+  return TParameters::GetInstance()->CUDAParameters.GetSolverBlockSize1D();
+};
+
+/**
+ * Get grid size for 1D kernels
+ * @return 1D grid size
+ */
+int GetSolverGridSize1D()
+{
+  return TParameters::GetInstance()->CUDAParameters.GetSolverGridSize1D();
+};
+
+/**
+ * Get block size for 3D kernels
+ * @return 3D size
+ */
+dim3 GetSolverBlockSize3D()
+{
+  return TParameters::GetInstance()->CUDAParameters.GetSolverBlockSize3D();
+};
+
+/**
+ * Get grid size for 3D kernels
+ * @return 3D grid size
+ */
+dim3 GetSolverGridSize3D()
+{
+  return TParameters::GetInstance()->CUDAParameters.GetSolverGridSize3D();
+};
+
+/**
+ * Get grid size for complex 3D kernels
+ * @return 3D grid size
+ */
+dim3 GetSolverComplexGridSize3D()
+{
+  return TParameters::GetInstance()->CUDAParameters.GetSolverComplexGridSize3D();
+};
+
+
+/**
+ * Get block size for the transposition kernels
+ * @return 3D grid size
+ */
+dim3 GetSolverTransposeBlockSize()
+{
+  return TParameters::GetInstance()->CUDAParameters.GetSolverTransposeBlockSize();
+};
+
+/**
+ * Get grid size for complex 3D kernels
+ * @return 3D grid size
+ */
+dim3 GetSolverTransposeGirdSize()
+{
+  return TParameters::GetInstance()->CUDAParameters.GetSolverTransposeGirdSize();
+};
+
+
+//----------------------------------------------------------------------------//
+//---------------------------- Global CUDA routines --------------------------//
 //----------------------------------------------------------------------------//
 
 /**
@@ -170,47 +237,10 @@ inline __device__ size_t GetFullDim_i(const size_t z, const size_t y, const size
 //----------------------------- Initializations ------------------------------//
 //----------------------------------------------------------------------------//
 
-// set singleton instance flag.
-bool TCUDAImplementations::InstanceFlag = false;
-// Set singleton flag.
-TCUDAImplementations* TCUDAImplementations::Instance = NULL;
-
 
 //----------------------------------------------------------------------------//
 //---------------------------------- Public ----------------------------------//
 //----------------------------------------------------------------------------//
-
-/**
- * Get instance of the singleton class.
- * @return instance of the singleton class.
- */
-TCUDAImplementations* TCUDAImplementations::GetInstance()
-{
-  if(!InstanceFlag)
-  {
-    Instance = new TCUDAImplementations();
-    InstanceFlag = true;
-    return Instance;
-  }
-  else
-  {
-    return Instance;
-  }
-}// end of GetInstance
-//------------------------------------------------------------------------------
-
-/**
- * Default destructor for singleton class.
- */
-TCUDAImplementations::~TCUDAImplementations()
-{
-    delete Instance;
-    Instance = NULL;
-    InstanceFlag = false;
-}// end of TCUDAImplementations
-//------------------------------------------------------------------------------
-
-
 
 /**
  * Kernel to find out the version of the code
@@ -247,7 +277,7 @@ __global__ void CUDAGetCUDACodeVersion(int * cudaCodeVersion)
  * Get the CUDA architecture and GPU code version the code was compiled with
  * @return  the CUDA code version the code was compiled for
  */
-int TCUDAImplementations::GetCUDACodeVersion()
+int SolverCUDAKernels::GetCUDACodeVersion()
 {
   // host and device pointers, data copied over zero copy memory
   int * hCudaCodeVersion;
@@ -331,10 +361,10 @@ __global__ void CUDACompute_ux_sgx_normalize(float      * ux_sgx,
  * @param [in]      pml     - pml_x
  * @todo To be merged with uy_sgy and yz_sgz
  */
-void TCUDAImplementations::Compute_ux_sgx_normalize(TRealMatrix& uxyz_sgxyz,
-                                                    const TRealMatrix& FFT_p,
-                                                    const TRealMatrix& dt_rho0,
-                                                    const TRealMatrix& pml)
+void SolverCUDAKernels::Compute_ux_sgx_normalize(TRealMatrix& uxyz_sgxyz,
+                                                 const TRealMatrix& FFT_p,
+                                                 const TRealMatrix& dt_rho0,
+                                                 const TRealMatrix& pml)
 {
   CUDACompute_ux_sgx_normalize<<<GetSolverGridSize3D(),
                                  GetSolverBlockSize3D() >>>
@@ -389,9 +419,9 @@ __global__ void CUDACompute_ux_sgx_normalize_scalar_uniform(float      * ux_sgx,
  * @param [in]      pml     - matrix
  * @todo needs to be merged with uy and uz
  */
-void TCUDAImplementations::Compute_ux_sgx_normalize_scalar_uniform(TRealMatrix&       ux_sgx,
-                                                                   const TRealMatrix& FFT_p,
-                                                                   const TRealMatrix& pml)
+void SolverCUDAKernels::Compute_ux_sgx_normalize_scalar_uniform(TRealMatrix&       ux_sgx,
+                                                                const TRealMatrix& FFT_p,
+                                                                const TRealMatrix& pml)
 {
   CUDACompute_ux_sgx_normalize_scalar_uniform<<<GetSolverGridSize3D(),
                                                 GetSolverBlockSize3D() >>>
@@ -447,10 +477,10 @@ __global__ void CUDACompute_ux_sgx_normalize_scalar_nonuniform(float      * ux_s
  * @param [in]     pml        - matrix of pml_x
  * @todo to be merged with uy and uz
  */
-void TCUDAImplementations::Compute_ux_sgx_normalize_scalar_nonuniform(TRealMatrix      & ux_sgx,
-                                                                      const TRealMatrix& FFT_p,
-                                                                      const TRealMatrix& dxudxn_sgx,
-                                                                      const TRealMatrix& pml)
+void SolverCUDAKernels::Compute_ux_sgx_normalize_scalar_nonuniform(TRealMatrix      & ux_sgx,
+                                                                   const TRealMatrix& FFT_p,
+                                                                   const TRealMatrix& dxudxn_sgx,
+                                                                   const TRealMatrix& pml)
 {
   CUDACompute_ux_sgx_normalize_scalar_nonuniform<<<GetSolverGridSize3D(),
                                                    GetSolverBlockSize3D()>>>
@@ -506,10 +536,10 @@ __global__ void CUDACompute_uy_sgy_normalize(float      * uy_sgy,
  * @param [in]      pml     - pml_y
  * @todo To be merged with uy_sgx and yz_sgz
  */
-void TCUDAImplementations::Compute_uy_sgy_normalize(TRealMatrix      & uy_sgy,
-                                                    const TRealMatrix& FFT_p,
-                                                    const TRealMatrix& dt_rho0,
-                                                    const TRealMatrix& pml)
+void SolverCUDAKernels::Compute_uy_sgy_normalize(TRealMatrix      & uy_sgy,
+                                                 const TRealMatrix& FFT_p,
+                                                 const TRealMatrix& dt_rho0,
+                                                 const TRealMatrix& pml)
 {
   CUDACompute_uy_sgy_normalize<<<GetSolverGridSize3D(),
                                  GetSolverBlockSize3D() >>>
@@ -562,9 +592,9 @@ __global__ void CUDACompute_uy_sgy_normalize_scalar_uniform(float      * uy_sgy,
  * @param [in]      pml     - pml_y
  * @todo To be merged with uy_sgy and yz_sgz
  */
-void TCUDAImplementations::Compute_uy_sgy_normalize_scalar_uniform(TRealMatrix      & uy_sgy,
-                                                                   const TRealMatrix& FFT_p,
-                                                                   const TRealMatrix& pml)
+void SolverCUDAKernels::Compute_uy_sgy_normalize_scalar_uniform(TRealMatrix      & uy_sgy,
+                                                                const TRealMatrix& FFT_p,
+                                                                const TRealMatrix& pml)
 {
   CUDACompute_uy_sgy_normalize_scalar_uniform<<<GetSolverGridSize3D(),
                                                 GetSolverBlockSize3D()>>>
@@ -623,10 +653,10 @@ __global__ void CUDACompute_uy_sgy_normalize_scalar_nonuniform(float      * uy_s
  * @param [in]     pml        - matrix of pml_y
  * @todo to be merged with ux and uz.
  */
-void TCUDAImplementations::Compute_uy_sgy_normalize_scalar_nonuniform(TRealMatrix      & uy_sgy,
-                                                                      const TRealMatrix& FFT_p,
-                                                                      const TRealMatrix& dyudyn_sgy,
-                                                                      const TRealMatrix& pml)
+void SolverCUDAKernels::Compute_uy_sgy_normalize_scalar_nonuniform(TRealMatrix      & uy_sgy,
+                                                                   const TRealMatrix& FFT_p,
+                                                                   const TRealMatrix& dyudyn_sgy,
+                                                                   const TRealMatrix& pml)
 {
   CUDACompute_uy_sgy_normalize_scalar_nonuniform<<<GetSolverGridSize3D(),
                                                    GetSolverBlockSize3D()>>>
@@ -680,10 +710,10 @@ __global__ void CUDACompute_uz_sgz_normalize(float      * uz_sgz,
  * @param [in]      pml     - pml_y
  * @todo To be merged with ux_sgx and uy_sgy
  */
-void TCUDAImplementations::Compute_uz_sgz_normalize(TRealMatrix      & uz_sgz,
-                                                    const TRealMatrix& FFT_p,
-                                                    const TRealMatrix& dt_rho0,
-                                                    const TRealMatrix& pml)
+void SolverCUDAKernels::Compute_uz_sgz_normalize(TRealMatrix      & uz_sgz,
+                                                 const TRealMatrix& FFT_p,
+                                                 const TRealMatrix& dt_rho0,
+                                                 const TRealMatrix& pml)
 {
   CUDACompute_uz_sgz_normalize<<<GetSolverGridSize3D(),
                                  GetSolverBlockSize3D()>>>
@@ -736,9 +766,9 @@ __global__ void CUDACompute_uz_sgz_normalize_scalar_uniform(float      * uz_sgz,
  * @param [in]      pml     - pml_z
  * @todo To be merged with uy_sgy and yx_sgx
  */
-void TCUDAImplementations::Compute_uz_sgz_normalize_scalar_uniform(TRealMatrix      & uz_sgz,
-                                                                   const TRealMatrix& FFT_p,
-                                                                   const TRealMatrix& pml)
+void SolverCUDAKernels::Compute_uz_sgz_normalize_scalar_uniform(TRealMatrix      & uz_sgz,
+                                                                const TRealMatrix& FFT_p,
+                                                                const TRealMatrix& pml)
 {
   CUDACompute_uz_sgz_normalize_scalar_uniform<<<GetSolverGridSize3D(),
                                                 GetSolverBlockSize3D()>>>
@@ -796,10 +826,10 @@ __global__ void CUDACompute_uz_sgz_normalize_scalar_nonuniform(float      * uz_s
  * @param [in]     pml        - matrix of pml_z
  * @todo to be merged with ux and uy
  */
-void TCUDAImplementations::Compute_uz_sgz_normalize_scalar_nonuniform(TRealMatrix      & uz_sgz,
-                                                                      const TRealMatrix& FFT_p,
-                                                                      const TRealMatrix& dzudzn_sgz,
-                                                                      const TRealMatrix& pml)
+void SolverCUDAKernels::Compute_uz_sgz_normalize_scalar_nonuniform(TRealMatrix      & uz_sgz,
+                                                                   const TRealMatrix& FFT_p,
+                                                                   const TRealMatrix& dzudzn_sgz,
+                                                                   const TRealMatrix& pml)
 {
   CUDACompute_uz_sgz_normalize_scalar_nonuniform<<<GetSolverGridSize3D(),
                                                    GetSolverBlockSize3D()>>>
@@ -840,10 +870,10 @@ __global__ void CUDAAddTransducerSource(float       * ux_sgx,
  * @param [in, out] delay_mask        - Index matrix - delay of the signal
  * @param [in]      transducer_signal - Transducer signal
  */
-void TCUDAImplementations::AddTransducerSource(TRealMatrix       & ux_sgx,
-                                               const TIndexMatrix& u_source_index,
-                                               TIndexMatrix      & delay_mask,
-                                               const TRealMatrix & transducer_signal)
+void SolverCUDAKernels::AddTransducerSource(TRealMatrix       & ux_sgx,
+                                            const TIndexMatrix& u_source_index,
+                                            TIndexMatrix      & delay_mask,
+                                            const TRealMatrix & transducer_signal)
 {
   const size_t u_source_index_size = u_source_index.GetTotalElementCount();
 
@@ -907,10 +937,10 @@ __global__ void CUDAAdd_u_source(float        * uxyz_sgxyz,
  * @param [in] u_source_index  - Index matrix
  * @param [in] t_index         - Actual time step
  */
-void TCUDAImplementations::Add_u_source(TRealMatrix       & uxyz_sgxyz,
-                                        const TRealMatrix & u_source_input,
-                                        const TIndexMatrix& u_source_index,
-                                        const size_t        t_index)
+void SolverCUDAKernels::Add_u_source(TRealMatrix       & uxyz_sgxyz,
+                                     const TRealMatrix & u_source_input,
+                                     const TIndexMatrix& u_source_index,
+                                     const size_t        t_index)
 {
   const size_t u_source_index_size = u_source_index.GetTotalElementCount();
 
@@ -1004,12 +1034,12 @@ __global__ void CUDAAdd_p_source(float       * rhox,
  * @param [in]  p_source_index - index matrix with source
  * @param [in]  t_index        - actual timestep
  */
-void TCUDAImplementations::Add_p_source(TRealMatrix       & rhox,
-                                        TRealMatrix       & rhoy,
-                                        TRealMatrix       & rhoz,
-                                        const TRealMatrix & p_source_input,
-                                        const TIndexMatrix& p_source_index,
-                                        const size_t        t_index)
+void SolverCUDAKernels::Add_p_source(TRealMatrix       & rhox,
+                                     TRealMatrix       & rhoy,
+                                     TRealMatrix       & rhoz,
+                                     const TRealMatrix & p_source_input,
+                                     const TIndexMatrix& p_source_index,
+                                     const size_t        t_index)
 {
   const size_t p_source_index_size = p_source_index.GetTotalElementCount();
 
@@ -1060,9 +1090,9 @@ __global__  void CUDACompute_dt_rho_sg_mul_u(float      * uxyz_sgxyz,
  *                               This will be overridden
  * @todo to me merged for ux, uy and uz
  */
-void TCUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2(TRealMatrix        & uxyz_sgxyz,
-                                                            const TRealMatrix  & dt_rho0_sg,
-                                                            TCUFFTComplexMatrix& FFT)
+void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(TRealMatrix        & uxyz_sgxyz,
+                                                         const TRealMatrix  & dt_rho0_sg,
+                                                         TCUFFTComplexMatrix& FFT)
 {
   // take the 3D ifft
   FFT.Compute_FFT_3D_C2R(uxyz_sgxyz);
@@ -1106,9 +1136,9 @@ __global__  void CUDACompute_dt_rho_sg_mul_u(float     * uxyz_sgxyz,
  *
  * @todo to me merged for ux, uy and uz
  */
-void TCUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2(TRealMatrix        & uxyz_sgxyz,
-                                                            const float          dt_rho0_sg,
-                                                            TCUFFTComplexMatrix& FFT)
+void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(TRealMatrix        & uxyz_sgxyz,
+                                                         const float          dt_rho0_sg,
+                                                         TCUFFTComplexMatrix& FFT)
 {
   // take the 3D ifft
   FFT.Compute_FFT_3D_C2R(uxyz_sgxyz);
@@ -1158,10 +1188,10 @@ __global__ void CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x(float  
  * @param [in]      dxudxn_sgx   - non-uniform mapping
  * @param [in]      FFT          - FFT matrix (data will be overwritten)
  */
-void TCUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x(TRealMatrix        & ux_sgx,
-                                                                                const float          dt_rho0_sgx,
-                                                                                const TRealMatrix  & dxudxn_sgx,
-                                                                                TCUFFTComplexMatrix& FFT)
+void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x(TRealMatrix        & ux_sgx,
+                                                                             const float          dt_rho0_sgx,
+                                                                             const TRealMatrix  & dxudxn_sgx,
+                                                                             TCUFFTComplexMatrix& FFT)
 {
   // take the 3D iFFT
   FFT.Compute_FFT_3D_C2R(ux_sgx);
@@ -1214,10 +1244,10 @@ __global__ void CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y(float  
  * @param [in]      dyudyn_sgy   - non-uniform mapping
  * @param [in]      FFT          - FFT matrix (data will be overwritten)
  */
-void TCUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y(TRealMatrix        & uy_sgy,
-                                                                                const float          dt_rho0_sgy,
-                                                                                const TRealMatrix  & dyudyn_sgy,
-                                                                                TCUFFTComplexMatrix& FFT)
+void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y(TRealMatrix        & uy_sgy,
+                                                                             const float          dt_rho0_sgy,
+                                                                             const TRealMatrix  & dyudyn_sgy,
+                                                                             TCUFFTComplexMatrix& FFT)
 {
   // take the 3D iFFT
   FFT.Compute_FFT_3D_C2R(uy_sgy);
@@ -1269,10 +1299,10 @@ __global__ void CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z(float  
  * @param [in]      dzudzn_sgz   - non-uniform mapping
  * @param [in]      FFT          - FFT matrix (data will be overwritten)
  */
-void TCUDAImplementations::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z(TRealMatrix        & uz_sgz,
-                                                                                const float          dt_rho0_sgz,
-                                                                                const TRealMatrix  & dzudzn_sgz,
-                                                                                TCUFFTComplexMatrix& FFT)
+void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z(TRealMatrix        & uz_sgz,
+                                                                             const float          dt_rho0_sgz,
+                                                                             const TRealMatrix  & dzudzn_sgz,
+                                                                             TCUFFTComplexMatrix& FFT)
 {
   // take the D iFFT
   FFT.Compute_FFT_3D_C2R(uz_sgz);
@@ -1372,14 +1402,14 @@ __global__ void CUDACompute_ddx_kappa_fft_p(float2       * FFT_X,
  * @param [in]     ddy - precomputed value of ddy_k_shift_pos
  * @param [in]     ddz - precomputed value of ddz_k_shift_pos
  */
-void TCUDAImplementations::Compute_ddx_kappa_fft_p(TRealMatrix         & X_Matrix,
-                                                   TCUFFTComplexMatrix & FFT_X,
-                                                   TCUFFTComplexMatrix & FFT_Y,
-                                                   TCUFFTComplexMatrix & FFT_Z,
-                                                   const TRealMatrix   & kappa,
-                                                   const TComplexMatrix& ddx,
-                                                   const TComplexMatrix& ddy,
-                                                   const TComplexMatrix& ddz)
+void SolverCUDAKernels::Compute_ddx_kappa_fft_p(TRealMatrix         & X_Matrix,
+                                                TCUFFTComplexMatrix & FFT_X,
+                                                TCUFFTComplexMatrix & FFT_Y,
+                                                TCUFFTComplexMatrix & FFT_Z,
+                                                const TRealMatrix   & kappa,
+                                                const TComplexMatrix& ddx,
+                                                const TComplexMatrix& ddy,
+                                                const TComplexMatrix& ddz)
 {
   // Compute FFT of X
   FFT_X.Compute_FFT_3D_R2C(X_Matrix);
@@ -1482,13 +1512,13 @@ __global__  void CUDACompute_duxyz_uniform(float2       * FFT_X,
  * @param [in] ddy_k_shift_neg
  * @param [in] ddz_k_shift_neg
  */
-void TCUDAImplementations::Compute_duxyz_uniform(TCUFFTComplexMatrix & FFT_X,
-                                                 TCUFFTComplexMatrix & FFT_Y,
-                                                 TCUFFTComplexMatrix & FFT_Z,
-                                                 const TRealMatrix   & kappa,
-                                                 const TComplexMatrix& ddx_k_shift_neg,
-                                                 const TComplexMatrix& ddy_k_shift_neg,
-                                                 const TComplexMatrix& ddz_k_shift_neg)
+void SolverCUDAKernels::Compute_duxyz_uniform(TCUFFTComplexMatrix & FFT_X,
+                                              TCUFFTComplexMatrix & FFT_Y,
+                                              TCUFFTComplexMatrix & FFT_Z,
+                                              const TRealMatrix   & kappa,
+                                              const TComplexMatrix& ddx_k_shift_neg,
+                                              const TComplexMatrix& ddy_k_shift_neg,
+                                               const TComplexMatrix& ddz_k_shift_neg)
 {
   CUDACompute_duxyz_uniform<<<GetSolverGridSize3D(),
                               GetSolverBlockSize3D()>>>
@@ -1550,12 +1580,12 @@ __global__  void CUDACompute_duxyz_non_linear(float      * duxdx,
  * @param [in]     dyudyn
  * @param [in]     dzudzn
  */
-void TCUDAImplementations::Compute_duxyz_non_uniform(TRealMatrix      & duxdx,
-                                                     TRealMatrix      & duydy,
-                                                     TRealMatrix      & duzdz,
-                                                     const TRealMatrix& dxudxn,
-                                                     const TRealMatrix& dyudyn,
-                                                     const TRealMatrix& dzudzn)
+void SolverCUDAKernels::Compute_duxyz_non_uniform(TRealMatrix      & duxdx,
+                                                  TRealMatrix      & duydy,
+                                                  TRealMatrix      & duzdz,
+                                                  const TRealMatrix& dxudxn,
+                                                  const TRealMatrix& dyudyn,
+                                                  const TRealMatrix& dzudzn)
 {
   CUDACompute_duxyz_non_linear<<<GetSolverGridSize3D(),
                                  GetSolverBlockSize3D()>>>
@@ -1647,13 +1677,13 @@ __global__ void CUDACalculate_p0_source_add_initial_pressure(float       * p,
  * @param [in] c2       - sound speed
  * @param [in] c2_shift - scalar or vector?
  */
-void TCUDAImplementations::Calculate_p0_source_add_initial_pressure(TRealMatrix      & p,
-                                                                    TRealMatrix      & rhox,
-                                                                    TRealMatrix      & rhoy,
-                                                                    TRealMatrix      & rhoz,
-                                                                    const TRealMatrix& p0,
-                                                                    const float      * c2,
-                                                                    const size_t       c2_shift)
+void SolverCUDAKernels::Calculate_p0_source_add_initial_pressure(TRealMatrix      & p,
+                                                                 TRealMatrix      & rhox,
+                                                                 TRealMatrix      & rhoy,
+                                                                 TRealMatrix      & rhoz,
+                                                                 const TRealMatrix& p0,
+                                                                 const float      * c2,
+                                                                 const size_t       c2_shift)
 {
   if (c2_shift == 0)
   {
@@ -1744,15 +1774,15 @@ __global__ void CUDACompute_rhoxyz_nonlinear_homogeneous(float      * rhox,
  * @param [in]  duydy - gradient of velocity x
  * @param [in]  duzdz - gradient of velocity z
  */
-void TCUDAImplementations::Compute_rhoxyz_nonlinear_homogeneous(TRealMatrix      & rhox,
-                                                                TRealMatrix      & rhoy,
-                                                                TRealMatrix      & rhoz,
-                                                                const TRealMatrix& pml_x,
-                                                                const TRealMatrix& pml_y,
-                                                                const TRealMatrix& pml_z,
-                                                                const TRealMatrix& duxdx,
-                                                                const TRealMatrix& duydy,
-                                                                const TRealMatrix& duzdz)
+void SolverCUDAKernels::Compute_rhoxyz_nonlinear_homogeneous(TRealMatrix      & rhox,
+                                                             TRealMatrix      & rhoy,
+                                                             TRealMatrix      & rhoz,
+                                                             const TRealMatrix& pml_x,
+                                                             const TRealMatrix& pml_y,
+                                                             const TRealMatrix& pml_z,
+                                                             const TRealMatrix& duxdx,
+                                                             const TRealMatrix& duydy,
+                                                             const TRealMatrix& duzdz)
 {
   CUDACompute_rhoxyz_nonlinear_homogeneous<<<GetSolverGridSize3D(),
                                              GetSolverBlockSize3D()>>>
@@ -1836,16 +1866,16 @@ __global__ void CUDACompute_rhoxyz_nonlinear_heterogeneous(float      * rhox,
  * @param [in]  duzdz - gradient of velocity z
  * @param [in]  rho0  - initial density (matrix here)
  */
-void TCUDAImplementations::Compute_rhoxyz_nonlinear_heterogeneous(TRealMatrix&       rhox,
-                                                                  TRealMatrix&       rhoy,
-                                                                  TRealMatrix&       rhoz,
-                                                                  const TRealMatrix& pml_x,
-                                                                  const TRealMatrix& pml_y,
-                                                                  const TRealMatrix& pml_z,
-                                                                  const TRealMatrix& duxdx,
-                                                                  const TRealMatrix& duydy,
-                                                                  const TRealMatrix& duzdz,
-                                                                  const TRealMatrix& rho0)
+void SolverCUDAKernels::Compute_rhoxyz_nonlinear_heterogeneous(TRealMatrix&       rhox,
+                                                               TRealMatrix&       rhoy,
+                                                               TRealMatrix&       rhoz,
+                                                               const TRealMatrix& pml_x,
+                                                               const TRealMatrix& pml_y,
+                                                               const TRealMatrix& pml_z,
+                                                               const TRealMatrix& duxdx,
+                                                               const TRealMatrix& duydy,
+                                                               const TRealMatrix& duzdz,
+                                                               const TRealMatrix& rho0)
 {
   CUDACompute_rhoxyz_nonlinear_heterogeneous<<<GetSolverGridSize3D(),
                                                GetSolverBlockSize3D() >>>
@@ -1921,15 +1951,15 @@ __global__ void CUDACompute_rhoxyz_linear_homogeneous(float      * rhox,
  * @param [in]  duydy - gradient of velocity x
  * @param [in]  duzdz - gradient of velocity z
  */
-void TCUDAImplementations::Compute_rhoxyz_linear_homogeneous(TRealMatrix      & rhox,
-                                                             TRealMatrix      & rhoy,
-                                                             TRealMatrix      & rhoz,
-                                                             const TRealMatrix& pml_x,
-                                                             const TRealMatrix& pml_y,
-                                                             const TRealMatrix& pml_z,
-                                                             const TRealMatrix& duxdx,
-                                                             const TRealMatrix& duydy,
-                                                             const TRealMatrix& duzdz)
+void SolverCUDAKernels::Compute_rhoxyz_linear_homogeneous(TRealMatrix      & rhox,
+                                                          TRealMatrix      & rhoy,
+                                                          TRealMatrix      & rhoz,
+                                                          const TRealMatrix& pml_x,
+                                                          const TRealMatrix& pml_y,
+                                                          const TRealMatrix& pml_z,
+                                                          const TRealMatrix& duxdx,
+                                                          const TRealMatrix& duydy,
+                                                          const TRealMatrix& duzdz)
 {
   CUDACompute_rhoxyz_linear_homogeneous<<<GetSolverGridSize3D(),
                                           GetSolverBlockSize3D() >>>
@@ -2008,16 +2038,16 @@ __global__ void CUDACompute_rhoxyz_linear_heterogeneous(float       * rhox,
 
  * @param [in]  rho0  - initial density (matrix here)
  */
-void TCUDAImplementations::Compute_rhoxyz_linear_heterogeneous(TRealMatrix      & rhox,
-                                                               TRealMatrix      & rhoy,
-                                                               TRealMatrix      & rhoz,
-                                                               const TRealMatrix& pml_x,
-                                                               const TRealMatrix& pml_y,
-                                                               const TRealMatrix& pml_z,
-                                                               const TRealMatrix& duxdx,
-                                                               const TRealMatrix& duydy,
-                                                               const TRealMatrix& duzdz,
-                                                               const TRealMatrix& rho0)
+void SolverCUDAKernels::Compute_rhoxyz_linear_heterogeneous(TRealMatrix      & rhox,
+                                                            TRealMatrix      & rhoy,
+                                                            TRealMatrix      & rhoz,
+                                                            const TRealMatrix& pml_x,
+                                                            const TRealMatrix& pml_y,
+                                                            const TRealMatrix& pml_z,
+                                                            const TRealMatrix& duxdx,
+                                                            const TRealMatrix& duydy,
+                                                            const TRealMatrix& duzdz,
+                                                            const TRealMatrix& rho0)
 {
   CUDACompute_rhoxyz_linear_heterogeneous<<<GetSolverGridSize3D(),
                                             GetSolverBlockSize3D()>>>
@@ -2108,21 +2138,21 @@ __global__ void CUDACalculate_SumRho_BonA_SumDu(float       * rho_sum,
  *
  * @todo revise parameter names, and put scalars to constant memory
  */
-void TCUDAImplementations::Calculate_SumRho_BonA_SumDu(TRealMatrix      & rho_sum,
-                                                       TRealMatrix      & BonA_sum,
-                                                       TRealMatrix      & du_sum,
-                                                       const TRealMatrix& rhox,
-                                                       const TRealMatrix& rhoy,
-                                                       const TRealMatrix& rhoz,
-                                                       const TRealMatrix& duxdx,
-                                                       const TRealMatrix& duydy,
-                                                       const TRealMatrix& duzdz,
-                                                       const float        BonA_scalar,
-                                                       const float*       BonA_matrix,
-                                                       const size_t       BonA_shift,
-                                                       const float        rho0_scalar,
-                                                       const float*       rho0_matrix,
-                                                       const size_t       rho0_shift)
+void SolverCUDAKernels::Calculate_SumRho_BonA_SumDu(TRealMatrix      & rho_sum,
+                                                    TRealMatrix      & BonA_sum,
+                                                    TRealMatrix      & du_sum,
+                                                    const TRealMatrix& rhox,
+                                                    const TRealMatrix& rhoy,
+                                                    const TRealMatrix& rhoz,
+                                                    const TRealMatrix& duxdx,
+                                                    const TRealMatrix& duydy,
+                                                    const TRealMatrix& duzdz,
+                                                    const float        BonA_scalar,
+                                                    const float*       BonA_matrix,
+                                                    const size_t       BonA_shift,
+                                                    const float        rho0_scalar,
+                                                    const float*       rho0_matrix,
+                                                    const size_t       rho0_shift)
 {
   CUDACalculate_SumRho_BonA_SumDu<<<GetSolverGridSize1D(),
                                     GetSolverBlockSize1D()>>>
@@ -2196,10 +2226,10 @@ __global__ void CUDACompute_Absorb_nabla1_2(float2     * FFT_1,
  * @param [in]     absorb_nabla1
  * @param [in]     absorb_nabla2
  */
-void TCUDAImplementations::Compute_Absorb_nabla1_2(TCUFFTComplexMatrix& FFT_1,
-                                                   TCUFFTComplexMatrix& FFT_2,
-                                                   const TRealMatrix  & absorb_nabla1,
-                                                   const TRealMatrix  & absorb_nabla2)
+void SolverCUDAKernels::Compute_Absorb_nabla1_2(TCUFFTComplexMatrix& FFT_1,
+                                                TCUFFTComplexMatrix& FFT_2,
+                                                const TRealMatrix  & absorb_nabla1,
+                                                const TRealMatrix  & absorb_nabla2)
 {
   CUDACompute_Absorb_nabla1_2<<<GetSolverGridSize1D(),
                                 GetSolverBlockSize1D()>>>
@@ -2271,18 +2301,18 @@ __global__ void CUDASum_Subterms_nonlinear(float       * p,
  * @param [in] eta_matrix
  * @param [in]tau_eta_shift
  */
-void TCUDAImplementations::Sum_Subterms_nonlinear(TRealMatrix      & p,
-                                                  const TRealMatrix& BonA_temp,
-                                                  const float        c2_scalar,
-                                                  const float      * c2_matrix,
-                                                  const size_t       c2_shift,
-                                                  const float      * Absorb_tau,
-                                                  const float        tau_scalar,
-                                                  const float      * tau_matrix,
-                                                  const float      * Absorb_eta,
-                                                  const float        eta_scalar,
-                                                  const float      * eta_matrix,
-                                                  const size_t       tau_eta_shift)
+void SolverCUDAKernels::Sum_Subterms_nonlinear(TRealMatrix      & p,
+                                               const TRealMatrix& BonA_temp,
+                                               const float        c2_scalar,
+                                               const float      * c2_matrix,
+                                               const size_t       c2_shift,
+                                               const float      * Absorb_tau,
+                                               const float        tau_scalar,
+                                               const float      * tau_matrix,
+                                               const float      * Absorb_eta,
+                                               const float        eta_scalar,
+                                               const float      * eta_matrix,
+                                               const size_t       tau_eta_shift)
 {
   CUDASum_Subterms_nonlinear<<<GetSolverGridSize1D(),
                                GetSolverBlockSize1D()>>>
@@ -2361,18 +2391,18 @@ __global__ void CUDASum_Subterms_linear(float       * p,
  * @param [in] eta_matrix
  * @param [in] tau_eta_shift
  */
-void TCUDAImplementations::Sum_Subterms_linear(TRealMatrix      & p,
-                                               const TRealMatrix& Absorb_tau_temp,
-                                               const TRealMatrix& Absorb_eta_temp,
-                                               const TRealMatrix& Sum_rhoxyz,
-                                               const float        c2_scalar,
-                                               const float      * c2_matrix,
-                                               const size_t       c2_shift,
-                                               const float        tau_scalar,
-                                               const float      * tau_matrix,
-                                               const float        eta_scalar,
-                                               const float      * eta_matrix,
-                                               const size_t       tau_eta_shift)
+void SolverCUDAKernels::Sum_Subterms_linear(TRealMatrix      & p,
+                                            const TRealMatrix& Absorb_tau_temp,
+                                            const TRealMatrix& Absorb_eta_temp,
+                                            const TRealMatrix& Sum_rhoxyz,
+                                            const float        c2_scalar,
+                                            const float      * c2_matrix,
+                                            const size_t       c2_shift,
+                                            const float        tau_scalar,
+                                            const float      * tau_matrix,
+                                            const float        eta_scalar,
+                                            const float      * eta_matrix,
+                                            const size_t       tau_eta_shift)
 {
   CUDASum_Subterms_linear<<<GetSolverGridSize1D(),
                             GetSolverBlockSize1D() >>>
@@ -2454,19 +2484,19 @@ __global__ void CUDASum_new_p_nonlinear_lossless(float       * p,
  * @param [in]  rho0_matrix
  * @param [in]  rho0_shift
  */
-void TCUDAImplementations::Sum_new_p_nonlinear_lossless(TRealMatrix      & p,
-                                                        const TRealMatrix& rhox,
-                                                        const TRealMatrix& rhoy,
-                                                        const TRealMatrix& rhoz,
-                                                        const float        c2_scalar,
-                                                        const float      * c2_matrix,
-                                                        const size_t       c2_shift,
-                                                        const float        BonA_scalar,
-                                                        const float      * BonA_matrix,
-                                                        const size_t       BonA_shift,
-                                                        const float        rho0_scalar,
-                                                        const float      * rho0_matrix,
-                                                        const size_t       rho0_shift)
+void SolverCUDAKernels::Sum_new_p_nonlinear_lossless(TRealMatrix      & p,
+                                                     const TRealMatrix& rhox,
+                                                     const TRealMatrix& rhoy,
+                                                     const TRealMatrix& rhoz,
+                                                     const float        c2_scalar,
+                                                     const float      * c2_matrix,
+                                                     const size_t       c2_shift,
+                                                     const float        BonA_scalar,
+                                                     const float      * BonA_matrix,
+                                                     const size_t       BonA_shift,
+                                                     const float        rho0_scalar,
+                                                     const float      * rho0_matrix,
+                                                     const size_t       rho0_shift)
 {
   CUDASum_new_p_nonlinear_lossless<<<GetSolverGridSize1D(),
                                      GetSolverBlockSize1D()>>>
@@ -2542,17 +2572,17 @@ __global__ void CUDACalculate_SumRho_SumRhoDu(float      * Sum_rhoxyz,
  * @param [in]  rho0_matrix
  * @param [in]  rho0_shift
  */
-void TCUDAImplementations::Calculate_SumRho_SumRhoDu(TRealMatrix      & Sum_rhoxyz,
-                                                     TRealMatrix      & Sum_rho0_du,
-                                                     const TRealMatrix& rhox,
-                                                     const TRealMatrix& rhoy,
-                                                     const TRealMatrix& rhoz,
-                                                     const TRealMatrix& duxdx,
-                                                     const TRealMatrix& duydy,
-                                                     const TRealMatrix& duzdz,
-                                                     const float        rho0_scalar,
-                                                     const float      * rho0_matrix,
-                                                     const size_t       rho0_shift)
+void SolverCUDAKernels::Calculate_SumRho_SumRhoDu(TRealMatrix      & Sum_rhoxyz,
+                                                  TRealMatrix      & Sum_rho0_du,
+                                                  const TRealMatrix& rhox,
+                                                  const TRealMatrix& rhoy,
+                                                  const TRealMatrix& rhoz,
+                                                  const TRealMatrix& duxdx,
+                                                  const TRealMatrix& duydy,
+                                                  const TRealMatrix& duzdz,
+                                                  const float        rho0_scalar,
+                                                  const float      * rho0_matrix,
+                                                  const size_t       rho0_shift)
 {
    CUDACalculate_SumRho_SumRhoDu<<<GetSolverGridSize1D(),
                                    GetSolverBlockSize1D()>>>
@@ -2607,13 +2637,13 @@ __global__ void CUDASum_new_p_linear_lossless(float       * p,
  * @param [in]  c2_matrix
  * @param [in]  c2_shift
  */
-void TCUDAImplementations::Sum_new_p_linear_lossless(TRealMatrix      & p,
-                                                     const TRealMatrix& rhox,
-                                                     const TRealMatrix& rhoy,
-                                                     const TRealMatrix& rhoz,
-                                                     const float        c2_scalar,
-                                                     const float      * c2_matrix,
-                                                     const size_t       c2_shift)
+void SolverCUDAKernels::Sum_new_p_linear_lossless(TRealMatrix      & p,
+                                                  const TRealMatrix& rhox,
+                                                  const TRealMatrix& rhoy,
+                                                  const TRealMatrix& rhoz,
+                                                  const float        c2_scalar,
+                                                  const float      * c2_matrix,
+                                                  const size_t       c2_shift)
 {
   CUDASum_new_p_linear_lossless<<<GetSolverGridSize1D(),
                                   GetSolverBlockSize1D()>>>
@@ -2852,9 +2882,9 @@ __global__ void cudaTrasnposeReal3DMatrixXYRect(float       * OutputData,
  * @param [in]  InputMatrixData  - Input  matrix
  * @param [In]  DimSizes - dimension sizes of the original matrix
  */
-void TCUDAImplementations::TrasposeReal3DMatrixXY(float       * OutputMatrixData,
-                                                  const float * InputMatrixData,
-                                                  const dim3  & DimSizes)
+void SolverCUDAKernels::TrasposeReal3DMatrixXY(float       * OutputMatrixData,
+                                               const float * InputMatrixData,
+                                               const dim3  & DimSizes)
 {
   // fixed size at the moment, may be tuned based on the domain shape in the future
   if ((DimSizes.x % 32 == 0) && (DimSizes.y % 32 == 0))
@@ -3096,9 +3126,9 @@ __global__ void cudaTrasnposeReal3DMatrixXZRect(float       * OutputData,
  * @param [in]  InputMatrixData  - Input  matrix
  * @param [In]  DimSizes - dimension sizes of the original matrix
  */
-void TCUDAImplementations::TrasposeReal3DMatrixXZ(float       * OutputMatrixData,
-                                                  const float * InputMatrixData,
-                                                  const dim3  & DimSizes)
+void SolverCUDAKernels::TrasposeReal3DMatrixXZ(float       * OutputMatrixData,
+                                               const float * InputMatrixData,
+                                               const dim3  & DimSizes)
 {
   if ((DimSizes.x % 32 == 0) && (DimSizes.y % 32 == 0))
   {
@@ -3160,8 +3190,8 @@ __global__ void CUDAComputeVelocityShiftInX(float2       * FFT_shift_temp,
  * @param [in,out] FFT_shift_temp
  * @param [in]     x_shift_neg
  */
-void TCUDAImplementations::ComputeVelocityShiftInX(TCUFFTComplexMatrix  & FFT_shift_temp,
-                                                   const TComplexMatrix & x_shift_neg_r)
+void SolverCUDAKernels::ComputeVelocityShiftInX(TCUFFTComplexMatrix  & FFT_shift_temp,
+                                                const TComplexMatrix & x_shift_neg_r)
 {
   CUDAComputeVelocityShiftInX<<<GetSolverGridSize3D(),
                                 GetSolverBlockSize3D()>>>
@@ -3216,8 +3246,8 @@ __global__ void CUDAComputeVelocityShiftInY(float2       * FFT_shift_temp,
  * @param [in,out] FFT_shift_temp
  * @param [in]     x_shift_neg
  */
-void TCUDAImplementations::ComputeVelocityShiftInY(TCUFFTComplexMatrix  & FFT_shift_temp,
-                                                   const TComplexMatrix & y_shift_neg_r)
+void SolverCUDAKernels::ComputeVelocityShiftInY(TCUFFTComplexMatrix  & FFT_shift_temp,
+                                                const TComplexMatrix & y_shift_neg_r)
 {
   CUDAComputeVelocityShiftInY<<<GetSolverGridSize3D(),
                                 GetSolverBlockSize3D()>>>
@@ -3271,8 +3301,8 @@ __global__ void CUDAComputeVelocityShiftInZ(float2       * FFT_shift_temp,
  * @param [in,out] FFT_shift_temp
  * @param [in]     z_shift_neg
  */
-void TCUDAImplementations::ComputeVelocityShiftInZ(TCUFFTComplexMatrix  & FFT_shift_temp,
-                                                   const TComplexMatrix & z_shift_neg_r)
+void SolverCUDAKernels::ComputeVelocityShiftInZ(TCUFFTComplexMatrix  & FFT_shift_temp,
+                                                const TComplexMatrix & z_shift_neg_r)
 {
   CUDAComputeVelocityShiftInZ<<<GetSolverGridSize3D(),
                                 GetSolverBlockSize3D()>>>

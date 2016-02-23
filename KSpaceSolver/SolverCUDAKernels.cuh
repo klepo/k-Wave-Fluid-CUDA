@@ -1,16 +1,15 @@
 /**
- * @file        CUDAImplementations.h
+ * @file        SolverCUDAKernels.cuh
  * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
  *              jarosjir@fit.vutbr.cz
  *
- * @brief       The implementation file containing the all CUDA kernels
- *              for the GPU implementation
+ * @brief       Name space for all CUDA kernels used in the 3D solver
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 March    2013, 13:10 (created) \n
- *              13 February 2016, 13:47 (revised)
+ *              23 February 2016, 13:47 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -31,8 +30,8 @@
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef CUDA_IMPLEMENTATIONS_H
-#define	CUDA_IMPLEMENTATIONS_H
+#ifndef SOLVER_CUDA_KERNELS_CUH
+#define	SOLVER_CUDA_KERNELS_CUH
 
 #include <iostream>
 
@@ -47,24 +46,17 @@
 #include <Parameters/CUDAParameters.h>
 
 /**
- * @class TCUDAImplementations
- * @brief This singleton class implements interface for CUDA kernels.
- * @details This singleton class implements interface for CUDA kernels.
+ * @namespace   SolverCUDAKernels
+ * @brief       List of cuda kernels used kspace FirstOrder 3D solver
+ * @details     List of cuda kernels used kspace FirstOrder 3D solver
+ *
  */
-class TCUDAImplementations
+namespace SolverCUDAKernels
 {
-  public:
-
-  /// Get instance of singleton class.
-  static TCUDAImplementations* GetInstance();
-  /// Destructor - may be virtual (once we merge OMP and CUDA).
-  virtual ~TCUDAImplementations();
-
   /// Get the CUDA architecture and GPU code version the code was compiled with
   int GetCUDACodeVersion();
 
   //----------------------- ux calculation------------------------------------//
-
   /// compute a new value of ux_sgx, default case.
   void Compute_ux_sgx_normalize(TRealMatrix      & ux_sgx,
                                 const TRealMatrix& FFT_p,
@@ -119,7 +111,6 @@ class TCUDAImplementations
                                                   const TRealMatrix& pml);
 
   //------------------------ transducers -------------------------------------//
-
   /// Add transducer data  source to X component.
   void AddTransducerSource(TRealMatrix       & ux_sgx,
                            const TIndexMatrix& u_source_index,
@@ -367,81 +358,6 @@ class TCUDAImplementations
     /// Compute the velocity shift in Fourier space over the Z axis
     void ComputeVelocityShiftInZ(TCUFFTComplexMatrix & FFT_shift_temp,
                                  const TComplexMatrix& z_shift_neg_r);
-
-
-  private:
-    /// Default constructor for a singleton class
-    TCUDAImplementations() {};
-
-    /**
-     * Get block size for 1D kernels
-     * @return 1D block size
-     */
-    int GetSolverBlockSize1D() const
-    {
-      return TParameters::GetInstance()->CUDAParameters.GetSolverBlockSize1D();
-    };
-
-    /**
-     * Get grid size for 1D kernels
-     * @return 1D grid size
-     */
-    int GetSolverGridSize1D() const
-    {
-      return TParameters::GetInstance()->CUDAParameters.GetSolverGridSize1D();
-    };
-
-    /**
-     * Get block size for 3D kernels
-     * @return 3D size
-     */
-    dim3 GetSolverBlockSize3D() const
-    {
-      return TParameters::GetInstance()->CUDAParameters.GetSolverBlockSize3D();
-    };
-
-    /**
-     * Get grid size for 3D kernels
-     * @return 3D grid size
-     */
-    dim3 GetSolverGridSize3D() const
-    {
-      return TParameters::GetInstance()->CUDAParameters.GetSolverGridSize3D();
-    };
-
-    /**
-     * Get grid size for complex 3D kernels
-     * @return 3D grid size
-     */
-    dim3 GetSolverComplexGridSize3D() const
-    {
-      return TParameters::GetInstance()->CUDAParameters.GetSolverComplexGridSize3D();
-    };
-
-
-    /**
-     * Get block size for the transposition kernels
-     * @return 3D grid size
-     */
-    dim3 GetSolverTransposeBlockSize() const
-    {
-      return TParameters::GetInstance()->CUDAParameters.GetSolverTransposeBlockSize();
-    };
-
-    /**
-     * Get grid size for complex 3D kernels
-     * @return 3D grid size
-     */
-    dim3 GetSolverTransposeGirdSize() const
-    {
-      return TParameters::GetInstance()->CUDAParameters.GetSolverTransposeGirdSize();
-    };
-
-    /// Singleton instance flag
-    static bool InstanceFlag;
-    /// Singleton instance
-    static TCUDAImplementations *Instance;
-
 };
 
-#endif /* CUDA_IMPLEMENTATIONS_H */
+#endif /*SOLVER_CUDA_KERNELS_CUH*/
