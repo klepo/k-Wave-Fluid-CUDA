@@ -91,7 +91,7 @@ CXX = /usr/local/share/cuda/bin/nvcc
  
 # Set compiler flags and header files directories
 CXXFLAGS = -Xcompiler="-mtune=native -march=native -O3 -fopenmp -ffast-math -fassociative-math" \
-           -std=c++11  -I$(HDF5_DIR)/include  -I. -Xptxas -v -ccbin=g++-4.8 \
+           -std=c++11  -I$(HDF5_DIR)/include  -I. -ccbin=g++-4.8 \
            --generate-code arch=compute_20,code=sm_20  \
            --generate-code arch=compute_20,code=sm_21  \
            --generate-code arch=compute_30,code=sm_30  \
@@ -100,18 +100,14 @@ CXXFLAGS = -Xcompiler="-mtune=native -march=native -O3 -fopenmp -ffast-math -fas
            --generate-code arch=compute_37,code=sm_37  \
            --generate-code arch=compute_50,code=sm_50  \
            --generate-code arch=compute_52,code=sm_52  \
-           --generate-code arch=compute_53,code=sm_53
-           
+           --generate-code arch=compute_53,code=sm_53  \
+	   --device-c
+
+
   
 LDFLAGS  = -Xcompiler="-fopenmp" -Xlinker="-rpath,$(HDF5_DIR)/lib:$(CUDA_DIR)/lib64" -std=c++11  -L$(HDF5_DIR)/lib  -L$(CUDA_DIR)/lib64 -ccbin=g++-4.8
 LIBS     = -lhdf5 -lhdf5_hl -lz -lcufft
 
-
-#LIBS	  = $(HDF5_DIR)/lib/libhdf5_hl.a 	\
-#            $(HDF5_DIR)/lib/libhdf5.a		\
-#            $(CUDA_DIR)/lib64/libcufft_static.a \
-#            $(CUDA_DIR)/lib64/libcufftw_static.a \
-#	    -lz -ldl
 
   
 
@@ -121,12 +117,12 @@ TARGET		= kspaceFirstOrder3D-CUDA
 
 all:		$(TARGET)
 
-$(TARGET):	CUDA/CUDAImplementations.o \
-		Containers/MatrixContainer.o \
+$(TARGET):	Containers/MatrixContainer.o \
 		Containers/MatrixRecord.o \
 		Containers/OutputStreamContainer.o \
 		HDF5/HDF5_File.o \
 		KSpaceSolver/KSpaceFirstOrder3DSolver.o \
+		KSpaceSolver/SolverCUDAKernels.o \
 		MatrixClasses/BaseFloatMatrix.o \
 		MatrixClasses/BaseIndexMatrix.o \
 		MatrixClasses/CUFFTComplexMatrix.o \
@@ -141,16 +137,17 @@ $(TARGET):	CUDA/CUDAImplementations.o \
 		Parameters/CommandLineParameters.o \
 		Parameters/Parameters.o \
 		Parameters/CUDAParameters.o \
+		Parameters/CUDADeviceConstants.o \
 		main.o
 
 
 	$(CXX) $(LDFLAGS) main.o	\
-		CUDA/CUDAImplementations.o \
 		Containers/MatrixContainer.o \
 		Containers/MatrixRecord.o \
 		Containers/OutputStreamContainer.o \
 		HDF5/HDF5_File.o \
 		KSpaceSolver/KSpaceFirstOrder3DSolver.o \
+		KSpaceSolver/SolverCUDAKernels.o \
 		MatrixClasses/BaseFloatMatrix.o \
 		MatrixClasses/BaseIndexMatrix.o \
 		MatrixClasses/CUFFTComplexMatrix.o \
@@ -165,6 +162,7 @@ $(TARGET):	CUDA/CUDAImplementations.o \
 		Parameters/CommandLineParameters.o \
 		Parameters/Parameters.o \
 		Parameters/CUDAParameters.o \
+		Parameters/CUDADeviceConstants.o \
 		$(LIBS)	\
 		-o $@
 
@@ -173,14 +171,17 @@ $(TARGET).o : $(TARGET).cpp
 	$(CXX) $(CXXFLAGS) -c $(TARGET).cpp 
 
 
-CUDA/CUDAImplementations.o : CUDA/CUDAImplementations.cu
-	$(CXX) $(CXXFLAGS) -c CUDA/CUDAImplementations.cu -o CUDA/CUDAImplementations.o
-	
+KSpaceSolver/SolverCUDAKernels.o : KSpaceSolver/SolverCUDAKernels.cu
+	$(CXX) $(CXXFLAGS) -c KSpaceSolver/SolverCUDAKernels.cu -o KSpaceSolver/SolverCUDAKernels.o
+
 OutputHDF5Streams/OutputStreamsCUDAKernels.o : OutputHDF5Streams/OutputStreamsCUDAKernels.cu
 	$(CXX) $(CXXFLAGS) -c OutputHDF5Streams/OutputStreamsCUDAKernels.cu -o OutputHDF5Streams/OutputStreamsCUDAKernels.o
-	
+
+Parameters/CUDADeviceConstants.o \ : Parameters/CUDADeviceConstants.cu
+	$(CXX) $(CXXFLAGS) -c Parameters/CUDADeviceConstants.cu -o Parameters/CUDADeviceConstants.o
+
 clean:
-	rm -f *.o HDF5/*.o KSpaceSolver/*.o MatrixClasses/*.o Parameters/*.o Containers/*.o  CUDA/*.o OutputHDF5Streams/*.o $(TARGET)
+	rm -f *.o HDF5/*.o KSpaceSolver/*.o MatrixClasses/*.o Parameters/*.o Containers/*.o  OutputHDF5Streams/*.o $(TARGET)
 
 
 
