@@ -101,7 +101,8 @@ CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math -msse2"
 	    --generate-code arch=compute_37,code=sm_37	\
 	    --generate-code arch=compute_50,code=sm_50	\
 	    --generate-code arch=compute_52,code=sm_52	\
-	    --generate-code arch=compute_53,code=sm_53	
+	    --generate-code arch=compute_53,code=sm_53	\
+	    --device-c
 
 
   
@@ -148,6 +149,7 @@ $(TARGET):	CUDA/CUDAImplementations.o \
 		Parameters/CommandLineParameters.o \
 		Parameters/Parameters.o \
 		Parameters/CUDAParameters.o \
+		Parameters/CUDADeviceConstants.o \
 		main.o
 
 
@@ -172,6 +174,7 @@ $(TARGET):	CUDA/CUDAImplementations.o \
 		Parameters/CommandLineParameters.o \
 		Parameters/Parameters.o \
 		Parameters/CUDAParameters.o \
+		Parameters/CUDADeviceConstants.o \
 		$(LIBS)			\
 		-o $@
 
@@ -184,6 +187,9 @@ CUDA/CUDAImplementations.o : CUDA/CUDAImplementations.cu
 	
 OutputHDF5Streams/OutputStreamsCUDAKernels.o : OutputHDF5Streams/OutputStreamsCUDAKernels.cu
 	$(CXX) $(CXXFLAGS) -c OutputHDF5Streams/OutputStreamsCUDAKernels.cu -o OutputHDF5Streams/OutputStreamsCUDAKernels.o
+
+Parameters/CUDADeviceConstants.o \ : Parameters/CUDADeviceConstants.cu
+	$(CXX) $(CXXFLAGS) -c Parameters/CUDADeviceConstants.cu -o Parameters/CUDADeviceConstants.o
 	
 clean:
 	rm -f *.o HDF5/*.o KSpaceSolver/*.o MatrixClasses/*.o Parameters/*.o Containers/*.o  CUDA/*.o OutputHDF5Streams/*.o $(TARGET)
