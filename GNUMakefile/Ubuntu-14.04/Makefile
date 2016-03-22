@@ -92,7 +92,7 @@ CXX = nvcc
 
 # Set compiler flags and header files directories
 CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math -msse2" \
-           -std=c++11  -I$(HDF5_DIR)/include  -I.  -ccbin=g++-4.8 \
+           -O3 -std=c++11  -I$(HDF5_DIR)/include  -I.  -ccbin=g++-4.8 --restrict\
 	    --generate-code arch=compute_20,code=sm_20	\
 	    --generate-code arch=compute_20,code=sm_21	\
 	    --generate-code arch=compute_30,code=sm_30	\

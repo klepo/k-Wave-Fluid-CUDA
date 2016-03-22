@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 March    2013, 13:10 (created) \n
- *              23 February 2016, 13:48 (revised)
+ *              22 March    2016, 15:13 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -31,9 +31,10 @@
  * along with k-Wave. If not, see http://www.gnu.org/licenses/.
  */
 
+#include <cuComplex.h>
+
 #include <KSpaceSolver/SolverCUDAKernels.cuh>
 #include <Parameters/CUDADeviceConstants.cuh>
-
 
 //----------------------------------------------------------------------------//
 //--------------------------------- Macros -----------------------------------//
@@ -108,34 +109,6 @@ int GetSolverGridSize1D()
 };
 
 /**
- * Get block size for 3D kernels
- * @return 3D size
- */
-dim3 GetSolverBlockSize3D()
-{
-  return TParameters::GetInstance()->CUDAParameters.GetSolverBlockSize3D();
-};
-
-/**
- * Get grid size for 3D kernels
- * @return 3D grid size
- */
-dim3 GetSolverGridSize3D()
-{
-  return TParameters::GetInstance()->CUDAParameters.GetSolverGridSize3D();
-};
-
-/**
- * Get grid size for complex 3D kernels
- * @return 3D grid size
- */
-dim3 GetSolverComplexGridSize3D()
-{
-  return TParameters::GetInstance()->CUDAParameters.GetSolverComplexGridSize3D();
-};
-
-
-/**
  * Get block size for the transposition kernels
  * @return 3D grid size
  */
@@ -159,78 +132,182 @@ dim3 GetSolverTransposeGirdSize()
 //----------------------------------------------------------------------------//
 
 /**
- * Get X coordinate for 3D CUDA block
+ * Get X coordinate for 1D CUDA block
  * @return X coordinate for 3D CUDA block
  */
-inline __device__ size_t GetX()
+inline __device__ uint GetIndex()
 {
   return threadIdx.x + blockIdx.x * blockDim.x;
 }// end of GetX
 //------------------------------------------------------------------------------
 
-/**
- * Get Y coordinate for 3D CUDA block
- * @return Y coordinate for 3D CUDA block
- */
-inline __device__ size_t GetY()
-{
-  return threadIdx.y + blockIdx.y * blockDim.y;
-}// end of GetY
-//------------------------------------------------------------------------------
-
-/**
- * Get Z coordinate for 3D CUDA block
- * @return Z coordinate for 3D CUDA block
- */
-inline __device__ size_t GetZ()
-{
-  return threadIdx.z + blockIdx.z * blockDim.z;
-}//end of GetZ
-//------------------------------------------------------------------------------
 
 /**
  * Get X stride for 3D CUDA block
  * @return X stride for 3D CUDA block
  */
-inline __device__ size_t GetX_Stride()
+inline __device__ uint GetStride()
 {
   return blockDim.x * gridDim.x;
 }// end of GetX_Stride
 //------------------------------------------------------------------------------
 
 /**
- * Get Y stride for 3D CUDA block
- * @return Y stride for 3D CUDA block
+ * Get a 3D coordinates for a real matrix form a 1D index
+ * @param  [in] i - index
+ * @return  3d coordinates
  */
-inline __device__ size_t GetY_Stride()
+inline __device__ dim3 GetReal3DCoords(const uint i)
 {
-  return blockDim.y * gridDim.y;
-}// end of GetY_Stride
+  return dim3( i % CUDADeviceConstants.Nx,
+              (i / CUDADeviceConstants.Nx) % CUDADeviceConstants.Ny,
+               i / ( CUDADeviceConstants.Nx * CUDADeviceConstants.Ny));
+}// end of GetReal3DCoords
+//------------------------------------------------------------------------------
+
+
+/**
+ * Get a 3D coordinates for a complex matrix form a 1D index
+ * @param  [in] i - index
+ * @return  3d coordinates
+ */
+inline __device__ dim3 GetComplex3DCoords(const uint i)
+{
+  return dim3( i % CUDADeviceConstants.Complex_Nx,
+              (i / CUDADeviceConstants.Complex_Nx) % CUDADeviceConstants.Complex_Ny,
+               i / ( CUDADeviceConstants.Complex_Nx * CUDADeviceConstants.Complex_Ny));
+}// end of GetReal3DCoords
+//------------------------------------------------------------------------------
+
+//----------------------- Multiplication operators for float2 ----------------//
+
+/**
+ * Operator * for float2 datatype (per element multiplication)
+ * @param [in] a
+ * @param [in] b
+ * @return  a.x * b.x, a.y * b.y
+ */
+inline  __device__ float2 operator*(const float2 a, const float2 b)
+{
+    return make_float2(a.x * b.x, a.y * b.y);
+}// end of operator*
 //------------------------------------------------------------------------------
 
 /**
- * Get Z stride for 3D CUDA block
- * @return Z stride for 3D CUDA block
+ * Operator * for float2 datatype (per element multiplication)
+ * @param [in] a
+ * @param [in] b
+ * @return  a.x * b, a.y * b
  */
-inline __device__ size_t GetZ_Stride()
+inline  __device__ float2 operator*(const float2 a, const float b)
 {
-  return blockDim.z * gridDim.z;
-}//end of GetZ_Stride
+    return make_float2(a.x * b, a.y * b);
+}// end of operator*
 //------------------------------------------------------------------------------
 
 /**
- * Get index i for Full dimension sizes, from z, y and x.
- * @param [in] z
- * @param [in] y
- * @param [in] x
- * @return i
+ * Operator * for float2 datatype (per element multiplication)
+ * @param [in] a
+ * @param [in] b
+ * @return  a * b.x, a * b.y
  */
-inline __device__ size_t GetFullDim_i(const size_t z, const size_t y, const size_t x)
+inline  __device__ float2 operator*(const float b, const float2 a)
 {
-  return (z * CUDADeviceConstants.SlabSize + (y * CUDADeviceConstants.Nx + x));
-}// end of GetFullDimi
+    return make_float2(b * a.x, b * a.y);
+}// end of operator*
 //------------------------------------------------------------------------------
 
+
+/**
+ * Operator *= for float2 datatype (per element multiplication)
+ * @param [in] a
+ * @param [in] b
+ * @return  a.x *= b.x, a.y *= b.y
+ */
+inline  __device__ void operator*=(float2 &a, const float2 b)
+{
+    a.x *= b.x;
+    a.y *= b.y;
+}// end of operator*=
+//------------------------------------------------------------------------------
+
+/**
+ * Operator *= for float2 datatype (per element multiplication)
+ * @param [in] a
+ * @param [in] b
+ * @return  a.x =* b, a.y =* b
+ */
+inline  __device__ void operator*=(float2 &a, const float b)
+{
+    a.x *= b;
+    a.y *= b;
+}// end of operator*=
+//------------------------------------------------------------------------------
+
+//----------------------- Addition operators for float2 ----------------------//
+
+/**
+ * Operator + for float2 datatype (per element multiplication)
+ * @param [in] a
+ * @param [in] b
+ * @return  a.x + b.x, a.y + b.y
+ */
+inline  __device__ float2 operator+(const float2 a, const float2 b)
+{
+    return make_float2(a.x + b.x, a.y + b.y);
+}// end of operator+
+//------------------------------------------------------------------------------
+
+/**
+ * Operator + for float2 datatype (per element multiplication)
+ * @param [in] a
+ * @param [in] b
+ * @return  a.x + b, a.y + b
+ */
+inline  __device__ float2 operator+(const float2 a, const float b)
+{
+    return make_float2(a.x + b, a.y + b);
+}// end of operator+
+//------------------------------------------------------------------------------
+
+/**
+ * Operator + for float2 datatype (per element multiplication)
+ * @param [in] a
+ * @param [in] b
+ * @return  a + b.x, a + b.y
+ */
+inline  __device__ float2 operator+(const float b, const float2 a)
+{
+    return make_float2(b + a.x, b + a.y);
+}// end of operator*
+//------------------------------------------------------------------------------
+
+
+/**
+ * Operator += for float2 datatype (per element multiplication)
+ * @param [in] a
+ * @param [in] b
+ * @return  a.x +=b.x, a.y += b.y
+ */
+inline  __device__ void operator+=(float2 &a, const float2 b)
+{
+    a.x += b.x;
+    a.y += b.y;
+}// end of operator+=
+//------------------------------------------------------------------------------
+
+/**
+ * Operator += for float2 datatype (per element multiplication)
+ * @param [in] a
+ * @param [in] b
+ * @return  a.x += b, a.y += b
+ */
+inline  __device__ void operator+=(float2 &a, const float b)
+{
+    a.x += b;
+    a.y += b;
+}// end of operator+=
+//------------------------------------------------------------------------------
 
 
 //----------------------------------------------------------------------------//
@@ -247,7 +324,7 @@ inline __device__ size_t GetFullDim_i(const size_t z, const size_t y, const size
  * The list of GPUs can be found at https://en.wikipedia.org/wiki/CUDA
  * @param [out] cudaCodeVersion
  */
-__global__ void CUDAGetCUDACodeVersion(int * cudaCodeVersion)
+__global__ void CUDAGetCUDACodeVersion(int* cudaCodeVersion)
 {
   *cudaCodeVersion = -1;
 
@@ -316,530 +393,289 @@ int SolverCUDAKernels::GetCUDACodeVersion()
 
 
 /**
- * CUDA kernel to calculate ux_sgx.
+ *
+ * CUDA kernel to calculate ux_sgx, uy_sgy, uz_sgz.
  * Default (heterogeneous case).
- * @param [in, out] ux_sgx  - calculated value
- * @param [in]      FFT_p   - gradient of pressure
- * @param [in]      dt_rho0 - dt_rho_sgx
- * @param [in]      pml     - pml_x
- * @todo To be merged with uy_sgy and yz_sgz
+ *
+ * @param [in, out] ux_sgx
+ * @param [in, out] uy_sgy
+ * @param [in, out] uz_sgz
+ * @param [in] FFT_X
+ * @param [in] FFT_Y
+ * @param [in] FFT_Z
+ * @param [in] dt_rho0_sgx
+ * @param [in] dt_rho0_sgy
+ * @param [in] dt_rho0_sgz
+ * @param [in] pml_x
+ * @param [in] pml_y
+ * @param [in]pml_z
  */
-__global__ void CUDACompute_ux_sgx_normalize(float      * ux_sgx,
-                                             const float* FFT_p,
-                                             const float* dt_rho0,
-                                             const float* pml)
+__global__ void CUDACompute_uxyz_normalize(float*       ux_sgx,
+                                           float*       uy_sgy,
+                                           float*       uz_sgz,
+                                           const float* FFT_X,
+                                           const float* FFT_Y,
+                                           const float* FFT_Z,
+                                           const float* dt_rho0_sgx,
+                                           const float* dt_rho0_sgy,
+                                           const float* dt_rho0_sgz,
+                                           const float* pml_x,
+                                           const float* pml_y,
+                                           const float* pml_z)
 {
-  // this needs to be done better (may work fine with loop 1D grid)
-  // may reduce number of Fx operation
-
-  //@todo X should be unrolled -> Block size X = 32 (always and unrolled), Y and Z is questionable
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
+  for (auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
+    const dim3 coords = GetReal3DCoords(i);
 
-        const float FFT_p_el = CUDADeviceConstants.FFTDivider * FFT_p[i] * dt_rho0[i];
-        const float pml_x = pml[x];
+    const float FFT_X_el = CUDADeviceConstants.FFTDivider * FFT_X[i] * dt_rho0_sgx[i];
+    const float FFT_Y_el = CUDADeviceConstants.FFTDivider * FFT_Y[i] * dt_rho0_sgy[i];
+    const float FFT_Z_el = CUDADeviceConstants.FFTDivider * FFT_Z[i] * dt_rho0_sgz[i];
 
-        ux_sgx[i]  = ((ux_sgx[i] * pml_x) - FFT_p_el) * pml_x;
+    const float pml_x_data = pml_x[coords.x];
+    const float pml_y_data = pml_y[coords.y];
+    const float pml_z_data = pml_z[coords.z];
 
-      }// X
-    }// Y
-  }// Z
-}// end of CUDACompute_ux_sgx_normalize
+    ux_sgx[i] = (ux_sgx[i] * pml_x_data - FFT_X_el) * pml_x_data;
+    uy_sgy[i] = (uy_sgy[i] * pml_y_data - FFT_Y_el) * pml_y_data;
+    uz_sgz[i] = (uz_sgz[i] * pml_z_data - FFT_Z_el) * pml_z_data;
+  }
+}// end of CUDACompute_uxyz_normalize
 //------------------------------------------------------------------------------
 
 /**
+ *
  * Interface to the CUDA kernel computing new version of ux_sgx.
- * Default (heterogeneous case).
- * @param [in, out] ux_sgx  - calculated value
- * @param [in]      FFT_p   - gradient of pressure
- * @param [in]      dt_rho0 - dt_rho_sgx
- * @param [in]      pml     - pml_x
- * @todo To be merged with uy_sgy and yz_sgz
+ * Default (heterogeneous case)
+ *
+ * @param [in, out] ux_sgx
+ * @param [in, out] uy_sgy
+ * @param [in, out] uz_sgz
+ * @param [in] FFT_X
+ * @param [in] FFT_Y
+ * @param [in] FFT_Z
+ * @param [in] dt_rho0_sgx
+ * @param [in] dt_rho0_sgy
+ * @param [in] dt_rho0_sgz
+ * @param [in] pml_x
+ * @param [in] pml_y
+ * @param [in] pml_z
  */
-void SolverCUDAKernels::Compute_ux_sgx_normalize(TRealMatrix& uxyz_sgxyz,
-                                                 const TRealMatrix& FFT_p,
-                                                 const TRealMatrix& dt_rho0,
-                                                 const TRealMatrix& pml)
-{
-  CUDACompute_ux_sgx_normalize<<<GetSolverGridSize3D(),
-                                 GetSolverBlockSize3D() >>>
-                              (uxyz_sgxyz.GetRawDeviceData(),
-                               FFT_p.GetRawDeviceData(),
-                               dt_rho0.GetRawDeviceData(),
-                               pml.GetRawDeviceData());
+void SolverCUDAKernels::Compute_uxyz_normalize(TRealMatrix&       ux_sgx,
+                                               TRealMatrix&       uy_sgy,
+                                               TRealMatrix&       uz_sgz,
+                                               const TRealMatrix& FFT_X,
+                                               const TRealMatrix& FFT_Y,
+                                               const TRealMatrix& FFT_Z,
+                                               const TRealMatrix& dt_rho0_sgx,
+                                               const TRealMatrix& dt_rho0_sgy,
+                                               const TRealMatrix& dt_rho0_sgz,
+                                               const TRealMatrix& pml_x,
+                                               const TRealMatrix& pml_y,
+                                               const TRealMatrix& pml_z)
+  {
+    CUDACompute_uxyz_normalize<<<GetSolverGridSize1D(),
+                                 GetSolverBlockSize1D() >>>
+                              (ux_sgx.GetRawDeviceData(),
+                               uy_sgy.GetRawDeviceData(),
+                               uz_sgz.GetRawDeviceData(),
+                               FFT_X.GetRawDeviceData(),
+                               FFT_Y.GetRawDeviceData(),
+                               FFT_Z.GetRawDeviceData(),
+                               dt_rho0_sgx.GetRawDeviceData(),
+                               dt_rho0_sgy.GetRawDeviceData(),
+                               dt_rho0_sgz.GetRawDeviceData(),
+                               pml_x.GetRawDeviceData(),
+                               pml_y.GetRawDeviceData(),
+                               pml_z.GetRawDeviceData());
 
   // check for errors
   gpuErrchk(cudaGetLastError());
-}//end of Compute_ux_sgx_normalize
+}// end of Compute_uxyz_normalize
 //------------------------------------------------------------------------------
 
 
+
 /**
- * CUDA kernel to calculate ux_sgx.
+ * CUDA kernel to calculate ux_sgx, uy_sgy, uz_sgz.
  * This is the case for rho0 being a scalar and a uniform grid.
- * @param [in, out] ux_sgx  - new value of ux
- * @param [in]      FFT_p   - gradient of p
- * @param [in]      pml     - pml_x
+ * @param [in, out] ux_sgx - new value of ux
+ * @param [in, out] uy_sgy - new value of uy
+ * @param [in, out] uz_sgz - new value of ux
+ * @param [in] FFT_X - gradient for X
+ * @param [in] FFT_Y - gradient for Y
+ * @param [in] FFT_Z - gradient for Z
+ * @param [in] pml_x
+ * @param [in] pml_y
+ * @param [in] pml_z
  */
-__global__ void CUDACompute_ux_sgx_normalize_scalar_uniform(float      * ux_sgx,
-                                                            const float* FFT_p,
-                                                            const float* pml)
+__global__ void CUDACompute_uxyz_normalize_scalar_uniform(float*       ux_sgx,
+                                                          float*       uy_sgy,
+                                                          float*       uz_sgz,
+                                                          const float* FFT_X,
+                                                          const float* FFT_Y,
+                                                          const float* FFT_Z,
+                                                          const float* pml_x,
+                                                          const float* pml_y,
+                                                          const float* pml_z)
 {
-  //@todo this could be in constant memory as well
-  const float Divider = CUDADeviceConstants.rho0_sgx_scalar * CUDADeviceConstants.FFTDivider;
+  const float Divider_X = CUDADeviceConstants.rho0_sgx_scalar * CUDADeviceConstants.FFTDivider;
+  const float Divider_Y = CUDADeviceConstants.rho0_sgy_scalar * CUDADeviceConstants.FFTDivider;
+  const float Divider_Z = CUDADeviceConstants.rho0_sgz_scalar * CUDADeviceConstants.FFTDivider;
 
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
+  for(auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
+    const dim3 coords = GetReal3DCoords(i);
 
-        const float FFT_p_el = Divider * FFT_p[i];
-        const float pml_x = pml[x];
+    const float pml_x_el = pml_x[coords.x];
+    const float pml_y_el = pml_y[coords.y];
+    const float pml_z_el = pml_z[coords.z];
 
-        ux_sgx[i] =  ((ux_sgx[i] * pml_x) - FFT_p_el) * pml_x;
-      }//X
-    }//Y
-  }//Z
+    ux_sgx[i] = (ux_sgx[i] * pml_x_el - Divider_X * FFT_X[i]) * pml_x_el;
+    uy_sgy[i] = (uy_sgy[i] * pml_y_el - Divider_Y * FFT_Y[i]) * pml_y_el;
+    uz_sgz[i] = (uz_sgz[i] * pml_z_el - Divider_Z * FFT_Z[i]) * pml_z_el;
+  }// for
 }// end of CUDACompute_ux_sgx_normalize_scalar_uniform
 //------------------------------------------------------------------------------
 
 /**
- *  Interface to the CUDA kernel computing new version of ux_sgx.
+ * Interface to the CUDA kernel computing new version of ux_sgx, uy_sgy, uz_sgz.
  * This is the case for rho0 being a scalar and a uniform grid.
- * @param [in, out] ux_sgx  - new value of ux
- * @param [in]      FFT_p   - matrix
- * @param [in]      pml     - matrix
- * @todo needs to be merged with uy and uz
+ * @param [in, out] ux_sgx
+ * @param [in, out] uy_sgy
+ * @param [in, out] uz_sgz
+ * @param [in] FFT_X
+ * @param [in] FFT_Y
+ * @param [in] FFT_Z
+ * @param [in] pml_x
+ * @param [in] pml_y
+ * @param [in] pml_z
  */
-void SolverCUDAKernels::Compute_ux_sgx_normalize_scalar_uniform(TRealMatrix&       ux_sgx,
-                                                                const TRealMatrix& FFT_p,
-                                                                const TRealMatrix& pml)
+void SolverCUDAKernels::Compute_uxyz_normalize_scalar_uniform(TRealMatrix&       ux_sgx,
+                                                              TRealMatrix&       uy_sgy,
+                                                              TRealMatrix&       uz_sgz,
+                                                              const TRealMatrix& FFT_X,
+                                                              const TRealMatrix& FFT_Y,
+                                                              const TRealMatrix& FFT_Z,
+                                                              const TRealMatrix& pml_x,
+                                                              const TRealMatrix& pml_y,
+                                                              const TRealMatrix& pml_z)
 {
-  CUDACompute_ux_sgx_normalize_scalar_uniform<<<GetSolverGridSize3D(),
-                                                GetSolverBlockSize3D() >>>
+  CUDACompute_uxyz_normalize_scalar_uniform<<<GetSolverGridSize1D(),
+                                              GetSolverBlockSize1D() >>>
                                              (ux_sgx.GetRawDeviceData(),
-                                              FFT_p.GetRawDeviceData(),
-                                              pml.GetRawDeviceData());
+                                              uy_sgy.GetRawDeviceData(),
+                                              uz_sgz.GetRawDeviceData(),
+                                              FFT_X.GetRawDeviceData(),
+                                              FFT_Y.GetRawDeviceData(),
+                                              FFT_Z.GetRawDeviceData(),
+                                              pml_x.GetRawDeviceData(),
+                                              pml_y.GetRawDeviceData(),
+                                              pml_z.GetRawDeviceData());
   // check for errors
   gpuErrchk(cudaGetLastError());
 }// end of Compute_ux_sgx_normalize_scalar_uniform
 //------------------------------------------------------------------------------
 
+
 /**
- * CUDA kernel to calculate ux_sgx.
+ * CUDA kernel to calculate ux_sgx, uy_sgy and uz_sgz.
  * This is the case for rho0 being a scalar and a non-uniform grid.
  * @param [in,out] ux_sgx     - updated value of ux_sgx
- * @param [in]     FFT_p      - gradient of p
+ * @param [in,out] uy_sgy     - updated value of ux_sgx
+ * @param [in,out] uz_sgz     - updated value of ux_sgx
+ * @param [in]     FFT_X      - gradient of X
+ * @param [in]     FFT_Y      - gradient of X
+ * @param [in]     FFT_Z      - gradient of X
  * @param [in]     dxudxn_sgx - matrix dx shift
- * @param [in]     pml        - matrix of pml_x
- * @todo to be merged with uy and uz
+ * @param [in]     dyudyn_sgy - matrix dy shift
+ * @param [in]     dzudzn_sgz - matrix dz shift
+ * @param [in]     pml_x      - matrix of pml_x
+ * @param [in]     pml_y       - matrix of pml_x
+ * @param [in]     pml_z       - matrix of pml_x
  */
-__global__ void CUDACompute_ux_sgx_normalize_scalar_nonuniform(float      * ux_sgx,
-                                                               const float* FFT_p,
-                                                               const float* dxudxn_sgx,
-                                                               const float* pml)
+__global__ void CUDACompute_uxyz_normalize_scalar_nonuniform(float*       ux_sgx,
+                                                             float*       uy_sgy,
+                                                             float*       uz_sgz,
+                                                             const float* FFT_X,
+                                                             const float* FFT_Y,
+                                                             const float* FFT_Z,
+                                                             const float* dxudxn_sgx,
+                                                             const float* dyudyn_sgy,
+                                                             const float* dzudzn_sgz,
+                                                             const float* pml_x,
+                                                             const float* pml_y,
+                                                             const float* pml_z)
 {
-  const float Divider = CUDADeviceConstants.rho0_sgx_scalar * CUDADeviceConstants.FFTDivider;
+  const float Divider_X = CUDADeviceConstants.rho0_sgx_scalar * CUDADeviceConstants.FFTDivider;
+  const float Divider_Y = CUDADeviceConstants.rho0_sgy_scalar * CUDADeviceConstants.FFTDivider;;
+  const float Divider_Z = CUDADeviceConstants.rho0_sgz_scalar * CUDADeviceConstants.FFTDivider;
 
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
+  for(auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
+    const dim3 coords = GetReal3DCoords(i);
 
-        const float FFT_p_el = (Divider * dxudxn_sgx[x]) * FFT_p[i];
-        const float pml_x = pml[x];
+    const float pml_x_el = pml_x[coords.x];
+    const float pml_y_el = pml_y[coords.y];
+    const float pml_z_el = pml_z[coords.z];
 
-        ux_sgx[i] = (( ux_sgx[i] * pml_x) - FFT_p_el) * pml_x;
+    const float FFT_X_el = Divider_X * dxudxn_sgx[coords.x] * FFT_X[i];
+    const float FFT_Y_el = Divider_Y * dyudyn_sgy[coords.y] * FFT_Y[i];
+    const float FFT_Z_el = Divider_Z * dzudzn_sgz[coords.z] * FFT_Z[i];
 
-      }//X
-    }//Y
-  }// Z
-}// end of CUDACompute_ux_sgx_normalize_scalar_nonuniform
+    ux_sgx[i] = (ux_sgx[i] * pml_x_el - FFT_X_el) * pml_x_el;
+    uy_sgy[i] = (uy_sgy[i] * pml_y_el - FFT_Y_el) * pml_y_el;
+    uz_sgz[i] = (uz_sgz[i] * pml_z_el - FFT_Z_el) * pml_z_el;
+  }// for
+}// end of CUDACompute_uxyz_normalize_scalar_nonuniform
 //------------------------------------------------------------------------------
 
 /**
- * Compute a new value of ux_sgx.
+ * Interface to  calculate ux_sgx, uy_sgy and uz_sgz.
  * This is the case for rho0 being a scalar and a non-uniform grid.
  * @param [in,out] ux_sgx     - updated value of ux_sgx
- * @param [in]     FFT_p      - gradient of p
+ * @param [in,out] uy_sgy     - updated value of ux_sgx
+ * @param [in,out] uz_sgz     - updated value of ux_sgx
+ * @param [in]     FFT_X      - gradient of X
+ * @param [in]     FFT_Y      - gradient of X
+ * @param [in]     FFT_Z      - gradient of X
  * @param [in]     dxudxn_sgx - matrix dx shift
- * @param [in]     pml        - matrix of pml_x
- * @todo to be merged with uy and uz
+ * @param [in]     dyudyn_sgy - matrix dy shift
+ * @param [in]     dzudzn_sgz - matrix dz shift
+ * @param [in]     pml_x      - matrix of pml_x
+ * @param [in]     pml_y       - matrix of pml_x
+ * @param [in]     pml_z       - matrix of pml_x
  */
-void SolverCUDAKernels::Compute_ux_sgx_normalize_scalar_nonuniform(TRealMatrix      & ux_sgx,
-                                                                   const TRealMatrix& FFT_p,
-                                                                   const TRealMatrix& dxudxn_sgx,
-                                                                   const TRealMatrix& pml)
+void SolverCUDAKernels::Compute_uxyz_normalize_scalar_nonuniform(TRealMatrix&       ux_sgx,
+                                                                 TRealMatrix&       uy_sgy,
+                                                                 TRealMatrix&       uz_sgz,
+                                                                 const TRealMatrix& FFT_X,
+                                                                 const TRealMatrix& FFT_Y,
+                                                                 const TRealMatrix& FFT_Z,
+                                                                 const TRealMatrix& dxudxn_sgx,
+                                                                 const TRealMatrix& dyudyn_sgy,
+                                                                 const TRealMatrix& dzudzn_sgz,
+                                                                 const TRealMatrix& pml_x,
+                                                                 const TRealMatrix& pml_y,
+                                                                 const TRealMatrix& pml_z)
 {
-  CUDACompute_ux_sgx_normalize_scalar_nonuniform<<<GetSolverGridSize3D(),
-                                                   GetSolverBlockSize3D()>>>
+  CUDACompute_uxyz_normalize_scalar_nonuniform<<<GetSolverGridSize1D(),
+                                                 GetSolverBlockSize1D()>>>
                                                 (ux_sgx.GetRawDeviceData(),
-                                                 FFT_p.GetRawDeviceData(),
+                                                 uy_sgy.GetRawDeviceData(),
+                                                 uz_sgz.GetRawDeviceData(),
+                                                 FFT_X.GetRawDeviceData(),
+                                                 FFT_Y.GetRawDeviceData(),
+                                                 FFT_Z.GetRawDeviceData(),
                                                  dxudxn_sgx.GetRawDeviceData(),
-                                                 pml.GetRawDeviceData());
+                                                 dyudyn_sgy.GetRawDeviceData(),
+                                                 dzudzn_sgz.GetRawDeviceData(),
+                                                 pml_x.GetRawDeviceData(),
+                                                 pml_y.GetRawDeviceData(),
+                                                 pml_z.GetRawDeviceData());
 
   // check for errors
   gpuErrchk(cudaGetLastError());
 }// end of Compute_ux_sgx_normalize_scalar_nonuniform
-//------------------------------------------------------------------------------
-
-/**
- * CUDA kernel to calculate uy_sgy.
- * Default (heterogeneous case).
- * @param [in, out] uy_sgy  - calculated value
- * @param [in]      FFT_p   - gradient of pressure
- * @param [in]      dt_rho0 - dt_rho_sgy
- * @param [in]      pml     - pml_y
- * @todo To be merged with uy_sgx and yz_sgz
- */
-__global__ void CUDACompute_uy_sgy_normalize(float      * uy_sgy,
-                                             const float* FFT_p,
-                                             const float* dt_rho0,
-                                             const float* pml)
-{
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
-  {
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      //@todo - can use shared mem
-      const float pml_y = pml[y];
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
-
-        const float FFT_p_el = CUDADeviceConstants.FFTDivider * FFT_p[i] * dt_rho0[i];
-        uy_sgy[i] = ((uy_sgy[i] * pml_y) - FFT_p_el) * pml_y;
-
-      }// X
-    }// Y
-  }// Z
-}// end of CUDACompute_uy_sgy_normalize
-//------------------------------------------------------------------------------
-
-/**
- * Interface to the CUDA kernel computing new version of uy_sgy.
- * Default (heterogeneous case).
- * @param [in, out] uy_sgy  - calculated value
- * @param [in]      FFT_p   - gradient of pressure
- * @param [in]      dt_rho0 - dt_rho_sgy
- * @param [in]      pml     - pml_y
- * @todo To be merged with uy_sgx and yz_sgz
- */
-void SolverCUDAKernels::Compute_uy_sgy_normalize(TRealMatrix      & uy_sgy,
-                                                 const TRealMatrix& FFT_p,
-                                                 const TRealMatrix& dt_rho0,
-                                                 const TRealMatrix& pml)
-{
-  CUDACompute_uy_sgy_normalize<<<GetSolverGridSize3D(),
-                                 GetSolverBlockSize3D() >>>
-                              (uy_sgy.GetRawDeviceData(),
-                               FFT_p.GetRawDeviceData(),
-                               dt_rho0.GetRawDeviceData(),
-                               pml.GetRawDeviceData());
-  // check for errors
-  gpuErrchk(cudaGetLastError());
-}// end of Compute_uy_sgy_normalize
-//------------------------------------------------------------------------------
-
-
-/**
- * CUDA kernel to calculate uy_sgy.
- * This is the case for rho0 being a scalar and a uniform grid.
- * @param [in, out] uy_sgy  - new value of uy
- * @param [in]      FFT_p   - gradient of p
- * @param [in]      pml     - pml_y
- */
-__global__ void CUDACompute_uy_sgy_normalize_scalar_uniform(float      * uy_sgy,
-                                                            const float* FFT_p,
-                                                            const float* pml)
-{
-  const float Divider = CUDADeviceConstants.rho0_sgy_scalar * CUDADeviceConstants.FFTDivider;
-
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
-  {
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      //@todo - can use shared mem
-      const float pml_y = pml[y];
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
-
-        const float FFT_p_el = Divider * FFT_p[i];
-        uy_sgy[i] = (( uy_sgy[i] * pml_y) - FFT_p_el) * pml_y;
-      } // X
-    } // Y
-  }// Z
-}// end of CUDACompute_uy_sgy_normalize_scalar_uniform
-//------------------------------------------------------------------------------
-
-/**
- * Interface to the CUDA kernel computing new version of uy_sgy.
- * This is the case for rho0 being a scalar and a uniform grid.
- * @param [in, out] uy_sgy  - calculated value
- * @param [in]      FFT_p   - gradient of pressure
- * @param [in]      pml     - pml_y
- * @todo To be merged with uy_sgy and yz_sgz
- */
-void SolverCUDAKernels::Compute_uy_sgy_normalize_scalar_uniform(TRealMatrix      & uy_sgy,
-                                                                const TRealMatrix& FFT_p,
-                                                                const TRealMatrix& pml)
-{
-  CUDACompute_uy_sgy_normalize_scalar_uniform<<<GetSolverGridSize3D(),
-                                                GetSolverBlockSize3D()>>>
-                                             (uy_sgy.GetRawDeviceData(),
-                                              FFT_p.GetRawDeviceData(),
-                                              pml.GetRawDeviceData());
-  // check for errors
-  gpuErrchk(cudaGetLastError());
-}// end of Compute_uy_sgy_normalize_scalar_uniform
-//------------------------------------------------------------------------------
-
-
-/**
- * CUDA kernel to calculate uy_sgy.
- * This is the case for rho0 being a scalar and a non-uniform grid.
- * @param [in,out] uy_sgy     - updated value of uy_sgy
- * @param [in]     FFT_p      - gradient of p
- * @param [in]     dyudyn_sgy - matrix dy shift
- * @param [in]     pml        - matrix of pml_y
- * @todo to be merged with ux and uz
- */
-__global__ void CUDACompute_uy_sgy_normalize_scalar_nonuniform(float      * uy_sgy,
-                                                               const float* FFT_p,
-                                                               const float* dyudyn_sgy,
-                                                               const float* pml)
-{
-  const float Divider = CUDADeviceConstants.rho0_sgy_scalar * CUDADeviceConstants.FFTDivider;;
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
-  {
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      //@todo - can use shared mem
-      const float pml_y = pml[y];
-      const float DyDivider = Divider * dyudyn_sgy[y];
-
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
-
-        const float FFT_p_el = DyDivider * FFT_p[i];
-        uy_sgy[i] = ((uy_sgy[i] * pml_y) - FFT_p_el) * pml_y;
-
-      }//X
-    }//Y
-  }//Z
-}// end of CudaCompute_uy_sgy_normalize_scalar_nonuniform
-//------------------------------------------------------------------------------
-
-/**
- * Compute a new value of uy_sgy.
- * This is the case for rho0 being a scalar and a non-uniform grid.
- * @param [in,out] uy_sgy     - updated value of uy_sgy
- * @param [in]     FFT_p      - gradient of p
- * @param [in]     dt_rho0    - scalar
- * @param [in]     dyudyn_sgy - matrix d shift
- * @param [in]     pml        - matrix of pml_y
- * @todo to be merged with ux and uz.
- */
-void SolverCUDAKernels::Compute_uy_sgy_normalize_scalar_nonuniform(TRealMatrix      & uy_sgy,
-                                                                   const TRealMatrix& FFT_p,
-                                                                   const TRealMatrix& dyudyn_sgy,
-                                                                   const TRealMatrix& pml)
-{
-  CUDACompute_uy_sgy_normalize_scalar_nonuniform<<<GetSolverGridSize3D(),
-                                                   GetSolverBlockSize3D()>>>
-                                                (uy_sgy.GetRawDeviceData(),
-                                                 FFT_p.GetRawDeviceData(),
-                                                 dyudyn_sgy.GetRawDeviceData(),
-                                                 pml.GetRawDeviceData());
-  // check for errors
-  gpuErrchk(cudaGetLastError());
-}// end of Compute_uy_sgy_normalize_scalar_nonuniform
-//------------------------------------------------------------------------------
-
-
-/**
- * CUDA kernel to calculate uz_sgz.
- * Default (heterogeneous case).
- * @param [in, out] uz_sgz  - calculated value
- * @param [in]      FFT_p   - gradient of pressure
- * @param [in]      dt_rho0 - dt_rho_sgz
- * @param [in]      pml     - pml_z
- * @todo To be merged with uy_sgz and ux_sgx
- */
-__global__ void CUDACompute_uz_sgz_normalize(float      * uz_sgz,
-                                             const float* FFT_p,
-                                             const float* dt_rho0,
-                                             const float* pml)
-{
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
-  {
-    const float pml_z = pml[z];
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
-
-        const float FFT_p_el = CUDADeviceConstants.FFTDivider * FFT_p[i] * dt_rho0[i];
-        uz_sgz[i] = ((uz_sgz[i] * pml_z) - FFT_p_el ) * pml_z;
-      }
-    }
-  }
-}// end of CUDACompute_uz_sgz_normalize
-//------------------------------------------------------------------------------
-
-/**
- * Interface to the CUDA kernel computing new version of uz_sgz.
- * Default (heterogeneous case).
- * @param [in, out] uz_sgz  - calculated value
- * @param [in]      FFT_p   - gradient of pressure
- * @param [in]      dt_rho0 - dt_rho_sgy
- * @param [in]      pml     - pml_y
- * @todo To be merged with ux_sgx and uy_sgy
- */
-void SolverCUDAKernels::Compute_uz_sgz_normalize(TRealMatrix      & uz_sgz,
-                                                 const TRealMatrix& FFT_p,
-                                                 const TRealMatrix& dt_rho0,
-                                                 const TRealMatrix& pml)
-{
-  CUDACompute_uz_sgz_normalize<<<GetSolverGridSize3D(),
-                                 GetSolverBlockSize3D()>>>
-                              (uz_sgz.GetRawDeviceData(),
-                               FFT_p.GetRawDeviceData(),
-                               dt_rho0.GetRawDeviceData(),
-                               pml.GetRawDeviceData());
-
-  // check for errors
-  gpuErrchk(cudaGetLastError());
-}// end of Compute_uz_sgz_normalize
-//------------------------------------------------------------------------------
-
-
-/**
- * CUDA kernel to calculate uz_sgz.
- * This is the case for rho0 being a scalar and a uniform grid.
- * @param [in, out] uz_sgz  - new value of uz
- * @param [in]      FFT_p   - gradient of p
- * @param [in]      pml     - pml_z
- */
-__global__ void CUDACompute_uz_sgz_normalize_scalar_uniform(float      * uz_sgz,
-                                                            const float* FFT_p,
-                                                            const float* pml)
-{
-  const float Divider = CUDADeviceConstants.rho0_sgz_scalar * CUDADeviceConstants.FFTDivider;
-
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
-  {
-    const float pml_z = pml[z];
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
-
-        const float FFT_p_el = Divider * FFT_p[i];
-        uz_sgz[i] = ((uz_sgz[i] * pml_z) - FFT_p_el) * pml_z;
-      }// X
-    }// Y
-  }// Z
-}// end of CUDACompute_uz_sgz_normalize_scalar_uniform
-//------------------------------------------------------------------------------
-
-/**
- * Interface to the CUDA kernel computing new version of uz_sgz.
- * This is the case for rho0 being a scalar and a uniform grid.
- * @param [in, out] uz_sgz  - calculated value
- * @param [in]      FFT_p   - gradient of pressure
- * @param [in]      pml     - pml_z
- * @todo To be merged with uy_sgy and yx_sgx
- */
-void SolverCUDAKernels::Compute_uz_sgz_normalize_scalar_uniform(TRealMatrix      & uz_sgz,
-                                                                const TRealMatrix& FFT_p,
-                                                                const TRealMatrix& pml)
-{
-  CUDACompute_uz_sgz_normalize_scalar_uniform<<<GetSolverGridSize3D(),
-                                                GetSolverBlockSize3D()>>>
-                                             (uz_sgz.GetRawDeviceData(),
-                                              FFT_p.GetRawDeviceData(),
-                                              pml.GetRawDeviceData());
-  // check for errors
-  gpuErrchk(cudaGetLastError());
-}// end of Compute_uz_sgz_normalize_scalar_uniform
-//------------------------------------------------------------------------------
-
-
-/**
- * CUDA kernel to calculate uz_sgz.
- * This is the case for rho0 being a scalar and a non-uniform grid.
- * @param [in,out] uz_sgz     - updated value of uz_sgz
- * @param [in]     FFT_p      - gradient of p
- * @param [in]     dzudzn_sgz - matrix dz shift
- * @param [in]     pml        - matrix of pml_z
- * @todo to be merged with ux and uy
- */
-__global__ void CUDACompute_uz_sgz_normalize_scalar_nonuniform(float      * uz_sgz,
-                                                               const float* FFT_p,
-                                                               const float* dzudzn_sgz,
-                                                               const float* pml)
-{
-  const float Divider = CUDADeviceConstants.rho0_sgz_scalar * CUDADeviceConstants.FFTDivider;
-
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
-  {
-    const float pml_z = pml[z];
-    const float DzDivider = Divider * dzudzn_sgz[z];
-
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
-
-        const float FFT_p_el = DzDivider * FFT_p[i];
-        uz_sgz[i] = ((uz_sgz[i] * pml_z) - FFT_p_el) * pml_z;
-      }//X
-    }//Y
-  }//Z
-}// end of CUDACompute_uz_sgz_normalize_scalar_nonuniform
-//-----------------------------------------------------------------------------
-
-/**
- * Interface to the CUDA kernel computing new version of uz_sgz.
- * This is the case for rho0 being a scalar and a non-uniform grid.
- * @param [in,out] uz_sgz     - updated value of uz_sgz
- * @param [in]     FFT_p      - gradient of p
- * @param [in]     dt_rho0    - scalar
- * @param [in]     dyudyn_sgz - matrix d shift
- * @param [in]     pml        - matrix of pml_z
- * @todo to be merged with ux and uy
- */
-void SolverCUDAKernels::Compute_uz_sgz_normalize_scalar_nonuniform(TRealMatrix      & uz_sgz,
-                                                                   const TRealMatrix& FFT_p,
-                                                                   const TRealMatrix& dzudzn_sgz,
-                                                                   const TRealMatrix& pml)
-{
-  CUDACompute_uz_sgz_normalize_scalar_nonuniform<<<GetSolverGridSize3D(),
-                                                   GetSolverBlockSize3D()>>>
-                                                (uz_sgz.GetRawDeviceData(),
-                                                 FFT_p.GetRawDeviceData(),
-                                                 dzudzn_sgz.GetRawDeviceData(),
-                                                 pml.GetRawDeviceData());
-  // check for errors
-  gpuErrchk(cudaGetLastError());
-}// end of Compute_uz_sgz_normalize_scalar_nonuniform
 //------------------------------------------------------------------------------
 
 
@@ -850,15 +686,15 @@ void SolverCUDAKernels::Compute_uz_sgz_normalize_scalar_nonuniform(TRealMatrix  
  * @param [in, out] delay_mask         - delay mask to push the signal in the domain (incremented per invocation)
  * @param [in]      transducer_signal  - transducer signal
  */
-__global__ void CUDAAddTransducerSource(float       * ux_sgx,
+__global__ void CUDAAddTransducerSource(float*        ux_sgx,
                                         const size_t* u_source_index,
-                                              size_t* delay_mask,
-                                        const float * transducer_signal)
+                                        size_t*       delay_mask,
+                                        const float*  transducer_signal)
 {
-  for (size_t i = GetX(); i < CUDADeviceConstants.u_source_index_size; i += GetX_Stride())
+  for (auto i = GetIndex(); i < CUDADeviceConstants.u_source_index_size; i += GetStride())
   {
     ux_sgx[u_source_index[i]] += transducer_signal[delay_mask[i]];
-    delay_mask[i] ++;
+    delay_mask[i]++;
   }
 }// end of CUDAAddTransducerSource
 //------------------------------------------------------------------------------
@@ -870,12 +706,12 @@ __global__ void CUDAAddTransducerSource(float       * ux_sgx,
  * @param [in, out] delay_mask        - Index matrix - delay of the signal
  * @param [in]      transducer_signal - Transducer signal
  */
-void SolverCUDAKernels::AddTransducerSource(TRealMatrix       & ux_sgx,
+void SolverCUDAKernels::AddTransducerSource(TRealMatrix&        ux_sgx,
                                             const TIndexMatrix& u_source_index,
-                                            TIndexMatrix      & delay_mask,
-                                            const TRealMatrix & transducer_signal)
+                                            TIndexMatrix&       delay_mask,
+                                            const TRealMatrix&  transducer_signal)
 {
-  const size_t u_source_index_size = u_source_index.GetTotalElementCount();
+  const auto u_source_index_size = u_source_index.GetTotalElementCount();
 
   // Grid size is calculated based on the source size
   int CUDAGridSize1D  = (u_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D();
@@ -891,7 +727,6 @@ void SolverCUDAKernels::AddTransducerSource(TRealMatrix       & ux_sgx,
 //------------------------------------------------------------------------------
 
 
-
 /**
  * CUDA kernel to add in velocity source terms.
  *
@@ -900,17 +735,17 @@ void SolverCUDAKernels::AddTransducerSource(TRealMatrix       & ux_sgx,
  * @param [in]      u_source_index      - Index matrix
  * @param [in]      t_index             - Actual time step
  */
-__global__ void CUDAAdd_u_source(float        * uxyz_sgxyz,
-                                 const float  * u_source_input,
-                                 const size_t * u_source_index,
-                                 const size_t   t_index)
+__global__ void CUDAAdd_u_source(float*        uxyz_sgxyz,
+                                 const float*  u_source_input,
+                                 const size_t* u_source_index,
+                                 const size_t  t_index)
 {
   // Set 1D or 2D step for source
-  size_t index2D = (CUDADeviceConstants.u_source_many == 0) ? t_index : t_index * CUDADeviceConstants.u_source_index_size;
+  auto index2D = (CUDADeviceConstants.u_source_many == 0) ? t_index : t_index * CUDADeviceConstants.u_source_index_size;
 
   if (CUDADeviceConstants.u_source_mode == 0)
   {
-    for (size_t i = GetX(); i < CUDADeviceConstants.u_source_index_size; i += GetX_Stride())
+    for (auto i = GetIndex(); i < CUDADeviceConstants.u_source_index_size; i += GetStride())
     {
       uxyz_sgxyz[u_source_index[i]]  = (CUDADeviceConstants.u_source_many == 0) ?  u_source_input[index2D] :
                                                                                    u_source_input[index2D + i];
@@ -919,7 +754,7 @@ __global__ void CUDAAdd_u_source(float        * uxyz_sgxyz,
 
   if (CUDADeviceConstants.u_source_mode == 1)
   {
-    for (size_t i  = GetX(); i < CUDADeviceConstants.u_source_index_size; i += GetX_Stride())
+    for (auto i  = GetIndex(); i < CUDADeviceConstants.u_source_index_size; i += GetStride())
     {
       uxyz_sgxyz[u_source_index[i]] += (CUDADeviceConstants.u_source_many == 0) ?  u_source_input[index2D] :
                                                                                    u_source_input[index2D + i];
@@ -937,12 +772,12 @@ __global__ void CUDAAdd_u_source(float        * uxyz_sgxyz,
  * @param [in] u_source_index  - Index matrix
  * @param [in] t_index         - Actual time step
  */
-void SolverCUDAKernels::Add_u_source(TRealMatrix       & uxyz_sgxyz,
-                                     const TRealMatrix & u_source_input,
+void SolverCUDAKernels::Add_u_source(TRealMatrix&        uxyz_sgxyz,
+                                     const TRealMatrix&  u_source_input,
                                      const TIndexMatrix& u_source_index,
                                      const size_t        t_index)
 {
-  const size_t u_source_index_size = u_source_index.GetTotalElementCount();
+  const auto u_source_index_size = u_source_index.GetTotalElementCount();
 
   // Grid size is calculated based on the source size
   const int CUDAGridSize1D  = (u_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D();
@@ -969,21 +804,21 @@ void SolverCUDAKernels::Add_u_source(TRealMatrix       & uxyz_sgxyz,
  * @param [in]  t_index        - actual timestep
 
  */
-__global__ void CUDAAdd_p_source(float       * rhox,
-                                 float       * rhoy,
-                                 float       * rhoz,
-                                 const float * p_source_input,
+__global__ void CUDAAdd_p_source(float*        rhox,
+                                 float*        rhoy,
+                                 float*        rhoz,
+                                 const float*  p_source_input,
                                  const size_t* p_source_index,
                                  const size_t  t_index)
 {
   // Set 1D or 2D step for source
-  size_t index2D = (CUDADeviceConstants.p_source_many == 0) ? t_index : t_index * CUDADeviceConstants.p_source_index_size;
+  auto index2D = (CUDADeviceConstants.p_source_many == 0) ? t_index : t_index * CUDADeviceConstants.p_source_index_size;
 
   if (CUDADeviceConstants.p_source_mode == 0)
   {
     if (CUDADeviceConstants.p_source_many == 0)
     { // single signal
-      for (size_t i = GetX(); i < CUDADeviceConstants.p_source_index_size; i += GetX_Stride())
+      for (auto i = GetIndex(); i < CUDADeviceConstants.p_source_index_size; i += GetStride())
       {
         rhox[p_source_index[i]] = p_source_input[index2D];
         rhoy[p_source_index[i]] = p_source_input[index2D];
@@ -992,7 +827,7 @@ __global__ void CUDAAdd_p_source(float       * rhox,
     }
     else
     { // multiple signals
-      for (size_t i = GetX(); i < CUDADeviceConstants.p_source_index_size; i += GetX_Stride())
+      for (auto i = GetIndex(); i < CUDADeviceConstants.p_source_index_size; i += GetStride())
       {
         rhox[p_source_index[i]] = p_source_input[index2D + i];
         rhoy[p_source_index[i]] = p_source_input[index2D + i];
@@ -1005,7 +840,7 @@ __global__ void CUDAAdd_p_source(float       * rhox,
   {
     if (CUDADeviceConstants.p_source_many == 0)
     { // single signal
-      for (size_t i = GetX(); i < CUDADeviceConstants.p_source_index_size; i += GetX_Stride())
+      for (auto i = GetIndex(); i < CUDADeviceConstants.p_source_index_size; i += GetStride())
       {
         rhox[p_source_index[i]] += p_source_input[index2D];
         rhoy[p_source_index[i]] += p_source_input[index2D];
@@ -1014,7 +849,7 @@ __global__ void CUDAAdd_p_source(float       * rhox,
     }
     else
     { // multiple signals
-      for (size_t i = GetX(); i < CUDADeviceConstants.p_source_index_size; i += GetX_Stride())
+      for (auto i = GetIndex(); i < CUDADeviceConstants.p_source_index_size; i += GetStride())
       {
         rhox[p_source_index[i]] += p_source_input[index2D + i];
         rhoy[p_source_index[i]] += p_source_input[index2D + i];
@@ -1034,14 +869,14 @@ __global__ void CUDAAdd_p_source(float       * rhox,
  * @param [in]  p_source_index - index matrix with source
  * @param [in]  t_index        - actual timestep
  */
-void SolverCUDAKernels::Add_p_source(TRealMatrix       & rhox,
-                                     TRealMatrix       & rhoy,
-                                     TRealMatrix       & rhoz,
-                                     const TRealMatrix & p_source_input,
+void SolverCUDAKernels::Add_p_source(TRealMatrix&        rhox,
+                                     TRealMatrix&        rhoy,
+                                     TRealMatrix&        rhoz,
+                                     const TRealMatrix&  p_source_input,
                                      const TIndexMatrix& p_source_index,
                                      const size_t        t_index)
 {
-  const size_t p_source_index_size = p_source_index.GetTotalElementCount();
+  const auto p_source_index_size = p_source_index.GetTotalElementCount();
 
   // Grid size is calculated based on the source size
   int CUDAGridSize1D  = (p_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D();
@@ -1063,20 +898,46 @@ void SolverCUDAKernels::Add_p_source(TRealMatrix       & rhox,
 /**
  * CUDA kernel Compute u = dt ./ rho0_sgx .* u.
  *
- * @param [in, out] uxyz_sgxyz - data stored in u matrix
- * @param [in]      dt_rho0_sg - inner member of the equation
+ * @param [in, out] ux_sgx - data stored in u matrix
+ * @param [in, out] uy_sgy - data stored in u matrix
+ * @param [in, out] uz_sgz - data stored in u matrix
+ * @param [in]      dt_rho0_sgx - inner member of the equation
+ * @param [in]      dt_rho0_sgy - inner member of the equation
+ * @param [in]      dt_rho0_sgz - inner member of the equation
  *
- * @todo to me merged for ux, uy and uz
  */
-__global__  void CUDACompute_dt_rho_sg_mul_u(float      * uxyz_sgxyz,
-                                             const float* dt_rho0_sg)
+template <bool Is_rho0_scalar>
+__global__  void CUDACompute_dt_rho_sg_mul_u(float*       ux_sgx,
+                                             float*       uy_sgy,
+                                             float*       uz_sgz,
+                                             const float* dt_rho0_sgx = nullptr,
+                                             const float* dt_rho0_sgy = nullptr,
+                                             const float* dt_rho0_sgz = nullptr)
 
 {
-  const float ScaledDivider = CUDADeviceConstants.FFTDivider * 0.5f;
-
-  for (size_t i = GetX(); i < CUDADeviceConstants.TotalElementCount; i += GetX_Stride())
+  if (Is_rho0_scalar)
   {
-    uxyz_sgxyz[i] = uxyz_sgxyz[i] * dt_rho0_sg[i] *  ScaledDivider;
+    const float ScaledDivider_X = CUDADeviceConstants.FFTDivider * 0.5f * CUDADeviceConstants.rho0_sgx_scalar;
+    const float ScaledDivider_Y = CUDADeviceConstants.FFTDivider * 0.5f * CUDADeviceConstants.rho0_sgy_scalar;
+    const float ScaledDivider_Z = CUDADeviceConstants.FFTDivider * 0.5f * CUDADeviceConstants.rho0_sgz_scalar;
+
+    for (auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
+    {
+      ux_sgx[i] *= ScaledDivider_X;
+      uy_sgy[i] *= ScaledDivider_Y;
+      uz_sgz[i] *= ScaledDivider_Z;
+    }
+  }
+  else
+  { // heterogeneous
+    const float ScaledDivider = CUDADeviceConstants.FFTDivider * 0.5f;
+
+    for (auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
+    {
+      ux_sgx[i] *= dt_rho0_sgx[i] * ScaledDivider;
+      uy_sgy[i] *= dt_rho0_sgy[i] * ScaledDivider;
+      uz_sgz[i] *= dt_rho0_sgz[i] * ScaledDivider;
+    }
   }
 }// end of CudaCompute_dt_rho_sg_mul_ifft_div_2
 //------------------------------------------------------------------------------
@@ -1084,69 +945,54 @@ __global__  void CUDACompute_dt_rho_sg_mul_u(float      * uxyz_sgxyz,
 /**
  * Interface to CUDA Compute u = dt ./ rho0_sgx .* ifft(FFT).
  *
- * @param [in, out] uxyz_sgxyz - data stored in u matrix
- * @param [in]      dt_rho0_sg - inner member of the equation
- * @param [in]      FFT        - matix storing the k-space temp result (input).
- *                               This will be overridden
- * @todo to me merged for ux, uy and uz
+ * @param [in, out] ux_sgx - data stored in u matrix
+ * @param [in, out] uy_sgy - data stored in u matrix
+ * @param [in, out] uz_sgz - data stored in u matrix
+ * @param [in]      dt_rho0_sgx - inner member of the equation
+ * @param [in]      dt_rho0_sgy - inner member of the equation
+ * @param [in]      dt_rho0_sgz - inner member of the equation
+ *
  */
-void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(TRealMatrix        & uxyz_sgxyz,
-                                                         const TRealMatrix  & dt_rho0_sg,
-                                                         TCUFFTComplexMatrix& FFT)
+void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(TRealMatrix&       ux_sgx,
+                                                         TRealMatrix&       uy_sgy,
+                                                         TRealMatrix&       uz_sgz,
+                                                         const TRealMatrix& dt_rho0_sgx,
+                                                         const TRealMatrix& dt_rho0_sgy,
+                                                         const TRealMatrix& dt_rho0_sgz)
 {
-  // take the 3D ifft
-  FFT.Compute_FFT_3D_C2R(uxyz_sgxyz);
-
-  CUDACompute_dt_rho_sg_mul_u<<<GetSolverGridSize1D(),
+  CUDACompute_dt_rho_sg_mul_u<false>
+                             <<<GetSolverGridSize1D(),
                                 GetSolverBlockSize1D()>>>
-                            (uxyz_sgxyz.GetRawDeviceData(),
-                             dt_rho0_sg.GetRawDeviceData());
+                             (ux_sgx.GetRawDeviceData(),
+                              uy_sgy.GetRawDeviceData(),
+                              uz_sgz.GetRawDeviceData(),
+                              dt_rho0_sgx.GetRawDeviceData(),
+                              dt_rho0_sgy.GetRawDeviceData(),
+                              dt_rho0_sgz.GetRawDeviceData());
 
   // check for errors
   gpuErrchk(cudaGetLastError());
 }// end of Compute_dt_rho_sg_mul_ifft_div_2
-//------------------------------------------------------------------------------
-
-/**
- * CUDA kernel to calculate u = dt ./ rho0_sgx .* u.
- * if rho0_sgx is scalar, uniform case.
- *
- * @param [in, out] uxyz_sgxyz - data stored in u matrix
- * @param [in]      dt_rho0_sg - inner member of the equation
- */
-__global__  void CUDACompute_dt_rho_sg_mul_u(float     * uxyz_sgxyz,
-                                             const float dt_rho_0_sg)
-{
-  const float ScaledDivider = CUDADeviceConstants.FFTDivider * 0.5f * dt_rho_0_sg;
-
-  for (size_t i = GetX(); i < CUDADeviceConstants.TotalElementCount; i += GetX_Stride())
-  {
-    uxyz_sgxyz[i] *= ScaledDivider;
-  }
-}// end of CUDACompute_dt_rho_sg_mul_u
 //------------------------------------------------------------------------------
 
 /**
  * Interface to CUDA Compute u = dt ./ rho0_sgx .* ifft(FFT).
  * if rho0_sgx is scalar, uniform case.
  *
- * @param [in, out] uxyz_sgxyz   - data stored in u matrix
- * @param [in]      dt_rho0_sgx - scalar value
- * @param [in]      FFT          - FFT matrix (data will be overwritten)
- *
- * @todo to me merged for ux, uy and uz
+ * @param [in, out] ux_sgx   - data stored in u matrix
+ * @param [in, out] uy_sgy   - data stored in u matrix
+ * @param [in, out] uz_sgz   - data stored in u matrix
  */
-void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(TRealMatrix        & uxyz_sgxyz,
-                                                         const float          dt_rho0_sg,
-                                                         TCUFFTComplexMatrix& FFT)
+void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(TRealMatrix& ux_sgx,
+                                                         TRealMatrix& uy_sgy,
+                                                         TRealMatrix& uz_sgz)
 {
-  // take the 3D ifft
-  FFT.Compute_FFT_3D_C2R(uxyz_sgxyz);
-
-  CUDACompute_dt_rho_sg_mul_u<<<GetSolverGridSize1D(),
+  CUDACompute_dt_rho_sg_mul_u<true>
+                             <<<GetSolverGridSize1D(),
                                 GetSolverBlockSize1D()>>>
-                             (uxyz_sgxyz.GetRawDeviceData(),
-                              dt_rho0_sg);
+                             (ux_sgx.GetRawDeviceData(),
+                              uy_sgy.GetRawDeviceData(),
+                              uz_sgz.GetRawDeviceData());
 
   // check for errors
   gpuErrchk(cudaGetLastError());
@@ -1156,165 +1002,66 @@ void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(TRealMatrix        & ux
 
 
 /**
- * CUDA kernel to Compute u = dt./rho0_sgx .* ifft (FFT).
- * if rho0_sgx is scalar, nonuniform  non uniform grid, x component.
- * @param [in, out] ux_sgx       - output value of u
- * @param [in]      dt_rho0_sgx - scalar value
- * @param [in]      dxudxn_sgx   - non-uniform mapping
+ * CUDA kernel to Compute u = dt./rho0_sgy .* ifft (FFT).
+ * if rho0_sg is scalar, nonuniform  non uniform grid, y component.
+ * @param [in, out] ux_sgx
+ * @param [in, out] ux_sgx
+ * @param [in, out] ux_sgx
+ * @param [in] dxudxn_sgx
+ * @param [in] dyudyn_sgy
+ * @param [in] dzudzn_sgz
  */
-__global__ void CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x(float      * ux_sgx,
-                                                                         const float  dt_rho_0_sgx,
-                                                                         const float* dxudxn_sgx)
+__global__ void CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform(float*       ux_sgx,
+                                                                       float*       uy_sgy,
+                                                                       float*       uz_sgz,
+                                                                       const float* dxudxn_sgx,
+                                                                       const float* dyudyn_sgy,
+                                                                       const float* dzudzn_sgz)
 {
-  const float ScaledDivider = CUDADeviceConstants.FFTDivider * 0.5f * dt_rho_0_sgx;
+  const float ScaledDivider_X = CUDADeviceConstants.FFTDivider * 0.5f * CUDADeviceConstants.rho0_sgx_scalar;
+  const float ScaledDivider_Y = CUDADeviceConstants.FFTDivider * 0.5f * CUDADeviceConstants.rho0_sgy_scalar;
+  const float ScaledDivider_Z = CUDADeviceConstants.FFTDivider * 0.5f * CUDADeviceConstants.rho0_sgz_scalar;
 
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-      for (size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
-        ux_sgx[i] = ux_sgx[i] * ScaledDivider * dxudxn_sgx[x];
-      }
-
-}// end of CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x
-//------------------------------------------------------------------------------
-
-
-/**
- * Interface to CUDA kernel to Compute ux = dt./rho0_sgx .* ifft (FFT).
- * if rho0_sgx is scalar, nonuniform  non uniform grid, x component.
- * @param [in, out] ux_sgx       - output value of u
- * @param [in]      dt_rho0_sgx - scalar value
- * @param [in]      dxudxn_sgx   - non-uniform mapping
- * @param [in]      FFT          - FFT matrix (data will be overwritten)
- */
-void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x(TRealMatrix        & ux_sgx,
-                                                                             const float          dt_rho0_sgx,
-                                                                             const TRealMatrix  & dxudxn_sgx,
-                                                                             TCUFFTComplexMatrix& FFT)
-{
-  // take the 3D iFFT
-  FFT.Compute_FFT_3D_C2R(ux_sgx);
-
-  CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x<<<GetSolverGridSize3D(),
-                                                             GetSolverBlockSize3D()>>>
-                                                          (ux_sgx.GetRawDeviceData(),
-                                                           dt_rho0_sgx,
-                                                           dxudxn_sgx.GetRawDeviceData());
-
- // check for errors
-  gpuErrchk(cudaGetLastError());
-}// end of Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x
-//------------------------------------------------------------------------------
-
-/**
- * CUDA kernel to Compute uy = dt./rho0_sgy .* ifft (FFT).
- * if rho0_sgy is scalar, nonuniform  non uniform grid, y component.
- * @param [in, out] uy_sgy       - output value of u
- * @param [in]      dt_rho0_sgy - scalar value
- * @param [in]      dxudxn_sgy   - non-uniform mapping
- */
-__global__ void CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y(float      * uy_sgy,
-                                                                         const float  dt_rho_0_sgy,
-                                                                         const float* dyudyn_sgy)
-{
-
-  const float ScaledDivider = CUDADeviceConstants.FFTDivider * 0.5f * dt_rho_0_sgy;
-
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
+  for(auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      const float dyudyn_sgy_data = dyudyn_sgy[y] * ScaledDivider;
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-         const size_t i = GetFullDim_i(z,y,x);
-         uy_sgy[i] = uy_sgy[i] * dyudyn_sgy_data;
-      }
-    }
+    const dim3 coords = GetReal3DCoords(i);
+
+    ux_sgx[i] *= ScaledDivider_X * dxudxn_sgx[coords.x];
+    uy_sgy[i] *= ScaledDivider_Y * dyudyn_sgy[coords.y];
+    uz_sgz[i] *= ScaledDivider_Z * dzudzn_sgz[coords.z];
   }
-}// end of CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y
+}// end of CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform
 //------------------------------------------------------------------------------
 
+
 /**
- * Interface to CUDA kernel to Compute uy = dt./rho0_sgy .* ifft (FFT).
- * if rho0_sgy is scalar, nonuniform  non uniform grid, y component.
- * @param [in, out] uy_sgy       - output value of u
- * @param [in]      dt_rho0_sgy - scalar value
- * @param [in]      dyudyn_sgy   - non-uniform mapping
- * @param [in]      FFT          - FFT matrix (data will be overwritten)
+ * Interface to CUDA kernel to Compute u = dt./rho0_sgy .* ifft (FFT).
+ * if rho0_sgx is scalar, nonuniform  non uniform Compute_ddx_kappa_fft_pgrid, y component.
+ * @param [in, out] ux_sgx
+ * @param [in, out] uy_sgy
+ * @param [in, out] uz_sgz
+ * @param [in] dxudxn_sgx
+ * @param [in] dyudyn_sgy
+ * @param [in] dzudzn_sgz
  */
-void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y(TRealMatrix        & uy_sgy,
-                                                                             const float          dt_rho0_sgy,
-                                                                             const TRealMatrix  & dyudyn_sgy,
-                                                                             TCUFFTComplexMatrix& FFT)
+  void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform(TRealMatrix&       ux_sgx,
+                                                                             TRealMatrix&       uy_sgy,
+                                                                             TRealMatrix&       uz_sgz,
+                                                                             const TRealMatrix& dxudxn_sgx,
+                                                                             const TRealMatrix& dyudyn_sgy,
+                                                                             const TRealMatrix& dzudzn_sgz)
 {
-  // take the 3D iFFT
-  FFT.Compute_FFT_3D_C2R(uy_sgy);
-
-  CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y<<<GetSolverGridSize3D(),
-                                                             GetSolverBlockSize3D()>>>
-                                                          (uy_sgy.GetRawDeviceData(),
-                                                           dt_rho0_sgy,
-                                                           dyudyn_sgy.GetRawDeviceData());
-
-  // check for errors
+  CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform<<<GetSolverGridSize1D(),
+                                                           GetSolverBlockSize1D()>>>
+                                                          (ux_sgx.GetRawDeviceData(),
+                                                           uy_sgy.GetRawDeviceData(),
+                                                           uz_sgz.GetRawDeviceData(),
+                                                           dxudxn_sgx.GetRawDeviceData(),
+                                                           dxudxn_sgx.GetRawDeviceData(),
+                                                           dxudxn_sgx.GetRawDeviceData());
+// check for errors
   gpuErrchk(cudaGetLastError());
-}// end of Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y
-//------------------------------------------------------------------------------
-
-/**
- * CUDA kernel to Compute uy = dt./rho0_sgz .* ifft (FFT).
- * if rho0_sgz is scalar, nonuniform  non uniform grid, z component.
- * @param [in, out] uy_sgz       - output value of u
- * @param [in]      dt_rho0_sgz - scalar value
- * @param [in]      dxudxn_sgz   - non-uniform mapping
- */
-__global__ void CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z(float      * uz_sgz,
-                                                                         const float  dt_rho_0_sgz,
-                                                                         const float* dzudzn_sgz)
-{
-  const float ScaledDivider = CUDADeviceConstants.FFTDivider * 0.5f * dt_rho_0_sgz;
-
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
-  {
-    const float dzudzn_sgz_data = dzudzn_sgz[z] * ScaledDivider;
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-         const size_t i = GetFullDim_i(z,y,x);
-         uz_sgz[i] = uz_sgz[i] * dzudzn_sgz_data;
-      }//X
-    }//Y
-  }//Z
-}// end of CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z
-//------------------------------------------------------------------------------
-
-/**
- * Interface to CUDA kernel to Compute uz = dt./rho0_sgz .* ifft (FFT).
- * if rho0_sgz is scalar, nonuniform  non uniform grid, z component.
- * @param [in, out] uz_sgz       - output value of u
- * @param [in]      dt_rho0_szy - scalar value
- * @param [in]      dzudzn_sgz   - non-uniform mapping
- * @param [in]      FFT          - FFT matrix (data will be overwritten)
- */
-void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z(TRealMatrix        & uz_sgz,
-                                                                             const float          dt_rho0_sgz,
-                                                                             const TRealMatrix  & dzudzn_sgz,
-                                                                             TCUFFTComplexMatrix& FFT)
-{
-  // take the D iFFT
-  FFT.Compute_FFT_3D_C2R(uz_sgz);
-
-  CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z<<<GetSolverGridSize3D(),
-                                                             GetSolverBlockSize3D()>>>
-                                                          (uz_sgz.GetRawDeviceData(),
-                                                           dt_rho0_sgz,
-                                                           dzudzn_sgz.GetRawDeviceData());
-  // check for errors
-  gpuErrchk(cudaGetLastError());
-}// end of Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z
+}// end of Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform
 //------------------------------------------------------------------------------
 
 
@@ -1323,9 +1070,8 @@ void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z(TRe
  *  of p represented by:
  *  bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k).
  *
- * Complex numbers are passed as float2 structures.
  *
- * @param [out]    FFT_X - matrix to store input for iFFT (p) /dx
+ * @param [in, out]    FFT_X - matrix to store input for iFFT (p) /dx
  * @param [out]    FFT_Y - matrix to store input for iFFT (p) /dy
  * @param [out]    FFT_Z - matrix to store input for iFFT (p) /dz
  *
@@ -1335,54 +1081,24 @@ void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z(TRe
  * @param [in]     ddy - precomputed value of ddy_k_shift_pos
  * @param [in]     ddz - precomputed value of ddz_k_shift_pos
  */
-__global__ void CUDACompute_ddx_kappa_fft_p(float2       * FFT_X,
-                                            float2       * FFT_Y,
-                                            float2       * FFT_Z,
-                                            const float  * kappa,
-                                            const float2 * ddx,
-                                            const float2 * ddy,
-                                            const float2 * ddz)
+__global__ void CUDACompute_ddx_kappa_fft_p(cuFloatComplex*       FFT_X,
+                                            cuFloatComplex*       FFT_Y,
+                                            cuFloatComplex*       FFT_Z,
+                                            const float*          kappa,
+                                            const cuFloatComplex* ddx,
+                                            const cuFloatComplex* ddy,
+                                            const cuFloatComplex* ddz)
 {
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Complex_Nz; z += GetZ_Stride())
+  for(auto i = GetIndex(); i < CUDADeviceConstants.ComplexTotalElementCount; i += GetStride())
   {
-    // float 2 used for imaginary numbers .x  =re, .y = im
-    const float2 ddz_el = ddz[z];
-    for (size_t y = GetY(); y < CUDADeviceConstants.Complex_Ny; y += GetY_Stride())
-    {
-      const float2 ddy_el = ddy[y];
-      for(size_t x = GetX(); x < CUDADeviceConstants.Complex_Nx; x += GetX_Stride())
-      {
-        const size_t i = z * (CUDADeviceConstants.Complex_Ny * CUDADeviceConstants.Complex_Nx) +
-                         y * CUDADeviceConstants.Complex_Nx + x;
+    const dim3 coords = GetComplex3DCoords(i);
 
-        const float2 ddx_el = ddx[x];
-        // kappa ./ p_k
-        const float kappa_el = kappa[i];
+    const cuFloatComplex p_k_el = FFT_X[i] * kappa[i];
 
-        float2 p_k_el    = FFT_X[i];
-               p_k_el.x *= kappa_el;
-               p_k_el.y *= kappa_el;
-
-        float2 tmp_x;
-        float2 tmp_y;
-        float2 tmp_z;
-
-        //bxfun(ddx...)
-        tmp_x.x = p_k_el.x * ddx_el.x - p_k_el.y * ddx_el.y;
-        tmp_x.y = p_k_el.x * ddx_el.y + p_k_el.y * ddx_el.x;
-
-        tmp_y.x = p_k_el.x * ddy_el.x - p_k_el.y * ddy_el.y;
-        tmp_y.y = p_k_el.x * ddy_el.y + p_k_el.y * ddy_el.x;
-
-        tmp_z.x = p_k_el.x * ddz_el.x - p_k_el.y * ddz_el.y;
-        tmp_z.y = p_k_el.x * ddz_el.y + p_k_el.y * ddz_el.x;
-
-        FFT_X[i] = tmp_x;
-        FFT_Y[i] = tmp_y;
-        FFT_Z[i] = tmp_z;
-      }// X
-    }// Y
-  }//X
+    FFT_X[i] = cuCmulf(p_k_el, ddx[coords.x]);
+    FFT_Y[i] = cuCmulf(p_k_el, ddy[coords.y]);
+    FFT_Z[i] = cuCmulf(p_k_el, ddz[coords.z]);
+  }
 }// end of Compute_ddx_kappa_fft_x
 //------------------------------------------------------------------------------
 
@@ -1402,11 +1118,11 @@ __global__ void CUDACompute_ddx_kappa_fft_p(float2       * FFT_X,
  * @param [in]     ddy - precomputed value of ddy_k_shift_pos
  * @param [in]     ddz - precomputed value of ddz_k_shift_pos
  */
-void SolverCUDAKernels::Compute_ddx_kappa_fft_p(TRealMatrix         & X_Matrix,
-                                                TCUFFTComplexMatrix & FFT_X,
-                                                TCUFFTComplexMatrix & FFT_Y,
-                                                TCUFFTComplexMatrix & FFT_Z,
-                                                const TRealMatrix   & kappa,
+void SolverCUDAKernels::Compute_ddx_kappa_fft_p(TRealMatrix&         X_Matrix,
+                                                TCUFFTComplexMatrix& FFT_X,
+                                                TCUFFTComplexMatrix& FFT_Y,
+                                                TCUFFTComplexMatrix& FFT_Z,
+                                                const TRealMatrix&    kappa,
                                                 const TComplexMatrix& ddx,
                                                 const TComplexMatrix& ddy,
                                                 const TComplexMatrix& ddz)
@@ -1414,15 +1130,15 @@ void SolverCUDAKernels::Compute_ddx_kappa_fft_p(TRealMatrix         & X_Matrix,
   // Compute FFT of X
   FFT_X.Compute_FFT_3D_R2C(X_Matrix);
 
-  CUDACompute_ddx_kappa_fft_p<<<GetSolverComplexGridSize3D(),
-                                GetSolverBlockSize3D()>>>
-                             (reinterpret_cast<float2 *>(FFT_X.GetRawDeviceData()),
-                              reinterpret_cast<float2 *>( FFT_Y.GetRawDeviceData()),
-                              reinterpret_cast<float2 *>( FFT_Z.GetRawDeviceData()),
+  CUDACompute_ddx_kappa_fft_p<<<GetSolverGridSize1D(),
+                                GetSolverBlockSize1D()>>>
+                             (reinterpret_cast<cuFloatComplex*>(FFT_X.GetRawDeviceData()),
+                              reinterpret_cast<cuFloatComplex*>(FFT_Y.GetRawDeviceData()),
+                              reinterpret_cast<cuFloatComplex*>(FFT_Z.GetRawDeviceData()),
                               kappa.GetRawDeviceData(),
-                              reinterpret_cast<const float2 *>(ddx.GetRawDeviceData()),
-                              reinterpret_cast<const float2 *>(ddy.GetRawDeviceData()),
-                              reinterpret_cast<const float2 *>(ddz.GetRawDeviceData()));
+                              reinterpret_cast<const cuFloatComplex*>(ddx.GetRawDeviceData()),
+                              reinterpret_cast<const cuFloatComplex*>(ddy.GetRawDeviceData()),
+                              reinterpret_cast<const cuFloatComplex*>(ddz.GetRawDeviceData()));
 
   // check for errors
   gpuErrchk(cudaGetLastError());
@@ -1443,61 +1159,32 @@ void SolverCUDAKernels::Compute_ddx_kappa_fft_p(TRealMatrix         & X_Matrix,
  * @param [in]      ddy_neg - ddy_k_shift_neg
  * @param [in]      ddz_neg - ddz_k_shift_neg
  */
-__global__  void CUDACompute_duxyz_uniform(float2       * FFT_X,
-                                           float2       * FFT_Y,
-                                           float2       * FFT_Z,
-                                           const float  * kappa,
-                                           const float2 * ddx_neg,
-                                           const float2 * ddy_neg,
-                                           const float2 * ddz_neg)
+__global__  void CUDACompute_duxyz_uniform(cuFloatComplex*       FFT_X,
+                                           cuFloatComplex*       FFT_Y,
+                                           cuFloatComplex*       FFT_Z,
+                                           const float*          kappa,
+                                           const cuFloatComplex* ddx_neg,
+                                           const cuFloatComplex* ddy_neg,
+                                           const cuFloatComplex* ddz_neg)
 {
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Complex_Nz; z += GetZ_Stride())
+  for(auto i = GetIndex(); i < CUDADeviceConstants.ComplexTotalElementCount; i += GetStride())
   {
-    // float 2 used for imaginary numbers .x  =re, .y = im
-    const float2 ddz_neg_el = ddz_neg[z];
-    for (size_t y = GetY(); y < CUDADeviceConstants.Complex_Ny; y += GetY_Stride())
-    {
-      const float2 ddy_neg_el = ddy_neg[y];
-      for(size_t x = GetX(); x < CUDADeviceConstants.Complex_Nx; x += GetX_Stride())
-      {
-        const size_t i = z * (CUDADeviceConstants.Complex_Ny * CUDADeviceConstants.Complex_Nx) +
-                         y * CUDADeviceConstants.Complex_Nx + x;
+    const dim3 coords = GetComplex3DCoords(i);
 
-        const float2 ddx_neg_el = ddx_neg[x];
-        const float kappa_el = kappa[i];
+    const cuFloatComplex ddx_neg_el = ddx_neg[coords.x];
+    const cuFloatComplex ddz_neg_el = ddz_neg[coords.z];
+    const cuFloatComplex ddy_neg_el = ddy_neg[coords.y];
 
-        float2 FFT_X_el = FFT_X[i];
-        float2 FFT_Y_el = FFT_Y[i];
-        float2 FFT_Z_el = FFT_Z[i];
+    const float kappa_el = kappa[i] * CUDADeviceConstants.FFTDivider;
 
-        FFT_X_el.x *= kappa_el;
-        FFT_X_el.y *= kappa_el;
+    const cuFloatComplex FFT_X_el = FFT_X[i] * kappa_el;
+    const cuFloatComplex FFT_Y_el = FFT_Y[i] * kappa_el;
+    const cuFloatComplex FFT_Z_el = FFT_Z[i] * kappa_el;
 
-        FFT_Y_el.x *= kappa_el;
-        FFT_Y_el.y *= kappa_el;
-
-        FFT_Z_el.x *= kappa_el;
-        FFT_Z_el.y *= kappa_el;
-
-        float2 tmp_x;
-        float2 tmp_y;
-        float2 tmp_z;
-
-        tmp_x.x = (FFT_X_el.x * ddx_neg_el.x - FFT_X_el.y * ddx_neg_el.y) * CUDADeviceConstants.FFTDivider;
-        tmp_x.y = (FFT_X_el.y * ddx_neg_el.x + FFT_X_el.x * ddx_neg_el.y) * CUDADeviceConstants.FFTDivider;;
-
-        tmp_y.x = (FFT_Y_el.x * ddy_neg_el.x - FFT_Y_el.y * ddy_neg_el.y) * CUDADeviceConstants.FFTDivider;
-        tmp_y.y = (FFT_Y_el.y * ddy_neg_el.x + FFT_Y_el.x * ddy_neg_el.y) * CUDADeviceConstants.FFTDivider;;
-
-        tmp_z.x = (FFT_Z_el.x * ddz_neg_el.x - FFT_Z_el.y * ddz_neg_el.y) * CUDADeviceConstants.FFTDivider;
-        tmp_z.y = (FFT_Z_el.y * ddz_neg_el.x + FFT_Z_el.x * ddz_neg_el.y) * CUDADeviceConstants.FFTDivider;;
-
-        FFT_X[i] = tmp_x;
-        FFT_Y[i] = tmp_y;
-        FFT_Z[i] = tmp_z;
-      } // x
-    } // y
-  } // z
+    FFT_X[i] = cuCmulf(FFT_X_el, ddx_neg_el);
+    FFT_Y[i] = cuCmulf(FFT_Y_el, ddy_neg_el);
+    FFT_Z[i] = cuCmulf(FFT_Z_el, ddz_neg_el);
+  } // for
 }// end of CUDACompute_duxyz_uniform
 //------------------------------------------------------------------------------
 
@@ -1512,23 +1199,23 @@ __global__  void CUDACompute_duxyz_uniform(float2       * FFT_X,
  * @param [in] ddy_k_shift_neg
  * @param [in] ddz_k_shift_neg
  */
-void SolverCUDAKernels::Compute_duxyz_uniform(TCUFFTComplexMatrix & FFT_X,
-                                              TCUFFTComplexMatrix & FFT_Y,
-                                              TCUFFTComplexMatrix & FFT_Z,
-                                              const TRealMatrix   & kappa,
+void SolverCUDAKernels::Compute_duxyz_uniform(TCUFFTComplexMatrix&  FFT_X,
+                                              TCUFFTComplexMatrix&  FFT_Y,
+                                              TCUFFTComplexMatrix&  FFT_Z,
+                                              const TRealMatrix&    kappa,
                                               const TComplexMatrix& ddx_k_shift_neg,
                                               const TComplexMatrix& ddy_k_shift_neg,
-                                               const TComplexMatrix& ddz_k_shift_neg)
+                                              const TComplexMatrix& ddz_k_shift_neg)
 {
-  CUDACompute_duxyz_uniform<<<GetSolverGridSize3D(),
-                              GetSolverBlockSize3D()>>>
-                          (reinterpret_cast<float2 *>(FFT_X.GetRawDeviceData()),
-                           reinterpret_cast<float2 *>(FFT_Y.GetRawDeviceData()),
-                           reinterpret_cast<float2 *>(FFT_Z.GetRawDeviceData()),
+  CUDACompute_duxyz_uniform<<<GetSolverGridSize1D(),
+                              GetSolverBlockSize1D()>>>
+                          (reinterpret_cast<cuFloatComplex *>(FFT_X.GetRawDeviceData()),
+                           reinterpret_cast<cuFloatComplex *>(FFT_Y.GetRawDeviceData()),
+                           reinterpret_cast<cuFloatComplex *>(FFT_Z.GetRawDeviceData()),
                            kappa.GetRawDeviceData(),
-                           reinterpret_cast<const float2 *>(ddx_k_shift_neg.GetRawDeviceData()),
-                           reinterpret_cast<const float2 *>(ddy_k_shift_neg.GetRawDeviceData()),
-                           reinterpret_cast<const float2 *>(ddz_k_shift_neg.GetRawDeviceData()));
+                           reinterpret_cast<const cuFloatComplex *>(ddx_k_shift_neg.GetRawDeviceData()),
+                           reinterpret_cast<const cuFloatComplex *>(ddy_k_shift_neg.GetRawDeviceData()),
+                           reinterpret_cast<const cuFloatComplex *>(ddz_k_shift_neg.GetRawDeviceData()));
 
   // check for errors
   gpuErrchk(cudaGetLastError());
@@ -1545,29 +1232,21 @@ void SolverCUDAKernels::Compute_duxyz_uniform(TCUFFTComplexMatrix & FFT_X,
  * @param [in]     dyudyn
  * @param [in]     dzudzn
  */
-__global__  void CUDACompute_duxyz_non_linear(float      * duxdx,
-                                              float      * duydy,
-                                              float      * duzdz,
+__global__  void CUDACompute_duxyz_non_linear(float*       duxdx,
+                                              float*       duydy,
+                                              float*       duzdz,
                                               const float* duxdxn,
                                               const float* duydyn,
                                               const float* duzdzn)
 {
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
+  for(auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    const float duzdzn_el = duzdzn[z];
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      const float dyudyn_el = duydyn[y];
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
+    const dim3 coords = GetReal3DCoords(i);
 
-        duxdx[i] *= duxdxn[x];
-        duydy[i] *= dyudyn_el;
-        duzdz[i] *= duzdzn_el;
-      } // x
-    } // y
-  } // z
+    duxdx[i] *= duxdxn[coords.x];
+    duydy[i] *= duydyn[coords.y];
+    duzdz[i] *= duzdzn[coords.z];
+  }
 }// end of CUDACompute_duxyz_non_linear
 //------------------------------------------------------------------------------
 
@@ -1580,15 +1259,15 @@ __global__  void CUDACompute_duxyz_non_linear(float      * duxdx,
  * @param [in]     dyudyn
  * @param [in]     dzudzn
  */
-void SolverCUDAKernels::Compute_duxyz_non_uniform(TRealMatrix      & duxdx,
-                                                  TRealMatrix      & duydy,
-                                                  TRealMatrix      & duzdz,
+void SolverCUDAKernels::Compute_duxyz_non_uniform(TRealMatrix&       duxdx,
+                                                  TRealMatrix&       duydy,
+                                                  TRealMatrix&       duzdz,
                                                   const TRealMatrix& dxudxn,
                                                   const TRealMatrix& dyudyn,
                                                   const TRealMatrix& dzudzn)
 {
-  CUDACompute_duxyz_non_linear<<<GetSolverGridSize3D(),
-                                 GetSolverBlockSize3D()>>>
+  CUDACompute_duxyz_non_linear<<<GetSolverGridSize1D(),
+                                 GetSolverBlockSize1D()>>>
                               (duxdx.GetRawDeviceData(),
                                duydy.GetRawDeviceData(),
                                duzdz.GetRawDeviceData(),
@@ -1604,61 +1283,27 @@ void SolverCUDAKernels::Compute_duxyz_non_uniform(TRealMatrix      & duxdx,
 
 /**
  * CUDA kernel to add initial pressure p0 into p, rhox, rhoy, rhoz.
- * c is scalar
+ * c is a matrix. Heterogeneity is treated by a template
  * @param [out] p       - pressure
  * @param [out] rhox
  * @param [out] rhoy
  * @param [out] rhoz
  * @param [in]  p0       - intial pressure
  * @param [in]  c2       - sound speed
- * @param [in]  c2_shift - scalar or vector?
  */
-__global__ void CUDACalculate_p0_source_add_initial_pressure(float       * p,
-                                                             float       * rhox,
-                                                             float       * rhoy,
-                                                             float       * rhoz,
-                                                             const float * p0,
-                                                             const float c2)
+template<bool Is_c0_scalar>
+__global__ void CUDACalculate_p0_source_add_initial_pressure(float*       p,
+                                                             float*       rhox,
+                                                             float*       rhoy,
+                                                             float*       rhoz,
+                                                             const float* p0,
+                                                             const float* c2 = nullptr)
 {
-  const float Divider = 1.0f / (3.0f * c2);
-
-  for (size_t i = GetX(); i < CUDADeviceConstants.TotalElementCount; i += GetX_Stride())
+  for (auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
     float tmp = p[i] = p0[i];
 
-    tmp = tmp * Divider;
-    rhox[i] = tmp;
-    rhoy[i] = tmp;
-    rhoz[i] = tmp;
-  }
-}// end of CUDACalculate_p0_source_add_initial_pressure
-//------------------------------------------------------------------------------
-
-
-
-/**
- * CUDA kernel to add initial pressure p0 into p, rhox, rhoy, rhoz.
- * c is a matrix.
- * @param [out] p       - pressure
- * @param [out] rhox
- * @param [out] rhoy
- * @param [out] rhoz
- * @param [in]  p0       - intial pressure
- * @param [in]  c2       - sound speed
- * @param [in]  c2_shift - scalar or vector?
- */
-__global__ void CUDACalculate_p0_source_add_initial_pressure(float       * p,
-                                                             float       * rhox,
-                                                             float       * rhoy,
-                                                             float       * rhoz,
-                                                             const float * p0,
-                                                             const float * c2)
-{
-  for (size_t i = GetX(); i < CUDADeviceConstants.TotalElementCount; i += GetX_Stride())
-  {
-    float tmp = p[i] = p0[i];
-
-    tmp = tmp / (3.0f * c2[i]);
+    tmp = (Is_c0_scalar) ? tmp / (3.0f * CUDADeviceConstants.c2): tmp / (3.0f * c2[i]);
     rhox[i] = tmp;
     rhoy[i] = tmp;
     rhoz[i] = tmp;
@@ -1673,34 +1318,34 @@ __global__ void CUDACalculate_p0_source_add_initial_pressure(float       * p,
  * @param [out] rhox
  * @param [out] rhoy
  * @param [out] rhoz
- * @param [in] p0       - intial pressure
- * @param [in] c2       - sound speed
- * @param [in] c2_shift - scalar or vector?
+ * @param [in]  p0       - intial pressure
+ * @param [in]  Is_c2_scalar - scalar or vector?
+ * @param [in]  c2       - sound speed
  */
-void SolverCUDAKernels::Calculate_p0_source_add_initial_pressure(TRealMatrix      & p,
-                                                                 TRealMatrix      & rhox,
-                                                                 TRealMatrix      & rhoy,
-                                                                 TRealMatrix      & rhoz,
+void SolverCUDAKernels::Calculate_p0_source_add_initial_pressure(TRealMatrix&       p,
+                                                                 TRealMatrix&       rhox,
+                                                                 TRealMatrix&       rhoy,
+                                                                 TRealMatrix&       rhoz,
                                                                  const TRealMatrix& p0,
-                                                                 const float      * c2,
-                                                                 const size_t       c2_shift)
+                                                                 const bool         Is_c2_scalar,
+                                                                 const float*       c2)
 {
-  if (c2_shift == 0)
+  if (Is_c2_scalar)
   {
-    CUDACalculate_p0_source_add_initial_pressure<<<GetSolverGridSize1D(),
-                                                   GetSolverBlockSize1D()>>>
+    CUDACalculate_p0_source_add_initial_pressure<true>
+                                                <<<GetSolverGridSize1D(),
+                                                  GetSolverBlockSize1D()>>>
                                                 (p.GetRawDeviceData(),
                                                  rhox.GetRawDeviceData(),
                                                  rhoy.GetRawDeviceData(),
                                                  rhoz.GetRawDeviceData(),
-                                                 p0.GetRawDeviceData(),
-                                                 c2[0]);
+                                                 p0.GetRawDeviceData());
   }
-
-  if (c2_shift == 1)
+  else
   {
-    CUDACalculate_p0_source_add_initial_pressure<<<GetSolverGridSize1D(),
-                                                   GetSolverBlockSize1D()>>>
+      CUDACalculate_p0_source_add_initial_pressure<false>
+                                                <<<GetSolverGridSize1D(),
+                                                  GetSolverBlockSize1D()>>>
                                                 (p.GetRawDeviceData(),
                                                  rhox.GetRawDeviceData(),
                                                  rhoy.GetRawDeviceData(),
@@ -1708,6 +1353,7 @@ void SolverCUDAKernels::Calculate_p0_source_add_initial_pressure(TRealMatrix    
                                                  p0.GetRawDeviceData(),
                                                  c2);
   }
+
   // check for errors
   gpuErrchk(cudaGetLastError());
 }// end of Calculate_p0_source_add_initial_pressure
@@ -1726,9 +1372,9 @@ void SolverCUDAKernels::Calculate_p0_source_add_initial_pressure(TRealMatrix    
  * @param [in]  duydy   - gradient of velocity x
  * @param [in]  duzdz   - gradient of velocity z
  */
-__global__ void CUDACompute_rhoxyz_nonlinear_homogeneous(float      * rhox,
-                                                         float      * rhoy,
-                                                         float      * rhoz,
+__global__ void CUDACompute_rhoxyz_nonlinear_homogeneous(float*       rhox,
+                                                         float*       rhoy,
+                                                         float*       rhoz,
                                                          const float* pml_x,
                                                          const float* pml_y,
                                                          const float* pml_z,
@@ -1736,28 +1382,25 @@ __global__ void CUDACompute_rhoxyz_nonlinear_homogeneous(float      * rhox,
                                                          const float* duydy,
                                                          const float* duzdz)
 {
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
+  for (auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    const float pml_z_el = pml_z[z];
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      const float pml_y_el = pml_y[y];
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
+    const dim3 coords = GetReal3DCoords(i);
 
-        const float pml_x_el = pml_x[x];
+    const float pml_x_el = pml_x[coords.x];
+    const float pml_y_el = pml_y[coords.y];
+    const float pml_z_el = pml_z[coords.z];
 
-        const float dux = duxdx[i];
-        const float duy = duydy[i];
-        const float duz = duzdz[i];
+    const float dux = duxdx[i];
+    const float duy = duydy[i];
+    const float duz = duzdz[i];
 
-        rhox[i] = pml_x_el * (((pml_x_el * rhox[i]) - (CUDADeviceConstants.dt_rho0_scalar * dux)) / (1.0f + (CUDADeviceConstants.dt2 * dux)));
-        rhoy[i] = pml_y_el * (((pml_y_el * rhoy[i]) - (CUDADeviceConstants.dt_rho0_scalar * duy)) / (1.0f + (CUDADeviceConstants.dt2 * duy)));
-        rhoz[i] = pml_z_el * (((pml_z_el * rhoz[i]) - (CUDADeviceConstants.dt_rho0_scalar * duz)) / (1.0f + (CUDADeviceConstants.dt2 * duz)));
-      }// X
-    }// Y
-  }// Z
+    rhox[i] = pml_x_el * ((pml_x_el * rhox[i] - CUDADeviceConstants.dt_rho0_scalar * dux) /
+                          (1.0f + CUDADeviceConstants.dt2 * dux));
+    rhoy[i] = pml_y_el * ((pml_y_el * rhoy[i] - CUDADeviceConstants.dt_rho0_scalar * duy) /
+                          (1.0f + CUDADeviceConstants.dt2 * duy));
+    rhoz[i] = pml_z_el * ((pml_z_el * rhoz[i] - CUDADeviceConstants.dt_rho0_scalar * duz) /
+                          (1.0f + CUDADeviceConstants.dt2 * duz));
+  }
 }// end of CUDACompute_rhoxyz_nonlinear_homogeneous
 //------------------------------------------------------------------------------
 
@@ -1774,9 +1417,9 @@ __global__ void CUDACompute_rhoxyz_nonlinear_homogeneous(float      * rhox,
  * @param [in]  duydy - gradient of velocity x
  * @param [in]  duzdz - gradient of velocity z
  */
-void SolverCUDAKernels::Compute_rhoxyz_nonlinear_homogeneous(TRealMatrix      & rhox,
-                                                             TRealMatrix      & rhoy,
-                                                             TRealMatrix      & rhoz,
+void SolverCUDAKernels::Compute_rhoxyz_nonlinear_homogeneous(TRealMatrix&       rhox,
+                                                             TRealMatrix&       rhoy,
+                                                             TRealMatrix&       rhoz,
                                                              const TRealMatrix& pml_x,
                                                              const TRealMatrix& pml_y,
                                                              const TRealMatrix& pml_z,
@@ -1784,8 +1427,8 @@ void SolverCUDAKernels::Compute_rhoxyz_nonlinear_homogeneous(TRealMatrix      & 
                                                              const TRealMatrix& duydy,
                                                              const TRealMatrix& duzdz)
 {
-  CUDACompute_rhoxyz_nonlinear_homogeneous<<<GetSolverGridSize3D(),
-                                             GetSolverBlockSize3D()>>>
+  CUDACompute_rhoxyz_nonlinear_homogeneous<<<GetSolverGridSize1D(),
+                                             GetSolverBlockSize1D()>>>
                                           (rhox.GetRawDeviceData(),
                                            rhoy.GetRawDeviceData(),
                                            rhoz.GetRawDeviceData(),
@@ -1814,9 +1457,9 @@ void SolverCUDAKernels::Compute_rhoxyz_nonlinear_homogeneous(TRealMatrix      & 
  * @param [in]  duzdz - gradient of velocity z
  * @param [in]  rho0  - initial density (matrix here)
  */
-__global__ void CUDACompute_rhoxyz_nonlinear_heterogeneous(float      * rhox,
-                                                           float      * rhoy,
-                                                           float      * rhoz,
+__global__ void CUDACompute_rhoxyz_nonlinear_heterogeneous(float*       rhox,
+                                                           float*       rhoy,
+                                                           float*       rhoz,
                                                            const float* pml_x,
                                                            const float* pml_y,
                                                            const float* pml_z,
@@ -1825,30 +1468,24 @@ __global__ void CUDACompute_rhoxyz_nonlinear_heterogeneous(float      * rhox,
                                                            const float* duzdz,
                                                            const float* rho0)
 {
-
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
+  for (auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    const float pml_z_el = pml_z[z];
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      const float pml_y_el = pml_y[y];
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
+    const dim3 coords = GetReal3DCoords(i);
 
-        const float pml_x_el = pml_x[x];
-        const float dt_rho0 = CUDADeviceConstants.dt * rho0[i];
+    const float pml_x_el = pml_x[coords.x];
+    const float pml_y_el = pml_y[coords.y];
+    const float pml_z_el = pml_z[coords.z];
 
-        const float dux = duxdx[i];
-        const float duy = duydy[i];
-        const float duz = duzdz[i];
+    const float dt_rho0 = CUDADeviceConstants.dt * rho0[i];
 
-        rhox[i] = pml_x_el * (((pml_x_el * rhox[i]) - (dt_rho0 * dux)) / (1.0f + (CUDADeviceConstants.dt2 * dux)));
-        rhoy[i] = pml_y_el * (((pml_y_el * rhoy[i]) - (dt_rho0 * duy)) / (1.0f + (CUDADeviceConstants.dt2 * duy)));
-        rhoz[i] = pml_z_el * (((pml_z_el * rhoz[i]) - (dt_rho0 * duz)) / (1.0f + (CUDADeviceConstants.dt2 * duz)));
-      }// X
-    }// Y
-  }//Z
+    const float dux = duxdx[i];
+    const float duy = duydy[i];
+    const float duz = duzdz[i];
+
+    rhox[i] = pml_x_el * ((pml_x_el * rhox[i] - dt_rho0 * dux) / (1.0f + CUDADeviceConstants.dt2 * dux));
+    rhoy[i] = pml_y_el * ((pml_y_el * rhoy[i] - dt_rho0 * duy) / (1.0f + CUDADeviceConstants.dt2 * duy));
+    rhoz[i] = pml_z_el * ((pml_z_el * rhoz[i] - dt_rho0 * duz) / (1.0f + CUDADeviceConstants.dt2 * duz));
+  }
 }//end of CUDACompute_rhoxyz_nonlinear_heterogeneous
 //------------------------------------------------------------------------------
 
@@ -1877,8 +1514,8 @@ void SolverCUDAKernels::Compute_rhoxyz_nonlinear_heterogeneous(TRealMatrix&     
                                                                const TRealMatrix& duzdz,
                                                                const TRealMatrix& rho0)
 {
-  CUDACompute_rhoxyz_nonlinear_heterogeneous<<<GetSolverGridSize3D(),
-                                               GetSolverBlockSize3D() >>>
+  CUDACompute_rhoxyz_nonlinear_heterogeneous<<<GetSolverGridSize1D(),
+                                               GetSolverBlockSize1D() >>>
                                               (rhox.GetRawDeviceData(),
                                                rhoy.GetRawDeviceData(),
                                                rhoz.GetRawDeviceData(),
@@ -1908,9 +1545,9 @@ void SolverCUDAKernels::Compute_rhoxyz_nonlinear_heterogeneous(TRealMatrix&     
  * @param [in]  duydy   - gradient of velocity x
  * @param [in]  duzdz   - gradient of velocity z
  */
-__global__ void CUDACompute_rhoxyz_linear_homogeneous(float      * rhox,
-                                                      float      * rhoy,
-                                                      float      * rhoz,
+__global__ void CUDACompute_rhoxyz_linear_homogeneous(float*       rhox,
+                                                      float*       rhoy,
+                                                      float*       rhoz,
                                                       const float* pml_x,
                                                       const float* pml_y,
                                                       const float* pml_z,
@@ -1918,23 +1555,18 @@ __global__ void CUDACompute_rhoxyz_linear_homogeneous(float      * rhox,
                                                       const float* duydy,
                                                       const float* duzdz)
 {
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
+  for (auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    const float pml_z_el = pml_z[z];
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      const float pml_y_el = pml_y[y];
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
-        const float pml_x_el = pml_x[x];
+    const dim3 coords = GetReal3DCoords(i);
 
-        rhox[i] = pml_x_el * (((pml_x_el * rhox[i]) - (CUDADeviceConstants.dt_rho0_scalar * duxdx[i])));
-        rhoy[i] = pml_y_el * (((pml_y_el * rhoy[i]) - (CUDADeviceConstants.dt_rho0_scalar * duydy[i])));
-        rhoz[i] = pml_z_el * (((pml_z_el * rhoz[i]) - (CUDADeviceConstants.dt_rho0_scalar * duzdz[i])));
-      }//X
-    }//Y
-  }//Z
+    const float pml_x_el = pml_x[coords.x];
+    const float pml_y_el = pml_y[coords.y];
+    const float pml_z_el = pml_z[coords.z];
+
+    rhox[i] = pml_x_el * (pml_x_el * rhox[i] - CUDADeviceConstants.dt_rho0_scalar * duxdx[i]);
+    rhoy[i] = pml_y_el * (pml_y_el * rhoy[i] - CUDADeviceConstants.dt_rho0_scalar * duydy[i]);
+    rhoz[i] = pml_z_el * (pml_z_el * rhoz[i] - CUDADeviceConstants.dt_rho0_scalar * duzdz[i]);
+  }
 }// end of CUDACompute_rhoxyz_linear_homogeneous
 //------------------------------------------------------------------------------
 
@@ -1951,9 +1583,9 @@ __global__ void CUDACompute_rhoxyz_linear_homogeneous(float      * rhox,
  * @param [in]  duydy - gradient of velocity x
  * @param [in]  duzdz - gradient of velocity z
  */
-void SolverCUDAKernels::Compute_rhoxyz_linear_homogeneous(TRealMatrix      & rhox,
-                                                          TRealMatrix      & rhoy,
-                                                          TRealMatrix      & rhoz,
+void SolverCUDAKernels::Compute_rhoxyz_linear_homogeneous(TRealMatrix&       rhox,
+                                                          TRealMatrix&       rhoy,
+                                                          TRealMatrix&       rhoz,
                                                           const TRealMatrix& pml_x,
                                                           const TRealMatrix& pml_y,
                                                           const TRealMatrix& pml_z,
@@ -1961,8 +1593,8 @@ void SolverCUDAKernels::Compute_rhoxyz_linear_homogeneous(TRealMatrix      & rho
                                                           const TRealMatrix& duydy,
                                                           const TRealMatrix& duzdz)
 {
-  CUDACompute_rhoxyz_linear_homogeneous<<<GetSolverGridSize3D(),
-                                          GetSolverBlockSize3D() >>>
+  CUDACompute_rhoxyz_linear_homogeneous<<<GetSolverGridSize1D(),
+                                          GetSolverBlockSize1D() >>>
                                       (rhox.GetRawDeviceData(),
                                        rhoy.GetRawDeviceData(),
                                        rhoz.GetRawDeviceData(),
@@ -1991,35 +1623,31 @@ void SolverCUDAKernels::Compute_rhoxyz_linear_homogeneous(TRealMatrix      & rho
  * @param [in]  duzdz - gradient of velocity z
  * @param [in]  rho0  - initial density (matrix here)
  */
-__global__ void CUDACompute_rhoxyz_linear_heterogeneous(float       * rhox,
-                                                        float       * rhoy,
-                                                        float       * rhoz,
-                                                        const float * pml_x,
-                                                        const float * pml_y,
-                                                        const float * pml_z,
-                                                        const float * duxdx,
-                                                        const float * duydy,
-                                                        const float * duzdz,
-                                                        const float * rho0)
+__global__ void CUDACompute_rhoxyz_linear_heterogeneous(float*       rhox,
+                                                        float*       rhoy,
+                                                        float*       rhoz,
+                                                        const float* pml_x,
+                                                        const float* pml_y,
+                                                        const float* pml_z,
+                                                        const float* duxdx,
+                                                        const float* duydy,
+                                                        const float* duzdz,
+                                                        const float* rho0)
 {
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
+  for (auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    const float pml_z_el = pml_z[z];
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      const float pml_y_el = pml_y[y];
-      for(size_t x = GetX(); x < CUDADeviceConstants.Nx; x += GetX_Stride())
-      {
-        const size_t i = GetFullDim_i(z,y,x);
-        const float dt_rho0  = CUDADeviceConstants.dt * rho0[i];
-        const float pml_x_el = pml_x[x];
+    const dim3 coords = GetReal3DCoords(i);
 
-        rhox[i] = pml_x_el * (((pml_x_el * rhox[i]) - (dt_rho0 * duxdx[i])));
-        rhoy[i] = pml_y_el * (((pml_y_el * rhoy[i]) - (dt_rho0 * duydy[i])));
-        rhoz[i] = pml_z_el * (((pml_z_el * rhoz[i]) - (dt_rho0 * duzdz[i])));
-      } //X
-    }// Y
-  }// Z
+    const float pml_x_el = pml_x[coords.x];
+    const float pml_y_el = pml_y[coords.y];
+    const float pml_z_el = pml_z[coords.z];
+
+    const float dt_rho0  = CUDADeviceConstants.dt * rho0[i];
+
+    rhox[i] = pml_x_el * (pml_x_el * rhox[i] - dt_rho0 * duxdx[i]);
+    rhoy[i] = pml_y_el * (pml_y_el * rhoy[i] - dt_rho0 * duydy[i]);
+    rhoz[i] = pml_z_el * (pml_z_el * rhoz[i] - dt_rho0 * duzdz[i]);
+  }
 }// end of CUDACompute_rhoxyz_linear_heterogeneous
 //------------------------------------------------------------------------------
 
@@ -2038,9 +1666,9 @@ __global__ void CUDACompute_rhoxyz_linear_heterogeneous(float       * rhox,
 
  * @param [in]  rho0  - initial density (matrix here)
  */
-void SolverCUDAKernels::Compute_rhoxyz_linear_heterogeneous(TRealMatrix      & rhox,
-                                                            TRealMatrix      & rhoy,
-                                                            TRealMatrix      & rhoz,
+void SolverCUDAKernels::Compute_rhoxyz_linear_heterogeneous(TRealMatrix&       rhox,
+                                                            TRealMatrix&       rhoy,
+                                                            TRealMatrix&       rhoz,
                                                             const TRealMatrix& pml_x,
                                                             const TRealMatrix& pml_y,
                                                             const TRealMatrix& pml_z,
@@ -2049,8 +1677,8 @@ void SolverCUDAKernels::Compute_rhoxyz_linear_heterogeneous(TRealMatrix      & r
                                                             const TRealMatrix& duzdz,
                                                             const TRealMatrix& rho0)
 {
-  CUDACompute_rhoxyz_linear_heterogeneous<<<GetSolverGridSize3D(),
-                                            GetSolverBlockSize3D()>>>
+  CUDACompute_rhoxyz_linear_heterogeneous<<<GetSolverGridSize1D(),
+                                            GetSolverBlockSize1D()>>>
                                          (rhox.GetRawDeviceData(),
                                           rhoy.GetRawDeviceData(),
                                           rhoz.GetRawDeviceData(),
@@ -2071,48 +1699,45 @@ void SolverCUDAKernels::Compute_rhoxyz_linear_heterogeneous(TRealMatrix      & r
 /**
  *
  * CUDA kernel which calculates three temporary sums in the new pressure formula \n
- * non-linear absorbing case.
+ * non-linear absorbing case. Homogeneous and heterogenous variants are treated
+ * using templates. Homogeneous variables are in constant memory.
  *
  * @param [out] rho_sum      - rhox_sgx + rhoy_sgy + rhoz_sgz
  * @param [out] BonA_sum     - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
  * @param [out] du_sum       - rho0* (duxdx + duydy + duzdz)
- * @param [in]  duxdx        - gradient of velocity
- * @param [in]  duydy
- * @param [in]  duzdz
- * @param [in]  BonA_scalar  - scalar value for BonA
+ * @param [in]  rhox,        - acoustic density X
+ * @param [in]  rhoy,        - acoustic density Y
+ * @param [in]  rhoz,        - acoustic density Z
+ * @param [in]  duxdx        - gradient of velocity in X
+ * @param [in]  duydy        - gradient of velocity in X
+ * @param [in]  duzdz        - gradient of velocity in X
  * @param [in]  BonA_matrix  - heterogeneous value for BonA
- * @param [in]  BonA_shift   - scalar or matrix
- * @param [in]  rho0_scalar  - scalar value for rho0
  * @param [in]  rho0_matrix  - heterogeneous value for rho0
- * @param [in]  rho0_shift   - scalar or matrix
  *
- * @todo revise parameter names, and put scalars to constant memory
+ *
  */
-__global__ void CUDACalculate_SumRho_BonA_SumDu(float       * rho_sum,
-                                                float       * BonA_sum,
-                                                float       * du_sum,
-                                                const float * rhox,
-                                                const float * rhoy,
-                                                const float * rhoz,
-                                                const float * duxdx,
-                                                const float * duydy,
-                                                const float * duzdz,
-                                                const float   BonA_scalar,
-                                                const float * BonA_matrix,
-                                                const size_t  BonA_shift,
-                                                const float   rho0_scalar,
-                                                const float * rho0_matrix,
-                                                const size_t  rho0_shift)
+template <bool Is_BonA_scalar, bool Is_rho0_scalar>
+__global__ void CUDACalculate_SumRho_BonA_SumDu(float*       rho_sum,
+                                                float*       BonA_sum,
+                                                float*       du_sum,
+                                                const float* rhox,
+                                                const float* rhoy,
+                                                const float* rhoz,
+                                                const float* duxdx,
+                                                const float* duydy,
+                                                const float* duzdz,
+                                                const float* BonA_matrix,
+                                                const float* rho0_matrix)
 {
-  for (size_t i = GetX(); i < CUDADeviceConstants.TotalElementCount; i += GetX_Stride())
+  for (auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    const float BonA = (BonA_shift == 0) ? BonA_scalar : BonA_matrix[i];
-    const float rho0 = (rho0_shift == 0) ? rho0_scalar : rho0_matrix[i];
+    const float BonA = (Is_BonA_scalar) ? CUDADeviceConstants.BonA_scalar : BonA_matrix[i];
+    const float rho0 = (Is_rho0_scalar) ? CUDADeviceConstants.rho0_scalar : rho0_matrix[i];
 
     const float rho_xyz_el = rhox[i] + rhoy[i] + rhoz[i];
 
     rho_sum[i]  = rho_xyz_el;
-    BonA_sum[i] = ((BonA * (rho_xyz_el * rho_xyz_el)) / (2.0f * rho0)) + rho_xyz_el;
+    BonA_sum[i] = ((BonA * rho_xyz_el * rho_xyz_el) / (2.0f * rho0)) + rho_xyz_el;
     du_sum[i]   = rho0 * (duxdx[i] + duydy[i] + duzdz[i]);
     }
 }// end of CUDACalculate_SumRho_BonA_SumDu
@@ -2121,57 +1746,113 @@ __global__ void CUDACalculate_SumRho_BonA_SumDu(float       * rho_sum,
 /**
  *
  * Interface to kernel which calculates three temporary sums in the new pressure formula \n
- * non-linear absorbing case.
+ * non-linear absorbing case. Scalar values are in constant memory
  *
  * @param [out] rho_sum      - rhox_sgx + rhoy_sgy + rhoz_sgz
  * @param [out] BonA_sum     - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
  * @param [out] du_sum       - rho0* (duxdx + duydy + duzdz)
- * @param [in]  duxdx        - gradient of velocity
- * @param [in]  duydy
- * @param [in]  duzdz
- * @param [in]  BonA_scalar  - scalar value for BonA
+ * @param [in]  rhox,        - acoustic density X
+ * @param [in]  rhoy,        - acoustic density Y
+ * @param [in]  rhoz,        - acoustic density Z
+ * @param [in]  duxdx        - gradient of velocity in X
+ * @param [in]  duydy        - gradient of velocity in X
+ * @param [in]  duzdz        - gradient of velocity in X
+ * @param [in]  Is_BonA_scalar - Is BonA a scalar value (homogeneous)
  * @param [in]  BonA_matrix  - heterogeneous value for BonA
- * @param [in]  BonA_shift   - scalar or matrix
- * @param [in]  rho0_scalar  - scalar value for rho0
+ * @param [in]  Is_rho_scalar - Is rho0 a scalar value (homogeneous)
  * @param [in]  rho0_matrix  - heterogeneous value for rho0
- * @param [in]  rho0_shift   - scalar or matrix
  *
  * @todo revise parameter names, and put scalars to constant memory
  */
-void SolverCUDAKernels::Calculate_SumRho_BonA_SumDu(TRealMatrix      & rho_sum,
-                                                    TRealMatrix      & BonA_sum,
-                                                    TRealMatrix      & du_sum,
+void SolverCUDAKernels::Calculate_SumRho_BonA_SumDu(TRealMatrix&       rho_sum,
+                                                    TRealMatrix&       BonA_sum,
+                                                    TRealMatrix&       du_sum,
                                                     const TRealMatrix& rhox,
                                                     const TRealMatrix& rhoy,
                                                     const TRealMatrix& rhoz,
                                                     const TRealMatrix& duxdx,
                                                     const TRealMatrix& duydy,
                                                     const TRealMatrix& duzdz,
-                                                    const float        BonA_scalar,
+                                                    const bool         Is_BonA_scalar,
                                                     const float*       BonA_matrix,
-                                                    const size_t       BonA_shift,
-                                                    const float        rho0_scalar,
-                                                    const float*       rho0_matrix,
-                                                    const size_t       rho0_shift)
+                                                    const bool         Is_rho0_scalar,
+                                                    const float*       rho0_matrix)
 {
-  CUDACalculate_SumRho_BonA_SumDu<<<GetSolverGridSize1D(),
-                                    GetSolverBlockSize1D()>>>
-                                (rho_sum.GetRawDeviceData(),
-                                 BonA_sum.GetRawDeviceData(),
-                                 du_sum.GetRawDeviceData(),
-                                 rhox.GetRawDeviceData(),
-                                 rhoy.GetRawDeviceData(),
-                                 rhoz.GetRawDeviceData(),
-                                 duxdx.GetRawDeviceData(),
-                                 duydy.GetRawDeviceData(),
-                                 duzdz.GetRawDeviceData(),
-                                 BonA_scalar,
-                                 BonA_matrix,
-                                 BonA_shift,
-                                 rho0_scalar,
-                                 rho0_matrix,
-                                 rho0_shift);
-
+  // all variants are treated by templates, here you can see all 4 variants
+  if (Is_BonA_scalar)
+  {
+    if (Is_rho0_scalar)
+    {
+      CUDACalculate_SumRho_BonA_SumDu<true, true>
+                                     <<<GetSolverGridSize1D(),
+                                        GetSolverBlockSize1D()>>>
+                                     (rho_sum.GetRawDeviceData(),
+                                      BonA_sum.GetRawDeviceData(),
+                                      du_sum.GetRawDeviceData(),
+                                      rhox.GetRawDeviceData(),
+                                      rhoy.GetRawDeviceData(),
+                                      rhoz.GetRawDeviceData(),
+                                      duxdx.GetRawDeviceData(),
+                                      duydy.GetRawDeviceData(),
+                                      duzdz.GetRawDeviceData(),
+                                      BonA_matrix,
+                                      rho0_matrix);
+    }
+    else
+    {
+      CUDACalculate_SumRho_BonA_SumDu<true, false>
+                                       <<<GetSolverGridSize1D(),
+                                          GetSolverBlockSize1D()>>>
+                                       (rho_sum.GetRawDeviceData(),
+                                        BonA_sum.GetRawDeviceData(),
+                                        du_sum.GetRawDeviceData(),
+                                        rhox.GetRawDeviceData(),
+                                        rhoy.GetRawDeviceData(),
+                                        rhoz.GetRawDeviceData(),
+                                        duxdx.GetRawDeviceData(),
+                                        duydy.GetRawDeviceData(),
+                                        duzdz.GetRawDeviceData(),
+                                        BonA_matrix,
+                                        rho0_matrix);
+    }
+  }
+  else // BonA is false
+  {
+   if (Is_rho0_scalar)
+    {
+    CUDACalculate_SumRho_BonA_SumDu<false, true>
+                                     <<<GetSolverGridSize1D(),
+                                        GetSolverBlockSize1D()>>>
+                                     (rho_sum.GetRawDeviceData(),
+                                      BonA_sum.GetRawDeviceData(),
+                                      du_sum.GetRawDeviceData(),
+                                      rhox.GetRawDeviceData(),
+                                      rhoy.GetRawDeviceData(),
+                                      rhoz.GetRawDeviceData(),
+                                      duxdx.GetRawDeviceData(),
+                                      duydy.GetRawDeviceData(),
+                                      duzdz.GetRawDeviceData(),
+                                      BonA_matrix,
+                                      rho0_matrix);
+    }
+    else
+    {
+    CUDACalculate_SumRho_BonA_SumDu<false, false>
+                                     <<<GetSolverGridSize1D(),
+                                        GetSolverBlockSize1D()>>>
+                                     (rho_sum.GetRawDeviceData(),
+                                      BonA_sum.GetRawDeviceData(),
+                                      du_sum.GetRawDeviceData(),
+                                      rhox.GetRawDeviceData(),
+                                      rhoy.GetRawDeviceData(),
+                                      rhoz.GetRawDeviceData(),
+                                      duxdx.GetRawDeviceData(),
+                                      duydy.GetRawDeviceData(),
+                                      duzdz.GetRawDeviceData(),
+                                      BonA_matrix,
+                                      rho0_matrix);
+    }
+  }
   // check for errors
   gpuErrchk(cudaGetLastError());
 }// end of Calculate_SumRho_BonA_SumDu
@@ -2189,27 +1870,15 @@ void SolverCUDAKernels::Calculate_SumRho_BonA_SumDu(TRealMatrix      & rho_sum,
  * @param [in]     absorb_nabla1
  * @param [in]     absorb_nabla2
  */
-__global__ void CUDACompute_Absorb_nabla1_2(float2     * FFT_1,
-                                            float2     * FFT_2,
-                                            const float* nabla1,
-                                            const float* nabla2)
+__global__ void CUDACompute_Absorb_nabla1_2(cuFloatComplex* FFT_1,
+                                            cuFloatComplex* FFT_2,
+                                            const float*    nabla1,
+                                            const float*    nabla2)
 {
-  for(size_t i = GetX(); i < CUDADeviceConstants.ComplexTotalElementCount; i += GetX_Stride())
+  for(auto i = GetIndex(); i < CUDADeviceConstants.ComplexTotalElementCount; i += GetStride())
   {
-    const float nabla_data1 = nabla1[i];
-    const float nabla_data2 = nabla2[i];
-
-    float2 FFT_1_el = FFT_1[i];
-    float2 FFT_2_el = FFT_2[i];
-
-    FFT_1_el.x *= nabla_data1;
-    FFT_1_el.y *= nabla_data1;
-
-    FFT_2_el.x *= nabla_data2;
-    FFT_2_el.y *= nabla_data2;
-
-    FFT_1[i] = FFT_1_el;
-    FFT_2[i] = FFT_2_el;
+    FFT_1[i] *= nabla1[i];
+    FFT_2[i] *= nabla2[i];
   }
 }// end of CUDACompute_Absorb_nabla1_2
 //------------------------------------------------------------------------------
@@ -2228,13 +1897,13 @@ __global__ void CUDACompute_Absorb_nabla1_2(float2     * FFT_1,
  */
 void SolverCUDAKernels::Compute_Absorb_nabla1_2(TCUFFTComplexMatrix& FFT_1,
                                                 TCUFFTComplexMatrix& FFT_2,
-                                                const TRealMatrix  & absorb_nabla1,
-                                                const TRealMatrix  & absorb_nabla2)
+                                                const TRealMatrix&   absorb_nabla1,
+                                                const TRealMatrix&   absorb_nabla2)
 {
   CUDACompute_Absorb_nabla1_2<<<GetSolverGridSize1D(),
                                 GetSolverBlockSize1D()>>>
-                            (reinterpret_cast<float2 *> (FFT_1.GetRawDeviceData()),
-                             reinterpret_cast<float2 *> (FFT_2.GetRawDeviceData()),
+                            (reinterpret_cast<cuFloatComplex*> (FFT_1.GetRawDeviceData()),
+                             reinterpret_cast<cuFloatComplex*> (FFT_2.GetRawDeviceData()),
                              absorb_nabla1.GetRawDeviceData(),
                              absorb_nabla2.GetRawDeviceData());
 
@@ -2249,35 +1918,26 @@ void SolverCUDAKernels::Compute_Absorb_nabla1_2(TCUFFTComplexMatrix& FFT_1,
  * @@todo needs revision
  * @param [out] p           - new value of pressure
  * @param [in] BonA_temp    - rho0 * (duxdx + duydy + duzdz)
- * @param [in] c2_scalar
  * @param [in] c2_matrix
- * @param [in] c2_shift
  * @param [in] Absorb_tau
- * @param [in] tau_scalar
  * @param [in] tau_matrix
  * @param [in] Absorb_eta   - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
- * @param [in] eta_scalar
  * @param [in] eta_matrix
- * @param [in]tau_eta_shift
  */
-__global__ void CUDASum_Subterms_nonlinear(float       * p,
-                                           const float * BonA_temp,
-                                           const float   c2_scalar,
-                                           const float * c2_matrix,
-                                           const size_t  c2_shift,
-                                           const float * Absorb_tau,
-                                           const float   tau_scalar,
-                                           const float * tau_matrix,
-                                           const float * Absorb_eta,
-                                           const float   eta_scalar,
-                                           const float * eta_matrix,
-                                           const size_t  tau_eta_shift)
+template <bool Is_c2_scalar, bool Is_tau_eta_scalar>
+__global__ void CUDASum_Subterms_nonlinear(float*       p,
+                                           const float* BonA_temp,
+                                           const float* c2_matrix,
+                                           const float* Absorb_tau,
+                                           const float* tau_matrix,
+                                           const float* Absorb_eta,
+                                           const float* eta_matrix)
 {
-  for(size_t i = GetX(); i < CUDADeviceConstants.TotalElementCount; i += GetX_Stride())
+  for(auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    const float c2  = (c2_shift == 0)      ? c2_scalar  : c2_matrix[i];
-    const float tau = (tau_eta_shift == 0) ? tau_scalar : tau_matrix[i];
-    const float eta = (tau_eta_shift == 0) ? eta_scalar : eta_matrix[i];
+    const float c2  = (Is_c2_scalar)      ? CUDADeviceConstants.c2  : c2_matrix[i];
+    const float tau = (Is_tau_eta_scalar) ? CUDADeviceConstants.Absorb_tau_scalar : tau_matrix[i];
+    const float eta = (Is_tau_eta_scalar) ? CUDADeviceConstants.Absorb_eta_scalar : eta_matrix[i];
 
     p[i] = c2 * (BonA_temp[i] + (CUDADeviceConstants.FFTDivider *
                 ((Absorb_tau[i] * tau) - (Absorb_eta[i] * eta))));
@@ -2290,45 +1950,82 @@ __global__ void CUDASum_Subterms_nonlinear(float       * p,
  * Interface to CUDA Sum sub-terms to calculate new pressure, non-linear case.
  * @param [in,out] p        - new value of pressure
  * @param [in] BonA_temp    - rho0 * (duxdx + duydy + duzdz)
- * @param [in] c2_scalar
+ * @param [in] Is_c2_scalar
  * @param [in] c2_matrix
- * @param [in] c2_shift
+ * @param [in] Is_tau_eta_scalar
  * @param [in] Absorb_tau
- * @param [in] tau_scalar
  * @param [in] tau_matrix
  * @param [in] Absorb_eta   - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
- * @param [in] eta_scalar
  * @param [in] eta_matrix
- * @param [in]tau_eta_shift
  */
-void SolverCUDAKernels::Sum_Subterms_nonlinear(TRealMatrix      & p,
+void SolverCUDAKernels::Sum_Subterms_nonlinear(TRealMatrix&       p,
                                                const TRealMatrix& BonA_temp,
-                                               const float        c2_scalar,
-                                               const float      * c2_matrix,
-                                               const size_t       c2_shift,
-                                               const float      * Absorb_tau,
-                                               const float        tau_scalar,
-                                               const float      * tau_matrix,
-                                               const float      * Absorb_eta,
-                                               const float        eta_scalar,
-                                               const float      * eta_matrix,
-                                               const size_t       tau_eta_shift)
+                                               const bool         Is_c2_scalar,
+                                               const float*       c2_matrix,
+                                               const bool         Is_tau_eta_scalar,
+                                               const float*       Absorb_tau,
+                                               const float*       tau_matrix,
+                                               const float*       Absorb_eta,
+                                               const float*       eta_matrix)
 {
-  CUDASum_Subterms_nonlinear<<<GetSolverGridSize1D(),
-                               GetSolverBlockSize1D()>>>
-                            (p.GetRawDeviceData(),
-                             BonA_temp.GetRawDeviceData(),
-                             c2_scalar,
-                             c2_matrix,
-                             c2_shift,
-                             Absorb_tau,
-                             tau_scalar,
-                             tau_matrix,
-                             Absorb_eta,
-                             eta_scalar,
-                             eta_matrix,
-                             tau_eta_shift);
-
+  if (Is_c2_scalar)
+  {
+    if (Is_tau_eta_scalar)
+    {
+      CUDASum_Subterms_nonlinear<true, true>
+                                <<<GetSolverGridSize1D(),
+                                   GetSolverBlockSize1D()>>>
+                                (p.GetRawDeviceData(),
+                                 BonA_temp.GetRawDeviceData(),
+                                 c2_matrix,
+                                 Absorb_tau,
+                                 tau_matrix,
+                                 Absorb_eta,
+                                 eta_matrix);
+    }
+    else
+    {
+      CUDASum_Subterms_nonlinear<true, false>
+                                <<<GetSolverGridSize1D(),
+                                   GetSolverBlockSize1D()>>>
+                                (p.GetRawDeviceData(),
+                                 BonA_temp.GetRawDeviceData(),
+                                 c2_matrix,
+                                 Absorb_tau,
+                                 tau_matrix,
+                                 Absorb_eta,
+                                 eta_matrix);
+    }
+  }
+  else
+  { // c2 is matrix
+     if (Is_tau_eta_scalar)
+    {
+      CUDASum_Subterms_nonlinear<false, true>
+                                <<<GetSolverGridSize1D(),
+                                   GetSolverBlockSize1D()>>>
+                                (p.GetRawDeviceData(),
+                                 BonA_temp.GetRawDeviceData(),
+                                 c2_matrix,
+                                 Absorb_tau,
+                                 tau_matrix,
+                                 Absorb_eta,
+                                 eta_matrix);
+    }
+    else
+    {
+      CUDASum_Subterms_nonlinear<false, false>
+                                <<<GetSolverGridSize1D(),
+                                   GetSolverBlockSize1D()>>>
+                                (p.GetRawDeviceData(),
+                                 BonA_temp.GetRawDeviceData(),
+                                 c2_matrix,
+                                 Absorb_tau,
+                                 tau_matrix,
+                                 Absorb_eta,
+                                 eta_matrix);
+    }
+  }
   // check for errors
   gpuErrchk(cudaGetLastError());
 }// end of Sum_Subterms_nonlinear
@@ -2341,33 +2038,24 @@ void SolverCUDAKernels::Sum_Subterms_nonlinear(TRealMatrix      & p,
  * @param [in] Absorb_tau_temp - sub-term with absorb_tau
  * @param [in] Absorb_eta_temp - sub-term with absorb_eta
  * @param [in] Sum_rhoxyz      - rhox_sgx + rhoy_sgy + rhoz_sgz
- * @param [in] c2_scalar
  * @param [in] c2_matrix
- * @param [in] c2_shift
- * @param [in] tau_scalar
  * @param [in] tau_matrix
- * @param [in] eta_scalar
  * @param [in] eta_matrix
- * @param [in] tau_eta_shift
  */
-__global__ void CUDASum_Subterms_linear(float       * p,
-                                        const float * Absorb_tau_temp,
-                                        const float * Absorb_eta_temp,
-                                        const float * Sum_rhoxyz,
-                                        const float   c2_scalar,
-                                        const float * c2_matrix,
-                                        const size_t  c2_shift,
-                                        const float   tau_scalar,
-                                        const float * tau_matrix,
-                                        const float   eta_scalar,
-                                        const float * eta_matrix,
-                                        const size_t  tau_eta_shift)
+template <bool Is_c2_scalar, bool Is_tau_eta_scalar>
+__global__ void CUDASum_Subterms_linear(float*       p,
+                                        const float* Absorb_tau_temp,
+                                        const float* Absorb_eta_temp,
+                                        const float* Sum_rhoxyz,
+                                        const float* c2_matrix,
+                                        const float* tau_matrix,
+                                        const float* eta_matrix)
 {
-  for(size_t i = GetX(); i < CUDADeviceConstants.TotalElementCount; i += GetX_Stride())
+  for(auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    const float c2  = (c2_shift == 0)      ? c2_scalar  : c2_matrix[i];
-    const float tau = (tau_eta_shift == 0) ? tau_scalar : tau_matrix[i];
-    const float eta = (tau_eta_shift == 0) ? eta_scalar : eta_matrix[i];
+    const float c2  = (Is_c2_scalar)      ? CUDADeviceConstants.c2                : c2_matrix[i];
+    const float tau = (Is_tau_eta_scalar) ? CUDADeviceConstants.Absorb_tau_scalar : tau_matrix[i];
+    const float eta = (Is_tau_eta_scalar) ? CUDADeviceConstants.Absorb_eta_scalar : eta_matrix[i];
 
     p[i] = c2 * (Sum_rhoxyz[i] + (CUDADeviceConstants.FFTDivider *
                 (Absorb_tau_temp[i] * tau - Absorb_eta_temp[i] * eta)));
@@ -2382,43 +2070,80 @@ __global__ void CUDASum_Subterms_linear(float       * p,
  * @param [in] Absorb_tau_temp - sub-term with absorb_tau
  * @param [in] Absorb_eta_temp - sub-term with absorb_eta
  * @param [in] Sum_rhoxyz      - rhox_sgx + rhoy_sgy + rhoz_sgz
- * @param [in] c2_scalar
+ * @param [in] Is_c2_scalar
  * @param [in] c2_matrix
- * @param [in] c2_shift
- * @param [in] tau_scalar
+ * @param [in] Is_tau_eta_scalar
  * @param [in] tau_matrix
- * @param [in] eta_scalar
  * @param [in] eta_matrix
- * @param [in] tau_eta_shift
  */
-void SolverCUDAKernels::Sum_Subterms_linear(TRealMatrix      & p,
+void SolverCUDAKernels::Sum_Subterms_linear(TRealMatrix&       p,
                                             const TRealMatrix& Absorb_tau_temp,
                                             const TRealMatrix& Absorb_eta_temp,
                                             const TRealMatrix& Sum_rhoxyz,
-                                            const float        c2_scalar,
-                                            const float      * c2_matrix,
-                                            const size_t       c2_shift,
-                                            const float        tau_scalar,
-                                            const float      * tau_matrix,
-                                            const float        eta_scalar,
-                                            const float      * eta_matrix,
-                                            const size_t       tau_eta_shift)
+                                            const bool         Is_c2_scalar,
+                                            const float*       c2_matrix,
+                                            const bool         Is_tau_eta_scalar,
+                                            const float*       tau_matrix,
+                                            const float*       eta_matrix)
 {
-  CUDASum_Subterms_linear<<<GetSolverGridSize1D(),
-                            GetSolverBlockSize1D() >>>
-                        (p.GetRawDeviceData(),
-                         Absorb_tau_temp.GetRawDeviceData(),
-                         Absorb_eta_temp.GetRawDeviceData(),
-                         Sum_rhoxyz.GetRawDeviceData(),
-                         c2_scalar,
-                         c2_matrix,
-                         c2_shift,
-                         tau_scalar,
-                         tau_matrix,
-                         eta_scalar,
-                         eta_matrix,
-                         tau_eta_shift);
-
+  if (Is_c2_scalar)
+  {
+    if (Is_tau_eta_scalar)
+    {
+      CUDASum_Subterms_linear<true,true>
+                             <<<GetSolverGridSize1D(),
+                                GetSolverBlockSize1D() >>>
+                             (p.GetRawDeviceData(),
+                              Absorb_tau_temp.GetRawDeviceData(),
+                              Absorb_eta_temp.GetRawDeviceData(),
+                              Sum_rhoxyz.GetRawDeviceData(),
+                              c2_matrix,
+                              tau_matrix,
+                              eta_matrix);
+    }
+    else
+    {
+      CUDASum_Subterms_linear<true,false>
+                             <<<GetSolverGridSize1D(),
+                                GetSolverBlockSize1D() >>>
+                             (p.GetRawDeviceData(),
+                              Absorb_tau_temp.GetRawDeviceData(),
+                              Absorb_eta_temp.GetRawDeviceData(),
+                              Sum_rhoxyz.GetRawDeviceData(),
+                              c2_matrix,
+                              tau_matrix,
+                              eta_matrix);
+    }
+   }
+  else
+  {
+    if (Is_tau_eta_scalar)
+    {
+      CUDASum_Subterms_linear<false,true>
+                             <<<GetSolverGridSize1D(),
+                                GetSolverBlockSize1D() >>>
+                             (p.GetRawDeviceData(),
+                              Absorb_tau_temp.GetRawDeviceData(),
+                              Absorb_eta_temp.GetRawDeviceData(),
+                              Sum_rhoxyz.GetRawDeviceData(),
+                              c2_matrix,
+                              tau_matrix,
+                              eta_matrix);
+    }
+    else
+    {
+      CUDASum_Subterms_linear<false,false>
+                             <<<GetSolverGridSize1D(),
+                                GetSolverBlockSize1D() >>>
+                             (p.GetRawDeviceData(),
+                              Absorb_tau_temp.GetRawDeviceData(),
+                              Absorb_eta_temp.GetRawDeviceData(),
+                              Sum_rhoxyz.GetRawDeviceData(),
+                              c2_matrix,
+                              tau_matrix,
+                              eta_matrix);
+    }
+  }
   // check for errors
   gpuErrchk(cudaGetLastError());
 }// end of Sum_Subterms_linear
@@ -2431,35 +2156,24 @@ void SolverCUDAKernels::Sum_Subterms_linear(TRealMatrix      & p,
  * @param [in]  rhox
  * @param [in]  rhoy
  * @param [in]  rhoz
- * @param [in]  c2_scalar
  * @param [in]  c2_matrix
- * @param [in]  c2_shift
- * @param [in]  BonA_scalar
  * @param [in]  BonA_matrix
- * @param [in]  BonA_shift
- * @param [in]  rho0_scalar
  * @param [in]  rho0_matrix
- * @param [in]  rho0_shift
  */
-__global__ void CUDASum_new_p_nonlinear_lossless(float       * p,
-                                                 const float * rhox,
-                                                 const float * rhoy,
-                                                 const float * rhoz,
-                                                 const float   c2_scalar,
-                                                 const float * c2_matrix,
-                                                 const size_t  c2_shift,
-                                                 const float   BonA_scalar,
-                                                 const float * BonA_matrix,
-                                                 const size_t  BonA_shift,
-                                                 const float   rho0_scalar,
-                                                 const float * rho0_matrix,
-                                                 const size_t  rho0_shift)
+template<bool Is_c2_scalar, bool Is_BonA_scalar, bool Is_rho0_scalar>
+__global__ void CUDASum_new_p_nonlinear_lossless(float*       p,
+                                                 const float* rhox,
+                                                 const float* rhoy,
+                                                 const float* rhoz,
+                                                 const float* c2_matrix,
+                                                 const float* BonA_matrix,
+                                                 const float* rho0_matrix)
 {
-  for(size_t i = GetX(); i < CUDADeviceConstants.TotalElementCount; i += GetX_Stride())
+  for(auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    const float c2   = (c2_shift   == 0) ? c2_scalar   : c2_matrix[i];
-    const float BonA = (BonA_shift == 0) ? BonA_scalar : BonA_matrix[i];
-    const float rho0 = (rho0_shift == 0) ? rho0_scalar : rho0_matrix[i];
+    const float c2   = (Is_c2_scalar)   ? CUDADeviceConstants.c2          : c2_matrix[i];
+    const float BonA = (Is_BonA_scalar) ? CUDADeviceConstants.BonA_scalar : BonA_matrix[i];
+    const float rho0 = (Is_rho0_scalar) ? CUDADeviceConstants.rho0_scalar : rho0_matrix[i];
 
     const float sum_rho = rhox[i] + rhoy[i] + rhoz[i];
 
@@ -2474,45 +2188,146 @@ __global__ void CUDASum_new_p_nonlinear_lossless(float       * p,
  * @param [in]  rhox
  * @param [in]  rhoy
  * @param [in]  rhoz
- * @param [in]  c2_scalar
+ * @param [in]  Is_c2_scalar
  * @param [in]  c2_matrix
- * @param [in]  c2_shift
- * @param [in]  BonA_scalar
+ * @param [in]  Is_BonA_scalar
  * @param [in]  BonA_matrix
- * @param [in]  BonA_shift
- * @param [in]  rho0_scalar
+ * @param [in]  Is_rho0_scalar
  * @param [in]  rho0_matrix
- * @param [in]  rho0_shift
  */
-void SolverCUDAKernels::Sum_new_p_nonlinear_lossless(TRealMatrix      & p,
+void SolverCUDAKernels::Sum_new_p_nonlinear_lossless(TRealMatrix&       p,
                                                      const TRealMatrix& rhox,
                                                      const TRealMatrix& rhoy,
                                                      const TRealMatrix& rhoz,
-                                                     const float        c2_scalar,
-                                                     const float      * c2_matrix,
-                                                     const size_t       c2_shift,
-                                                     const float        BonA_scalar,
-                                                     const float      * BonA_matrix,
-                                                     const size_t       BonA_shift,
-                                                     const float        rho0_scalar,
-                                                     const float      * rho0_matrix,
-                                                     const size_t       rho0_shift)
+                                                     const bool         Is_c2_scalar,
+                                                     const float*       c2_matrix,
+                                                     const bool         Is_BonA_scalar,
+                                                     const float*       BonA_matrix,
+                                                     const bool         Is_rho0_scalar,
+                                                     const float*       rho0_matrix)
 {
-  CUDASum_new_p_nonlinear_lossless<<<GetSolverGridSize1D(),
-                                     GetSolverBlockSize1D()>>>
-                                  (p.GetRawDeviceData(),
-                                   rhox.GetRawDeviceData(),
-                                   rhoy.GetRawDeviceData(),
-                                   rhoz.GetRawDeviceData(),
-                                   c2_scalar,
-                                   c2_matrix,
-                                   c2_shift,
-                                   BonA_scalar,
-                                   BonA_matrix,
-                                   BonA_shift,
-                                   rho0_scalar,
-                                   rho0_matrix,
-                                   rho0_shift);
+  if (Is_c2_scalar)
+  {
+    if (Is_BonA_scalar)
+    {
+      if (Is_rho0_scalar)
+      {
+        CUDASum_new_p_nonlinear_lossless<true, true, true>
+                                        <<<GetSolverGridSize1D(),
+                                           GetSolverBlockSize1D()>>>
+                                        (p.GetRawDeviceData(),
+                                         rhox.GetRawDeviceData(),
+                                         rhoy.GetRawDeviceData(),
+                                         rhoz.GetRawDeviceData(),
+                                         c2_matrix,
+                                         BonA_matrix,
+                                         rho0_matrix);
+      }
+      else
+      {
+        CUDASum_new_p_nonlinear_lossless<true, true, false>
+                                        <<<GetSolverGridSize1D(),
+                                           GetSolverBlockSize1D()>>>
+                                        (p.GetRawDeviceData(),
+                                         rhox.GetRawDeviceData(),
+                                         rhoy.GetRawDeviceData(),
+                                         rhoz.GetRawDeviceData(),
+                                         c2_matrix,
+                                         BonA_matrix,
+                                         rho0_matrix);
+      }
+    }// Is_BonA_scalar= true
+    else
+    {
+      if (Is_rho0_scalar)
+      {
+        CUDASum_new_p_nonlinear_lossless<true, false, true>
+                                        <<<GetSolverGridSize1D(),
+                                           GetSolverBlockSize1D()>>>
+                                        (p.GetRawDeviceData(),
+                                         rhox.GetRawDeviceData(),
+                                         rhoy.GetRawDeviceData(),
+                                         rhoz.GetRawDeviceData(),
+                                         c2_matrix,
+                                         BonA_matrix,
+                                         rho0_matrix);
+      }
+      else
+      {
+        CUDASum_new_p_nonlinear_lossless<true, false, false>
+                                        <<<GetSolverGridSize1D(),
+                                           GetSolverBlockSize1D()>>>
+                                        (p.GetRawDeviceData(),
+                                         rhox.GetRawDeviceData(),
+                                         rhoy.GetRawDeviceData(),
+                                         rhoz.GetRawDeviceData(),
+                                         c2_matrix,
+                                         BonA_matrix,
+                                         rho0_matrix);
+      }
+    }
+  }
+  else
+  { // Is_c2_scalar == false
+   if (Is_BonA_scalar)
+    {
+      if (Is_rho0_scalar)
+      {
+        CUDASum_new_p_nonlinear_lossless<false, true, true>
+                                        <<<GetSolverGridSize1D(),
+                                           GetSolverBlockSize1D()>>>
+                                        (p.GetRawDeviceData(),
+                                         rhox.GetRawDeviceData(),
+                                         rhoy.GetRawDeviceData(),
+                                         rhoz.GetRawDeviceData(),
+                                         c2_matrix,
+                                         BonA_matrix,
+                                         rho0_matrix);
+      }
+      else
+      {
+        CUDASum_new_p_nonlinear_lossless<false, true, false>
+                                        <<<GetSolverGridSize1D(),
+                                           GetSolverBlockSize1D()>>>
+                                        (p.GetRawDeviceData(),
+                                         rhox.GetRawDeviceData(),
+                                         rhoy.GetRawDeviceData(),
+                                         rhoz.GetRawDeviceData(),
+                                         c2_matrix,
+                                         BonA_matrix,
+                                         rho0_matrix);
+      }
+    }// Is_BonA_scalar= true
+    else
+    {
+      if (Is_rho0_scalar)
+      {
+        CUDASum_new_p_nonlinear_lossless<false, false, true>
+                                        <<<GetSolverGridSize1D(),
+                                           GetSolverBlockSize1D()>>>
+                                        (p.GetRawDeviceData(),
+                                         rhox.GetRawDeviceData(),
+                                         rhoy.GetRawDeviceData(),
+                                         rhoz.GetRawDeviceData(),
+                                         c2_matrix,
+                                         BonA_matrix,
+                                         rho0_matrix);
+      }
+      else
+      {
+        CUDASum_new_p_nonlinear_lossless<false, false, false>
+                                        <<<GetSolverGridSize1D(),
+                                           GetSolverBlockSize1D()>>>
+                                        (p.GetRawDeviceData(),
+                                         rhox.GetRawDeviceData(),
+                                         rhoy.GetRawDeviceData(),
+                                         rhoz.GetRawDeviceData(),
+                                         c2_matrix,
+                                         BonA_matrix,
+                                         rho0_matrix);
+      }
+    }
+  }
 
   // check for errors
   gpuErrchk(cudaGetLastError());
@@ -2531,25 +2346,22 @@ void SolverCUDAKernels::Sum_new_p_nonlinear_lossless(TRealMatrix      & p,
  * @param [in]  duxdx
  * @param [in]  duydy
  * @param [in]  duzdz
- * @param [in]  rho0_scalar
  * @param [in]  rho0_matrix
- * @param [in]  rho0_shift
  */
-__global__ void CUDACalculate_SumRho_SumRhoDu(float      * Sum_rhoxyz,
-                                              float      * Sum_rho0_du,
+template<bool Is_rho0_scalar>
+__global__ void CUDACalculate_SumRho_SumRhoDu(float*       Sum_rhoxyz,
+                                              float*       Sum_rho0_du,
                                               const float* rhox,
                                               const float* rhoy,
                                               const float* rhoz,
                                               const float* dux,
                                               const float* duy,
                                               const float* duz,
-                                              const float  rho0_scalar,
-                                              const float* rho0_matrix,
-                                              const size_t rho0_shift)
+                                              const float* rho0_matrix)
 {
-  for(size_t i = GetX(); i < CUDADeviceConstants.TotalElementCount; i += GetX_Stride())
+  for(auto i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    const float rho0 = (rho0_shift == 0) ? rho0_scalar : rho0_matrix[i];
+    const float rho0 = (Is_rho0_scalar) ? CUDADeviceConstants.rho0_scalar : rho0_matrix[i];
 
     Sum_rhoxyz[i]  = rhox[i] + rhoy[i] + rhoz[i];
     Sum_rho0_du[i] = rho0 * (dux[i] + duy[i] + duz[i]);
@@ -2568,23 +2380,24 @@ __global__ void CUDACalculate_SumRho_SumRhoDu(float      * Sum_rhoxyz,
  * @param [in]  duxdx
  * @param [in]  duydy
  * @param [in]  duzdz
- * @param [in]  rho0_scalar
+ * @param [in]  Is_rho0_scalar
  * @param [in]  rho0_matrix
- * @param [in]  rho0_shift
  */
-void SolverCUDAKernels::Calculate_SumRho_SumRhoDu(TRealMatrix      & Sum_rhoxyz,
-                                                  TRealMatrix      & Sum_rho0_du,
+void SolverCUDAKernels::Calculate_SumRho_SumRhoDu(TRealMatrix&       Sum_rhoxyz,
+                                                  TRealMatrix&       Sum_rho0_du,
                                                   const TRealMatrix& rhox,
                                                   const TRealMatrix& rhoy,
                                                   const TRealMatrix& rhoz,
                                                   const TRealMatrix& duxdx,
                                                   const TRealMatrix& duydy,
                                                   const TRealMatrix& duzdz,
-                                                  const float        rho0_scalar,
-                                                  const float      * rho0_matrix,
-                                                  const size_t       rho0_shift)
+                                                  const bool         Is_rho0_scalar,
+                                                  const float*       rho0_matrix)
 {
-   CUDACalculate_SumRho_SumRhoDu<<<GetSolverGridSize1D(),
+  if (Is_rho0_scalar)
+  {
+   CUDACalculate_SumRho_SumRhoDu<true>
+                                <<<GetSolverGridSize1D(),
                                    GetSolverBlockSize1D()>>>
                                 (Sum_rhoxyz.GetRawDeviceData(),
                                  Sum_rho0_du.GetRawDeviceData(),
@@ -2594,9 +2407,23 @@ void SolverCUDAKernels::Calculate_SumRho_SumRhoDu(TRealMatrix      & Sum_rhoxyz,
                                  duxdx.GetRawDeviceData(),
                                  duydy.GetRawDeviceData(),
                                  duzdz.GetRawDeviceData(),
-                                 rho0_scalar,
-                                 rho0_matrix,
-                                 rho0_shift);
+                                 rho0_matrix);
+  }
+  else
+  {
+   CUDACalculate_SumRho_SumRhoDu<false>
+                                <<<GetSolverGridSize1D(),
+                                   GetSolverBlockSize1D()>>>
+                                (Sum_rhoxyz.GetRawDeviceData(),
+                                 Sum_rho0_du.GetRawDeviceData(),
+                                 rhox.GetRawDeviceData(),
+                                 rhoy.GetRawDeviceData(),
+                                 rhoz.GetRawDeviceData(),
+                                 duxdx.GetRawDeviceData(),
+                                 duydy.GetRawDeviceData(),
+                                 duzdz.GetRawDeviceData(),
+                                 rho0_matrix);
+  }
   // check for errors
   gpuErrchk(cudaGetLastError());
 }// end of Calculate_SumRho_SumRhoDu
@@ -2608,24 +2435,23 @@ void SolverCUDAKernels::Calculate_SumRho_SumRhoDu(TRealMatrix      & Sum_rhoxyz,
  * @param [in]  rhox
  * @param [in]  rhoy
  * @param [in]  rhoz
- * @param [in]  c2_scalar
  * @param [in]  c2_matrix
- * @param [in]  c2_shift
+
  */
-__global__ void CUDASum_new_p_linear_lossless(float       * p,
-                                              const float * rhox,
-                                              const float * rhoy,
-                                              const float * rhoz,
-                                              const float   c2_scalar,
-                                              const float * c2_matrix,
-                                              const size_t  c2_shift)
+template <bool Is_c2_scalar>
+__global__ void CUDASum_new_p_linear_lossless(float*       p,
+                                              const float* rhox,
+                                              const float* rhoy,
+                                              const float* rhoz,
+                                              const float* c2_matrix)
 {
-  for(size_t i = GetX(); i < CUDADeviceConstants.TotalElementCount; i += GetX_Stride())
+  for(auto  i = GetIndex(); i < CUDADeviceConstants.TotalElementCount; i += GetStride())
   {
-    const float c2 = (c2_shift == 0) ? c2_scalar : c2_matrix[i];
+    const float c2 = (Is_c2_scalar) ? CUDADeviceConstants.c2 : c2_matrix[i];
     p[i] = c2 * (rhox[i] + rhoy[i] + rhoz[i]);
   }
-}// end of
+}// end of CUDASum_new_p_linear_lossless
+//------------------------------------------------------------------------------
 
 /**
  * Interface to kernel that sums sub-terms for new p, linear lossless case.
@@ -2633,27 +2459,38 @@ __global__ void CUDASum_new_p_linear_lossless(float       * p,
  * @param [in]  rhox
  * @param [in]  rhoy
  * @param [in]  rhoz
- * @param [in]  c2_scalar
+ * @param [in]  Is_c2_scalar
  * @param [in]  c2_matrix
- * @param [in]  c2_shift
  */
-void SolverCUDAKernels::Sum_new_p_linear_lossless(TRealMatrix      & p,
+void SolverCUDAKernels::Sum_new_p_linear_lossless(TRealMatrix& p,
                                                   const TRealMatrix& rhox,
                                                   const TRealMatrix& rhoy,
                                                   const TRealMatrix& rhoz,
-                                                  const float        c2_scalar,
-                                                  const float      * c2_matrix,
-                                                  const size_t       c2_shift)
+                                                  const bool         Is_c2_scalar,
+                                                  const float*       c2_matrix)
 {
-  CUDASum_new_p_linear_lossless<<<GetSolverGridSize1D(),
-                                  GetSolverBlockSize1D()>>>
-                               (p.GetRawDeviceData(),
-                                rhox.GetRawDeviceData(),
-                                rhoy.GetRawDeviceData(),
-                                rhoz.GetRawDeviceData(),
-                                c2_scalar,
-                                c2_matrix,
-                                c2_shift);
+  if (Is_c2_scalar)
+  {
+    CUDASum_new_p_linear_lossless<true>
+                                 <<<GetSolverGridSize1D(),
+                                    GetSolverBlockSize1D()>>>
+                                (p.GetRawDeviceData(),
+                                 rhox.GetRawDeviceData(),
+                                 rhoy.GetRawDeviceData(),
+                                 rhoz.GetRawDeviceData(),
+                                 c2_matrix);
+  }
+  else
+  {
+    CUDASum_new_p_linear_lossless<false>
+                                 <<<GetSolverGridSize1D(),
+                                    GetSolverBlockSize1D()>>>
+                                (p.GetRawDeviceData(),
+                                 rhox.GetRawDeviceData(),
+                                 rhoy.GetRawDeviceData(),
+                                 rhoz.GetRawDeviceData(),
+                                 c2_matrix);
+  }
   // check for errors
   gpuErrchk(cudaGetLastError());
 }// end of Sum_new_p_linear_lossless
@@ -2682,9 +2519,9 @@ void SolverCUDAKernels::Sum_new_p_linear_lossless(TRealMatrix      & p,
  *          Grid has to be organized (N, 1 ,1)
  *
  */
-__global__ void cudaTrasnposeReal3DMatrixXYSquare(float       * OutputData,
-                                                  const float * InputData,
-                                                  const dim3    Dimensions)
+__global__ void cudaTrasnposeReal3DMatrixXYSquare(float*       OutputData,
+                                                  const float* InputData,
+                                                  const dim3   Dimensions)
 {
   // this size is fixed shared memory
   // we transpose 4 tiles of 32*32 at the same time, +1 solves bank conflicts
@@ -2756,9 +2593,9 @@ __global__ void cudaTrasnposeReal3DMatrixXYSquare(float       * OutputData,
  *          Grid has to be organized (N, 1 ,1)
  *
  */
-__global__ void cudaTrasnposeReal3DMatrixXYRect(float       * OutputData,
-                                                const float * InputData,
-                                                const dim3    Dimensions)
+__global__ void cudaTrasnposeReal3DMatrixXYRect(float*       OutputData,
+                                                const float* InputData,
+                                                const dim3   Dimensions)
 {
   // this size is fixed shared memory
   // we transpose 4 tiles of 32*32 at the same time, +1 solves bank conflicts
@@ -2882,9 +2719,9 @@ __global__ void cudaTrasnposeReal3DMatrixXYRect(float       * OutputData,
  * @param [in]  InputMatrixData  - Input  matrix
  * @param [In]  DimSizes - dimension sizes of the original matrix
  */
-void SolverCUDAKernels::TrasposeReal3DMatrixXY(float       * OutputMatrixData,
-                                               const float * InputMatrixData,
-                                               const dim3  & DimSizes)
+void SolverCUDAKernels::TrasposeReal3DMatrixXY(float*       OutputMatrixData,
+                                               const float* InputMatrixData,
+                                               const dim3&  DimSizes)
 {
   // fixed size at the moment, may be tuned based on the domain shape in the future
   if ((DimSizes.x % 32 == 0) && (DimSizes.y % 32 == 0))
@@ -2927,9 +2764,9 @@ void SolverCUDAKernels::TrasposeReal3DMatrixXY(float       * OutputMatrixData,
  *          Grid has to be organized (N, 1 ,1)
  *
  */
-__global__ void cudaTrasnposeReal3DMatrixXZSquare(float       * OutputData,
-                                                  const float * InputData,
-                                                  const dim3    Dimensions)
+__global__ void cudaTrasnposeReal3DMatrixXZSquare(float*       OutputData,
+                                                  const float* InputData,
+                                                  const dim3   Dimensions)
 {
   // this size is fixed shared memory
   // we transpose 4 tiles of 32*32 at the same time, +1 solves bank conflicts
@@ -2995,9 +2832,9 @@ __global__ void cudaTrasnposeReal3DMatrixXZSquare(float       * OutputData,
  *          Grid has to be organized (N, 1 ,1)
  *
  */
-__global__ void cudaTrasnposeReal3DMatrixXZRect(float       * OutputData,
-                                                const float * InputData,
-                                                const dim3    Dimensions)
+__global__ void cudaTrasnposeReal3DMatrixXZRect(float*       OutputData,
+                                                const float* InputData,
+                                                const dim3   Dimensions)
 {
   // this size is fixed shared memory
   // we transpose 4 tiles of 32*32 at the same time, +1 solves bank conflicts
@@ -3126,9 +2963,9 @@ __global__ void cudaTrasnposeReal3DMatrixXZRect(float       * OutputData,
  * @param [in]  InputMatrixData  - Input  matrix
  * @param [In]  DimSizes - dimension sizes of the original matrix
  */
-void SolverCUDAKernels::TrasposeReal3DMatrixXZ(float       * OutputMatrixData,
-                                               const float * InputMatrixData,
-                                               const dim3  & DimSizes)
+void SolverCUDAKernels::TrasposeReal3DMatrixXZ(float*       OutputMatrixData,
+                                               const float* InputMatrixData,
+                                               const dim3&  DimSizes)
 {
   if ((DimSizes.x % 32 == 0) && (DimSizes.y % 32 == 0))
   {
@@ -3153,33 +2990,15 @@ void SolverCUDAKernels::TrasposeReal3DMatrixXZ(float       * OutputMatrixData,
  * @param [in, out] FFT_shift_temp
  * @param [in]       x_shift_neg_r
  */
-__global__ void CUDAComputeVelocityShiftInX(float2       * FFT_shift_temp,
-                                            const float2 * x_shift_neg_r)
+__global__ void CUDAComputeVelocityShiftInX(cuFloatComplex*       FFT_shift_temp,
+                                            const cuFloatComplex* x_shift_neg_r)
 {
-  // the size of the matrix is [Z, Y, X/2 + 1]
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Complex_Nz; z += GetZ_Stride())
+  for (auto i = GetIndex(); i < CUDADeviceConstants.ComplexTotalElementCount; i += GetStride())
   {
-    for (size_t y = GetY(); y < CUDADeviceConstants.Complex_Ny; y += GetY_Stride())
-    {
-      for (size_t x = GetX(); x < CUDADeviceConstants.Complex_Nx; x += GetX_Stride())
-      {
-        const size_t i = (z * CUDADeviceConstants.Complex_Ny  + y) * CUDADeviceConstants.Complex_Nx  + x;
+    const auto  x = i % CUDADeviceConstants.Complex_Nx;
 
-        float2 temp;
-
-        temp.x = ((FFT_shift_temp[i].x * x_shift_neg_r[x].x) -
-                  (FFT_shift_temp[i].y * x_shift_neg_r[x].y)
-                 ) * CUDADeviceConstants.FFTDividerX;
-
-
-        temp.y = ((FFT_shift_temp[i].y * x_shift_neg_r[x].x) +
-                  (FFT_shift_temp[i].x * x_shift_neg_r[x].y)
-                 ) * CUDADeviceConstants.FFTDividerX;
-
-        FFT_shift_temp[i] = temp;
-      } // x
-    } // y
-  }// z
+    FFT_shift_temp[i] = cuCmulf(FFT_shift_temp[i], x_shift_neg_r[x]) * CUDADeviceConstants.FFTDividerX;
+  }
 }// end of CUDAComputeVelocityShiftInX
 //------------------------------------------------------------------------------
 
@@ -3190,13 +3009,13 @@ __global__ void CUDAComputeVelocityShiftInX(float2       * FFT_shift_temp,
  * @param [in,out] FFT_shift_temp
  * @param [in]     x_shift_neg
  */
-void SolverCUDAKernels::ComputeVelocityShiftInX(TCUFFTComplexMatrix  & FFT_shift_temp,
-                                                const TComplexMatrix & x_shift_neg_r)
+void SolverCUDAKernels::ComputeVelocityShiftInX(TCUFFTComplexMatrix&   FFT_shift_temp,
+                                                const TComplexMatrix&  x_shift_neg_r)
 {
-  CUDAComputeVelocityShiftInX<<<GetSolverGridSize3D(),
-                                GetSolverBlockSize3D()>>>
-                             (reinterpret_cast<float2 *>       (FFT_shift_temp.GetRawDeviceData()),
-                              reinterpret_cast<const float2 *> (x_shift_neg_r.GetRawDeviceData()));
+  CUDAComputeVelocityShiftInX<<<GetSolverGridSize1D(),
+                                GetSolverBlockSize1D()>>>
+                             (reinterpret_cast<cuFloatComplex*>  (FFT_shift_temp.GetRawDeviceData()),
+                              reinterpret_cast<const cuFloatComplex*> (x_shift_neg_r.GetRawDeviceData()));
   // check for errors
   gpuErrchk(cudaGetLastError());
  }// end of ComputeVelocityShiftInX
@@ -3209,34 +3028,19 @@ void SolverCUDAKernels::ComputeVelocityShiftInX(TCUFFTComplexMatrix  & FFT_shift
  * @param [in, out] FFT_shift_temp
  * @param [in]      y_shift_neg_r
  */
-__global__ void CUDAComputeVelocityShiftInY(float2       * FFT_shift_temp,
-                                            const float2 * y_shift_neg_r)
+__global__ void CUDAComputeVelocityShiftInY(cuFloatComplex*       FFT_shift_temp,
+                                            const cuFloatComplex* y_shift_neg_r)
 {
-  const auto Y_2 = (CUDADeviceConstants.Ny / 2) + 1;
+  const auto Ny_2 = CUDADeviceConstants.Ny / 2 + 1;
+  const auto TotalElementCount = CUDADeviceConstants.Nx * Ny_2 * CUDADeviceConstants.Nz;
 
-  for (size_t z = GetZ(); z < CUDADeviceConstants.Nz; z += GetZ_Stride())
+  for (auto i = GetIndex(); i < TotalElementCount; i += GetStride())
   {
-    for (size_t x = GetY(); x < CUDADeviceConstants.Nx; x += GetY_Stride())
-    {
-      for (size_t y = GetX(); y < Y_2; y += GetX_Stride())
-      {
-        const size_t i = (z * CUDADeviceConstants.Nx + x) * Y_2  + y;
+    // rotated dimensions
+    const auto  y = i % Ny_2;
 
-        float2 temp;
-
-        temp.x = ((FFT_shift_temp[i].x * y_shift_neg_r[y].x) -
-                  (FFT_shift_temp[i].y * y_shift_neg_r[y].y)
-                 ) * CUDADeviceConstants.FFTDividerY;
-
-
-        temp.y = ((FFT_shift_temp[i].y * y_shift_neg_r[y].x) +
-                  (FFT_shift_temp[i].x * y_shift_neg_r[y].y)
-                 ) * CUDADeviceConstants.FFTDividerY;
-
-        FFT_shift_temp[i] = temp;
-      } // y
-    } // x
-  }// z
+    FFT_shift_temp[i] = cuCmulf(FFT_shift_temp[i], y_shift_neg_r[y]) * CUDADeviceConstants.FFTDividerY;
+  }
 }// end of CUDAComputeVelocityShiftInY
 //------------------------------------------------------------------------------
 
@@ -3246,13 +3050,13 @@ __global__ void CUDAComputeVelocityShiftInY(float2       * FFT_shift_temp,
  * @param [in,out] FFT_shift_temp
  * @param [in]     x_shift_neg
  */
-void SolverCUDAKernels::ComputeVelocityShiftInY(TCUFFTComplexMatrix  & FFT_shift_temp,
-                                                const TComplexMatrix & y_shift_neg_r)
+void SolverCUDAKernels::ComputeVelocityShiftInY(TCUFFTComplexMatrix&  FFT_shift_temp,
+                                                const TComplexMatrix& y_shift_neg_r)
 {
-  CUDAComputeVelocityShiftInY<<<GetSolverGridSize3D(),
-                                GetSolverBlockSize3D()>>>
-                             (reinterpret_cast<float2 *>       (FFT_shift_temp.GetRawDeviceData()),
-                              reinterpret_cast<const float2 *> (y_shift_neg_r.GetRawDeviceData()));
+  CUDAComputeVelocityShiftInY<<<GetSolverGridSize1D(),
+                                GetSolverBlockSize1D()>>>
+                             (reinterpret_cast<cuFloatComplex*>       (FFT_shift_temp.GetRawDeviceData()),
+                              reinterpret_cast<const cuFloatComplex*> (y_shift_neg_r.GetRawDeviceData()));
   // check for errors
   gpuErrchk(cudaGetLastError());
 }// end of ComputeVelocityShiftInY
@@ -3264,34 +3068,19 @@ void SolverCUDAKernels::ComputeVelocityShiftInY(TCUFFTComplexMatrix  & FFT_shift
  * @param [in, out] FFT_shift_temp
  * @param [in]      z_shift_neg_r
  */
-__global__ void CUDAComputeVelocityShiftInZ(float2       * FFT_shift_temp,
-                                            const float2 * z_shift_neg_r)
+__global__ void CUDAComputeVelocityShiftInZ(cuFloatComplex*       FFT_shift_temp,
+                                            const cuFloatComplex* z_shift_neg_r)
 {
-  const auto Z_2 = (CUDADeviceConstants.Nz / 2) + 1;
+  const auto Nz_2 = CUDADeviceConstants.Nz / 2 + 1;
+  const auto TotalElementCount = CUDADeviceConstants.Nx * CUDADeviceConstants.Ny * Nz_2;
 
-  for (size_t x = GetZ(); x < CUDADeviceConstants.Nx; x += GetZ_Stride())
+  for (auto i = GetIndex(); i < TotalElementCount; i += GetStride())
   {
-    for (size_t y = GetY(); y < CUDADeviceConstants.Ny; y += GetY_Stride())
-    {
-      for (size_t z = GetX(); z < Z_2; z += GetX_Stride())
-      {
-        const size_t i = (x * CUDADeviceConstants.Ny + y) * Z_2 + z;
+    // rotated dimensions
+    const auto  z = i % Nz_2;
 
-        float2 temp;
-
-        temp.x = ((FFT_shift_temp[i].x * z_shift_neg_r[z].x) -
-                  (FFT_shift_temp[i].y * z_shift_neg_r[z].y)
-                 ) * CUDADeviceConstants.FFTDividerZ;
-
-
-        temp.y = ((FFT_shift_temp[i].y * z_shift_neg_r[z].x) +
-                  (FFT_shift_temp[i].x * z_shift_neg_r[z].y)
-                 ) * CUDADeviceConstants.FFTDividerZ;
-
-        FFT_shift_temp[i] = temp;
-      } // x
-    } // y
-  }// z
+     FFT_shift_temp[i] = cuCmulf(FFT_shift_temp[i], z_shift_neg_r[z]) * CUDADeviceConstants.FFTDividerZ;
+  }
 }// end of CUDAComputeVelocityShiftInZ
 //------------------------------------------------------------------------------
 
@@ -3301,15 +3090,14 @@ __global__ void CUDAComputeVelocityShiftInZ(float2       * FFT_shift_temp,
  * @param [in,out] FFT_shift_temp
  * @param [in]     z_shift_neg
  */
-void SolverCUDAKernels::ComputeVelocityShiftInZ(TCUFFTComplexMatrix  & FFT_shift_temp,
-                                                const TComplexMatrix & z_shift_neg_r)
+void SolverCUDAKernels::ComputeVelocityShiftInZ(TCUFFTComplexMatrix&  FFT_shift_temp,
+                                                const TComplexMatrix& z_shift_neg_r)
 {
-  CUDAComputeVelocityShiftInZ<<<GetSolverGridSize3D(),
-                                GetSolverBlockSize3D()>>>
-                             (reinterpret_cast<float2 *>       (FFT_shift_temp.GetRawDeviceData()),
-                              reinterpret_cast<const float2 *> (z_shift_neg_r.GetRawDeviceData()));
+  CUDAComputeVelocityShiftInZ<<<GetSolverGridSize1D(),
+                                GetSolverBlockSize1D()>>>
+                             (reinterpret_cast<cuFloatComplex*>       (FFT_shift_temp.GetRawDeviceData()),
+                              reinterpret_cast<const cuFloatComplex*> (z_shift_neg_r.GetRawDeviceData()));
   // check for errors
   gpuErrchk(cudaGetLastError());
 }// end of ComputeVelocityShiftInZ
 //------------------------------------------------------------------------------
-

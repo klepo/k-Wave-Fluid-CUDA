@@ -942,20 +942,8 @@ void TKSpaceFirstOrder3DSolver::Calculate_dt_rho0_non_uniform()
 void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
 {
   // get over the scalar problem
-  float * c2;
-  size_t c2_shift;
-
-  //@todo - this could be moved into kernel
-  if (Parameters->Get_c0_scalar_flag())
-  {
-    c2 = &Parameters->Get_c0_scalar();
-    c2_shift = 0;
-  }
-  else
-  {
-    c2 = Get_c2().GetRawDeviceData();
-    c2_shift = 1;
-  }
+  bool Is_c2_scalar = Parameters->Get_c0_scalar_flag();
+  const float* c2 = (Is_c2_scalar) ? nullptr : Get_c2().GetRawDeviceData();
 
   //-- add the initial pressure to rho as a mass source --//
   SolverCUDAKernels::Calculate_p0_source_add_initial_pressure(Get_p(),
@@ -963,8 +951,8 @@ void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
                                                               Get_rhoy(),
                                                               Get_rhoz(),
                                                               Get_p0_source_input(),
-                                                              c2,
-                                                              c2_shift);
+                                                              Is_c2_scalar,
+                                                              c2);
 
   //-----------------------------------------------------------------------//
   //--compute u(t = t1 + dt/2) based on the assumption u(dt/2) = -u(-dt/2)-//
@@ -979,55 +967,41 @@ void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
                                              Get_ddy_k_shift_pos(),
                                              Get_ddz_k_shift_pos());
 
+  Get_CUFFT_X_temp().Compute_FFT_3D_C2R(Get_ux_sgx());
+  Get_CUFFT_Y_temp().Compute_FFT_3D_C2R(Get_uy_sgy());
+  Get_CUFFT_Z_temp().Compute_FFT_3D_C2R(Get_uz_sgz());
+
   if (Parameters->Get_rho0_scalar_flag())
   {
     if (Parameters->Get_nonuniform_grid_flag())
-    { // non uniform grid
-    ////@TODO merge to a single kernel!
-      SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_x(
-                        Get_ux_sgx(),
-                        Parameters->Get_rho0_sgx_scalar(),
-                        Get_dxudxn_sgx(),
-                        Get_CUFFT_X_temp());
-      SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_y(
-                        Get_uy_sgy(),
-                        Parameters->Get_rho0_sgy_scalar(),
-                        Get_dyudyn_sgy(),
-                        Get_CUFFT_Y_temp());
-      SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform_z(
-                        Get_uz_sgz(),
-                        Parameters->Get_rho0_sgz_scalar(),
-                        Get_dzudzn_sgz(),
-                        Get_CUFFT_Z_temp());
+    { // non uniform grid, homogeneous
+
+      SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform(Get_ux_sgx(),
+                                                                            Get_uy_sgy(),
+                                                                            Get_uz_sgz(),
+                                                                            Get_dxudxn_sgx(),
+                                                                            Get_dyudyn_sgy(),
+                                                                            Get_dzudzn_sgz());
+
     }
     else
-    { //uniform grid, heterogeneous
-      ////@TODO merge to a single kernel!
+    { //uniform grid, homogeneous
+
       SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(Get_ux_sgx(),
-                                                          Parameters->Get_rho0_sgx_scalar(),
-                                                          Get_CUFFT_X_temp());
-      SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(Get_uy_sgy(),
-                                                          Parameters->Get_rho0_sgy_scalar(),
-                                                          Get_CUFFT_Y_temp());
-      SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(Get_uz_sgz(),
-                                                          Parameters->Get_rho0_sgz_scalar(),
-                                                          Get_CUFFT_Z_temp());
+                                                          Get_uy_sgy(),
+                                                          Get_uz_sgz());
     }
   }
   else
   {
-    // homogeneous, non-unifrom grid
+    // heterogeneous, uniform grid
     // divide the matrix by 2 and multiply with st./rho0_sg
-    ////@TODO merge to a single kernel!
-  SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(Get_ux_sgx(),
-                                                      Get_dt_rho0_sgx(),
-                                                      Get_CUFFT_X_temp());
-  SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(Get_uy_sgy(),
-                                                      Get_dt_rho0_sgy(),
-                                                      Get_CUFFT_Y_temp());
-  SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(Get_uz_sgz(),
-                                                      Get_dt_rho0_sgz(),
-                                                      Get_CUFFT_Z_temp());
+    SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(Get_ux_sgx(),
+                                                        Get_uy_sgy(),
+                                                        Get_uz_sgz(),
+                                                        Get_dt_rho0_sgx(),
+                                                        Get_dt_rho0_sgy(),
+                                                        Get_dt_rho0_sgz());
   }
 }// end of Calculate_p0_source
 //------------------------------------------------------------------------------
@@ -1111,7 +1085,7 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_nonlinear()
                                                             Get_pml_z(),
                                                             Get_duxdx(),
                                                             Get_duydy(),
-                                                            Get_duzdz())                                                               ;
+                                                            Get_duzdz());
 }
 else
 {
@@ -1177,9 +1151,8 @@ void TKSpaceFirstOrder3DSolver::Calculate_SumRho_SumRhoDu(TRealMatrix& Sum_rhoxy
                                                           TRealMatrix& Sum_rho0_du)
 {
 
-  const float   rho0_scalar =  Parameters->Get_rho0_scalar();
-  const float * rho0_matrix = (Parameters->Get_rho0_scalar_flag()) ? NULL :
-                                                                   Get_rho0().GetRawDeviceData();
+  const bool   Is_rho0_scalar = Parameters->Get_rho0_scalar();
+  const float * rho0_matrix = (Is_rho0_scalar) ? nullptr : Get_rho0().GetRawDeviceData();
   SolverCUDAKernels::Calculate_SumRho_SumRhoDu(Sum_rhoxyz,
                                                Sum_rho0_du,
                                                Get_rhox(),
@@ -1188,9 +1161,8 @@ void TKSpaceFirstOrder3DSolver::Calculate_SumRho_SumRhoDu(TRealMatrix& Sum_rhoxy
                                                Get_duxdx(),
                                                Get_duydy(),
                                                Get_duzdz(),
-                                               rho0_scalar,
-                                               rho0_matrix,
-                                               (Parameters->Get_rho0_scalar_flag()) ? 0 : 1);
+                                               Is_rho0_scalar,
+                                               rho0_matrix);
 }// end of Calculate_SumRho_SumRhoDu
 //------------------------------------------------------------------------------
 
@@ -1206,59 +1178,25 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_nonlinear(TRealMatrix& Absorb_tau_t
                                                        TRealMatrix& Absorb_eta_temp,
                                                        TRealMatrix& BonA_temp)
 {
-  float  tau_data_scalar;
-  float  eta_data_scalar;
-  float  c2_data_scalar;
+  const bool  Is_c2_scalar      = Parameters->Get_c0_scalar_flag();
+  const bool  Is_tau_eta_scalar = Parameters->Get_c0_scalar_flag() && Parameters->Get_alpha_coeff_scalar_flag();
 
-  float* tau_data_matrix;
-  float* eta_data_matrix;
-  float* c2_data_matrix;
+  const float* c2_data_matrix  = (Is_c2_scalar)      ? nullptr : Get_c2().GetRawDeviceData();
+  const float* tau_data_matrix = (Is_tau_eta_scalar) ? nullptr : Get_absorb_tau().GetRawDeviceData();
+  const float* eta_data_matrix = (Is_tau_eta_scalar) ? nullptr : Get_absorb_eta().GetRawDeviceData();
 
-  size_t  c2_shift;
-  size_t  tau_eta_shift;
-
-  const float*  Absorb_tau_data = Absorb_tau_temp.GetRawDeviceData();
-  const float*  Absorb_eta_data = Absorb_eta_temp.GetRawDeviceData();
-
-  // c2 scalar
-  if (Parameters->Get_c0_scalar_flag())
-  {
-    c2_data_scalar = Parameters->Get_c0_scalar();
-    c2_shift = 0;
-  }
-  else
-  {
-    c2_data_matrix = Get_c2().GetRawDeviceData();
-    c2_shift = 1;
-  }
-
-  // eta and tau scalars
-  if (Parameters->Get_c0_scalar_flag() &&
-      Parameters->Get_alpha_coeff_scalar_flag())
-  {
-    tau_data_scalar = Parameters->Get_absorb_tau_scalar();
-    eta_data_scalar = Parameters->Get_absorb_eta_scalar();
-    tau_eta_shift = 0;
-  }
-  else
-  {
-    tau_data_matrix = Get_absorb_tau().GetRawDeviceData();
-    eta_data_matrix = Get_absorb_eta().GetRawDeviceData();
-    tau_eta_shift = 1;
-  }
+  const float* Absorb_tau_data = Absorb_tau_temp.GetRawDeviceData();
+  const float* Absorb_eta_data = Absorb_eta_temp.GetRawDeviceData();
 
   SolverCUDAKernels::Sum_Subterms_nonlinear(Get_p(),
                                             BonA_temp,
-                                            c2_data_scalar,
+                                            Is_c2_scalar,
                                             c2_data_matrix,
-                                            c2_shift,
+                                            Is_tau_eta_scalar,
                                             Absorb_tau_data,
-                                            tau_data_scalar,
                                             tau_data_matrix,
                                             Absorb_eta_data,
-                                            eta_data_scalar,
-                                            eta_data_matrix,
-                                            tau_eta_shift);
+                                            eta_data_matrix);
 }// end of Sum_Subterms_nonlinear
 //------------------------------------------------------------------------------
 
@@ -1273,55 +1211,22 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_linear(TRealMatrix& Absorb_tau_temp
                                                     TRealMatrix& Absorb_eta_temp,
                                                     TRealMatrix& Sum_rhoxyz)
 {
+  const bool  Is_c2_scalar      = Parameters->Get_c0_scalar_flag();
+  const bool  Is_tau_eta_scalar = Parameters->Get_c0_scalar_flag() && Parameters->Get_alpha_coeff_scalar_flag();
 
-  float tau_data_scalar;
-  float eta_data_scalar;
-  float c2_data_scalar;
-  float* tau_data_matrix;
-  float* eta_data_matrix;
-  float* c2_data_matrix;
-
-  size_t c2_shift = 0;
-  size_t tau_eta_shift = 0;
-
-  // c2 scalar
-  if (Parameters->Get_c0_scalar_flag())
-  {
-    c2_data_scalar = Parameters->Get_c0_scalar();
-    c2_shift = 0;
-  }
-  else
-  {
-    c2_data_matrix = Get_c2().GetRawDeviceData();
-    c2_shift = 1;
-  }
-
-    // eta and tau scalars
-  if (Parameters->Get_c0_scalar_flag() && Parameters->Get_alpha_coeff_scalar_flag())
-  {
-    tau_data_scalar = Parameters->Get_absorb_tau_scalar();
-    eta_data_scalar = Parameters->Get_absorb_eta_scalar();
-    tau_eta_shift = 0;
-  }
-  else
-  {
-    tau_data_matrix = Get_absorb_tau().GetRawDeviceData();
-    eta_data_matrix = Get_absorb_eta().GetRawDeviceData();
-    tau_eta_shift = 1;
-  }
+  const float* c2_data_matrix  = (Is_c2_scalar)      ? nullptr : Get_c2().GetRawDeviceData();
+  const float* tau_data_matrix = (Is_tau_eta_scalar) ? nullptr : Get_absorb_tau().GetRawDeviceData();
+  const float* eta_data_matrix = (Is_tau_eta_scalar) ? nullptr : Get_absorb_eta().GetRawDeviceData();
 
   SolverCUDAKernels::Sum_Subterms_linear(Get_p(),
                                          Absorb_tau_temp,
                                          Absorb_eta_temp,
                                          Sum_rhoxyz,
-                                         c2_data_scalar,
+                                         Is_c2_scalar,
                                          c2_data_matrix,
-                                         c2_shift,
-                                         tau_data_scalar,
+                                         Is_tau_eta_scalar,
                                          tau_data_matrix,
-                                         eta_data_scalar,
-                                         eta_data_matrix,
-                                         tau_eta_shift);
+                                         eta_data_matrix);
 }// end of Sum_Subterms_linear
 //------------------------------------------------------------------------------
 
@@ -1332,65 +1237,24 @@ void TKSpaceFirstOrder3DSolver::Sum_Subterms_linear(TRealMatrix& Absorb_tau_temp
  */
 void TKSpaceFirstOrder3DSolver::Sum_new_p_nonlinear_lossless()
 {
-  float * c2_data_matrix = NULL;
-  float   c2_data_scalar;
-  size_t  c2_shift;
+  const bool   Is_c2_scalar   = Parameters->Get_c0_scalar_flag();
+  const bool   Is_BonA_scalar = Parameters->Get_BonA_scalar_flag();
+  const bool   Is_rho0_scalar = Parameters->Get_rho0_scalar_flag();
 
-
-  if (Parameters->Get_c0_scalar_flag())
-  {
-    c2_data_scalar = Parameters->Get_c0_scalar();
-    c2_shift = 0;
-  }
-  else
-  {
-    c2_data_matrix = Get_c2().GetRawDeviceData();
-    c2_shift = 1;
-  }
-
-  float* BonA_data_matrix = NULL;
-  float  BonA_data_scalar;
-  size_t BonA_shift;
-
-  if (Parameters->Get_BonA_scalar_flag())
-  {
-    BonA_data_scalar = Parameters->Get_BonA_scalar();
-    BonA_shift = 0;
-  }
-  else
-  {
-    BonA_data_matrix = Get_BonA().GetRawDeviceData();
-    BonA_shift = 1;
-  }
-
-  float* rho0_data_matrix;
-  float rho0_data_scalar;
-  size_t rho0_shift;
-
-  if (Parameters->Get_rho0_scalar_flag())
-  {
-    rho0_data_scalar = Parameters->Get_rho0_scalar();
-    rho0_shift = 0;
-  }
-  else
-  {
-    rho0_data_matrix = Get_rho0().GetRawDeviceData();
-    rho0_shift = 1;
-  }
+  const float* c2_data_matrix   = (Is_c2_scalar)   ? nullptr : Get_c2().GetRawDeviceData();
+  const float* BonA_data_matrix = (Is_BonA_scalar) ? nullptr : Get_BonA().GetRawDeviceData();
+  const float* rho0_data_matrix = (Is_rho0_scalar) ? nullptr : Get_rho0().GetRawDeviceData();
 
   SolverCUDAKernels::Sum_new_p_nonlinear_lossless(Get_p(),
                                                   Get_rhox(),
                                                   Get_rhoy(),
                                                   Get_rhoz(),
-                                                  c2_data_scalar,
+                                                  Is_c2_scalar,
                                                   c2_data_matrix,
-                                                  c2_shift,
-                                                  BonA_data_scalar,
+                                                  Is_BonA_scalar,
                                                   BonA_data_matrix,
-                                                  BonA_shift,
-                                                  rho0_data_scalar,
-                                                  rho0_data_matrix,
-                                                  rho0_shift);
+                                                  Is_rho0_scalar,
+                                                  rho0_data_matrix);
 
 }// end of Sum_new_p_nonlinear_lossless
 //------------------------------------------------------------------------------
@@ -1401,17 +1265,15 @@ void TKSpaceFirstOrder3DSolver::Sum_new_p_nonlinear_lossless()
  */
 void TKSpaceFirstOrder3DSolver::Sum_new_p_linear_lossless()
 {
-  const float   c2_scalar =  Parameters->Get_c0_scalar();
-  const float * c2_matrix = (Parameters->Get_c0_scalar_flag()) ? NULL :
-                                                                 Get_c2().GetRawDeviceData();
+  const float   Is_c2_scalar =  Parameters->Get_c0_scalar();
+  const float * c2_matrix = (Is_c2_scalar) ? nullptr : Get_c2().GetRawDeviceData();
 
   SolverCUDAKernels::Sum_new_p_linear_lossless(Get_p(),
                                                Get_rhox(),
                                                Get_rhoy(),
                                                Get_rhoz(),
-                                               c2_scalar,
-                                               c2_matrix,
-                                              (Parameters->Get_c0_scalar_flag()) ? 0 : 1);
+                                               Is_c2_scalar,
+                                               c2_matrix);
 
 }// end of Sum_new_p_linear_lossless
 //------------------------------------------------------------------------------
@@ -1430,37 +1292,11 @@ void TKSpaceFirstOrder3DSolver::Calculate_SumRho_BonA_SumDu(TRealMatrix& RHO_Tem
                                                             TRealMatrix& BonA_Temp,
                                                             TRealMatrix& Sum_du)
 {
-  float  BonA_data_scalar;
-  float* BonA_data_matrix;
-  size_t BonA_shift;
-  const bool BonA_flag = Parameters->Get_BonA_scalar_flag();
+  const bool Is_BonA_scalar = Parameters->Get_BonA_scalar_flag();
+  const bool Is_rho0_scalar = Parameters->Get_rho0_scalar_flag();
 
-  if (BonA_flag)
-  {
-    BonA_data_scalar = Parameters->Get_BonA_scalar();
-    BonA_shift = 0;
-  }
-  else
-  {
-    BonA_data_matrix = Get_BonA().GetRawDeviceData();
-    BonA_shift = 1;
-  }
-
-  float  rho0_data_scalar;
-  float* rho0_data_matrix;
-  size_t rho0_shift;
-  const bool rho0_flag = Parameters->Get_rho0_scalar_flag();
-
-  if (rho0_flag)
-  {
-    rho0_data_scalar = Parameters->Get_rho0_scalar();
-    rho0_shift = 0;
-  }
-  else
-  {
-    rho0_data_matrix = Get_rho0().GetRawDeviceData();
-    rho0_shift = 1;
-  }
+  const float* BonA_data = (Is_BonA_scalar) ? nullptr : Get_BonA().GetRawDeviceData();
+  const float* rho0_data = (Is_rho0_scalar) ? nullptr : Get_rho0().GetRawDeviceData();
 
   SolverCUDAKernels::Calculate_SumRho_BonA_SumDu(RHO_Temp,
                                                  BonA_Temp,
@@ -1471,12 +1307,10 @@ void TKSpaceFirstOrder3DSolver::Calculate_SumRho_BonA_SumDu(TRealMatrix& RHO_Tem
                                                  Get_duxdx(),
                                                  Get_duydy(),
                                                  Get_duzdz(),
-                                                 BonA_data_scalar,
-                                                 BonA_data_matrix,
-                                                 BonA_shift,
-                                                 rho0_data_scalar,
-                                                 rho0_data_matrix,
-                                                 rho0_shift);
+                                                 Is_BonA_scalar,
+                                                 BonA_data,
+                                                 Is_rho0_scalar,
+                                                 rho0_data);
 
 }// end of Calculate_SumRho_BonA_SumDu
 //------------------------------------------------------------------------------
@@ -1573,7 +1407,7 @@ void TKSpaceFirstOrder3DSolver::Compute_uxyz()
                                              Get_kappa(),
                                              Get_ddx_k_shift_pos(),
                                              Get_ddy_k_shift_pos(),
-                                              Get_ddz_k_shift_pos());
+                                             Get_ddz_k_shift_pos());
 
   Get_CUFFT_X_temp().Compute_FFT_3D_C2R(Get_Temp_1_RS3D());
   Get_CUFFT_Y_temp().Compute_FFT_3D_C2R(Get_Temp_2_RS3D());
@@ -1583,46 +1417,46 @@ void TKSpaceFirstOrder3DSolver::Compute_uxyz()
   { // scalars
     if (Parameters->Get_nonuniform_grid_flag())
     {
-      SolverCUDAKernels::Compute_ux_sgx_normalize_scalar_nonuniform(Get_ux_sgx(),
-                                                                    Get_Temp_1_RS3D(),
-                                                                    Get_dxudxn_sgx(),
-                                                                    Get_pml_x_sgx());
-      SolverCUDAKernels::Compute_uy_sgy_normalize_scalar_nonuniform(Get_uy_sgy(),
-                                                                    Get_Temp_2_RS3D(),
-                                                                    Get_dyudyn_sgy(),
-                                                                    Get_pml_y_sgy());
-      SolverCUDAKernels::Compute_uz_sgz_normalize_scalar_nonuniform(Get_uz_sgz(),
-                                                                    Get_Temp_3_RS3D(),
-                                                                    Get_dzudzn_sgz(),
-                                                                    Get_pml_z_sgz());
+      SolverCUDAKernels::Compute_uxyz_normalize_scalar_nonuniform(Get_ux_sgx(),
+                                                                  Get_uy_sgy(),
+                                                                  Get_uz_sgz(),
+                                                                  Get_Temp_1_RS3D(),
+                                                                  Get_Temp_2_RS3D(),
+                                                                  Get_Temp_3_RS3D(),
+                                                                  Get_dxudxn_sgx(),
+                                                                  Get_dyudyn_sgy(),
+                                                                  Get_dzudzn_sgz(),
+                                                                  Get_pml_x_sgx(),
+                                                                  Get_pml_y_sgy(),
+                                                                  Get_pml_z_sgz());
     }
     else
     {
-      SolverCUDAKernels::Compute_ux_sgx_normalize_scalar_uniform(Get_ux_sgx(),
-                                                                 Get_Temp_1_RS3D(),
-                                                                 Get_pml_x_sgx());
-      SolverCUDAKernels::Compute_uy_sgy_normalize_scalar_uniform(Get_uy_sgy(),
-                                                                 Get_Temp_2_RS3D(),
-                                                                 Get_pml_y_sgy());
-      SolverCUDAKernels::Compute_uz_sgz_normalize_scalar_uniform(Get_uz_sgz(),
-                                                                 Get_Temp_3_RS3D(),
-                                                                 Get_pml_z_sgz());
+      SolverCUDAKernels::Compute_uxyz_normalize_scalar_uniform(Get_ux_sgx(),
+                                                               Get_uy_sgy(),
+                                                               Get_uz_sgz(),
+                                                               Get_Temp_1_RS3D(),
+                                                               Get_Temp_2_RS3D(),
+                                                               Get_Temp_3_RS3D(),
+                                                               Get_pml_x_sgx(),
+                                                               Get_pml_y_sgy(),
+                                                               Get_pml_z_sgz());
     }
   }
   else
   {// matrices
-    SolverCUDAKernels::Compute_ux_sgx_normalize(Get_ux_sgx(),
-                                                Get_Temp_1_RS3D(),
-                                                Get_dt_rho0_sgx(),
-                                                Get_pml_x_sgx());
-    SolverCUDAKernels::Compute_uy_sgy_normalize(Get_uy_sgy(),
-                                                Get_Temp_2_RS3D(),
-                                                Get_dt_rho0_sgy(),
-                                                Get_pml_y_sgy());
-    SolverCUDAKernels::Compute_uz_sgz_normalize(Get_uz_sgz(),
-                                                Get_Temp_3_RS3D(),
-                                                Get_dt_rho0_sgz(),
-                                                Get_pml_z_sgz());
+    SolverCUDAKernels::Compute_uxyz_normalize(Get_ux_sgx(),
+                                              Get_uy_sgy(),
+                                              Get_uz_sgz(),
+                                              Get_Temp_1_RS3D(),
+                                              Get_Temp_2_RS3D(),
+                                              Get_Temp_3_RS3D(),
+                                              Get_dt_rho0_sgx(),
+                                              Get_dt_rho0_sgy(),
+                                              Get_dt_rho0_sgz(),
+                                              Get_pml_x_sgx(),
+                                              Get_pml_y_sgy(),
+                                              Get_pml_z_sgz());
   }
 }// end of Compute_uxyz()
 //------------------------------------------------------------------------------

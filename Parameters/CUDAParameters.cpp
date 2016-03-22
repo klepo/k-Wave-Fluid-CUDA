@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 November 2015, 16:49 (created) \n
- *              16 February 2016, 13:44 (revised)
+ *              14 March    2016, 14:44 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,8 +50,6 @@
 TCUDAParameters::TCUDAParameters() :
         DeviceIdx(DefaultDeviceIdx),
         SolverBlockSize1D(UndefinedSize), SolverGridSize1D(UndefinedSize),
-        SolverBlockSize3D(UndefinedSize),
-        SolverGridSize3D (UndefinedSize), SolverComplexGridSize3D(UndefinedSize),
         SolverTransposeBlockSize(UndefinedSize), SolverTransposeGirdSize(UndefinedSize),
         SamplerBlockSize1D(UndefinedSize), SamplerGridSize1D(UndefinedSize),
         DeviceProperties()
@@ -261,24 +259,6 @@ void TCUDAParameters::SetKernelConfiguration()
     SolverGridSize1D  = int((FullDims.GetElementCount()  + size_t(SolverBlockSize1D) - 1 ) / size_t(SolverBlockSize1D));
   }
 
-  // Now solve 3D kernel size
-  // 3D block has a shape of 1x8x32 which yield the best performance
-  // there will always be a single block in X, then 4 in Y and Z will be set
-  // accordingly to the number of SMs to get the total number of blocks 8 times
-  // higher than the number of SMs
-  SolverBlockSize3D =  dim3(32,8,1);
-
-  SolverGridSize3D = (DeviceProperties.multiProcessorCount > 1)
-                     ? dim3(1,4, DeviceProperties.multiProcessorCount * 2)
-                     : dim3(1,2,4);
-
-  SolverComplexGridSize3D  = (DeviceProperties.multiProcessorCount > 1)
-                      ?  dim3(1,4, DeviceProperties.multiProcessorCount * 2)
-                      :  dim3(1,2,4);
-
-
-
-
   // Transposition works by processing for tiles of 32x32 by 4 warps. Every block
   // is responsible for one 2D slab.
   // Block size for the transposition kernels (only 128 threads)
@@ -346,10 +326,18 @@ void TCUDAParameters::SetUpDeviceConstants()
 
   ConstantsToTransfer.dt  = Params->Get_dt();
   ConstantsToTransfer.dt2 = Params->Get_dt() * 2.0f;
+  ConstantsToTransfer.c2  = Params->Get_c0_scalar();
+
+  ConstantsToTransfer.rho0_scalar     = Params->Get_rho0_scalar();
   ConstantsToTransfer.dt_rho0_scalar  = Params->Get_rho0_scalar() * Params->Get_dt();
   ConstantsToTransfer.rho0_sgx_scalar = Params->Get_rho0_sgx_scalar();
   ConstantsToTransfer.rho0_sgy_scalar = Params->Get_rho0_sgy_scalar(),
   ConstantsToTransfer.rho0_sgz_scalar = Params->Get_rho0_sgz_scalar(),
+
+  ConstantsToTransfer.BonA_scalar       = Params->Get_BonA_scalar();
+  ConstantsToTransfer.Absorb_tau_scalar = Params->Get_absorb_tau_scalar();
+  ConstantsToTransfer.Absorb_eta_scalar = Params->Get_absorb_eta_scalar();
+
 
   /// source masks
   ConstantsToTransfer.p_source_index_size = Params->Get_p_source_index_size();

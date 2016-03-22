@@ -34,32 +34,35 @@
 #ifndef CUDA_DEVICE_CONSTANTS_CUH
 #define CUDA_DEVICE_CONSTANTS_CUH
 
- /**
-   * @struct TCUDAConstants
-   * @brief  Structure for CUDA parameters to be placed in constant memory
+/**
+  * @struct TCUDAConstants
+  * @brief  Structure for CUDA parameters to be placed in constant memory.
+  *       Only 32b values are used, since CUDA does not allow to allocate more
+  *      than 2^32 elements and dim3 datatype is based on uint
+  *
  */
 struct TCUDADeviceConstants
 {
   /// size of X dimension.
-  size_t Nx;
+  uint Nx;
   /// size of Y dimension.
-  size_t Ny;
+  uint Ny;
   /// size of Z dimension.
-  size_t Nz;
+  uint Nz;
   /// total number of elements.
-  size_t TotalElementCount;
+  uint TotalElementCount;
   /// 2D Slab size
-  size_t SlabSize;
+  uint SlabSize;
   /// size of complex X dimension.
-  size_t Complex_Nx;
+  uint Complex_Nx;
   /// size of complex Y dimension.
-  size_t Complex_Ny;
+  uint Complex_Ny;
   /// size of complex Z dimension.
-  size_t Complex_Nz;
+  uint Complex_Nz;
   /// complex number of elements.
-  size_t ComplexTotalElementCount;
+  uint ComplexTotalElementCount;
   /// complex slab size.
-  size_t ComplexSlabSize;
+  uint ComplexSlabSize;
    /// normalization constant for 3D FFT.
   float  FFTDivider;
   /// normalization constant for 1D FFT over X.
@@ -73,8 +76,12 @@ struct TCUDADeviceConstants
   float dt;
   /// 2.0 * dt
   float dt2;
+  /// c^2
+  float c2;
 
 
+  /// rho0 in homogeneous case
+  float rho0_scalar;
   /// dt * rho0 in homogeneous case
   float dt_rho0_scalar;
   /// dt / rho0_sgx in homogeneous case
@@ -84,20 +91,27 @@ struct TCUDADeviceConstants
   /// dt / rho0_sgz in homogeneous case
   float rho0_sgz_scalar;
 
+  /// BonA value for homogeneous case
+  float BonA_scalar;
+
+  /// Absorb_tau value for homogeneous case
+  float Absorb_tau_scalar;
+  /// Absorb_eta value for homogeneous case
+  float Absorb_eta_scalar;
 
   ///  size of the u source index
-  size_t u_source_index_size;
+  uint u_source_index_size;
   /// u source mode
-  size_t u_source_mode;
+  uint u_source_mode;
   /// u source many
-  size_t u_source_many;
+  uint u_source_many;
 
   /// size of the p_source mask
-  size_t p_source_index_size;
+  uint p_source_index_size;
   /// p source mode
-  size_t p_source_mode;
+  uint p_source_mode;
   /// p source many
-  size_t p_source_many;
+  uint p_source_many;
 
   /// Set constant memory
   __host__ void SetUpCUDADeviceConstatns();
