@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        29 August   2014, 10:10 (created)
- *              23 February 2016, 14:37 (revised)
+ *              24 March    2016, 17:08 (revised)
  *
  *
  * @section License
@@ -98,10 +98,10 @@ inline void gpuAssert(cudaError_t code,
  * @param [in] SensorMask      - Index based sensor mask
  * @param [in] ReductionOp     - Reduction operator
  */
-TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File &             HDF5_File,
-                                               const char *             HDF5_ObjectName,
-                                               const TRealMatrix &      SourceMatrix,
-                                               const TIndexMatrix &     SensorMask,
+TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File&              HDF5_File,
+                                               const char*              HDF5_ObjectName,
+                                               const TRealMatrix&       SourceMatrix,
+                                               const TIndexMatrix&      SensorMask,
                                                const TReductionOperator ReductionOp)
         : TBaseOutputHDF5Stream(HDF5_File, HDF5_ObjectName, SourceMatrix, ReductionOp),
           SensorMask(SensorMask),
@@ -138,7 +138,7 @@ void TIndexOutputHDF5Stream::Create()
 
   size_t NumberOfSampledElementsPerStep = SensorMask.GetTotalElementCount();
 
-  TParameters * Params = TParameters::GetInstance();
+  TParameters* Params = TParameters::GetInstance();
 
   // Derive dataset dimension sizes
   TDimensionSizes DatasetSize(NumberOfSampledElementsPerStep,
@@ -186,7 +186,7 @@ void TIndexOutputHDF5Stream::Create()
 void TIndexOutputHDF5Stream::Reopen()
 {
   // Get parameters
-  TParameters * Params = TParameters::GetInstance();
+  TParameters* Params = TParameters::GetInstance();
 
   // Set buffer size
   BufferSize = SensorMask.GetTotalElementCount();
@@ -237,10 +237,11 @@ void TIndexOutputHDF5Stream::Sample()
   {
     case roNONE :
     {
-      OutputStreamsCUDAKernels::SampleRawIndex(DeviceStoreBuffer,
-                                               SourceMatrix.GetRawDeviceData(),
-                                               SensorMask.GetRawDeviceData(),
-                                               SensorMask.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleIndex<roNONE>
+                                           (DeviceStoreBuffer,
+                                            SourceMatrix.GetRawDeviceData(),
+                                            SensorMask.GetRawDeviceData(),
+                                            SensorMask.GetTotalElementCount());
 
       // Record an event when the data has been copied over.
       gpuErrchk(cudaEventRecord(EventSamplingFinished));
@@ -250,29 +251,32 @@ void TIndexOutputHDF5Stream::Sample()
 
     case roRMS :
     {
-      OutputStreamsCUDAKernels::SampleRMSIndex(DeviceStoreBuffer,
-                                               SourceMatrix.GetRawDeviceData(),
-                                               SensorMask.GetRawDeviceData(),
-                                               SensorMask.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleIndex<roRMS>
+                                           (DeviceStoreBuffer,
+                                            SourceMatrix.GetRawDeviceData(),
+                                            SensorMask.GetRawDeviceData(),
+                                            SensorMask.GetTotalElementCount());
 
       break;
     }// case roRMS
 
     case roMAX :
     {
-      OutputStreamsCUDAKernels::SampleMaxIndex(DeviceStoreBuffer,
-                                               SourceMatrix.GetRawDeviceData(),
-                                               SensorMask.GetRawDeviceData(),
-                                               SensorMask.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleIndex<roMAX>
+                                           (DeviceStoreBuffer,
+                                            SourceMatrix.GetRawDeviceData(),
+                                            SensorMask.GetRawDeviceData(),
+                                            SensorMask.GetTotalElementCount());
       break;
     }// case roMAX
 
     case roMIN :
     {
-      OutputStreamsCUDAKernels::SampleMinIndex(DeviceStoreBuffer,
-                                               SourceMatrix.GetRawDeviceData(),
-                                               SensorMask.GetRawDeviceData(),
-                                               SensorMask.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleIndex<roMIN>
+                                           (DeviceStoreBuffer,
+                                            SourceMatrix.GetRawDeviceData(),
+                                            SensorMask.GetRawDeviceData(),
+                                            SensorMask.GetTotalElementCount());
       break;
     } //case roMIN
   }// switch

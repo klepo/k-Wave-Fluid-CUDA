@@ -11,7 +11,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        27 January   2015, 16:25 (created) \n
- *              23 February  2016, 14:35 (revised)
+ *              22 March     2016, 17:07 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -39,6 +39,8 @@
 #include <cuda_runtime.h>
 #include <cuda.h>
 
+#include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
+
 /**
  * @namespace   OutputStreamsCUDAKernels
  * @brief       List of cuda kernels used for sampling data
@@ -47,87 +49,36 @@
  */
 namespace OutputStreamsCUDAKernels
 {
-  /// Kernel to sample raw quantities using an index sensor mask
-  void SampleRawIndex(      float  * SamplingBuffer,
-                      const float  * SourceData,
-                      const size_t * SensorData,
-                      const size_t   NumberOfSamples);
-
-  /// Kernel to sample max quantities using an index sensor mask
-  void SampleMaxIndex(      float  * SamplingBuffer,
-                      const float  * SourceData,
-                      const size_t * SensorData,
-                      const size_t   NumberOfSamples);
-
-  /// Kernel to sample min quantities using an index sensor mask
-  void SampleMinIndex(      float  * SamplingBuffer,
-                      const float  * SourceData,
-                      const size_t * SensorData,
-                      const size_t   NumberOfSamples);
-
-  /// Kernel to sample rms quantities using an index sensor mask
-  void SampleRMSIndex(      float  * SamplingBuffer,
-                      const float  * SourceData,
-                      const size_t * SensorData,
-                      const size_t   NumberOfSamples);
-
-
-  /// Kernel to sample raw quantities inside one cuboid
-  void SampleRawCuboid(      float  * SamplingBuffer,
-                       const float  * SourceData,
-                       const dim3     TopLeftCorner,
-                       const dim3     BottomRightCorner,
-                       const dim3     DimensionSizes,
-                       const size_t   NumberOfSamples);
-
-  /// Kernel to sample max quantities inside one cuboid
-  void SampleMaxCuboid(      float  * SamplingBuffer,
-                       const float  * SourceData,
-                       const dim3     TopLeftCorner,
-                       const dim3     BottomRightCorner,
-                       const dim3     DimensionSizes,
-                       const size_t   NumberOfSamples);
-
-
-  /// Kernel to sample min quantities inside one cuboid
-  void SampleMinCuboid(      float  * SamplingBuffer,
-                       const float  * SourceData,
-                       const dim3     TopLeftCorner,
-                       const dim3     BottomRightCorner,
-                       const dim3     DimensionSizes,
-                       const size_t   NumberOfSamples);
+  /// Kernel to sample quantities using an index sensor mask
+  template<TBaseOutputHDF5Stream::TReductionOperator ReductionOp>
+  void SampleIndex(float*        SamplingBuffer,
+                   const float*  SourceData,
+                   const size_t* SensorData,
+                   const size_t  NumberOfSamples);
 
 
 
-  /// Kernel to sample rms quantities inside one cuboid
-  void SampleRMSCuboid(      float  * SamplingBuffer,
-                       const float  * SourceData,
-                       const dim3     TopLeftCorner,
-                       const dim3     BottomRightCorner,
-                       const dim3     DimensionSizes,
-                       const size_t   NumberOfSamples);
+  /// Kernel to sample quantities inside one cuboid
+  template<TBaseOutputHDF5Stream::TReductionOperator ReductionOp>
+  void SampleCuboid(float*       SamplingBuffer,
+                    const float* SourceData,
+                    const dim3   TopLeftCorner,
+                    const dim3   BottomRightCorner,
+                    const dim3   DimensionSizes,
+                    const size_t NumberOfSamples);
 
 
-  /// Kernel to sample max of the quantity on the whole domain
-  void SampleMaxAll(      float  * SamplingBuffer,
-                    const float  * SourceData,
-                    const size_t   NumberOfSamples);
-
-  /// Kernel to sample min of the quantity on the whole domain
-  void SampleMinAll(      float  * SamplingBuffer,
-                    const float  * SourceData,
-                    const size_t   NumberOfSamples);
-
-  /// Kernel to sample rms of the quantity on the whole domain
-  void SampleRMSAll(      float  * SamplingBuffer,
-                    const float  * SourceData,
-                    const size_t   NumberOfSamples);
+  /// Kernel to sample of the quantity on the whole domain
+  template<TBaseOutputHDF5Stream::TReductionOperator ReductionOp>
+  void SampleAll(float*       SamplingBuffer,
+                 const float* SourceData,
+                 const size_t NumberOfSamples);
 
 
   /// Kernel to calculate post-processing for RMS
-  void PostProcessingRMS(      float * SamplingBuffer,
-                         const float   ScalingCoeff,
-                         const size_t  NumberOfSamples);
+  void PostProcessingRMS(float*       SamplingBuffer,
+                         const float  ScalingCoeff,
+                         const size_t NumberOfSamples);
 
 }
 

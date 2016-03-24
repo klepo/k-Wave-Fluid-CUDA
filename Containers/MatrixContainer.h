@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        02 December  2014, 16:17 (created) \n
- *              09 February  2015, 20:23 (revised)
+ *              24 March     2016, 14:05 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -141,7 +141,7 @@ class TMatrixContainer
 
     /// Copy host (CPU) matrices to GPU Device memory.
     void CopyAllMatricesToDevice();
-    /// Copy GPU Device memory matrices to host (CPU) memory.
+    /// Copy GPU Device memory matrices to host (CPU) memory (Debugging only).
     void CopyAllMatricesFromDevice();
 
     /**

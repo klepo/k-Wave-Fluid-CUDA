@@ -64,9 +64,9 @@ TOutputStreamContainer::~TOutputStreamContainer()
  * @param [in] MatrixContainer - matrix container to link the steams with
  *                               sampled matrices and sensor masks
  */
-void TOutputStreamContainer::AddStreamsIntoContainer(TMatrixContainer & MatrixContainer)
+void TOutputStreamContainer::AddStreamsIntoContainer(TMatrixContainer& MatrixContainer)
 {
-  TParameters * Params = TParameters::GetInstance();
+  TParameters* Params = TParameters::GetInstance();
 
   //----------------------------- pressure  ----------------------------------//
   if (Params->IsStore_p_raw())
@@ -382,14 +382,14 @@ void TOutputStreamContainer::FreeStreams()
  * @return - new output stream with defined links
  *
  */
-TBaseOutputHDF5Stream * TOutputStreamContainer::CreateNewOutputStream(TMatrixContainer & MatrixContainer,
-                                                                      const TMatrixID    SampledMatrixID,
-                                                                      const char *       HDF5_DatasetName,
-                                                                      const TBaseOutputHDF5Stream::TReductionOperator  ReductionOp)
+TBaseOutputHDF5Stream* TOutputStreamContainer::CreateNewOutputStream(TMatrixContainer& MatrixContainer,
+                                                                     const TMatrixID   SampledMatrixID,
+                                                                     const char*       HDF5_DatasetName,
+                                                                     const TBaseOutputHDF5Stream::TReductionOperator ReductionOp)
 {
-  TParameters * Params = TParameters::GetInstance();
+  TParameters* Params = TParameters::GetInstance();
 
-  TBaseOutputHDF5Stream * Stream = NULL;
+  TBaseOutputHDF5Stream* Stream = NULL;
 
   if (Params->Get_sensor_mask_type() == TParameters::smt_index)
   {

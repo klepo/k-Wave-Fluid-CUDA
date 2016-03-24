@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        02 December  2014, 16:17 (created) \n
- *              09 February  2015, 20:22 (revised)
+ *              24 March     2016, 14:04 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -486,8 +486,8 @@ void TMatrixContainer::CopyAllMatricesToDevice()
 //------------------------------------------------------------------------------
 
 /**
- * Copy all matrices back over to CPU
- * @todo Why do I need to copy all matrices back???
+ * Copy all matrices back over to CPU. Can be used for debugging purposes.
+ *
  */
 void TMatrixContainer::CopyAllMatricesFromDevice()
 {

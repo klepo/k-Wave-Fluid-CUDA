@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        04 December  2014, 11:00 (created)
- *              09 February  2015, 19:50 (revised)
+ *              24 March     2016, 17:06 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -100,7 +100,7 @@ class TOutputStreamContainer
      * @param MatrixID
      * @return
      */
-    TBaseOutputHDF5Stream & operator [] (const TOutputStreamID OutputStreamID)
+    TBaseOutputHDF5Stream& operator [] (const TOutputStreamID OutputStreamID)
     {
       return (* (OutputStreamContainer[OutputStreamID]));
     };
@@ -130,19 +130,19 @@ class TOutputStreamContainer
 
   protected:
     /// Create a new output stream
-    TBaseOutputHDF5Stream* CreateNewOutputStream(TMatrixContainer & MatrixContainer,
-                                                 const TMatrixID    SampledMatrixID,
-                                                 const char *       HDF5_DatasetName,
+    TBaseOutputHDF5Stream* CreateNewOutputStream(TMatrixContainer& MatrixContainer,
+                                                 const TMatrixID   SampledMatrixID,
+                                                 const char*      HDF5_DatasetName,
                                                  const TBaseOutputHDF5Stream::TReductionOperator ReductionOp);
 
     /// Copy constructor not allowed for public.
-    TOutputStreamContainer(const TOutputStreamContainer &);
+    TOutputStreamContainer(const TOutputStreamContainer&);
     /// Operator = not allowed for public.
-    TOutputStreamContainer & operator = (TOutputStreamContainer &);
+    TOutputStreamContainer & operator = (TOutputStreamContainer&);
 
   private:
     /// Output stream map.
-    typedef map < TOutputStreamID, TBaseOutputHDF5Stream * > TOutputStreamMap;
+    typedef map<TOutputStreamID, TBaseOutputHDF5Stream*> TOutputStreamMap;
 
     /// Map with output streams.
     TOutputStreamMap OutputStreamContainer;
