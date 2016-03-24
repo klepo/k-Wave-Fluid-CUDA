@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2011, 12:13 (created) \n
- *              08 January   2015, 12:40 (revised)
+ *              22 March     2016, 14:07 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -171,7 +171,7 @@ void TBaseFloatMatrix::CopyFromDevice()
  * Memory allocation based on the total number of elements. \n
  *
  * CPU memory is aligned by the DATA_ALIGNMENT and then registered as pinned and
- * zeroed. The GPU memory is allocated on GPU but not zeroed (no reason)
+ * zeroed.
  *
  */
 void TBaseFloatMatrix::AllocateMemory()
@@ -206,6 +206,8 @@ void TBaseFloatMatrix::AllocateMemory()
     fprintf(stderr,Matrix_ERR_FMT_Not_Enough_Memory, "TBaseFloatMatrix");
     throw bad_alloc();
   }
+  // This has to be done for simulations based on input sources
+  ZeroMatrix();
 }//end of AllocateMemory
 //----------------------------------------------------------------------------
 
