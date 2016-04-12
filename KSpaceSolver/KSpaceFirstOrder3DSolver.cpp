@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              23 February 2016, 15:05 (revised)
+ *              12 April    2016, 15:17 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -1915,9 +1915,10 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
   if (OutputFileHeader.GetFileType() != THDF5_FileHeader::hdf5_ft_output)
   {
     char ErrorMessage[256] = "";
-    sprintf(ErrorMessage,
-            KSpaceFirstOrder3DSolver_ERR_FMT_IncorrectOutputFileFormat,
-            Parameters->GetOutputFileName().c_str());
+    snprintf(ErrorMessage,
+             256,
+             KSpaceFirstOrder3DSolver_ERR_FMT_IncorrectOutputFileFormat,
+             Parameters->GetOutputFileName().c_str());
     throw ios::failure(ErrorMessage);
   }
 
@@ -1925,10 +1926,11 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
   if (!OutputFileHeader.CheckMajorFileVersion())
   {
     char ErrorMessage[256] = "";
-    sprintf(ErrorMessage,
-            Parameters_ERR_FMT_IncorrectMajorHDF5FileVersion,
-            Parameters->GetCheckpointFileName().c_str(),
-            OutputFileHeader.GetCurrentHDF5_MajorVersion().c_str());
+    snprintf(ErrorMessage,
+             256,
+             Parameters_ERR_FMT_IncorrectMajorHDF5FileVersion,
+             Parameters->GetCheckpointFileName().c_str(),
+             OutputFileHeader.GetCurrentHDF5_MajorVersion().c_str());
     throw ios::failure(ErrorMessage);
   }
 
@@ -1936,10 +1938,11 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
   if (!OutputFileHeader.CheckMinorFileVersion())
   {
     char ErrorMessage[256] = "";
-    sprintf(ErrorMessage,
-            Parameters_ERR_FMT_IncorrectMinorHDF5FileVersion,
-            Parameters->GetCheckpointFileName().c_str(),
-            OutputFileHeader.GetCurrentHDF5_MinorVersion().c_str());
+    snprintf(ErrorMessage,
+             256,
+             Parameters_ERR_FMT_IncorrectMinorHDF5FileVersion,
+             Parameters->GetCheckpointFileName().c_str(),
+             OutputFileHeader.GetCurrentHDF5_MinorVersion().c_str());
     throw ios::failure(ErrorMessage);
   }
 
@@ -1961,14 +1964,15 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
  if (Parameters->GetFullDimensionSizes() != OutputDimSizes)
  {
     char ErrorMessage[256] = "";
-    sprintf(ErrorMessage,
-            KSpaceFirstOrder3DSolver_ERR_FMT_OutputDimensionsDoNotMatch,
-            OutputDimSizes.X,
-            OutputDimSizes.Y,
-            OutputDimSizes.Z,
-            Parameters->GetFullDimensionSizes().X,
-            Parameters->GetFullDimensionSizes().Y,
-            Parameters->GetFullDimensionSizes().Z);
+    snprintf(ErrorMessage,
+             256,
+             KSpaceFirstOrder3DSolver_ERR_FMT_OutputDimensionsDoNotMatch,
+             OutputDimSizes.X,
+             OutputDimSizes.Y,
+             OutputDimSizes.Z,
+             Parameters->GetFullDimensionSizes().X,
+             Parameters->GetFullDimensionSizes().Y,
+             Parameters->GetFullDimensionSizes().Z);
 
    throw ios::failure(ErrorMessage);
  }
@@ -1993,9 +1997,10 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
   if (CheckpointFileHeader.GetFileType() != THDF5_FileHeader::hdf5_ft_checkpoint)
   {
     char ErrorMessage[256] = "";
-    sprintf(ErrorMessage,
-            KSpaceFirstOrder3DSolver_ERR_FMT_IncorrectCheckpointFileFormat,
-            Parameters->GetCheckpointFileName().c_str());
+    snprintf(ErrorMessage,
+             256,
+             KSpaceFirstOrder3DSolver_ERR_FMT_IncorrectCheckpointFileFormat,
+             Parameters->GetCheckpointFileName().c_str());
     throw ios::failure(ErrorMessage);
   }
 
@@ -2003,10 +2008,11 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
   if (!CheckpointFileHeader.CheckMajorFileVersion())
   {
     char ErrorMessage[256] = "";
-    sprintf(ErrorMessage,
-            Parameters_ERR_FMT_IncorrectMajorHDF5FileVersion,
-            Parameters->GetCheckpointFileName().c_str(),
-            CheckpointFileHeader.GetCurrentHDF5_MajorVersion().c_str());
+    snprintf(ErrorMessage,
+             256,
+             Parameters_ERR_FMT_IncorrectMajorHDF5FileVersion,
+             Parameters->GetCheckpointFileName().c_str(),
+             CheckpointFileHeader.GetCurrentHDF5_MajorVersion().c_str());
     throw ios::failure(ErrorMessage);
   }
 
@@ -2014,10 +2020,11 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
   if (!CheckpointFileHeader.CheckMinorFileVersion())
   {
     char ErrorMessage[256] = "";
-    sprintf(ErrorMessage,
-            Parameters_ERR_FMT_IncorrectMinorHDF5FileVersion,
-            Parameters->GetCheckpointFileName().c_str(),
-            CheckpointFileHeader.GetCurrentHDF5_MinorVersion().c_str());
+    snprintf(ErrorMessage,
+             256,
+             Parameters_ERR_FMT_IncorrectMinorHDF5FileVersion,
+             Parameters->GetCheckpointFileName().c_str(),
+             CheckpointFileHeader.GetCurrentHDF5_MinorVersion().c_str());
     throw ios::failure(ErrorMessage);
   }
 
@@ -2039,14 +2046,15 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
  if (Parameters->GetFullDimensionSizes() != CheckpointDimSizes)
  {
     char ErrorMessage[256] = "";
-    sprintf(ErrorMessage,
-            KSpaceFirstOrder3DSolver_ERR_FMT_CheckpointDimensionsDoNotMatch,
-            CheckpointDimSizes.X,
-            CheckpointDimSizes.Y,
-            CheckpointDimSizes.Z,
-            Parameters->GetFullDimensionSizes().X,
-            Parameters->GetFullDimensionSizes().Y,
-            Parameters->GetFullDimensionSizes().Z);
+    snprintf(ErrorMessage,
+             256,
+             KSpaceFirstOrder3DSolver_ERR_FMT_CheckpointDimensionsDoNotMatch,
+             CheckpointDimSizes.X,
+             CheckpointDimSizes.Y,
+             CheckpointDimSizes.Z,
+             Parameters->GetFullDimensionSizes().X,
+             Parameters->GetFullDimensionSizes().Y,
+             Parameters->GetFullDimensionSizes().Z);
 
    throw ios::failure(ErrorMessage);
  }

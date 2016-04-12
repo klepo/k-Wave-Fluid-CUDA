@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 March    2013, 13:10 (created) \n
- *              22 March    2016, 15:13 (revised)
+ *              12 April    2016, 15:04 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -36,38 +36,8 @@
 #include <KSpaceSolver/SolverCUDAKernels.cuh>
 #include <Parameters/CUDADeviceConstants.cuh>
 
+#include <Utils/ErrorMessages.h>
 #include <Utils/CUDAUtils.cuh>
-
-//----------------------------------------------------------------------------//
-//--------------------------------- Macros -----------------------------------//
-//----------------------------------------------------------------------------//
-
-/**
- * Check errors of the CUDA routines and print error.
- * @param [in] code  - error code of last routine
- * @param [in] file  - The name of the file, where the error was raised
- * @param [in] line  - What is the line
- * @param [in] Abort - Shall the code abort?
- * @todo - check this routine and do it differently!
- */
-inline void gpuAssert(cudaError_t code,
-                      string file,
-                      int line)
-{
-  if (code != cudaSuccess)
-  {
-    char ErrorMessage[256];
-    sprintf(ErrorMessage,"GPUassert: %s %s %d\n",cudaGetErrorString(code),file.c_str(),line);
-
-    // Throw exception
-     throw std::runtime_error(ErrorMessage);
-  }
-}// end of gpuAssert
-//------------------------------------------------------------------------------
-
-/// Define to get the usage easier
-#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-
 
 //----------------------------------------------------------------------------//
 //-------------------------------- Constants ---------------------------------//
@@ -188,7 +158,7 @@ int SolverCUDAKernels::GetCUDACodeVersion()
   // if the device is busy, return 0 - the GPU is not supported
   if (cudaError == cudaSuccess)
   {
-    gpuErrchk(cudaHostGetDevicePointer<int>(&dCudaCodeVersion, hCudaCodeVersion, 0));
+    checkCudaErrors(cudaHostGetDevicePointer<int>(&dCudaCodeVersion, hCudaCodeVersion, 0));
 
     // find out the CUDA code version
     CUDAGetCUDACodeVersion<<<1,1>>>(dCudaCodeVersion);
@@ -203,7 +173,7 @@ int SolverCUDAKernels::GetCUDACodeVersion()
       cudaCodeVersion = *hCudaCodeVersion;
     }
 
-    gpuErrchk(cudaFreeHost(hCudaCodeVersion));
+    checkCudaErrors(cudaFreeHost(hCudaCodeVersion));
   }
 
   return (cudaCodeVersion);
@@ -308,7 +278,7 @@ void SolverCUDAKernels::Compute_uxyz_normalize(TRealMatrix&       ux_sgx,
                                pml_z.GetRawDeviceData());
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_uxyz_normalize
 //------------------------------------------------------------------------------
 
@@ -391,7 +361,7 @@ void SolverCUDAKernels::Compute_uxyz_normalize_scalar_uniform(TRealMatrix&      
                                               pml_y.GetRawDeviceData(),
                                               pml_z.GetRawDeviceData());
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_ux_sgx_normalize_scalar_uniform
 //------------------------------------------------------------------------------
 
@@ -493,7 +463,7 @@ void SolverCUDAKernels::Compute_uxyz_normalize_scalar_nonuniform(TRealMatrix&   
                                                  pml_z.GetRawDeviceData());
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_ux_sgx_normalize_scalar_nonuniform
 //------------------------------------------------------------------------------
 
@@ -541,7 +511,7 @@ void SolverCUDAKernels::AddTransducerSource(TRealMatrix&        ux_sgx,
                           delay_mask.GetRawDeviceData(),
                           transducer_signal.GetRawDeviceData());
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of AddTransducerSource
 //------------------------------------------------------------------------------
 
@@ -609,7 +579,7 @@ void SolverCUDAKernels::Add_u_source(TRealMatrix&        uxyz_sgxyz,
                    t_index);
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Add_u_source
 //------------------------------------------------------------------------------
 
@@ -710,7 +680,7 @@ void SolverCUDAKernels::Add_p_source(TRealMatrix&        rhox,
                    t_index);
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Add_p_source
 //------------------------------------------------------------------------------
 
@@ -790,7 +760,7 @@ void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(TRealMatrix&       ux_s
                               dt_rho0_sgz.GetRawDeviceData());
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_dt_rho_sg_mul_ifft_div_2
 //------------------------------------------------------------------------------
 
@@ -814,7 +784,7 @@ void SolverCUDAKernels::Compute_dt_rho_sg_mul_ifft_div_2(TRealMatrix& ux_sgx,
                               uz_sgz.GetRawDeviceData());
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_dt_rho_sg_mul_ifft_div_2
 //------------------------------------------------------------------------------
 
@@ -879,7 +849,7 @@ __global__ void CUDACompute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform(float*   
                                                            dxudxn_sgx.GetRawDeviceData(),
                                                            dxudxn_sgx.GetRawDeviceData());
 // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_dt_rho_sg_mul_ifft_div_2_scalar_nonuniform
 //------------------------------------------------------------------------------
 
@@ -960,7 +930,7 @@ void SolverCUDAKernels::Compute_ddx_kappa_fft_p(TRealMatrix&         X_Matrix,
                               reinterpret_cast<const cuFloatComplex*>(ddz.GetRawDeviceData()));
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_ddx_kappa_fft_p
 //------------------------------------------------------------------------------
 
@@ -1037,7 +1007,7 @@ void SolverCUDAKernels::Compute_duxyz_uniform(TCUFFTComplexMatrix&  FFT_X,
                            reinterpret_cast<const cuFloatComplex *>(ddz_k_shift_neg.GetRawDeviceData()));
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_duxyz_uniform
 //------------------------------------------------------------------------------
 
@@ -1095,7 +1065,7 @@ void SolverCUDAKernels::Compute_duxyz_non_uniform(TRealMatrix&       duxdx,
                                dzudzn.GetRawDeviceData());
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_duxyz_non_uniform
 //------------------------------------------------------------------------------
 
@@ -1174,7 +1144,7 @@ void SolverCUDAKernels::Calculate_p0_source_add_initial_pressure(TRealMatrix&   
   }
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Calculate_p0_source_add_initial_pressure
 //------------------------------------------------------------------------------
 
@@ -1258,7 +1228,7 @@ void SolverCUDAKernels::Compute_rhoxyz_nonlinear_homogeneous(TRealMatrix&       
                                            duydy.GetRawDeviceData(),
                                            duzdz.GetRawDeviceData());
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_rhoxyz_nonlinear_homogeneous
 //------------------------------------------------------------------------------
 
@@ -1347,7 +1317,7 @@ void SolverCUDAKernels::Compute_rhoxyz_nonlinear_heterogeneous(TRealMatrix&     
                                                rho0.GetRawDeviceData());
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_rhoxyz_nonlinear_heterogeneous
 //------------------------------------------------------------------------------
 
@@ -1424,7 +1394,7 @@ void SolverCUDAKernels::Compute_rhoxyz_linear_homogeneous(TRealMatrix&       rho
                                        duydy.GetRawDeviceData(),
                                        duzdz.GetRawDeviceData());
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_rhoxyz_linear_homogeneous
 //------------------------------------------------------------------------------
 
@@ -1510,7 +1480,7 @@ void SolverCUDAKernels::Compute_rhoxyz_linear_heterogeneous(TRealMatrix&       r
                                           rho0.GetRawDeviceData());
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_rhoxyz_linear_heterogeneous
 //------------------------------------------------------------------------------
 
@@ -1673,7 +1643,7 @@ void SolverCUDAKernels::Calculate_SumRho_BonA_SumDu(TRealMatrix&       rho_sum,
     }
   }
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Calculate_SumRho_BonA_SumDu
 //------------------------------------------------------------------------------
 
@@ -1727,7 +1697,7 @@ void SolverCUDAKernels::Compute_Absorb_nabla1_2(TCUFFTComplexMatrix& FFT_1,
                              absorb_nabla2.GetRawDeviceData());
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Compute_Absorb_nabla1_2
 //------------------------------------------------------------------------------
 
@@ -1846,7 +1816,7 @@ void SolverCUDAKernels::Sum_Subterms_nonlinear(TRealMatrix&       p,
     }
   }
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Sum_Subterms_nonlinear
 //------------------------------------------------------------------------------
 
@@ -1964,7 +1934,7 @@ void SolverCUDAKernels::Sum_Subterms_linear(TRealMatrix&       p,
     }
   }
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Sum_Subterms_linear
 //------------------------------------------------------------------------------
 
@@ -2149,7 +2119,7 @@ void SolverCUDAKernels::Sum_new_p_nonlinear_lossless(TRealMatrix&       p,
   }
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Sum_new_p_nonlinear_lossless
 //------------------------------------------------------------------------------
 
@@ -2244,7 +2214,7 @@ void SolverCUDAKernels::Calculate_SumRho_SumRhoDu(TRealMatrix&       Sum_rhoxyz,
                                  rho0_matrix);
   }
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Calculate_SumRho_SumRhoDu
 //------------------------------------------------------------------------------
 
@@ -2311,7 +2281,7 @@ void SolverCUDAKernels::Sum_new_p_linear_lossless(TRealMatrix& p,
                                  c2_matrix);
   }
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of Sum_new_p_linear_lossless
 //------------------------------------------------------------------------------
 
@@ -2556,7 +2526,7 @@ void SolverCUDAKernels::TrasposeReal3DMatrixXY(float*       OutputMatrixData,
   }
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of TrasposeReal3DMatrixXY
 //------------------------------------------------------------------------------
 
@@ -2799,7 +2769,7 @@ void SolverCUDAKernels::TrasposeReal3DMatrixXZ(float*       OutputMatrixData,
   }
 
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of TrasposeReal3DMatrixXZ
 //------------------------------------------------------------------------------
 
@@ -2836,7 +2806,7 @@ void SolverCUDAKernels::ComputeVelocityShiftInX(TCUFFTComplexMatrix&   FFT_shift
                              (reinterpret_cast<cuFloatComplex*>  (FFT_shift_temp.GetRawDeviceData()),
                               reinterpret_cast<const cuFloatComplex*> (x_shift_neg_r.GetRawDeviceData()));
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
  }// end of ComputeVelocityShiftInX
 //------------------------------------------------------------------------------
 
@@ -2877,7 +2847,7 @@ void SolverCUDAKernels::ComputeVelocityShiftInY(TCUFFTComplexMatrix&  FFT_shift_
                              (reinterpret_cast<cuFloatComplex*>       (FFT_shift_temp.GetRawDeviceData()),
                               reinterpret_cast<const cuFloatComplex*> (y_shift_neg_r.GetRawDeviceData()));
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of ComputeVelocityShiftInY
 //------------------------------------------------------------------------------
 
@@ -2917,6 +2887,6 @@ void SolverCUDAKernels::ComputeVelocityShiftInZ(TCUFFTComplexMatrix&  FFT_shift_
                              (reinterpret_cast<cuFloatComplex*>       (FFT_shift_temp.GetRawDeviceData()),
                               reinterpret_cast<const cuFloatComplex*> (z_shift_neg_r.GetRawDeviceData()));
   // check for errors
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetLastError());
 }// end of ComputeVelocityShiftInZ
 //------------------------------------------------------------------------------

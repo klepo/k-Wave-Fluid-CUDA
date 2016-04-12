@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        17 February 2016, 10:53 (created) \n
- *              17 February 2016, 10:53 (revised)
+ *              12 April    2016, 15:02 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -34,42 +34,12 @@
 #include <stdexcept>
 
 #include <Parameters/CUDADeviceConstants.cuh>
+#include <Utils/ErrorMessages.h>
 
-
-//----------------------------------------------------------------------------//
-//--------------------------------- Macros -----------------------------------//
-//----------------------------------------------------------------------------//
-
-/**
- * Check errors of the CUDA routines and print error.
- * @param [in] code  - error code of last routine
- * @param [in] file  - The name of the file, where the error was raised
- * @param [in] line  - What is the line
- * @param [in] Abort - Shall the code abort?
- * @todo - check this routine and do it differently!
- */
-inline void gpuAssert(cudaError_t code,
-                      std::string file,
-                      int line)
-{
-  if (code != cudaSuccess)
-  {
-    char ErrorMessage[256];
-    sprintf(ErrorMessage,"GPUassert: %s %s %d\n",cudaGetErrorString(code),file.c_str(),line);
-
-    // Throw exception
-     throw std::runtime_error(ErrorMessage);
-  }
-}// end of gpuAssert
-//------------------------------------------------------------------------------
-
-/// Define to get the usage easier
-#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 
 //----------------------------------------------------------------------------//
 //-------------------------------- Constants ---------------------------------//
 //----------------------------------------------------------------------------//
-
 
 
 //----------------------------------------------------------------------------//
@@ -98,6 +68,6 @@ __constant__ TCUDADeviceConstants CUDADeviceConstants;
 
 __host__ void TCUDADeviceConstants::SetUpCUDADeviceConstatns()
 {
-  gpuErrchk(cudaMemcpyToSymbol(CUDADeviceConstants, this, sizeof(TCUDADeviceConstants)));
+  checkCudaErrors(cudaMemcpyToSymbol(CUDADeviceConstants, this, sizeof(TCUDADeviceConstants)));
 }// end of SetUpCUDADeviceConstatns
 //------------------------------------------------------------------------------

@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2012, 10:30 (created) \n
- *              23 February  2016, 14:36 (revised)
+ *              12 April     2016, 15:05 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -47,31 +47,6 @@ using namespace std;
 //----------------------------------------------------------------------------//
 //--------------------------- Internal methods -------------------------------//
 //----------------------------------------------------------------------------//
-
-
-/**
- * Check errors of the CUDA routines and print error.
- * @param [in] code  - error code of last routine
- * @param [in] file  - The name of the file, where the error was raised
- * @param [in] line  - What is the line
- * @param [in] Abort - Shall the code abort?
- */
-inline void gpuAssert(cudaError_t code,
-                      string file,
-                      int line,
-                      bool Abort=true)
-{
-  if (code != cudaSuccess)
-  {
-    fprintf(stderr,
-            "GPUassert: %s %s %d\n",
-            cudaGetErrorString(code),file.c_str(),line);
-    if (Abort) exit(code);
-  }
-}
-
-/// Define to get the usage easier
-#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 
 
 //--------------------------------------------------------------------------//
@@ -230,21 +205,21 @@ void TBaseOutputHDF5Stream::AllocateMemory()
 
 
   // Register Host memory (pin in memory only - no mapped data)
-  gpuErrchk(cudaHostRegister(HostStoreBuffer,
-                             BufferSize * sizeof (float),
-                             cudaHostRegisterPortable | cudaHostRegisterMapped));
+  checkCudaErrors(cudaHostRegister(HostStoreBuffer,
+                                   BufferSize * sizeof (float),
+                                   cudaHostRegisterPortable | cudaHostRegisterMapped));
   // cudaHostAllocWriteCombined - cannot be used since GPU writes and CPU reads
 
   // Map CPU buffer to GPU memory (RAW data) or allocate a GPU buffer (aggregated)
   if (ReductionOp == roNONE)
   {
     // Register CPU memory for zero-copy
-    gpuErrchk(cudaHostGetDevicePointer<float>(&DeviceStoreBuffer, HostStoreBuffer, 0));
+    checkCudaErrors(cudaHostGetDevicePointer<float>(&DeviceStoreBuffer, HostStoreBuffer, 0));
   }
   else
   {
     // Allocate memory on the GPU side
-    gpuErrchk(cudaMalloc<float>(&DeviceStoreBuffer, BufferSize * sizeof (float)));
+    checkCudaErrors(cudaMalloc<float>(&DeviceStoreBuffer, BufferSize * sizeof (float)));
     // if doing aggregation copy initialised arrays on GPU
     CopyDataToDevice();
   }
@@ -270,7 +245,7 @@ void TBaseOutputHDF5Stream::FreeMemory()
   // Free GPU memory
   if (ReductionOp != roNONE)
   {
-      gpuErrchk(cudaFree(DeviceStoreBuffer));
+    checkCudaErrors(cudaFree(DeviceStoreBuffer));
   }
   DeviceStoreBuffer = NULL;
 }// end of FreeMemory
@@ -282,10 +257,10 @@ void TBaseOutputHDF5Stream::FreeMemory()
 void TBaseOutputHDF5Stream::CopyDataToDevice()
 {
 
-  gpuErrchk(cudaMemcpy(DeviceStoreBuffer,
-                       HostStoreBuffer,
-                       BufferSize * sizeof(float),
-                       cudaMemcpyHostToDevice));
+  checkCudaErrors(cudaMemcpy(DeviceStoreBuffer,
+                             HostStoreBuffer,
+                             BufferSize * sizeof(float),
+                             cudaMemcpyHostToDevice));
 
 }// end of CopyDataToDevice
 //------------------------------------------------------------------------------
@@ -295,10 +270,10 @@ void TBaseOutputHDF5Stream::CopyDataToDevice()
  */
 void TBaseOutputHDF5Stream::CopyDataFromDevice()
 {
-  gpuErrchk(cudaMemcpy(HostStoreBuffer,
-                       DeviceStoreBuffer,
-                       BufferSize * sizeof(float),
-                       cudaMemcpyDeviceToHost));
+  checkCudaErrors(cudaMemcpy(HostStoreBuffer,
+                             DeviceStoreBuffer,
+                             BufferSize * sizeof(float),
+                             cudaMemcpyDeviceToHost));
 }// end of CopyDataFromDevice
 //------------------------------------------------------------------------------
 

@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        13 February 2015, 12:51 (created)
- *              24 March    2016, 17:07 (revised)
+ *              12 April    2016, 15:04 (revised)
  *
  *
  * @section License
@@ -36,6 +36,7 @@
 #include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
 #include <Parameters/Parameters.h>
+#include <Utils/ErrorMessages.h>
 
 //--------------------------------------------------------------------------//
 //                              Constants                                   //
@@ -48,33 +49,6 @@
 //----------------------------------------------------------------------------//
 //--------------------------------- Macros -----------------------------------//
 //----------------------------------------------------------------------------//
-
-/**
- * Check errors of the CUDA routines and print error.
- * @param [in] code  - error code of last routine
- * @param [in] file  - The name of the file, where the error was raised
- * @param [in] line  - What is the line
- * @param [in] Abort - Shall the code abort?
- * @todo - check this routine and do it differently!
- */
-inline void gpuAssert(cudaError_t code,
-                      string file,
-                      int line)
-{
-  if (code != cudaSuccess)
-  {
-    char ErrorMessage[256];
-    sprintf(ErrorMessage,"GPUassert: %s %s %d\n",cudaGetErrorString(code),file.c_str(),line);
-
-    // Throw exception
-     throw std::runtime_error(ErrorMessage);
-  }
-}// end of gpuAssert
-//------------------------------------------------------------------------------
-
-/// Define to get the usage easier
-#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-
 
 //--------------------------------------------------------------------------//
 //                              Implementation                              //
@@ -107,7 +81,7 @@ TCuboidOutputHDF5Stream::TCuboidOutputHDF5Stream(THDF5_File&              HDF5_F
           EventSamplingFinished()
 {
   // Create event for sampling
-  gpuErrchk(cudaEventCreate(&EventSamplingFinished));
+  checkCudaErrors(cudaEventCreate(&EventSamplingFinished));
 }// end of TCubodidOutputHDF5Stream
 //------------------------------------------------------------------------------
 
@@ -119,7 +93,7 @@ TCuboidOutputHDF5Stream::TCuboidOutputHDF5Stream(THDF5_File&              HDF5_F
 TCuboidOutputHDF5Stream::~TCuboidOutputHDF5Stream()
 {
   // Destroy sampling event
-  gpuErrchk(cudaEventDestroy(EventSamplingFinished));
+  checkCudaErrors(cudaEventDestroy(EventSamplingFinished));
   // Close the stream
   Close();
   // free memory
@@ -203,7 +177,7 @@ void TCuboidOutputHDF5Stream::Reopen()
     // @todo: Can be done easily with std::to_string and c++0x or c++-11
     char HDF5_DatasetName[32] = "";
     // Indexed from 1
-    sprintf(HDF5_DatasetName, "%ld",CuboidIndex + 1);
+    snprintf(HDF5_DatasetName, 32, "%ld",CuboidIndex + 1);
 
     // open the dataset
     CuboidInfo.HDF5_CuboidId = HDF5_File.OpenDataset(HDF5_GroupId,
@@ -325,7 +299,7 @@ void TCuboidOutputHDF5Stream::Sample()
   if (ReductionOp == roNONE)
   {
     // Record an event when the data has been copied over.
-    gpuErrchk(cudaEventRecord(EventSamplingFinished));
+    checkCudaErrors(cudaEventRecord(EventSamplingFinished));
   }
 }// end of Sample
 //------------------------------------------------------------------------------
@@ -447,7 +421,7 @@ hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t Index)
   // @todo: Can be done easily with std::to_string and c++0x or c++-11
   char HDF5_DatasetName[32] = "";
   // Indexed from 1
-  sprintf(HDF5_DatasetName, "%ld",Index+1);
+  snprintf(HDF5_DatasetName, 32, "%ld",Index+1);
   hid_t HDF5_DatasetId = HDF5_File.CreateFloatDataset(HDF5_GroupId,
                                                       HDF5_DatasetName,
                                                       CuboidSize,

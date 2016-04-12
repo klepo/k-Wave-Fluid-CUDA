@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2012, 13:39 (created) \n
- *              17 December  2014, 20:37 (revised)
+ *              12 April     2016, 15:20 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -152,9 +152,10 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
   if (HDF5_FileHeader.GetFileType() != THDF5_FileHeader::hdf5_ft_input)
   {
     char ErrorMessage[256] = "";
-    sprintf(ErrorMessage,
-            Parameters_ERR_FMT_IncorrectInputFileFormat,
-            GetInputFileName().c_str());
+    snprintf(ErrorMessage,
+             256,
+             Parameters_ERR_FMT_IncorrectInputFileFormat,
+             GetInputFileName().c_str());
     throw ios::failure(ErrorMessage);
   }
 
@@ -162,20 +163,22 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
   if (!HDF5_FileHeader.CheckMajorFileVersion())
   {
     char ErrorMessage[256] = "";
-    sprintf(ErrorMessage,
-            Parameters_ERR_FMT_IncorrectMajorHDF5FileVersion,
-            GetInputFileName().c_str(),
-            HDF5_FileHeader.GetCurrentHDF5_MajorVersion().c_str());
+    snprintf(ErrorMessage,
+             256,
+             Parameters_ERR_FMT_IncorrectMajorHDF5FileVersion,
+             GetInputFileName().c_str(),
+             HDF5_FileHeader.GetCurrentHDF5_MajorVersion().c_str());
     throw ios::failure(ErrorMessage);
   }
 
   if (!HDF5_FileHeader.CheckMinorFileVersion())
   {
     char ErrorMessage[256] = "";
-    sprintf(ErrorMessage,
-            Parameters_ERR_FMT_IncorrectMinorHDF5FileVersion,
-            GetInputFileName().c_str(),
-            HDF5_FileHeader.GetCurrentHDF5_MinorVersion().c_str());
+    snprintf(ErrorMessage,
+             256,
+             Parameters_ERR_FMT_IncorrectMinorHDF5FileVersion,
+             GetInputFileName().c_str(),
+             HDF5_FileHeader.GetCurrentHDF5_MinorVersion().c_str());
     throw ios::failure(ErrorMessage);
   }
 

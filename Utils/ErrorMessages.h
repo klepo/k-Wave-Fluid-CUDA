@@ -5,11 +5,12 @@
  *              Brno University of Technology \n
  *              jarosjir@fit.vutbr.cz
  *
- * @brief       The header file containing all error messages of the project.
+ * @brief       The header file containing all error messages of the project
+ *              and routines to handle errors (for CUDA).
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August   2011, 12:34 (created) \n
- *              10 February 2016, 13:53 (revised)
+ *              12 April    2016, 15:05 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -33,6 +34,10 @@
 
 #ifndef ERRORMESSAGES_H
 #define	ERRORMESSAGES_H
+
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <stdexcept>
 
 //----------------------------- HDF5 error messages --------------------------//
 /**
@@ -219,6 +224,59 @@ TErrorMessage CUDAParameters_ERR_FMT_InsufficientCUDADriver = "GPU Error: Insuff
 TErrorMessage CUDAParameters_ERR_FM_CannotReadCUDAVersion   = "GPU Error: Insufficient CUDA driver version! \n Install the latest drivers.";
 /// CUDAParameters error message
 TErrorMessage CUDAParameters_ERR_FM_GPUNotSupported         = "GPU Error: CUDA device idx %d is not supported by this k-Wave build.\n";
+
+
+//------------------------------ CheckErrors header --------------------------//
+TErrorMessage CUDACheckErrors_ERR_FM_GPU_Error = "GPU Error: %s \n  routine name: %s \n  in file %s, line %d\n";
+
+
+
+//----------------------------- Error handling routines ----------------------//
+
+
+/**
+ * Checks CUDA errors, create an error message and throw an exception.
+ * The template parameter should be set to true for the whole code when debugging
+ * kernel related errors.
+ * Setting it to true for production run will cause IO sampling and storing not
+ * to be overlapped
+ *
+ * @param [in] error_cod    - error produced by a cuda routine
+ * @param [in] routine_name - function where the error happened
+ * @param [in] file_name    - file where the error happened
+ * @param [in] line_number   - line where the error happened
+ */
+template <bool ForceSynchronisation = false>
+inline void CheckErrors(const cudaError_t error_code,
+                        const char*       routine_name,
+                        const char*       file_name,
+                        const int         line_number)
+{
+  if (ForceSynchronisation)
+  {
+    cudaDeviceSynchronize();
+  }
+
+  if (error_code != cudaSuccess)
+  {
+    char ErrorMessage[512];
+    snprintf(ErrorMessage,
+             512,
+             CUDACheckErrors_ERR_FM_GPU_Error,
+             cudaGetErrorString(error_code), routine_name,file_name, line_number);
+
+    // Throw exception
+     throw std::runtime_error(ErrorMessage);
+  }
+}// end of cudaCheckErrors
+//------------------------------------------------------------------------------
+
+/**
+ * @brief Macro checking cuda errors and printing the file name and line
+ */
+#define checkCudaErrors(val) CheckErrors ( (val), #val, __FILE__, __LINE__ )
+
+
 #endif	/* ERRORMESSAGES_H */
 
 

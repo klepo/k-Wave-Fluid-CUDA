@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        22 March    2016, 15:25 (created) \n
- *              22 March    2016, 17:08 (revised)
+ *              12 April    2016, 15:01 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -106,9 +106,10 @@ inline __device__ dim3 GetComplex3DCoords(const uint i)
  * @param [in] b
  * @return  a.x * b.x, a.y * b.y
  */
-inline  __device__ float2 operator*(const float2 a, const float2 b)
+inline  __device__ float2 operator*(const float2 a,
+                                    const float2 b)
 {
-    return make_float2(a.x * b.x, a.y * b.y);
+  return make_float2(a.x * b.x, a.y * b.y);
 }// end of operator*
 //------------------------------------------------------------------------------
 
@@ -118,9 +119,10 @@ inline  __device__ float2 operator*(const float2 a, const float2 b)
  * @param [in] b
  * @return  a.x * b, a.y * b
  */
-inline  __device__ float2 operator*(const float2 a, const float b)
+inline  __device__ float2 operator*(const float2 a,
+                                    const float b)
 {
-    return make_float2(a.x * b, a.y * b);
+  return make_float2(a.x * b, a.y * b);
 }// end of operator*
 //------------------------------------------------------------------------------
 
@@ -130,9 +132,10 @@ inline  __device__ float2 operator*(const float2 a, const float b)
  * @param [in] b
  * @return  a * b.x, a * b.y
  */
-inline  __device__ float2 operator*(const float b, const float2 a)
+inline  __device__ float2 operator*(const float b,
+                                    const float2 a)
 {
-    return make_float2(b * a.x, b * a.y);
+  return make_float2(b * a.x, b * a.y);
 }// end of operator*
 //------------------------------------------------------------------------------
 
@@ -143,10 +146,11 @@ inline  __device__ float2 operator*(const float b, const float2 a)
  * @param [in] b
  * @return  a.x *= b.x, a.y *= b.y
  */
-inline  __device__ void operator*=(float2 &a, const float2 b)
+inline  __device__ void operator*=(float2&      a,
+                                   const float2 b)
 {
-    a.x *= b.x;
-    a.y *= b.y;
+  a.x *= b.x;
+  a.y *= b.y;
 }// end of operator*=
 //------------------------------------------------------------------------------
 
@@ -156,10 +160,11 @@ inline  __device__ void operator*=(float2 &a, const float2 b)
  * @param [in] b
  * @return  a.x =* b, a.y =* b
  */
-inline  __device__ void operator*=(float2 &a, const float b)
+inline  __device__ void operator*=(float2&     a,
+                                   const float b)
 {
-    a.x *= b;
-    a.y *= b;
+  a.x *= b;
+  a.y *= b;
 }// end of operator*=
 //------------------------------------------------------------------------------
 
@@ -171,9 +176,10 @@ inline  __device__ void operator*=(float2 &a, const float b)
  * @param [in] b
  * @return  a.x + b.x, a.y + b.y
  */
-inline  __device__ float2 operator+(const float2 a, const float2 b)
+inline  __device__ float2 operator+(const float2 a,
+                                    const float2 b)
 {
-    return make_float2(a.x + b.x, a.y + b.y);
+  return make_float2(a.x + b.x, a.y + b.y);
 }// end of operator+
 //------------------------------------------------------------------------------
 
@@ -183,9 +189,10 @@ inline  __device__ float2 operator+(const float2 a, const float2 b)
  * @param [in] b
  * @return  a.x + b, a.y + b
  */
-inline  __device__ float2 operator+(const float2 a, const float b)
+inline  __device__ float2 operator+(const float2 a,
+                                    const float b)
 {
-    return make_float2(a.x + b, a.y + b);
+  return make_float2(a.x + b, a.y + b);
 }// end of operator+
 //------------------------------------------------------------------------------
 
@@ -195,9 +202,10 @@ inline  __device__ float2 operator+(const float2 a, const float b)
  * @param [in] b
  * @return  a + b.x, a + b.y
  */
-inline  __device__ float2 operator+(const float b, const float2 a)
+inline  __device__ float2 operator+(const float b,
+                                    const float2 a)
 {
-    return make_float2(b + a.x, b + a.y);
+  return make_float2(b + a.x, b + a.y);
 }// end of operator*
 //------------------------------------------------------------------------------
 
@@ -208,10 +216,11 @@ inline  __device__ float2 operator+(const float b, const float2 a)
  * @param [in] b
  * @return  a.x +=b.x, a.y += b.y
  */
-inline  __device__ void operator+=(float2 &a, const float2 b)
+inline  __device__ void operator+=(float2&      a,
+                                   const float2 b)
 {
-    a.x += b.x;
-    a.y += b.y;
+  a.x += b.x;
+  a.y += b.y;
 }// end of operator+=
 //------------------------------------------------------------------------------
 
@@ -221,10 +230,11 @@ inline  __device__ void operator+=(float2 &a, const float2 b)
  * @param [in] b
  * @return  a.x += b, a.y += b
  */
-inline  __device__ void operator+=(float2 &a, const float b)
+inline  __device__ void operator+=(float2&     a,
+                                   const float b)
 {
-    a.x += b;
-    a.y += b;
+  a.x += b;
+  a.y += b;
 }// end of operator+=
 //------------------------------------------------------------------------------
 

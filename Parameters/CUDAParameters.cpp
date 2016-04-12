@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 November 2015, 16:49 (created) \n
- *              14 March    2016, 14:44 (revised)
+ *              12 April    2016, 15:03 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -58,38 +58,6 @@ TCUDAParameters::TCUDAParameters() :
 //------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------//
-//--------------------------------- Macros -----------------------------------//
-//----------------------------------------------------------------------------//
-
-/**
- * Check errors of the CUDA routines and print error.
- * @param [in] code  - error code of last routine
- * @param [in] file  - The name of the file, where the error was raised
- * @param [in] line  - What is the line
- * @param [in] Abort - Shall the code abort?
- * @todo - check this routine and do it differently!
- */
-inline void gpuAssert(cudaError_t code,
-                      string file,
-                      int line)
-{
-  if (code != cudaSuccess)
-  {
-    char ErrorMessage[256];
-    sprintf(ErrorMessage,"GPUassert: %s %s %d\n",cudaGetErrorString(code),file.c_str(),line);
-
-    // Throw exception
-     throw std::runtime_error(ErrorMessage);
-  }
-}// end of gpuAssert
-//------------------------------------------------------------------------------
-
-/// Define to get the usage easier
-#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-
-
-
-//----------------------------------------------------------------------------//
 //-------------------------------- Constants ---------------------------------//
 //----------------------------------------------------------------------------//
 
@@ -119,7 +87,7 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
 
   //choose the GPU device with the most global memory
   int NumOfDevices;
-  gpuErrchk(cudaGetDeviceCount(&NumOfDevices));
+  checkCudaErrors(cudaGetDeviceCount(&NumOfDevices));
   cudaGetLastError();
 
   cudaError_t lastError;
@@ -177,7 +145,7 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
     if ((this->DeviceIdx > NumOfDevices - 1) || (this->DeviceIdx < 0))
     {
       char ErrorMessage[256];
-      sprintf(ErrorMessage, CUDAParameters_ERR_FMT_WrongDeviceIdx, this->DeviceIdx, NumOfDevices-1);
+      snprintf(ErrorMessage, 256, CUDAParameters_ERR_FMT_WrongDeviceIdx, this->DeviceIdx, NumOfDevices-1);
       // Throw exception
       throw std::runtime_error(ErrorMessage);
      }
@@ -202,30 +170,30 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
       //printf("cudaDeviceReset for Idx %d \t Error id %d \t error message \"%s\" \n", this->DeviceIdx, lastError, cudaGetErrorString(lastError));
 
       char ErrorMessage[256];
-      sprintf(ErrorMessage, CUDAParameters_ERR_FMT_DeviceIsBusy, this->DeviceIdx);
+      snprintf(ErrorMessage, 256, CUDAParameters_ERR_FMT_DeviceIsBusy, this->DeviceIdx);
       throw std::runtime_error(ErrorMessage);
     }
   }
 
   // Read the device that was allocated
-  gpuErrchk(cudaGetDevice(&this->DeviceIdx));
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaGetDevice(&this->DeviceIdx));
+  checkCudaErrors(cudaGetLastError());
 
   // Reset the device to be able to set the flags
-  gpuErrchk(cudaDeviceReset());
-  gpuErrchk(cudaGetLastError());
+  checkCudaErrors(cudaDeviceReset());
+  checkCudaErrors(cudaGetLastError());
 
   // Enable mapped memory
-  gpuErrchk(cudaSetDeviceFlags(cudaDeviceMapHost));
+  checkCudaErrors(cudaSetDeviceFlags(cudaDeviceMapHost));
 
     // Get Device name
-  gpuErrchk(cudaGetDeviceProperties(&DeviceProperties, this->DeviceIdx));
+  checkCudaErrors(cudaGetDeviceProperties(&DeviceProperties, this->DeviceIdx));
 
   /// Check the GPU version
   if (!CheckCUDACodeVersion())
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, CUDAParameters_ERR_FM_GPUNotSupported, this->DeviceIdx);
+    snprintf(ErrorMessage,256, CUDAParameters_ERR_FM_GPUNotSupported, this->DeviceIdx);
     throw std::runtime_error(ErrorMessage);
   }
 }// end of SelectCUDADevice
@@ -385,10 +353,11 @@ void TCUDAParameters::CheckCUDAVersion()
   if (cudaDriverVersion < cudaRuntimeVersion)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage,
-            CUDAParameters_ERR_FMT_InsufficientCUDADriver,
-            cudaRuntimeVersion / 1000, (cudaRuntimeVersion % 100) / 10,
-            cudaDriverVersion  / 1000, (cudaDriverVersion  % 100) / 10);
+    snprintf(ErrorMessage,
+             256,
+             CUDAParameters_ERR_FMT_InsufficientCUDADriver,
+             cudaRuntimeVersion / 1000, (cudaRuntimeVersion % 100) / 10,
+             cudaDriverVersion  / 1000, (cudaDriverVersion  % 100) / 10);
     throw std::runtime_error(ErrorMessage);
   }
 }// end of CheckCUDAVersion
@@ -407,4 +376,3 @@ bool TCUDAParameters::CheckCUDACodeVersion()
 //----------------------------------------------------------------------------//
 //---------------------------------- Private ---------------------------------//
 //----------------------------------------------------------------------------//
-
