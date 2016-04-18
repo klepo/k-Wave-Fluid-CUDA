@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        22 March    2016, 15:25 (created) \n
- *              12 April    2016, 15:01 (revised)
+ *              18 April    2016, 14:45 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -53,7 +53,7 @@ extern __constant__ TCUDADeviceConstants CUDADeviceConstants;
 /** Get x coordinate for 1D CUDA block
  * @return X coordinate for 1D CUDA block
  */
-inline __device__ uint GetIndex()
+inline __device__ unsigned int GetIndex()
 {
   return threadIdx.x + blockIdx.x * blockDim.x;
 }// end of GetX
@@ -63,7 +63,7 @@ inline __device__ uint GetIndex()
  * Get X stride for 3D CUDA block
  * @return X stride for 3D CUDA block
  */
-inline __device__ uint GetStride()
+inline __device__ unsigned int GetStride()
 {
   return blockDim.x * gridDim.x;
 }// end of GetX_Stride
@@ -74,7 +74,7 @@ inline __device__ uint GetStride()
  * @param  [in] i - index
  * @return  3d coordinates
  */
-inline __device__ dim3 GetReal3DCoords(const uint i)
+inline __device__ dim3 GetReal3DCoords(const unsigned int i)
 {
   return dim3( i % CUDADeviceConstants.Nx,
               (i / CUDADeviceConstants.Nx) % CUDADeviceConstants.Ny,
@@ -88,7 +88,7 @@ inline __device__ dim3 GetReal3DCoords(const uint i)
  * @param  [in] i - index
  * @return  3d coordinates
  */
-inline __device__ dim3 GetComplex3DCoords(const uint i)
+inline __device__ dim3 GetComplex3DCoords(const unsigned int i)
 {
   return dim3( i % CUDADeviceConstants.Complex_Nx,
               (i / CUDADeviceConstants.Complex_Nx) % CUDADeviceConstants.Complex_Ny,

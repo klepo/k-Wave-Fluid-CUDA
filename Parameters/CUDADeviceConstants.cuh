@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        17 February 2016, 10:53 (created) \n
- *              23 February 2016, 13:40 (revised)
+ *              18 April    2016, 14:45 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -38,32 +38,32 @@
   * @struct TCUDAConstants
   * @brief  Structure for CUDA parameters to be placed in constant memory.
   *       Only 32b values are used, since CUDA does not allow to allocate more
-  *      than 2^32 elements and dim3 datatype is based on uint
+  *      than 2^32 elements and dim3 datatype is based on unsigned int
   *
  */
 struct TCUDADeviceConstants
 {
   /// size of X dimension.
-  uint Nx;
+  unsigned int Nx;
   /// size of Y dimension.
-  uint Ny;
+  unsigned int Ny;
   /// size of Z dimension.
-  uint Nz;
+  unsigned int Nz;
   /// total number of elements.
-  uint TotalElementCount;
+  unsigned int TotalElementCount;
   /// 2D Slab size
-  uint SlabSize;
+  unsigned int SlabSize;
   /// size of complex X dimension.
-  uint Complex_Nx;
+  unsigned int Complex_Nx;
   /// size of complex Y dimension.
-  uint Complex_Ny;
+  unsigned int Complex_Ny;
   /// size of complex Z dimension.
-  uint Complex_Nz;
+  unsigned int Complex_Nz;
   /// complex number of elements.
-  uint ComplexTotalElementCount;
+  unsigned int ComplexTotalElementCount;
   /// complex slab size.
-  uint ComplexSlabSize;
-   /// normalization constant for 3D FFT.
+  unsigned int ComplexSlabSize;
+  /// normalization constant for 3D FFT.
   float  FFTDivider;
   /// normalization constant for 1D FFT over X.
   float  FFTDividerX;
@@ -100,18 +100,18 @@ struct TCUDADeviceConstants
   float Absorb_eta_scalar;
 
   ///  size of the u source index
-  uint u_source_index_size;
+  unsigned int u_source_index_size;
   /// u source mode
-  uint u_source_mode;
+  unsigned int u_source_mode;
   /// u source many
-  uint u_source_many;
+  unsigned int u_source_many;
 
   /// size of the p_source mask
-  uint p_source_index_size;
+  unsigned int p_source_index_size;
   /// p source mode
-  uint p_source_mode;
+  unsigned int p_source_mode;
   /// p source many
-  uint p_source_many;
+  unsigned int p_source_many;
 
   /// Set constant memory
   __host__ void SetUpCUDADeviceConstatns();
