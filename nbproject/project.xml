@@ -6,7 +6,7 @@
             <name>k-wave-fluid-cuda 3.4</name>
             <c-extensions/>
             <cpp-extensions>cpp,cu</cpp-extensions>
-            <header-extensions>h</header-extensions>
+            <header-extensions>cuh,h</header-extensions>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
             <sourceRootList>

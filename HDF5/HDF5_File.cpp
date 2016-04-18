@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        27 July     2012, 14:14 (created) \n
- *              06 November 2014, 16:30 (revised)
+ *              12 April    2016, 15:13 (revised)
  *
 
 * @section License
@@ -100,7 +100,7 @@ void THDF5_File::Create(const char * FileName,
   if (IsOpened())
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_FileCannotRecreated, FileName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_FileCannotRecreated, FileName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -112,7 +112,7 @@ void THDF5_File::Create(const char * FileName,
   if (HDF5_FileId < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_FileNotCreated, FileName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_FileNotCreated, FileName);
     throw ios::failure(ErrorMessage);
   }
 }// end of Create
@@ -132,7 +132,7 @@ void THDF5_File::Open(const char * FileName,
   if (IsOpened())
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_FileCannotReopen, FileName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_FileCannotReopen, FileName);
     throw ios::failure(ErrorMessage);
   };
 
@@ -141,7 +141,7 @@ void THDF5_File::Open(const char * FileName,
   if (H5Fis_hdf5(FileName) == 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_NotHDF5File, FileName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_NotHDF5File, FileName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -150,7 +150,7 @@ void THDF5_File::Open(const char * FileName,
   if (HDF5_FileId < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_FileNotOpened, FileName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_FileNotOpened, FileName);
     throw ios::failure(ErrorMessage);
   }
 }// end of Open
@@ -166,7 +166,7 @@ void THDF5_File::Close()
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_FileNotClosed, FileName.c_str());
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_FileNotClosed, FileName.c_str());
 
     throw ios::failure(ErrorMessage);
   }
@@ -205,7 +205,7 @@ hid_t THDF5_File::CreateGroup(const hid_t  ParentGroup,
   if (HDF5_group_id == H5I_INVALID_HID)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage,HDF5_ERR_FMT_GroupNotCreated,GroupName, FileName.c_str());
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_GroupNotCreated, GroupName, FileName.c_str());
     throw ios::failure(ErrorMessage);
   }
 
@@ -228,7 +228,7 @@ hid_t THDF5_File::OpenGroup(const hid_t ParentGroup,
   if (HDF5_group_id == H5I_INVALID_HID)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage,HDF5_ERR_FMT_GroupNotOpened,GroupName, FileName.c_str());
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_GroupNotOpened, GroupName, FileName.c_str());
     throw ios::failure(ErrorMessage);
   }
 
@@ -263,7 +263,7 @@ hid_t THDF5_File::OpenDataset(const hid_t  ParentGroup,
   if (HDF5_dataset_id == H5I_INVALID_HID)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_DatasetNotOpened, FileName.c_str(), DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_DatasetNotOpened, FileName.c_str(), DatasetName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -328,7 +328,7 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t             ParentGroup,
   if (Status < 0)
   {
       char ErrorMessage[256];
-      sprintf(ErrorMessage, HDF5_ERR_FMT_DatasetNotOpened, FileName.c_str(), DatasetName);
+      snprintf(ErrorMessage, 256, HDF5_ERR_FMT_DatasetNotOpened, FileName.c_str(), DatasetName);
       throw ios::failure(ErrorMessage);
   }
 
@@ -337,7 +337,7 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t             ParentGroup,
   if (Status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotSetCompression, FileName.c_str(), DatasetName, CompressionLevel);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotSetCompression, FileName.c_str(), DatasetName, CompressionLevel);
     throw ios::failure(ErrorMessage);
   }
 
@@ -348,7 +348,7 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t             ParentGroup,
   if (HDF5_dataset_id == H5I_INVALID_HID)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_DatasetNotOpened, FileName.c_str(), DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_DatasetNotOpened, FileName.c_str(), DatasetName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -393,7 +393,7 @@ hid_t THDF5_File::CreateIndexDataset(const hid_t ParentGroup,
   if (Status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_DatasetNotOpened, FileName.c_str(), DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_DatasetNotOpened, FileName.c_str(), DatasetName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -402,7 +402,7 @@ hid_t THDF5_File::CreateIndexDataset(const hid_t ParentGroup,
   if (Status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotSetCompression, FileName.c_str(), DatasetName, CompressionLevel);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotSetCompression, FileName.c_str(), DatasetName, CompressionLevel);
     throw ios::failure(ErrorMessage);
   }
 
@@ -418,7 +418,7 @@ hid_t THDF5_File::CreateIndexDataset(const hid_t ParentGroup,
   if (HDF5_dataset_id == H5I_INVALID_HID)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_DatasetNotOpened, FileName.c_str(), DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_DatasetNotOpened, FileName.c_str(), DatasetName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -501,7 +501,7 @@ void THDF5_File::WriteHyperSlab(const hid_t HDF5_Dataset_id,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, "");
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, "");
     throw ios::failure(ErrorMessage);
   }
 
@@ -517,7 +517,7 @@ void THDF5_File::WriteHyperSlab(const hid_t HDF5_Dataset_id,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, "");
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, "");
     throw ios::failure(ErrorMessage);
   }
 
@@ -586,7 +586,7 @@ void THDF5_File::WriteHyperSlab(const hid_t HDF5_Dataset_id,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, "");
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, "");
     throw ios::failure(ErrorMessage);
   }
 
@@ -604,7 +604,7 @@ void THDF5_File::WriteHyperSlab(const hid_t HDF5_Dataset_id,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, "");
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, "");
     throw ios::failure(ErrorMessage);
   }
 
@@ -655,7 +655,7 @@ void THDF5_File::WriteCuboidToHyperSlab(const hid_t             HDF5_Dataset_id,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, "");
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, "");
     throw ios::failure(ErrorMessage);
   }
 
@@ -671,7 +671,7 @@ void THDF5_File::WriteCuboidToHyperSlab(const hid_t             HDF5_Dataset_id,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, "");
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, "");
     throw ios::failure(ErrorMessage);
   }
 
@@ -685,7 +685,7 @@ void THDF5_File::WriteCuboidToHyperSlab(const hid_t             HDF5_Dataset_id,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, "");
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, "");
     throw ios::failure(ErrorMessage);
   }
 
@@ -739,7 +739,7 @@ void THDF5_File::WriteSensorByMaskToHyperSlab(const hid_t             HDF5_Datas
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, "");
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, "");
     throw ios::failure(ErrorMessage);
   }
 
@@ -752,7 +752,7 @@ void THDF5_File::WriteSensorByMaskToHyperSlab(const hid_t             HDF5_Datas
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, "");
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, "");
     throw ios::failure(ErrorMessage);
   }
 
@@ -766,7 +766,7 @@ void THDF5_File::WriteSensorByMaskToHyperSlab(const hid_t             HDF5_Datas
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, "");
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, "");
 
     throw ios::failure(ErrorMessage);
   }
@@ -815,7 +815,7 @@ void THDF5_File::WriteScalarValue(const hid_t  ParentGroup,
   if (Dataset_id == H5I_INVALID_HID)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, DatasetName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -830,7 +830,7 @@ void THDF5_File::WriteScalarValue(const hid_t  ParentGroup,
   if (Status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, DatasetName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -880,7 +880,7 @@ void THDF5_File::WriteScalarValue(const hid_t  ParentGroup,
   if (Dataset_id == H5I_INVALID_HID)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, DatasetName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -895,7 +895,7 @@ void THDF5_File::WriteScalarValue(const hid_t  ParentGroup,
   if (Error < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteTo, DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteTo, DatasetName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -954,7 +954,7 @@ void THDF5_File::ReadCompleteDataset (const hid_t             ParentGroup,
       DimensionSizes.GetElementCount())
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_WrongDimensionSizes, DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_WrongDimensionSizes, DatasetName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -963,7 +963,7 @@ void THDF5_File::ReadCompleteDataset (const hid_t             ParentGroup,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotReadFrom, DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotReadFrom, DatasetName);
     throw ios::failure(ErrorMessage);
   }
 }// end of ReadDataset (float)
@@ -988,7 +988,7 @@ void THDF5_File::ReadCompleteDataset(const hid_t             ParentGroup,
       DimensionSizes.GetElementCount())
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_WrongDimensionSizes, DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_WrongDimensionSizes, DatasetName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -997,7 +997,7 @@ void THDF5_File::ReadCompleteDataset(const hid_t             ParentGroup,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotReadFrom, DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotReadFrom, DatasetName);
     throw ios::failure(ErrorMessage);
   }
 }// end of ReadCompleteDataset
@@ -1024,7 +1024,7 @@ TDimensionSizes THDF5_File::GetDatasetDimensionSizes(const hid_t  ParentGroup,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotReadFrom, DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotReadFrom, DatasetName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -1054,7 +1054,7 @@ size_t THDF5_File::GetDatasetNumberOfDimensions(const hid_t  ParentGroup,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotReadFrom, DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotReadFrom, DatasetName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -1080,7 +1080,7 @@ size_t THDF5_File::GetDatasetElementCount(const hid_t  ParentGroup,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotReadFrom, DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotReadFrom, DatasetName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -1152,7 +1152,7 @@ THDF5_File::THDF5_MatrixDataType THDF5_File::ReadMatrixDataType(const hid_t  Par
   }
 
   char ErrorMessage[256];
-  sprintf(ErrorMessage, HDF5_ERR_FMT_BadAttributeValue, DatasetName, HDF5_MatrixDataTypeName, ParamValue.c_str());
+  snprintf(ErrorMessage, 256, HDF5_ERR_FMT_BadAttributeValue, DatasetName, HDF5_MatrixDataTypeName, ParamValue.c_str());
   throw ios::failure(ErrorMessage);
 
   // this will never be executed (just to prevent warning)
@@ -1188,7 +1188,7 @@ THDF5_File::THDF5_MatrixDomainType THDF5_File::ReadMatrixDomainType(const hid_t 
 
 
   char ErrorMessage[256];
-  sprintf(ErrorMessage, HDF5_ERR_FMT_BadAttributeValue, DatasetName, HDF5_MatrixDomainTypeName, ParamValue.c_str());
+  snprintf(ErrorMessage, 256, HDF5_ERR_FMT_BadAttributeValue, DatasetName, HDF5_MatrixDomainTypeName, ParamValue.c_str());
   throw ios::failure(ErrorMessage);
 
   // This line will never be executed (just to prevent warning)
@@ -1218,7 +1218,7 @@ inline void THDF5_File::WriteStringAttribute(const hid_t    ParentGroup,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotWriteToAttribute, AttributeName, DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotWriteToAttribute, AttributeName, DatasetName);
     throw ios::failure(ErrorMessage);
   }
 }// end of WriteIntAttribute
@@ -1248,7 +1248,7 @@ inline string THDF5_File::ReadStringAttribute(const hid_t ParentGroup,
   if (status < 0)
   {
     char ErrorMessage[256];
-    sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotReadFromAttribute, AttributeName, DatasetName);
+    snprintf(ErrorMessage, 256, HDF5_ERR_FMT_CouldNotReadFromAttribute, AttributeName, DatasetName);
 
     throw ios::failure(ErrorMessage);
   }
@@ -1557,9 +1557,9 @@ void THDF5_FileHeader::SetActualCreationTime()
   time(&now);
   current = localtime(&now);
 
-  char DateString[20];
+  char DateString[21];
 
-  sprintf(DateString, "%02i/%02i/%02i, %02i:%02i:%02i",
+  snprintf(DateString, 20, "%02i/%02i/%02i, %02i:%02i:%02i",
           current->tm_mday, current->tm_mon + 1, current->tm_year - 100,
           current->tm_hour, current->tm_min, current->tm_sec);
 
@@ -1601,11 +1601,11 @@ void THDF5_FileHeader::SetHostName()
 void THDF5_FileHeader::SetMemoryConsumption(const size_t TotalMemory)
 {
   char Text[20] = "";
-  sprintf(Text, "%ld MB",TotalMemory);
+  snprintf(Text, 20, "%ld MB",TotalMemory);
 
   HDF5_FileHeaderValues[hdf5_fhi_total_memory_consumption]     = Text;
 
-  sprintf(Text, "%ld MB",TotalMemory / TParameters::GetInstance()->GetNumberOfThreads());
+  snprintf(Text, 20, "%ld MB",TotalMemory / TParameters::GetInstance()->GetNumberOfThreads());
   HDF5_FileHeaderValues[hdf5_fhi_peak_core_memory_consumption] = Text;
 }// end of SetMemoryConsumption
 //------------------------------------------------------------------------------
@@ -1627,20 +1627,20 @@ void THDF5_FileHeader::SetExecutionTimes(const double TotalTime,
 {
     char Text [30] = "";
 
-  sprintf(Text, "%8.2fs", TotalTime);
+  snprintf(Text, 30, "%8.2fs", TotalTime);
   HDF5_FileHeaderValues[hdf5_fhi_total_execution_time] = Text;
 
-  sprintf(Text, "%8.2fs", LoadTime);
+  snprintf(Text, 30,  "%8.2fs", LoadTime);
   HDF5_FileHeaderValues[hdf5_fhi_data_load_time] = Text;
 
-  sprintf(Text, "%8.2fs", PreProcessingTime);
+  snprintf(Text, 30, "%8.2fs", PreProcessingTime);
   HDF5_FileHeaderValues[hdf5_fhi_preprocessing_time] = Text;
 
 
-  sprintf(Text, "%8.2fs", SimulationTime);
+  snprintf(Text, 30, "%8.2fs", SimulationTime);
   HDF5_FileHeaderValues[hdf5_fhi_simulation_time] = Text;
 
-  sprintf(Text, "%8.2fs", PostprocessingTime);
+  snprintf(Text, 30, "%8.2fs", PostprocessingTime);
   HDF5_FileHeaderValues[hdf5_fhi_postprocessing_time] = Text;
 }// end of SetExecutionTimes
 //------------------------------------------------------------------------------
@@ -1674,7 +1674,7 @@ void THDF5_FileHeader::GetExecutionTimes(double& TotalTime,
 void THDF5_FileHeader::SetNumberOfCores()
 {
   char Text[12] = "";
-  sprintf(Text, "%ld", TParameters::GetInstance()->GetNumberOfThreads());
+  snprintf(Text, 12, "%ld", TParameters::GetInstance()->GetNumberOfThreads());
 
   HDF5_FileHeaderValues[hdf5_fhi_number_of_cores] = Text;
 }// end of SetNumberOfCores

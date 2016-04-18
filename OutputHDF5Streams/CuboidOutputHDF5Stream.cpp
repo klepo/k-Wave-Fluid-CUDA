@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        13 February 2015, 12:51 (created)
- *              17 February 2015, 14:43 (revised)
+ *              12 April    2016, 15:04 (revised)
  *
  *
  * @section License
@@ -33,9 +33,10 @@
  */
 
 #include <OutputHDF5Streams/CuboidOutputHDF5Stream.h>
-#include <OutputHDF5Streams/OutputStreamsCUDAKernels.h>
+#include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
 #include <Parameters/Parameters.h>
+#include <Utils/ErrorMessages.h>
 
 //--------------------------------------------------------------------------//
 //                              Constants                                   //
@@ -48,33 +49,6 @@
 //----------------------------------------------------------------------------//
 //--------------------------------- Macros -----------------------------------//
 //----------------------------------------------------------------------------//
-
-/**
- * Check errors of the CUDA routines and print error.
- * @param [in] code  - error code of last routine
- * @param [in] file  - The name of the file, where the error was raised
- * @param [in] line  - What is the line
- * @param [in] Abort - Shall the code abort?
- * @todo - check this routine and do it differently!
- */
-inline void gpuAssert(cudaError_t code,
-                      string file,
-                      int line)
-{
-  if (code != cudaSuccess)
-  {
-    char ErrorMessage[256];
-    sprintf(ErrorMessage,"GPUassert: %s %s %d\n",cudaGetErrorString(code),file.c_str(),line);
-
-    // Throw exception
-     throw std::runtime_error(ErrorMessage);
-  }
-}// end of gpuAssert
-//------------------------------------------------------------------------------
-
-/// Define to get the usage easier
-#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-
 
 //--------------------------------------------------------------------------//
 //                              Implementation                              //
@@ -95,10 +69,10 @@ inline void gpuAssert(cudaError_t code,
  * @param [in] ReductionOp     - Reduction operator
 
  */
-TCuboidOutputHDF5Stream::TCuboidOutputHDF5Stream(THDF5_File &             HDF5_File,
-                                                 const char *             HDF5_GroupName,
-                                                 const TRealMatrix &      SourceMatrix,
-                                                 const TIndexMatrix &     SensorMask,
+TCuboidOutputHDF5Stream::TCuboidOutputHDF5Stream(THDF5_File&              HDF5_File,
+                                                 const char*              HDF5_GroupName,
+                                                 const TRealMatrix&       SourceMatrix,
+                                                 const TIndexMatrix&      SensorMask,
                                                  const TReductionOperator ReductionOp)
         : TBaseOutputHDF5Stream(HDF5_File, HDF5_GroupName, SourceMatrix, ReductionOp),
           SensorMask(SensorMask),
@@ -107,7 +81,7 @@ TCuboidOutputHDF5Stream::TCuboidOutputHDF5Stream(THDF5_File &             HDF5_F
           EventSamplingFinished()
 {
   // Create event for sampling
-  gpuErrchk(cudaEventCreate(&EventSamplingFinished));
+  checkCudaErrors(cudaEventCreate(&EventSamplingFinished));
 }// end of TCubodidOutputHDF5Stream
 //------------------------------------------------------------------------------
 
@@ -119,7 +93,7 @@ TCuboidOutputHDF5Stream::TCuboidOutputHDF5Stream(THDF5_File &             HDF5_F
 TCuboidOutputHDF5Stream::~TCuboidOutputHDF5Stream()
 {
   // Destroy sampling event
-  gpuErrchk(cudaEventDestroy(EventSamplingFinished));
+  checkCudaErrors(cudaEventDestroy(EventSamplingFinished));
   // Close the stream
   Close();
   // free memory
@@ -203,7 +177,7 @@ void TCuboidOutputHDF5Stream::Reopen()
     // @todo: Can be done easily with std::to_string and c++0x or c++-11
     char HDF5_DatasetName[32] = "";
     // Indexed from 1
-    sprintf(HDF5_DatasetName, "%ld",CuboidIndex + 1);
+    snprintf(HDF5_DatasetName, 32, "%ld",CuboidIndex + 1);
 
     // open the dataset
     CuboidInfo.HDF5_CuboidId = HDF5_File.OpenDataset(HDF5_GroupId,
@@ -247,160 +221,86 @@ void TCuboidOutputHDF5Stream::Reopen()
  */
 void TCuboidOutputHDF5Stream::Sample()
 {
-  switch (ReductionOp)
+
+  size_t CuboidInBufferStart = 0;
+  // dimension sizes of the matrix being sampled
+  const dim3 DimensionSizes (SourceMatrix.GetDimensionSizes().X,
+                             SourceMatrix.GetDimensionSizes().Y,
+                             SourceMatrix.GetDimensionSizes().Z);
+
+  // Run over all cuboids - this is not a good solution as we need to run a distinct kernel for a cuboid
+  for (size_t CuboidIdx = 0; CuboidIdx < CuboidsInfo.size(); CuboidIdx++)
   {
-    case roNONE :
+    // copy down dim sizes
+    const dim3 TopLeftCorner(SensorMask.GetTopLeftCorner(CuboidIdx).X,
+                             SensorMask.GetTopLeftCorner(CuboidIdx).Y,
+                             SensorMask.GetTopLeftCorner(CuboidIdx).Z);
+    const dim3 BottomRightCorner(SensorMask.GetBottomRightCorner(CuboidIdx).X,
+                                 SensorMask.GetBottomRightCorner(CuboidIdx).Y,
+                                 SensorMask.GetBottomRightCorner(CuboidIdx).Z);
+
+    //get number of samples within the cuboid
+    const size_t NumberOfSamples = (SensorMask.GetBottomRightCorner(CuboidIdx) -
+                                    SensorMask.GetTopLeftCorner(CuboidIdx)
+                                   ).GetElementCount();
+
+    switch (ReductionOp)
     {
-      size_t CuboidInBufferStart = 0;
-      // dimension sizes of the matrix being sampled
-      const dim3 DimensionSizes (SourceMatrix.GetDimensionSizes().X,
-                                 SourceMatrix.GetDimensionSizes().Y,
-                                 SourceMatrix.GetDimensionSizes().Z);
-
-      // Run over all cuboids - this is not a good solution as we need to run a distinct kernel for a cuboid
-      for (size_t CuboidIdx = 0; CuboidIdx < CuboidsInfo.size(); CuboidIdx++)
+      case roNONE :
       {
-        // copy down dim sizes
-        const dim3 TopLeftCorner(SensorMask.GetTopLeftCorner(CuboidIdx).X,
-                                 SensorMask.GetTopLeftCorner(CuboidIdx).Y,
-                                 SensorMask.GetTopLeftCorner(CuboidIdx).Z);
-        const dim3 BottomRightCorner(SensorMask.GetBottomRightCorner(CuboidIdx).X,
-                                     SensorMask.GetBottomRightCorner(CuboidIdx).Y,
-                                     SensorMask.GetBottomRightCorner(CuboidIdx).Z);
-
-        //get number of samples within the cuboid
-        const size_t NumberOfSamples = (SensorMask.GetBottomRightCorner(CuboidIdx) -
-                                        SensorMask.GetTopLeftCorner(CuboidIdx)
-                                       ).GetElementCount();
-
         // Kernel to sample raw quantities inside one cuboid
-        OutputStreamsCUDAKernels::SampleRawCuboid(DeviceStoreBuffer + CuboidInBufferStart,
-                                                  SourceMatrix.GetRawDeviceData(),
-                                                  TopLeftCorner,
-                                                  BottomRightCorner,
-                                                  DimensionSizes,
-                                                  NumberOfSamples);
-
-        CuboidInBufferStart += NumberOfSamples;
+        OutputStreamsCUDAKernels::SampleCuboid<roNONE>
+                                              (DeviceStoreBuffer + CuboidInBufferStart,
+                                               SourceMatrix.GetRawDeviceData(),
+                                               TopLeftCorner,
+                                               BottomRightCorner,
+                                               DimensionSizes,
+                                               NumberOfSamples);
+        break;
       }
-
-      // Record an event when the data has been copied over.
-      gpuErrchk(cudaEventRecord(EventSamplingFinished));
-
-      break;
-    }// case roNONE
-
-    case roRMS :
-    {
-      size_t CuboidInBufferStart = 0;
-      // dimension sizes of the matrix being sampled
-      const dim3 DimensionSizes (SourceMatrix.GetDimensionSizes().X,
-                                 SourceMatrix.GetDimensionSizes().Y,
-                                 SourceMatrix.GetDimensionSizes().Z);
-
-      // Run over all cuboids - this is not a good solution as we need to run a distinct kernel for a cuboid
-      for (size_t CuboidIdx = 0; CuboidIdx < CuboidsInfo.size(); CuboidIdx++)
+      case roRMS :
       {
-        // copy down dim sizes
-        const dim3 TopLeftCorner(SensorMask.GetTopLeftCorner(CuboidIdx).X,
-                                 SensorMask.GetTopLeftCorner(CuboidIdx).Y,
-                                 SensorMask.GetTopLeftCorner(CuboidIdx).Z);
-        const dim3 BottomRightCorner(SensorMask.GetBottomRightCorner(CuboidIdx).X,
-                                     SensorMask.GetBottomRightCorner(CuboidIdx).Y,
-                                     SensorMask.GetBottomRightCorner(CuboidIdx).Z);
-
-        //get number of samples within the cuboid
-        const size_t NumberOfSamples = (SensorMask.GetBottomRightCorner(CuboidIdx) -
-                                        SensorMask.GetTopLeftCorner(CuboidIdx)
-                                       ).GetElementCount();
-
-
-        OutputStreamsCUDAKernels::SampleRMSCuboid(DeviceStoreBuffer + CuboidInBufferStart,
-                                                  SourceMatrix.GetRawDeviceData(),
-                                                  TopLeftCorner,
-                                                  BottomRightCorner,
-                                                  DimensionSizes,
-                                                  NumberOfSamples);
-        CuboidInBufferStart += NumberOfSamples;
+        OutputStreamsCUDAKernels::SampleCuboid<roRMS>
+                                              (DeviceStoreBuffer + CuboidInBufferStart,
+                                               SourceMatrix.GetRawDeviceData(),
+                                               TopLeftCorner,
+                                               BottomRightCorner,
+                                               DimensionSizes,
+                                               NumberOfSamples);
+        break;
       }
-
-      break;
-    }// case roRMS
-
-    case roMAX :
-    {
-      size_t CuboidInBufferStart = 0;
-      // dimension sizes of the matrix being sampled
-      const dim3 DimensionSizes (SourceMatrix.GetDimensionSizes().X,
-                                 SourceMatrix.GetDimensionSizes().Y,
-                                 SourceMatrix.GetDimensionSizes().Z);
-
-      // Run over all cuboids - this is not a good solution as we need to run a distinct kernel for a cuboid
-      for (size_t CuboidIdx = 0; CuboidIdx < CuboidsInfo.size(); CuboidIdx++)
+      case roMAX :
       {
-        // copy down dim sizes
-        const dim3 TopLeftCorner(SensorMask.GetTopLeftCorner(CuboidIdx).X,
-                                 SensorMask.GetTopLeftCorner(CuboidIdx).Y,
-                                 SensorMask.GetTopLeftCorner(CuboidIdx).Z);
-        const dim3 BottomRightCorner(SensorMask.GetBottomRightCorner(CuboidIdx).X,
-                                     SensorMask.GetBottomRightCorner(CuboidIdx).Y,
-                                     SensorMask.GetBottomRightCorner(CuboidIdx).Z);
-
-        //get number of samples within the cuboid
-        const size_t NumberOfSamples = (SensorMask.GetBottomRightCorner(CuboidIdx) -
-                                        SensorMask.GetTopLeftCorner(CuboidIdx)
-                                       ).GetElementCount();
-
-
-        OutputStreamsCUDAKernels::SampleMaxCuboid(DeviceStoreBuffer + CuboidInBufferStart,
-                                                  SourceMatrix.GetRawDeviceData(),
-                                                  TopLeftCorner,
-                                                  BottomRightCorner,
-                                                  DimensionSizes,
-                                                  NumberOfSamples);
-        CuboidInBufferStart += NumberOfSamples;
+        OutputStreamsCUDAKernels::SampleCuboid<roMAX>
+                                              (DeviceStoreBuffer + CuboidInBufferStart,
+                                               SourceMatrix.GetRawDeviceData(),
+                                               TopLeftCorner,
+                                               BottomRightCorner,
+                                               DimensionSizes,
+                                               NumberOfSamples);
+        break;
       }
-
-      break;
-    }// case roMAX
-
-    case roMIN :
-    {
-       size_t CuboidInBufferStart = 0;
-      // dimension sizes of the matrix being sampled
-      const dim3 DimensionSizes (SourceMatrix.GetDimensionSizes().X,
-                                 SourceMatrix.GetDimensionSizes().Y,
-                                 SourceMatrix.GetDimensionSizes().Z);
-
-      // Run over all cuboids - this is not a good solution as we need to run a distinct kernel for a cuboid
-      for (size_t CuboidIdx = 0; CuboidIdx < CuboidsInfo.size(); CuboidIdx++)
+      case roMIN :
       {
-        // copy down dim sizes
-        const dim3 TopLeftCorner(SensorMask.GetTopLeftCorner(CuboidIdx).X,
-                                 SensorMask.GetTopLeftCorner(CuboidIdx).Y,
-                                 SensorMask.GetTopLeftCorner(CuboidIdx).Z);
-        const dim3 BottomRightCorner(SensorMask.GetBottomRightCorner(CuboidIdx).X,
-                                     SensorMask.GetBottomRightCorner(CuboidIdx).Y,
-                                     SensorMask.GetBottomRightCorner(CuboidIdx).Z);
-
-        //get number of samples within the cuboid
-        const size_t NumberOfSamples = (SensorMask.GetBottomRightCorner(CuboidIdx) -
-                                        SensorMask.GetTopLeftCorner(CuboidIdx)
-                                       ).GetElementCount();
-
-
-        OutputStreamsCUDAKernels::SampleMinCuboid(DeviceStoreBuffer + CuboidInBufferStart,
-                                                  SourceMatrix.GetRawDeviceData(),
-                                                  TopLeftCorner,
-                                                  BottomRightCorner,
-                                                  DimensionSizes,
-                                                  NumberOfSamples);
-        CuboidInBufferStart += NumberOfSamples;
+        OutputStreamsCUDAKernels::SampleCuboid<roMIN>
+                                              (DeviceStoreBuffer + CuboidInBufferStart,
+                                               SourceMatrix.GetRawDeviceData(),
+                                               TopLeftCorner,
+                                               BottomRightCorner,
+                                               DimensionSizes,
+                                               NumberOfSamples);
+        break;
       }
+    }
 
-      break;
-    } //case roMIN*/
-  }// switch
+    CuboidInBufferStart += NumberOfSamples;
+  }
+
+  if (ReductionOp == roNONE)
+  {
+    // Record an event when the data has been copied over.
+    checkCudaErrors(cudaEventRecord(EventSamplingFinished));
+  }
 }// end of Sample
 //------------------------------------------------------------------------------
 
@@ -494,7 +394,7 @@ void TCuboidOutputHDF5Stream::Close()
  */
 hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t Index)
 {
-  TParameters * Params = TParameters::GetInstance();
+  TParameters* Params = TParameters::GetInstance();
 
   // if time series then Number of steps else 1
   size_t NumberOfSampledTimeSteps = (ReductionOp == roNONE)
@@ -521,7 +421,7 @@ hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t Index)
   // @todo: Can be done easily with std::to_string and c++0x or c++-11
   char HDF5_DatasetName[32] = "";
   // Indexed from 1
-  sprintf(HDF5_DatasetName, "%ld",Index+1);
+  snprintf(HDF5_DatasetName, 32, "%ld",Index+1);
   hid_t HDF5_DatasetId = HDF5_File.CreateFloatDataset(HDF5_GroupId,
                                                       HDF5_DatasetName,
                                                       CuboidSize,

@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2011, 13:10 (created) \n
- *              08 July      2015, 16:54 (revised)
+ *              12 April     2016, 15:05 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -41,35 +41,10 @@
 #include <MatrixClasses/CUFFTComplexMatrix.h>
 #include <MatrixClasses/RealMatrix.h>
 #include <Utils/ErrorMessages.h>
-#include <CUDA/CUDAImplementations.h>
+#include <KSpaceSolver/SolverCUDAKernels.cuh>
 
 
 using namespace std;
-
-/**
-* Check errors of the CUDA routines and print error.
- * @param [in] code  - error code of last routine
- * @param [in] file  - The name of the file, where the error was raised
- * @param [in] line  - What is the line
- * @param [in] Abort - Shall the code abort?
- */
-inline void gpuAssert(cudaError_t code,
-                      string file,
-                      int line,
-                      bool Abort=true)
-{
-  if (code != cudaSuccess)
-  {
-    fprintf(stderr,
-            "GPUassert: %s %s %d\n",
-            cudaGetErrorString(code),file.c_str(),line);
-    if (Abort) exit(code);
-  }
-}
-
-/// Define to get the usage easier
-#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-
 
 //----------------------------------------------------------------------------//
 //                               Constants                                    //
@@ -607,9 +582,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_R2C(TRealMatrix& InMatrix)
                 InMatrix.GetDimensionSizes().Y,
                 InMatrix.GetDimensionSizes().Z);
 
-  TCUDAImplementations::GetInstance()->TrasposeReal3DMatrixXY(pdMatrixData,
-                                                              InMatrix.GetRawDeviceData(),
-                                                              DimSizes);
+  SolverCUDAKernels::TrasposeReal3DMatrixXY(pdMatrixData,
+                                            InMatrix.GetRawDeviceData(),
+                                            DimSizes);
 
   // Compute forward cuFFT (if the plan does not exist, it also returns error).
   // the FFT is calculated in-place (may be a bit slower than out-of-place, however
@@ -633,7 +608,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_R2C(TRealMatrix& InMatrix)
 {
   /// Transpose a real 3D matrix in the X-Z direction
   dim3 DimSizes(InMatrix.GetDimensionSizes().X, InMatrix.GetDimensionSizes().Y, InMatrix.GetDimensionSizes().Z);
-  TCUDAImplementations::GetInstance()->TrasposeReal3DMatrixXZ(pdMatrixData, InMatrix.GetRawDeviceData(), DimSizes);
+  SolverCUDAKernels::TrasposeReal3DMatrixXZ(pdMatrixData,
+                                            InMatrix.GetRawDeviceData(),
+                                            DimSizes);
 
   // Compute forward cuFFT (if the plan does not exist, it also returns error).
   // the FFT is calculated in-place (may be a bit slower than out-of-place, however
@@ -687,9 +664,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_C2R(TRealMatrix& OutMatrix)
                 OutMatrix.GetDimensionSizes().X,
                 OutMatrix.GetDimensionSizes().Z);
 
-  TCUDAImplementations::GetInstance()->TrasposeReal3DMatrixXY(OutMatrix.GetRawDeviceData(),
-                                                              pdMatrixData,
-                                                              DimSizes);
+  SolverCUDAKernels::TrasposeReal3DMatrixXY(OutMatrix.GetRawDeviceData(),
+                                            pdMatrixData,
+                                            DimSizes);
 }// end of Compute_FFT_1DY_C2R
 //------------------------------------------------------------------------------
 
@@ -714,7 +691,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_C2R(TRealMatrix& OutMatrix)
 
   /// Transpose a real 3D matrix in the Z<->X direction
   dim3 DimSizes(OutMatrix.GetDimensionSizes().Z, OutMatrix.GetDimensionSizes().Y, OutMatrix.GetDimensionSizes().X);
-  TCUDAImplementations::GetInstance()->TrasposeReal3DMatrixXZ(OutMatrix.GetRawDeviceData(), GetRawDeviceData(), DimSizes);
+  SolverCUDAKernels::TrasposeReal3DMatrixXZ(OutMatrix.GetRawDeviceData(),
+                                            GetRawDeviceData(),
+                                            DimSizes);
 }// end of Compute_FFT_1DZ_C2R
 //------------------------------------------------------------------------------
 
@@ -741,11 +720,11 @@ void TCUFFTComplexMatrix::ThrowCUFFTException(const cufftResult cufftError,
 
   if (cuFFTErrorMessages.find(cufftError) != cuFFTErrorMessages.end())
   {
-    sprintf(ErrorMessage, cuFFTErrorMessages[cufftError], TransformTypeName);
+    snprintf(ErrorMessage, 256, cuFFTErrorMessages[cufftError], TransformTypeName);
   }
   else // unknown error
   {
-    sprintf(ErrorMessage, CUFFTComplexMatrix_ERR_FMT_CUFFT_UNKNOWN_ERROR, TransformTypeName);
+    snprintf(ErrorMessage, 256, CUFFTComplexMatrix_ERR_FMT_CUFFT_UNKNOWN_ERROR, TransformTypeName);
   }
 
   // Throw exception

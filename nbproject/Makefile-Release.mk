@@ -14,14 +14,14 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=nvcc
-CCC=nvcc
-CXX=nvcc
+CC=gcc
+CCC=g++
+CXX=g++
 FC=gfortran
 AS=as
 
 # Macros
-CND_PLATFORM=CUDA-Linux
+CND_PLATFORM=GNU-Linux
 CND_DLIB_EXT=so
 CND_CONF=Release
 CND_DISTDIR=dist
@@ -35,12 +35,12 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/CUDA/CUDAImplementations.o \
 	${OBJECTDIR}/Containers/MatrixContainer.o \
 	${OBJECTDIR}/Containers/MatrixRecord.o \
 	${OBJECTDIR}/Containers/OutputStreamContainer.o \
 	${OBJECTDIR}/HDF5/HDF5_File.o \
 	${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o \
+	${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o \
 	${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o \
 	${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o \
@@ -52,6 +52,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o \
 	${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o \
 	${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o \
+	${OBJECTDIR}/Parameters/CUDADeviceConstants.o \
 	${OBJECTDIR}/Parameters/CUDAParameters.o \
 	${OBJECTDIR}/Parameters/CommandLineParameters.o \
 	${OBJECTDIR}/Parameters/Parameters.o \
@@ -86,10 +87,6 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda ${OBJECTFILES} ${LDLIBSOPTIONS}
 
-${OBJECTDIR}/CUDA/CUDAImplementations.o: CUDA/CUDAImplementations.cu 
-	${MKDIR} -p ${OBJECTDIR}/CUDA
-	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/CUDA/CUDAImplementations.o CUDA/CUDAImplementations.cu
-
 ${OBJECTDIR}/Containers/MatrixContainer.o: Containers/MatrixContainer.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Containers
 	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/Containers/MatrixContainer.o Containers/MatrixContainer.cpp
@@ -109,6 +106,10 @@ ${OBJECTDIR}/HDF5/HDF5_File.o: HDF5/HDF5_File.cpp
 ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o: KSpaceSolver/KSpaceFirstOrder3DSolver.cpp 
 	${MKDIR} -p ${OBJECTDIR}/KSpaceSolver
 	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o KSpaceSolver/KSpaceFirstOrder3DSolver.cpp
+
+${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o: KSpaceSolver/SolverCUDAKernels.cu 
+	${MKDIR} -p ${OBJECTDIR}/KSpaceSolver
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o KSpaceSolver/SolverCUDAKernels.cu
 
 ${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o: MatrixClasses/BaseFloatMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
@@ -153,6 +154,10 @@ ${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o: OutputHDF5Streams/Out
 ${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o: OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp 
 	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
 	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp
+
+${OBJECTDIR}/Parameters/CUDADeviceConstants.o: Parameters/CUDADeviceConstants.cu 
+	${MKDIR} -p ${OBJECTDIR}/Parameters
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/Parameters/CUDADeviceConstants.o Parameters/CUDADeviceConstants.cu
 
 ${OBJECTDIR}/Parameters/CUDAParameters.o: Parameters/CUDAParameters.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Parameters

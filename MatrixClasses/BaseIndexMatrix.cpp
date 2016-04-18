@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        26 July     2011, 14:17 (created) \n
- *              13 November 2014, 14:22 (revised)
+ *              12 April    2016, 15:06 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -47,30 +47,6 @@
 
 using std::string;
 
-/**
- * Check errors of the CUDA routines and print error.
- * @param [in] code  - error code of last routine
- * @param [in] file  - The name of the file, where the error was raised
- * @param [in] line  - What is the line
- * @param [in] Abort - Shall the code abort?
- */
-inline void gpuAssert(const cudaError_t code,
-                      const string      file,
-                      const int         line,
-                      const bool        Abort=true)
-{
-  if (code != cudaSuccess)
-  {
-    fprintf(stderr,
-            "GPUassert: %s %s %d\n",
-            cudaGetErrorString(code), file.c_str(), line);
-    if (Abort) exit(code);
-  }
-}
-
-/// Define to get the usage easier.
-#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-
 
 //---------------------------------------------------------------------------//
 //                             Constants                                     //
@@ -101,10 +77,10 @@ void TBaseIndexMatrix::ZeroMatrix()
  */
 void TBaseIndexMatrix::CopyToDevice()
 {
-  gpuErrchk(cudaMemcpy(pdMatrixData,
-                       pMatrixData,
-                       pTotalAllocatedElementCount * sizeof(size_t),
-                       cudaMemcpyHostToDevice));
+  checkCudaErrors(cudaMemcpy(pdMatrixData,
+                             pMatrixData,
+                             pTotalAllocatedElementCount * sizeof(size_t),
+                             cudaMemcpyHostToDevice));
 
 }// end of CopyToDevice
 //------------------------------------------------------------------------------
@@ -114,10 +90,10 @@ void TBaseIndexMatrix::CopyToDevice()
  */
 void TBaseIndexMatrix::CopyFromDevice()
 {
-  gpuErrchk(cudaMemcpy(pMatrixData,
-                       pdMatrixData,
-                       pTotalAllocatedElementCount * sizeof(size_t),
-                       cudaMemcpyDeviceToHost));
+  checkCudaErrors(cudaMemcpy(pMatrixData,
+                             pdMatrixData,
+                             pTotalAllocatedElementCount * sizeof(size_t),
+                             cudaMemcpyDeviceToHost));
 }// end of CopyFromDevice
 //------------------------------------------------------------------------------
 
@@ -150,14 +126,14 @@ void TBaseIndexMatrix::AllocateMemory()
   }
 
   // Register Host memory (pin in memory)
-  gpuErrchk(cudaHostRegister(pMatrixData,
-                             SizeInBytes,
-                             cudaHostRegisterPortable));
+  checkCudaErrors(cudaHostRegister(pMatrixData,
+                                   SizeInBytes,
+                                   cudaHostRegisterPortable));
 
 
   assert(pdMatrixData == NULL);
 
-  gpuErrchk(cudaMalloc<size_t>(&pdMatrixData, SizeInBytes));
+  checkCudaErrors(cudaMalloc<size_t>(&pdMatrixData, SizeInBytes));
 
   if (!pdMatrixData)
   {
@@ -182,7 +158,7 @@ void TBaseIndexMatrix::FreeMemory()
   // Free GPU memory
   if (pdMatrixData)
   {
-      gpuErrchk(cudaFree(pdMatrixData));
+    checkCudaErrors(cudaFree(pdMatrixData));
   }
   pdMatrixData = NULL;
 }// end of MemoryDeallocation

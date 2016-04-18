@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              29 JUne     2015, 13:27 (revised)
+ *              23 February 2016, 15:04 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -48,7 +48,7 @@
 
 #include <Utils/TimeMeasure.h>
 
-#include <CUDA/CUDAImplementations.h>
+#include <KSpaceSolver/SolverCUDAKernels.cuh>
 
 
 using namespace std;
@@ -602,11 +602,6 @@ protected:
     };
 
 private:
-
-
-    /// Use CUDA GPU functions for big computational blocks - what is this?
-    TCUDAImplementations* cuda_implementations;
-
 
     /// Matrix container with all the matrix classes
     TMatrixContainer MatrixContainer;

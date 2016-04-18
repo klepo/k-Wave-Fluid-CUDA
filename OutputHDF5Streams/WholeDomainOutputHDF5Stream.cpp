@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        28 August   2014, 11:15 (created)
- *              12 February 2015, 16:38 (revised)
+ *              24 March    2016, 17:11 (revised)
  *
  *
  * @section License
@@ -35,7 +35,7 @@
 #include <OutputHDF5Streams/WholeDomainOutputHDF5Stream.h>
 #include <Parameters/Parameters.h>
 
-#include <OutputHDF5Streams/OutputStreamsCUDAKernels.h>
+#include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
 using namespace std;
 
@@ -60,9 +60,9 @@ using namespace std;
  * @param ReductionOp      - Reduction operator
  * @param BufferToReuse    - If there is a memory space to be reused, provide a pointer
  */
-TWholeDomainOutputHDF5Stream::TWholeDomainOutputHDF5Stream(THDF5_File &             HDF5_File,
-                                                           const char *             HDF5_DatasetName,
-                                                           TRealMatrix &            SourceMatrix,
+TWholeDomainOutputHDF5Stream::TWholeDomainOutputHDF5Stream(THDF5_File&              HDF5_File,
+                                                           const char*              HDF5_DatasetName,
+                                                           TRealMatrix&             SourceMatrix,
                                                            const TReductionOperator ReductionOp)
         : TBaseOutputHDF5Stream(HDF5_File, HDF5_DatasetName, SourceMatrix, ReductionOp),
           HDF5_DatasetId(H5I_BADID),
@@ -124,7 +124,7 @@ void TWholeDomainOutputHDF5Stream::Create()
  */
 void TWholeDomainOutputHDF5Stream::Reopen()
 {
-  TParameters * Params = TParameters::GetInstance();
+  TParameters* Params = TParameters::GetInstance();
 
   // Set buffer size
   BufferSize = SourceMatrix.GetTotalElementCount();
@@ -171,7 +171,7 @@ void TWholeDomainOutputHDF5Stream::Sample()
     {
       // Copy all data from GPU to CPU (no need to use a kernel)
       // this violates the const prerequisite, however this routine is still NOT used in the code
-      const_cast<TRealMatrix &> (SourceMatrix).CopyFromDevice();
+      const_cast<TRealMatrix&> (SourceMatrix).CopyFromDevice();
 
       // We use here direct HDF5 offload using MEMSPACE - seems to be faster for bigger datasets
       const TDimensionSizes DatasetPosition(0,0,0,SampledTimeStep); //4D position in the dataset
@@ -194,25 +194,28 @@ void TWholeDomainOutputHDF5Stream::Sample()
 
     case roRMS  :
     {
-      OutputStreamsCUDAKernels::SampleRMSAll(DeviceStoreBuffer,
-                                             SourceMatrix.GetRawDeviceData(),
-                                             SourceMatrix.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleAll<roRMS>
+                                         (DeviceStoreBuffer,
+                                          SourceMatrix.GetRawDeviceData(),
+                                          SourceMatrix.GetTotalElementCount());
       break;
     }// case roRMS
 
     case roMAX  :
     {
-      OutputStreamsCUDAKernels::SampleMaxAll(DeviceStoreBuffer,
-                                             SourceMatrix.GetRawDeviceData(),
-                                             SourceMatrix.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleAll<roMAX>
+                                         (DeviceStoreBuffer,
+                                          SourceMatrix.GetRawDeviceData(),
+                                          SourceMatrix.GetTotalElementCount());
       break;
     }//case roMAX
 
     case roMIN  :
     {
-      OutputStreamsCUDAKernels::SampleMinAll(DeviceStoreBuffer,
-                                               SourceMatrix.GetRawDeviceData(),
-                                               SourceMatrix.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleAll<roMIN>
+                                         (DeviceStoreBuffer,
+                                          SourceMatrix.GetRawDeviceData(),
+                                          SourceMatrix.GetTotalElementCount());
       break;
     } //case roMIN
   }// switch

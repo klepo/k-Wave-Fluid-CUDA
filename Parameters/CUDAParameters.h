@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 November 2015, 16:49 (created) \n
- *              12 November 2015, 16:49 (revised)
+ *              14 March    2016, 14:47 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -66,12 +66,6 @@ class TCUDAParameters
     /// Get number of block for 1D grid used by kSpaceSolver.
     int GetSolverGridSize1D()          const { return SolverGridSize1D;        }
 
-    /// Get number of Block in 3D grid used by kSpaceSolver.
-    dim3 GetSolverBlockSize3D()        const { return SolverBlockSize3D;       }
-    /// Get number of block for 3D grid used by kSpaceSolver.
-    dim3 GetSolverGridSize3D()         const { return SolverGridSize3D;        }
-    /// Get number  of Blocks in 3D complex grid
-    dim3 GetSolverComplexGridSize3D()  const { return SolverComplexGridSize3D; }
 
     /// Get block size for the transposition kernels
     dim3 GetSolverTransposeBlockSize() const { return SolverTransposeBlockSize;}
@@ -92,6 +86,9 @@ class TCUDAParameters
     void SelectDevice(const int DeviceIdx = DefaultDeviceIdx);
     /// Set kernel configurations based on the simulation parameters
     void SetKernelConfiguration();
+
+    /// Upload useful simulation constants into device constant memory
+    void SetUpDeviceConstants();
 
     /// Return properties of currently used GPU
     cudaDeviceProp GetDeviceProperties() const {return DeviceProperties;};
@@ -122,13 +119,6 @@ class TCUDAParameters
     int  SolverBlockSize1D;
     /// Number of block for 1D grid used by kSpaceSolver.
     int  SolverGridSize1D;
-
-    /// Number of Block in 3D grid used by kSpaceSolver.
-    dim3 SolverBlockSize3D;
-    /// Number of block for 3D grid used by kSpaceSolver.
-    dim3 SolverGridSize3D;
-   /// Number of Blocks in 3D complex grid.
-    dim3 SolverComplexGridSize3D;
 
     /// Block size for the transposition kernels
     dim3 SolverTransposeBlockSize;

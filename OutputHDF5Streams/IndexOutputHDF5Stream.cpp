@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        29 August   2014, 10:10 (created)
- *              12 February 2015, 16:38 (revised)
+ *              12 April    2016, 15:05 (revised)
  *
  *
  * @section License
@@ -33,9 +33,10 @@
  */
 
 #include <OutputHDF5Streams/IndexOutputHDF5Stream.h>
-#include <OutputHDF5Streams/OutputStreamsCUDAKernels.h>
+#include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
 #include <Parameters/Parameters.h>
+#include <Utils/ErrorMessages.h>
 
 using namespace std;
 
@@ -50,33 +51,6 @@ using namespace std;
 //----------------------------------------------------------------------------//
 //--------------------------------- Macros -----------------------------------//
 //----------------------------------------------------------------------------//
-
-/**
- * Check errors of the CUDA routines and print error.
- * @param [in] code  - error code of last routine
- * @param [in] file  - The name of the file, where the error was raised
- * @param [in] line  - What is the line
- * @param [in] Abort - Shall the code abort?
- * @todo - check this routine and do it differently!
- */
-inline void gpuAssert(cudaError_t code,
-                      string file,
-                      int line)
-{
-  if (code != cudaSuccess)
-  {
-    char ErrorMessage[256];
-    sprintf(ErrorMessage,"GPUassert: %s %s %d\n",cudaGetErrorString(code),file.c_str(),line);
-
-    // Throw exception
-     throw std::runtime_error(ErrorMessage);
-  }
-}// end of gpuAssert
-//------------------------------------------------------------------------------
-
-/// Define to get the usage easier
-#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-
 
 //--------------------------------------------------------------------------//
 //                              Implementation                              //
@@ -98,10 +72,10 @@ inline void gpuAssert(cudaError_t code,
  * @param [in] SensorMask      - Index based sensor mask
  * @param [in] ReductionOp     - Reduction operator
  */
-TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File &             HDF5_File,
-                                               const char *             HDF5_ObjectName,
-                                               const TRealMatrix &      SourceMatrix,
-                                               const TIndexMatrix &     SensorMask,
+TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File&              HDF5_File,
+                                               const char*              HDF5_ObjectName,
+                                               const TRealMatrix&       SourceMatrix,
+                                               const TIndexMatrix&      SensorMask,
                                                const TReductionOperator ReductionOp)
         : TBaseOutputHDF5Stream(HDF5_File, HDF5_ObjectName, SourceMatrix, ReductionOp),
           SensorMask(SensorMask),
@@ -110,7 +84,7 @@ TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File &             HDF5_Fil
           EventSamplingFinished()
 {
   // Create event for sampling
-  gpuErrchk(cudaEventCreate(&EventSamplingFinished));
+  checkCudaErrors(cudaEventCreate(&EventSamplingFinished));
 }// end of TIndexOutputHDF5Stream
 //------------------------------------------------------------------------------
 
@@ -122,7 +96,7 @@ TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File &             HDF5_Fil
 TIndexOutputHDF5Stream::~TIndexOutputHDF5Stream()
 {
   // Destroy sampling event
-  gpuErrchk(cudaEventDestroy(EventSamplingFinished));
+  checkCudaErrors(cudaEventDestroy(EventSamplingFinished));
 
   Close();
   // free memory
@@ -138,7 +112,7 @@ void TIndexOutputHDF5Stream::Create()
 
   size_t NumberOfSampledElementsPerStep = SensorMask.GetTotalElementCount();
 
-  TParameters * Params = TParameters::GetInstance();
+  TParameters* Params = TParameters::GetInstance();
 
   // Derive dataset dimension sizes
   TDimensionSizes DatasetSize(NumberOfSampledElementsPerStep,
@@ -186,7 +160,7 @@ void TIndexOutputHDF5Stream::Create()
 void TIndexOutputHDF5Stream::Reopen()
 {
   // Get parameters
-  TParameters * Params = TParameters::GetInstance();
+  TParameters* Params = TParameters::GetInstance();
 
   // Set buffer size
   BufferSize = SensorMask.GetTotalElementCount();
@@ -237,42 +211,46 @@ void TIndexOutputHDF5Stream::Sample()
   {
     case roNONE :
     {
-      OutputStreamsCUDAKernels::SampleRawIndex(DeviceStoreBuffer,
-                                               SourceMatrix.GetRawDeviceData(),
-                                               SensorMask.GetRawDeviceData(),
-                                               SensorMask.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleIndex<roNONE>
+                                           (DeviceStoreBuffer,
+                                            SourceMatrix.GetRawDeviceData(),
+                                            SensorMask.GetRawDeviceData(),
+                                            SensorMask.GetTotalElementCount());
 
       // Record an event when the data has been copied over.
-      gpuErrchk(cudaEventRecord(EventSamplingFinished));
+      checkCudaErrors(cudaEventRecord(EventSamplingFinished));
 
       break;
     }// case roNONE
 
     case roRMS :
     {
-      OutputStreamsCUDAKernels::SampleRMSIndex(DeviceStoreBuffer,
-                                               SourceMatrix.GetRawDeviceData(),
-                                               SensorMask.GetRawDeviceData(),
-                                               SensorMask.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleIndex<roRMS>
+                                           (DeviceStoreBuffer,
+                                            SourceMatrix.GetRawDeviceData(),
+                                            SensorMask.GetRawDeviceData(),
+                                            SensorMask.GetTotalElementCount());
 
       break;
     }// case roRMS
 
     case roMAX :
     {
-      OutputStreamsCUDAKernels::SampleMaxIndex(DeviceStoreBuffer,
-                                               SourceMatrix.GetRawDeviceData(),
-                                               SensorMask.GetRawDeviceData(),
-                                               SensorMask.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleIndex<roMAX>
+                                           (DeviceStoreBuffer,
+                                            SourceMatrix.GetRawDeviceData(),
+                                            SensorMask.GetRawDeviceData(),
+                                            SensorMask.GetTotalElementCount());
       break;
     }// case roMAX
 
     case roMIN :
     {
-      OutputStreamsCUDAKernels::SampleMinIndex(DeviceStoreBuffer,
-                                               SourceMatrix.GetRawDeviceData(),
-                                               SensorMask.GetRawDeviceData(),
-                                               SensorMask.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleIndex<roMIN>
+                                           (DeviceStoreBuffer,
+                                            SourceMatrix.GetRawDeviceData(),
+                                            SensorMask.GetRawDeviceData(),
+                                            SensorMask.GetTotalElementCount());
       break;
     } //case roMIN
   }// switch
