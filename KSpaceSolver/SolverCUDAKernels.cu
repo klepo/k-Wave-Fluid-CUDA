@@ -66,7 +66,7 @@ extern __constant__ TCUDADeviceConstants CUDADeviceConstants;
  * Get block size for 1D kernels
  * @return 1D block size
  */
-int GetSolverBlockSize1D()
+inline int GetSolverBlockSize1D()
 {
   return TParameters::GetInstance()->CUDAParameters.GetSolverBlockSize1D();
 };
@@ -75,7 +75,7 @@ int GetSolverBlockSize1D()
  * Get grid size for 1D kernels
  * @return 1D grid size
  */
-int GetSolverGridSize1D()
+inline int GetSolverGridSize1D()
 {
   return TParameters::GetInstance()->CUDAParameters.GetSolverGridSize1D();
 };
@@ -84,7 +84,7 @@ int GetSolverGridSize1D()
  * Get block size for the transposition kernels
  * @return 3D grid size
  */
-dim3 GetSolverTransposeBlockSize()
+inline dim3 GetSolverTransposeBlockSize()
 {
   return TParameters::GetInstance()->CUDAParameters.GetSolverTransposeBlockSize();
 };
@@ -93,7 +93,7 @@ dim3 GetSolverTransposeBlockSize()
  * Get grid size for complex 3D kernels
  * @return 3D grid size
  */
-dim3 GetSolverTransposeGirdSize()
+inline dim3 GetSolverTransposeGirdSize()
 {
   return TParameters::GetInstance()->CUDAParameters.GetSolverTransposeGirdSize();
 };
@@ -503,7 +503,10 @@ void SolverCUDAKernels::AddTransducerSource(TRealMatrix&        ux_sgx,
   const auto u_source_index_size = u_source_index.GetTotalElementCount();
 
   // Grid size is calculated based on the source size
-  int CUDAGridSize1D  = (u_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D();
+  const int CUDAGridSize1D  = (static_cast<int>(u_source_index_size) < (GetSolverGridSize1D() *  GetSolverBlockSize1D()))
+                            ? (u_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D()
+                            : GetSolverGridSize1D();
+
 
   CUDAAddTransducerSource<<<CUDAGridSize1D, GetSolverBlockSize1D()>>>
                          (ux_sgx.GetRawDeviceData(),
@@ -569,8 +572,12 @@ void SolverCUDAKernels::Add_u_source(TRealMatrix&        uxyz_sgxyz,
   const auto u_source_index_size = u_source_index.GetTotalElementCount();
 
   // Grid size is calculated based on the source size
-  const int CUDAGridSize1D  = (u_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D();
-  //@todo here should be a test not to generate too much blocks, and balance workload
+  // for small sources, a custom number of thread blocks is created,
+  // otherwise, a standard number is used
+
+  const int  CUDAGridSize1D = (static_cast<int>(u_source_index_size) < (GetSolverGridSize1D() *  GetSolverBlockSize1D()))
+                           ? (u_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D()
+                           :  GetSolverGridSize1D();
 
   CUDAAdd_u_source<<< CUDAGridSize1D, GetSolverBlockSize1D()>>>
                   (uxyz_sgxyz.GetRawDeviceData(),
@@ -666,10 +673,10 @@ void SolverCUDAKernels::Add_p_source(TRealMatrix&        rhox,
                                      const size_t        t_index)
 {
   const auto p_source_index_size = p_source_index.GetTotalElementCount();
-
   // Grid size is calculated based on the source size
-  int CUDAGridSize1D  = (p_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D();
-  //@todo here should be a test not to generate too much blocks, and balance workload
+  const int CUDAGridSize1D  = (static_cast<int>(p_source_index_size) < (GetSolverGridSize1D() *  GetSolverBlockSize1D()))
+                            ? (p_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D()
+                            :  GetSolverGridSize1D();
 
   CUDAAdd_p_source<<<CUDAGridSize1D,GetSolverBlockSize1D()>>>
                   (rhox.GetRawDeviceData(),
@@ -896,7 +903,6 @@ __global__ void CUDACompute_ddx_kappa_fft_p(cuFloatComplex*       FFT_X,
  *  of p represented by:
  *  bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k).
  *
- * @param [in,out] X_Matrix - 3D pressure matrix
  * @param [out]    FFT_X - matrix to store input for iFFT (p) /dx
  * @param [out]    FFT_Y - matrix to store input for iFFT (p) /dy
  * @param [out]    FFT_Z - matrix to store input for iFFT (p) /dz
@@ -907,8 +913,7 @@ __global__ void CUDACompute_ddx_kappa_fft_p(cuFloatComplex*       FFT_X,
  * @param [in]     ddy - precomputed value of ddy_k_shift_pos
  * @param [in]     ddz - precomputed value of ddz_k_shift_pos
  */
-void SolverCUDAKernels::Compute_ddx_kappa_fft_p(TRealMatrix&         X_Matrix,
-                                                TCUFFTComplexMatrix& FFT_X,
+void SolverCUDAKernels::Compute_ddx_kappa_fft_p(TCUFFTComplexMatrix& FFT_X,
                                                 TCUFFTComplexMatrix& FFT_Y,
                                                 TCUFFTComplexMatrix& FFT_Z,
                                                 const TRealMatrix&    kappa,
@@ -916,9 +921,6 @@ void SolverCUDAKernels::Compute_ddx_kappa_fft_p(TRealMatrix&         X_Matrix,
                                                 const TComplexMatrix& ddy,
                                                 const TComplexMatrix& ddz)
 {
-  // Compute FFT of X
-  FFT_X.Compute_FFT_3D_R2C(X_Matrix);
-
   CUDACompute_ddx_kappa_fft_p<<<GetSolverGridSize1D(),
                                 GetSolverBlockSize1D()>>>
                              (reinterpret_cast<cuFloatComplex*>(FFT_X.GetRawDeviceData()),
@@ -1551,7 +1553,6 @@ __global__ void CUDACalculate_SumRho_BonA_SumDu(float*       rho_sum,
  * @param [in]  Is_rho_scalar - Is rho0 a scalar value (homogeneous)
  * @param [in]  rho0_matrix  - heterogeneous value for rho0
  *
- * @todo revise parameter names, and put scalars to constant memory
  */
 void SolverCUDAKernels::Calculate_SumRho_BonA_SumDu(TRealMatrix&       rho_sum,
                                                     TRealMatrix&       BonA_sum,
@@ -1704,7 +1705,7 @@ void SolverCUDAKernels::Compute_Absorb_nabla1_2(TCUFFTComplexMatrix& FFT_1,
 
 /**
  * CUDA Sum sub-terms to calculate new pressure, non-linear case.
- * @@todo needs revision
+ *
  * @param [out] p           - new value of pressure
  * @param [in] BonA_temp    - rho0 * (duxdx + duydy + duzdz)
  * @param [in] c2_matrix
@@ -2314,7 +2315,6 @@ __global__ void cudaTrasnposeReal3DMatrixXYSquare(float*       OutputData,
 {
   // this size is fixed shared memory
   // we transpose 4 tiles of 32*32 at the same time, +1 solves bank conflicts
-  ///@todo - do I need volatile??
   ///@todo - What about Warp shuffle?
   ///@todo http://www.pixel.io/blog/2013/3/25/fast-matrix-transposition-on-kepler-without-using-shared-mem.html
   volatile __shared__ float shared_tile[4][32][32+1];

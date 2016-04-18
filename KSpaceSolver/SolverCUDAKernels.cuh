@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 March    2013, 13:10 (created) \n
- *              22 March    2016, 14:54 (revised)
+ *              18 April    2016, 14:36 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -147,8 +147,7 @@ namespace SolverCUDAKernels
 
    //------------------------- pressure kernels-------------------------------//
    /// Compute part of the new velocity - gradient of p.
-   void Compute_ddx_kappa_fft_p(TRealMatrix&          X_Matrix,
-                                TCUFFTComplexMatrix&  FFT_X,
+   void Compute_ddx_kappa_fft_p(TCUFFTComplexMatrix&  FFT_X,
                                 TCUFFTComplexMatrix&  FFT_Y,
                                 TCUFFTComplexMatrix&  FFT_Z,
                                 const TRealMatrix&    kappa,

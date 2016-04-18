@@ -958,8 +958,9 @@ void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
   //--compute u(t = t1 + dt/2) based on the assumption u(dt/2) = -u(-dt/2)-//
   //--    which forces u(t = t1) = 0                                      -//
   //-----------------------------------------------------------------------//
-  SolverCUDAKernels::Compute_ddx_kappa_fft_p(Get_p(),
-                                             Get_CUFFT_X_temp(),
+  Get_CUFFT_X_temp().Compute_FFT_3D_R2C(Get_p());
+
+  SolverCUDAKernels::Compute_ddx_kappa_fft_p(Get_CUFFT_X_temp(),
                                              Get_CUFFT_Y_temp(),
                                              Get_CUFFT_Z_temp(),
                                              Get_kappa(),
@@ -1400,8 +1401,10 @@ void TKSpaceFirstOrder3DSolver::Compute_new_p_linear()
  */
 void TKSpaceFirstOrder3DSolver::Compute_uxyz()
 {
-  SolverCUDAKernels::Compute_ddx_kappa_fft_p(Get_p(),
-                                             Get_CUFFT_X_temp(),
+
+  Get_CUFFT_X_temp().Compute_FFT_3D_R2C(Get_p());
+
+  SolverCUDAKernels::Compute_ddx_kappa_fft_p(Get_CUFFT_X_temp(),
                                              Get_CUFFT_Y_temp(),
                                              Get_CUFFT_Z_temp(),
                                              Get_kappa(),
