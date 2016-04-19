@@ -109,26 +109,6 @@ TKSpaceFirstOrder3DSolver::~TKSpaceFirstOrder3DSolver()
 //------------------------------------------------------------------------------
 
 
-/**
- * Try to estimate how much memory is needed for the simulation and if it seems
- * it won't be possible to run the simulation, print warning
- * @return false if the simulation is likely to fail because of out of memory
- *
- * @todo take a look and remove
- */
-bool TKSpaceFirstOrder3DSolver::DoesDeviceHaveEnoughMemory()
-{
-  size_t free, total, available_device_memory, estimate_of_required_memory;
-
-  cudaMemGetInfo(&free,&total);
-  available_device_memory = (free >> 20);
-
-  estimate_of_required_memory = MatrixContainer.GetSpeculatedMemoryFootprintInMegabytes();
-
-  return !(estimate_of_required_memory > available_device_memory);
-}// end of DoesDeviceHaveEnoughMemory
-//------------------------------------------------------------------------------
-
 /*
  * The method allocates the matrix container and create all matrices and
  * creates all output streams.
@@ -139,19 +119,6 @@ void TKSpaceFirstOrder3DSolver::AllocateMemory()
 {
   // create container, then all matrices
   MatrixContainer.AddMatricesIntoContainer();
-
-  //if the size of the simulation will use more memory than the target
-  //device contains, notify the user that the simulation will probably crash.
-  if(!DoesDeviceHaveEnoughMemory())
-  {
-    fprintf(stdout,"\n");
-    fprintf(stdout,"Warning!\n");
-    fprintf(stdout,"The simulation may be too big for the target device!");
-    fprintf(stdout,"\n");
-    fprintf(stdout,"If there is a crash (GPUassert or K-Wave panic) ");
-    fprintf(stdout,"this is the probable cause.\n");
-    fflush(stdout);
-  }
 
   MatrixContainer.CreateAllObjects();
 

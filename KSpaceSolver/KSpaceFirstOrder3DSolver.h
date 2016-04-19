@@ -129,9 +129,6 @@ protected:
     /// operator = not allowed for public.
     TKSpaceFirstOrder3DSolver& operator = (const TKSpaceFirstOrder3DSolver& src);
 
-    /// Determine device memory.
-    bool DoesDeviceHaveEnoughMemory();
-
     /// Initialize FFT plans.
     void InitializeFFTPlans();
 
