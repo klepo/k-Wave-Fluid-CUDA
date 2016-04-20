@@ -14,14 +14,14 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
+CC=nvcc
+CCC=nvcc
+CXX=nvcc
 FC=gfortran
 AS=as
 
 # Macros
-CND_PLATFORM=GNU-Linux
+CND_PLATFORM=CUDA-Linux
 CND_DLIB_EXT=so
 CND_CONF=Release
 CND_DISTDIR=dist
@@ -41,6 +41,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/HDF5/HDF5_File.o \
 	${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o \
 	${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o \
+	${OBJECTDIR}/Logger/Logger.o \
 	${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o \
 	${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o \
@@ -63,8 +64,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=-Xcompiler="-fopenmp -mavx" --resource-usage -arch=compute_52 -code=sm_52
-CXXFLAGS=-Xcompiler="-fopenmp -mavx" --resource-usage -arch=compute_52 -code=sm_52
+CCFLAGS=-Xcompiler="-O3 -Wall -fopenmp -mavx " -arch=compute_52 -code=sm_52 --device-c
+CXXFLAGS=-Xcompiler="-O3 -Wall -fopenmp -mavx " -arch=compute_52 -code=sm_52 --device-c
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -85,7 +86,7 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: /usr/local/hdf5-se
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda ${OBJECTFILES} ${LDLIBSOPTIONS}
+	nvcc -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda ${OBJECTFILES} ${LDLIBSOPTIONS} -Xcompiler="-Wall -fopenmp -mavx" -arch=compute_52 -code=sm_52
 
 ${OBJECTDIR}/Containers/MatrixContainer.o: Containers/MatrixContainer.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Containers
@@ -110,6 +111,10 @@ ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o: KSpaceSolver/KSpaceFirstOr
 ${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o: KSpaceSolver/SolverCUDAKernels.cu 
 	${MKDIR} -p ${OBJECTDIR}/KSpaceSolver
 	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o KSpaceSolver/SolverCUDAKernels.cu
+
+${OBJECTDIR}/Logger/Logger.o: Logger/Logger.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Logger
+	$(COMPILE.cc) -O3 -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/Logger/Logger.o Logger/Logger.cpp
 
 ${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o: MatrixClasses/BaseFloatMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses

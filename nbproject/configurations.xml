@@ -9,8 +9,6 @@
       <itemPath>Containers/OutputStreamContainer.cpp</itemPath>
       <itemPath>Containers/OutputStreamContainer.h</itemPath>
     </logicalFolder>
-    <logicalFolder name="CUDA" displayName="CUDA" projectFiles="true">
-    </logicalFolder>
     <logicalFolder name="HDF5" displayName="HDF5" projectFiles="true">
       <itemPath>HDF5/HDF5_File.cpp</itemPath>
       <itemPath>HDF5/HDF5_File.h</itemPath>
@@ -26,6 +24,12 @@
       <itemPath>KSpaceSolver/KSpaceFirstOrder3DSolver.h</itemPath>
       <itemPath>KSpaceSolver/SolverCUDAKernels.cu</itemPath>
       <itemPath>KSpaceSolver/SolverCUDAKernels.cuh</itemPath>
+    </logicalFolder>
+    <logicalFolder name="Logger" displayName="Logger" projectFiles="true">
+      <itemPath>Logger/ErrorMessages.h</itemPath>
+      <itemPath>Logger/Logger.cpp</itemPath>
+      <itemPath>Logger/Logger.h</itemPath>
+      <itemPath>Logger/OutputMessages.h</itemPath>
     </logicalFolder>
     <logicalFolder name="MatrixClasses"
                    displayName="MatrixClasses"
@@ -77,8 +81,8 @@
                    projectFiles="true">
     </logicalFolder>
     <logicalFolder name="Utils" displayName="Utils" projectFiles="true">
+      <itemPath>Utils/CUDAUtils.cuh</itemPath>
       <itemPath>Utils/DimensionSizes.h</itemPath>
-      <itemPath>Utils/ErrorMessages.h</itemPath>
       <itemPath>Utils/MatrixNames.h</itemPath>
       <itemPath>Utils/TimeMeasure.h</itemPath>
     </logicalFolder>
@@ -104,6 +108,7 @@
     <Elem>Utils</Elem>
     <Elem>Containers</Elem>
     <Elem>OutputHDF5Streams</Elem>
+    <Elem>Logger</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -120,7 +125,7 @@
             <pElem>./</pElem>
             <pElem>/usr/local/hdf5-serial/include</pElem>
           </incDir>
-          <commandLine>-Xcompiler="-Wall -fopenmp -mavx -g" --resource-usage -arch=compute_52 -code=sm_52 --device-c</commandLine>
+          <commandLine>-Xcompiler="-g -Wall -fopenmp" -G -arch=compute_52 -code=sm_52 --device-c</commandLine>
         </ccTool>
         <linkerTool>
           <linkerAddLib>
@@ -132,9 +137,11 @@
             <linkerLibFileItem>/usr/local/hdf5-serial/lib/libhdf5_hl.a</linkerLibFileItem>
             <linkerLibFileItem>/usr/local/hdf5-serial/lib/libhdf5.a</linkerLibFileItem>
             <linkerLibStdlibItem>DataCompression</linkerLibStdlibItem>
-            <linkerLibLibItem>cufft</linkerLibLibItem>
+            <linkerLibFileItem>/usr/local/cuda/lib64/libcufft_static.a</linkerLibFileItem>
+            <linkerLibFileItem>/usr/local/cuda/lib64/libculibos.a</linkerLibFileItem>
+            <linkerLibFileItem>/usr/local/cuda/lib64/libcudart_static.a</linkerLibFileItem>
           </linkerLibItems>
-          <commandLine>-Xcompiler="-Wall -fopenmp -mavx -g" --resource-usage -arch=compute_52 -code=sm_52</commandLine>
+          <commandLine>-Xcompiler="-g -Wall -fopenmp" -G -arch=compute_52 -code=sm_52</commandLine>
         </linkerTool>
       </compileType>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
@@ -169,6 +176,14 @@
       <item path="KSpaceSolver/SolverCUDAKernels.cu" ex="false" tool="1" flavor2="0">
       </item>
       <item path="KSpaceSolver/SolverCUDAKernels.cuh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Logger/ErrorMessages.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Logger/Logger.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Logger/Logger.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Logger/OutputMessages.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseFloatMatrix.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -268,9 +283,9 @@
       </item>
       <item path="Parameters/Parameters.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
+      <item path="Utils/CUDAUtils.cuh" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Utils/ErrorMessages.h" ex="false" tool="3" flavor2="0">
+      <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/MatrixNames.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -281,7 +296,7 @@
     </conf>
     <conf name="Release" type="1">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>CUDA|GNU</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -293,19 +308,21 @@
             <pElem>./</pElem>
             <pElem>/usr/local/hdf5-serial/include</pElem>
           </incDir>
-          <commandLine>-Xcompiler="-fopenmp -mavx" --resource-usage -arch=compute_52 -code=sm_52</commandLine>
+          <commandLine>-Xcompiler="-O3 -Wall -fopenmp -mavx " -arch=compute_52 -code=sm_52 --device-c</commandLine>
         </ccTool>
         <linkerTool>
           <linkerAddLib>
             <pElem>/usr/local/hdf5-serial/lib</pElem>
             <pElem>/usr/local/cuda/lib64</pElem>
           </linkerAddLib>
+          <commandlineTool>nvcc</commandlineTool>
           <linkerLibItems>
             <linkerLibFileItem>/usr/local/hdf5-serial/lib/libhdf5_hl.a</linkerLibFileItem>
             <linkerLibFileItem>/usr/local/hdf5-serial/lib/libhdf5.a</linkerLibFileItem>
             <linkerLibStdlibItem>DataCompression</linkerLibStdlibItem>
             <linkerLibLibItem>cufft</linkerLibLibItem>
           </linkerLibItems>
+          <commandLine>-Xcompiler="-Wall -fopenmp -mavx" -arch=compute_52 -code=sm_52</commandLine>
         </linkerTool>
       </compileType>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
@@ -337,9 +354,17 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cu" ex="false" tool="1" flavor2="0">
+      <item path="KSpaceSolver/SolverCUDAKernels.cu" ex="false" tool="1" flavor2="8">
       </item>
       <item path="KSpaceSolver/SolverCUDAKernels.cuh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Logger/ErrorMessages.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Logger/Logger.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Logger/Logger.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Logger/OutputMessages.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseFloatMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -420,11 +445,11 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDADeviceConstants.cu" ex="false" tool="1" flavor2="0">
+      <item path="Parameters/CUDADeviceConstants.cu" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CUDADeviceConstants.cuh" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -439,9 +464,9 @@
       </item>
       <item path="Parameters/Parameters.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
+      <item path="Utils/CUDAUtils.cuh" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Utils/ErrorMessages.h" ex="false" tool="3" flavor2="0">
+      <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/MatrixNames.h" ex="false" tool="3" flavor2="0">
       </item>

@@ -8,7 +8,7 @@
 # * 
 # * @Tool        kspaceFirstOrder3D 3.4
 # * @Created     02 December  2014, 12:32 
-# * @LastModif   23 February  2016, 1:36
+# * @LastModif   20 April     2016, 10:30
 #
 # * @License: 
 # * This file is part of the C++ extension of the k-Wave Toolbox
@@ -91,7 +91,7 @@ CXX = nvcc
  
 
 # Set compiler flags and header files directories
-CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math -msse2" \
+CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math -march=native" \
            -O3 -std=c++11  -I$(HDF5_DIR)/include  -I.  -ccbin=g++-4.8 --restrict\
 	    --generate-code arch=compute_20,code=sm_20	\
 	    --generate-code arch=compute_20,code=sm_21	\
@@ -136,6 +136,7 @@ $(TARGET):	Containers/MatrixContainer.o \
 		HDF5/HDF5_File.o \
 		KSpaceSolver/KSpaceFirstOrder3DSolver.o \
 		KSpaceSolver/SolverCUDAKernels.o \
+		Logger/Logger.o	\
 		MatrixClasses/BaseFloatMatrix.o \
 		MatrixClasses/BaseIndexMatrix.o \
 		MatrixClasses/CUFFTComplexMatrix.o \
@@ -161,6 +162,7 @@ $(TARGET):	Containers/MatrixContainer.o \
 		HDF5/HDF5_File.o \
 		KSpaceSolver/KSpaceFirstOrder3DSolver.o \
 		KSpaceSolver/SolverCUDAKernels.o \
+		Logger/Logger.o	\
 		MatrixClasses/BaseFloatMatrix.o \
 		MatrixClasses/BaseIndexMatrix.o \
 		MatrixClasses/CUFFTComplexMatrix.o \
