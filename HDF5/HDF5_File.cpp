@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        27 July     2012, 14:14 (created) \n
- *              12 April    2016, 15:13 (revised)
+ *              20 April    2016, 10:32 (revised)
  *
 
 * @section License
@@ -51,7 +51,7 @@
 
 #include <HDF5/HDF5_File.h>
 #include <Parameters/Parameters.h>
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
 
 //----------------------------------------------------------------------------//
 //-----------------------------    Constants----------------------------------//

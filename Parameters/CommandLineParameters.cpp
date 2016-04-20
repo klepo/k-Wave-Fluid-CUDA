@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        29 August   2012, 11:25 (created) \n
- *              17 June     2015, 10:01 (revised)
+ *              20 April    2016, 10:42 (revised)
  *
  *
  * @section License
@@ -45,12 +45,16 @@
 #include <string.h>
 #include <sstream>
 #include <limits>
+#include <stdexcept>
+
 #ifdef _OPENMP
   #include <omp.h>
 #endif
 
 #include <Parameters/CommandLineParameters.h>
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
+
+#include <Logger/Logger.h>
 
 //--------------------------------------------------------------------------//
 //-------------------------- Constants -------------------------------------//
@@ -73,7 +77,7 @@ TCommandLineParameters::TCommandLineParameters() :
 
         GPUDeviceIdx(-1), // default is undefined -1
 
-        VerboseInterval(DefaultVerboseInterval),
+        ProgressPrintInterval(DefaultProgressPrintInterval),
         CompressionLevel(DefaultCompressionLevel),
         BenchmarkFlag (false), BenchmarkTimeStepsCount(0),
         CheckpointInterval(0),
@@ -109,18 +113,22 @@ void TCommandLineParameters::PrintUsageAndExit()
   #endif
 
   printf("  -g <device_number>              : GPU device to run on\n");
-  printf("                                      (default = device with most memory)\n");
+  printf("                                      (default = first free)\n");
 
   printf("  -r Progress_report_interval_in_%%: Progress print interval\n");
-  printf("                                      (default = %ld%%)\n",DefaultVerboseInterval);
+  printf("                                      (default = %ld%%)\n",DefaultProgressPrintInterval);
   printf("  -c Output_file_compression_level: Deflate compression level <0,9>\n");
   printf("                                      (default = %ld)\n",DefaultCompressionLevel );
   printf("  --benchmark <steps>             : Run a specified number of time steps\n");
   printf("  --checkpoint_file <file_name>   : HDF5 Checkpoint file\n");
   printf("  --checkpoint_interval <seconds> : Stop after a given number of seconds and\n");
   printf("                                      store the actual state\n");
-
   printf("\n");
+  printf("  --verbose <level>               : Level of verbosity <0,2>\n");
+  printf("                                      0 - Basic, 1 - Advanced, 2 - Full \n");
+  printf("                                     (default = Basic) \n");
+  printf("\n");
+
   printf("  -h                              : Print help\n");
   printf("  --help                          : Print help\n");
   printf("  --version                       : Print version\n");
@@ -175,14 +183,14 @@ void TCommandLineParameters::PrintSetup()
 
   printf("\n");
 
-  printf("  Verbose interval[%%]      %ld\n", VerboseInterval);
-  printf("  Compression level         %ld\n", CompressionLevel);
+  printf("  Verbose interval[%%]      %zu\n", ProgressPrintInterval);
+  printf("  Compression level         %zu\n", CompressionLevel);
   printf("\n");
-  printf("  Benchmark flag            %d\n", BenchmarkFlag);
-  printf("  Benchmark time steps      %ld\n", BenchmarkTimeStepsCount);
+  printf("  Benchmark flag            %d\n",  BenchmarkFlag);
+  printf("  Benchmark time steps      %zu\n", BenchmarkTimeStepsCount);
   printf("\n");
-  printf("  Checkpoint_file           %s\n", CheckpointFileName.c_str());
-  printf("  Checkpoint_interval       %ld\n", CheckpointInterval);
+  printf("  Checkpoint_file           %s\n",  CheckpointFileName.c_str());
+  printf("  Checkpoint_interval       %zu\n", CheckpointInterval);
   printf("\n");
   printf("  Store p_raw               %d\n", Store_p_raw);
   printf("  Store p_rms               %d\n", Store_p_rms);
@@ -202,7 +210,7 @@ void TCommandLineParameters::PrintSetup()
   printf("  Store u_final             %d\n", Store_u_final);
   printf("\n");
 
-  printf("  Collection begins at  %ld\n", StartTimeStep+1);
+  printf("  Collection begins at  %zu\n", StartTimeStep+1);
 }// end of PrintSetup
 //------------------------------------------------------------------------------
 
@@ -230,6 +238,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
     { "version",              no_argument, NULL, 0 },
     { "checkpoint_file"    ,  required_argument, NULL, 0 },
     { "checkpoint_interval",  required_argument, NULL, 0 },
+    { "verbose",              required_argument, NULL, 0 },
 
     { "p_raw",                no_argument, NULL,'p' },
     { "p_rms",                no_argument, NULL, 0 },
@@ -271,56 +280,72 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
 
       case 'r':
       {
-        if ((optarg == NULL) || (atoi(optarg) <= 0))
+        try
         {
-          fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoVerboseIntreval);
-          PrintUsageAndExit();
+          ProgressPrintInterval = std::stoi(optarg);
+          if ((ProgressPrintInterval < 1) || (ProgressPrintInterval > 100))
+          {
+            throw std::invalid_argument("verbose");
+          }
         }
-        else
+        catch (const std::invalid_argument& ia)
         {
-          VerboseInterval = atoi(optarg);
+          fprintf(stderr, CommandlineParameters_ERR_FMT_NoProgressPrintIntreval);
+          PrintUsageAndExit();
         }
         break;
       }
 
       case 't':
       {
-        if ((optarg == NULL) || (atoi(optarg) <= 0))
+        try
         {
-          fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoThreadNumbers);
-          PrintUsageAndExit();
+          NumberOfThreads = std::stoi(optarg);
+          if (NumberOfThreads < 1)
+          {
+            throw std::invalid_argument("-t");
+          }
         }
-        else
+        catch (const std::invalid_argument& ia)
         {
-          NumberOfThreads = atoi(optarg);
+          fprintf(stderr, CommandlineParameters_ERR_FMT_NoThreadNumbers);
+          PrintUsageAndExit();
         }
         break;
       }
 
       case 'g':
       {
-        if ((optarg == NULL) || (atoi(optarg) < -1))
+        try
         {
-          fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoGPUNumbers);
-          PrintUsageAndExit();
+          GPUDeviceIdx = std::stoi(optarg);
+          if (GPUDeviceIdx < 0)
+          {
+            throw std::invalid_argument("-g");
+          }
         }
-        else
+        catch (const std::invalid_argument& ia)
         {
-          GPUDeviceIdx = atoi(optarg);
+          fprintf(stderr, CommandlineParameters_ERR_FMT_NoGPUNumbers);
+          PrintUsageAndExit();
         }
         break;
       }
 
       case 'c':
       {
-        if ((optarg == NULL) || (atoi(optarg) < 0) || atoi(optarg) > 9)
+        try
         {
-          fprintf(stderr,"%s", CommandlineParameters_ERR_FMT_NoCompressionLevel);
-          PrintUsageAndExit();
+          CompressionLevel = std::stoi(optarg);
+          if ((CompressionLevel < 0) || (CompressionLevel > 9))
+          {
+            throw std::invalid_argument("-c");
+          }
         }
-        else
+        catch (const std::invalid_argument& ia)
         {
-          CompressionLevel = atoi(optarg);
+          fprintf(stderr, CommandlineParameters_ERR_FMT_NoCompressionLevel);
+          PrintUsageAndExit();
         }
         break;
       }
@@ -345,12 +370,19 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
 
       case 's':
       {
-        if ((optarg == NULL) || (atoi(optarg) < 1))
+        try
         {
-          fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoStartTimestep);
+          StartTimeStep = std::stoi(optarg) - 1;
+          if (StartTimeStep < 0)
+          {
+            throw std::invalid_argument("-s");
+          }
+        }
+        catch (const std::invalid_argument& ia)
+        {
+          fprintf(stderr, CommandlineParameters_ERR_FMT_NoStartTimestep);
           PrintUsageAndExit();
         }
-        StartTimeStep = atoi(optarg) - 1;
         break;
       }
 
@@ -359,16 +391,21 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
       {
         if(strcmp("benchmark",longOpts[longIndex].name) == 0)
         {
-          BenchmarkFlag = true;
-          if ((optarg == NULL) || (atoi(optarg) <= 0))
+          try
           {
-            fprintf(stderr, "%s",CommandlineParameters_ERR_FMT_NoBenchmarkTimeStepCount);
+            BenchmarkFlag = true;
+            BenchmarkTimeStepsCount = std::stoi(optarg);
+            if (BenchmarkTimeStepsCount <= 0)
+            {
+              throw std::invalid_argument("benchmark");
+            }
+          }
+          catch (const std::invalid_argument& ia)
+          {
+            fprintf(stderr, CommandlineParameters_ERR_FMT_NoBenchmarkTimeStepCount);
             PrintUsageAndExit();
           }
-          else
-          {
-            BenchmarkTimeStepsCount = atoi(optarg);
-          }
+
           break;
         }
 
@@ -378,7 +415,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           CheckpointFlag = true;
           if ((optarg == NULL))
           {
-            fprintf(stderr,"%s", CommandlineParameters_ERR_FMT_NoCheckpointFile);
+            fprintf(stderr, CommandlineParameters_ERR_FMT_NoCheckpointFile);
             PrintUsageAndExit();
           }
           else
@@ -390,15 +427,39 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
 
         if(strcmp("checkpoint_interval", longOpts[longIndex].name) == 0)
         {
-          CheckpointFlag = true;
-          if ((optarg == NULL) || (atoi(optarg) <= 0))
+          try
           {
-            fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoCheckpointInterval);
+            CheckpointFlag = true;
+            CheckpointInterval = std::stoi(optarg);
+            if (CheckpointInterval <= 0)
+            {
+             throw std::invalid_argument("checkpoint_interval");
+            }
+          }
+          catch (const std::invalid_argument& ia)
+          {
+            fprintf(stderr, CommandlineParameters_ERR_FMT_NoCheckpointInterval);
             PrintUsageAndExit();
           }
-          else
+          break;
+        }
+
+        if(strcmp("verbose", longOpts[longIndex].name) == 0)
+        {
+          try
           {
-            CheckpointInterval = atoi(optarg);
+            int VerboseLevel = std::stoi(optarg);
+            if ((VerboseLevel < 0) || (VerboseLevel > 2))
+            {
+              throw std::invalid_argument("verbose");
+            }
+
+            TLogger::SetLevel(static_cast<TLogger::TLogLevel> (VerboseLevel));
+          }
+          catch (const std::invalid_argument& ia)
+          {
+            fprintf(stderr, CommandlineParameters_ERR_FMT_BadVerboseLevel);
+            PrintUsageAndExit();
           }
           break;
         }
@@ -510,13 +571,13 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
   //-- Post checks --//
   if (InputFileName == "")
   {
-    fprintf(stderr,"%s",CommandlineParameters_ERR_FMT_NoInputFile);
+    fprintf(stderr, CommandlineParameters_ERR_FMT_NoInputFile);
     PrintUsageAndExit();
   }
 
   if (OutputFileName == "")
   {
-    fprintf(stderr,"%s",CommandlineParameters_ERR_FMT_NoOutputFile);
+    fprintf(stderr, CommandlineParameters_ERR_FMT_NoOutputFile);
     PrintUsageAndExit();
   }
 
@@ -524,12 +585,12 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
   {
     if (CheckpointFileName == "")
     {
-      fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoCheckpointFile);
+      fprintf(stderr, CommandlineParameters_ERR_FMT_NoCheckpointFile);
       PrintUsageAndExit();
     }
     if (CheckpointInterval <= 0)
     {
-      fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoCheckpointInterval);
+      fprintf(stderr, CommandlineParameters_ERR_FMT_NoCheckpointInterval);
       PrintUsageAndExit();
     }
   }

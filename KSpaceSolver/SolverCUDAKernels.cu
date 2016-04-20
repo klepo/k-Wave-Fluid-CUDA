@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 March    2013, 13:10 (created) \n
- *              12 April    2016, 15:04 (revised)
+ *              20 April    2016, 10:37 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -36,7 +36,7 @@
 #include <KSpaceSolver/SolverCUDAKernels.cuh>
 #include <Parameters/CUDADeviceConstants.cuh>
 
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
 #include <Utils/CUDAUtils.cuh>
 
 //----------------------------------------------------------------------------//

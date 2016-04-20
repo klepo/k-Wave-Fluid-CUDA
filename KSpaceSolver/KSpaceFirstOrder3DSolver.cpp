@@ -59,7 +59,7 @@
 
 #include <KSpaceSolver/KSpaceFirstOrder3DSolver.h>
 
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
 #include <KSpaceSolver/SolverCUDAKernels.cuh>
 #include <Containers/MatrixContainer.h>
 
@@ -1610,7 +1610,7 @@ void TKSpaceFirstOrder3DSolver::PrintStatistics()
 
   if (t_index > (ActPercent * Nt * 0.01f) )
   {
-    ActPercent += Parameters->GetVerboseInterval();
+    ActPercent += Parameters->GetProgressPrintInterval();
 
     IterationTime.Stop();
 

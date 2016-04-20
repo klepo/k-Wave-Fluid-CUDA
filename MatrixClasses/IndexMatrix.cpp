@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        26 July     2011, 15:16 (created) \n
- *              12 April    2016, 15:18 (revised)
+ *              20 April    2016, 10:38 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -34,7 +34,7 @@
 #include <iostream>
 
 #include <MatrixClasses/IndexMatrix.h>
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
 
 //----------------------------------------------------------------------------//
 //                              Constants                                     //

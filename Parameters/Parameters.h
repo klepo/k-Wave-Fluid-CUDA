@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        08 December 2011, 16:34 (created)      \n
- *              17 June     2015, 10:08 (revised)
+ *              20 April    2015, 10:43 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -207,8 +207,8 @@ class TParameters
     size_t GetCompressionLevel()   const {return CommandLinesParameters.GetCompressionLevel();};
     /// Get number of threads.
     size_t GetNumberOfThreads()    const {return CommandLinesParameters.GetNumberOfThreads();};
-    /// Get verbose interval.
-    size_t GetVerboseInterval()    const {return CommandLinesParameters.GetVerboseInterval();};
+    /// Get progress print interval.
+    size_t GetProgressPrintInterval() const {return CommandLinesParameters.GetProgressPrintInterval();};
 
     /// Get start time index for sensor recording.
     size_t GetStartTimeIndex()     const {return CommandLinesParameters.GetStartTimeIndex();};

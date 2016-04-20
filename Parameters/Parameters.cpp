@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2012, 13:39 (created) \n
- *              12 April     2016, 15:20 (revised)
+ *              20 April     2016, 10:43 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -43,7 +43,7 @@
 #include <Parameters/Parameters.h>
 #include <Parameters/CUDAParameters.h>
 #include <Utils/MatrixNames.h>
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
 
 
 using namespace std;

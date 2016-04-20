@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        02 December  2014, 16:17 (created) \n
- *              24 March     2016, 14:04 (revised)
+ *              20 April     2016, 10:32 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -35,7 +35,7 @@
 #include <Containers/MatrixContainer.h>
 
 #include <Parameters/Parameters.h>
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
 
 //----------------------------------------------------------------------------//
 //----------------------------- CONSTANTS ------------------------------------//

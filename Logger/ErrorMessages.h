@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August   2011, 12:34 (created) \n
- *              12 April    2016, 15:05 (revised)
+ *              20 April    2016, 10:37 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -32,8 +32,8 @@
  */
 
 
-#ifndef ERRORMESSAGES_H
-#define	ERRORMESSAGES_H
+#ifndef ERROR_MESSAGES_H
+#define	ERROR_MESSAGES_H
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -114,7 +114,7 @@ TErrorMessage  MatrixContainer_ERR_FMT_ReloactaionError =
 //-------------------------- Command line Parameters  ------------------------//
 
 /// Command line parameters error message
-TErrorMessage CommandlineParameters_ERR_FMT_NoVerboseIntreval        = "Command line parsing error: No or invalid verbose interval provided!\n";
+TErrorMessage CommandlineParameters_ERR_FMT_NoProgressPrintIntreval        = "Command line parsing error: No or invalid progress print interval provided!\n";
 /// Command line parameters error message
 TErrorMessage CommandlineParameters_ERR_FMT_NoThreadNumbers          = "Command line parsing error: No or invalid number of CPU threads!\n";
 /// Command line parameters error message
@@ -126,13 +126,16 @@ TErrorMessage CommandlineParameters_ERR_FMT_NoStartTimestep          = "Command 
 /// Command line parameters error message
 TErrorMessage CommandlineParameters_ERR_FMT_NoBenchmarkTimeStepCount = "Command line parsing error: No or invalid benchmark time step count!\n";
 /// Command line parameters error message
-TErrorMessage CommandlineParameters_ERR_FMT_NoInputFile =  "Error: The input file was not specified!\n";
+TErrorMessage CommandlineParameters_ERR_FMT_BadVerboseLevel          = "Command line parsing error:: Bad verbose level, allowed values are from interval <0,2> \n";
+
 /// Command line parameters error message
-TErrorMessage CommandlineParameters_ERR_FMT_NoOutputFile=  "Error: The output file was not specified!\n";
+TErrorMessage CommandlineParameters_ERR_FMT_NoInputFile          = "Error: The input file was not specified!\n";
 /// Command line parameters error message
-TErrorMessage CommandlineParameters_ERR_FMT_NoCheckpointFile         = "Error: The checkpoint file was not specified!\n";
+TErrorMessage CommandlineParameters_ERR_FMT_NoOutputFile         = "Error: The output file was not specified!\n";
 /// Command line parameters error message
-TErrorMessage CommandlineParameters_ERR_FMT_NoCheckpointInterval     = "Error: The checkpoint interval was not specified!\n";
+TErrorMessage CommandlineParameters_ERR_FMT_NoCheckpointFile     = "Error: The checkpoint file was not specified!\n";
+/// Command line parameters error message
+TErrorMessage CommandlineParameters_ERR_FMT_NoCheckpointInterval = "Error: The checkpoint interval was not specified!\n";
 
 /// Command line parameters error message
 TErrorMessage Parameters_ERR_FMT_Illegal_alpha_power_value = "Error: Illegal value of alpha_power!";
@@ -148,6 +151,8 @@ TErrorMessage Parameters_ERR_FMT_IncorrectMinorHDF5FileVersion = "Error: Incorre
 TErrorMessage Parameters_ERR_FMT_WrongSensorMaskType = "Error: The sensor mask type specified in the input file is not supported! \n";
 /// Command line parameters error message
 TErrorMessage Parameters_ERR_FMT_UNonStaggeredNotSupportedForFile10 = "Error: --u_non_staggered_raw is not supported along with the input file of the version 1.0! \n";
+
+
 
 //------------------------------- CUDA  --------------------------------------//
 
@@ -277,7 +282,7 @@ inline void CheckErrors(const cudaError_t error_code,
 #define checkCudaErrors(val) CheckErrors ( (val), #val, __FILE__, __LINE__ )
 
 
-#endif	/* ERRORMESSAGES_H */
+#endif	/* ERROR_MESSAGES_H */
 
 
 

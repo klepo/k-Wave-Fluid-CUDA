@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2011, 13:10 (created) \n
- *              12 April     2016, 15:05 (revised)
+ *              20 April     2016, 10:38 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -40,7 +40,7 @@
 
 #include <MatrixClasses/CUFFTComplexMatrix.h>
 #include <MatrixClasses/RealMatrix.h>
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
 #include <KSpaceSolver/SolverCUDAKernels.cuh>
 
 

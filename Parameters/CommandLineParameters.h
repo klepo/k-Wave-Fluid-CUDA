@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        29 August   2012, 11:25 (created) \n
- *              17 June     2015, 10:00 (revised)
+ *              20 April    2015, 10:43 (revised)
  *
  * @section Params Command Line Parameters
  * The CUDA/C++ code requires two mandatory parameters and accepts a few optional
@@ -117,7 +117,7 @@ Optional parameters:
   -t <num_threads>                : Number of CPU threads
                                       (default = all )
   -g <device_number>              : GPU device to run on
-                                      (default = device with most  memory)
+                                      (default = first free)
 
   -r <interval_in_%>              : Progress print interval
                                       (default = 5%)
@@ -128,6 +128,10 @@ Optional parameters:
   --checkpoint_file <file_name>   : HDF5 checkpoint file
   --checkpoint_interval <seconds> : Stop after a given number of seconds and
                                       store the actual state
+
+  --verbose <level>               : Level of verbosity <0,2>
+                                      0 - Basic, 1 - Advanced, 2 - Full
+                                      (default = 0 (Basic))
 
   -h                              : Print help
   --help                          : Print help
@@ -227,8 +231,8 @@ class TCommandLineParameters
     size_t GetCompressionLevel()        const {return CompressionLevel;};
     /// Get number of threads
     size_t GetNumberOfThreads()         const {return NumberOfThreads;};
-    /// Get verbose interval
-    size_t GetVerboseInterval()         const {return VerboseInterval;};
+    /// Get progress print interval
+    size_t GetProgressPrintInterval()   const {return ProgressPrintInterval;};
     /// Get start time index when sensor data collection begins
     size_t GetStartTimeIndex()          const {return StartTimeStep;};
 
@@ -301,8 +305,8 @@ class TCommandLineParameters
     /// id of selected GPU devices.
     int GPUDeviceIdx;
 
-    /// VerboseInterval value.
-    size_t VerboseInterval;
+    /// ProgressInterval value.
+    size_t ProgressPrintInterval;
     // CompressionLevel value.
     size_t CompressionLevel;
 
@@ -355,8 +359,8 @@ class TCommandLineParameters
 
     /// Default compression level.
     static const size_t DefaultCompressionLevel = 0;
-    /// Default verbose interval.
-    static const size_t DefaultVerboseInterval  = 5;
+    /// Default progress print interval.
+    static const size_t DefaultProgressPrintInterval  = 5;
 };// end of class TCommandLineParameters
 
 #endif /* TCOMMANDLINESPARAMETERS_H */
