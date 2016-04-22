@@ -140,7 +140,7 @@ TErrorMessage CommandlineParameters_ERR_FMT_NoCheckpointInterval = "Error: The c
 /// Command line parameters error message
 TErrorMessage Parameters_ERR_FMT_Illegal_alpha_power_value = "Error: Illegal value of alpha_power!";
 /// Command line parameters error message
-TErrorMessage Parameters_ERR_FMT_Illegal_StartTime_value   = "Error: The start index is out of the simulation span <%ld, %ld>!\n";
+TErrorMessage Parameters_ERR_FMT_Illegal_StartTime_value   = "Error: The start index is out of the simulation span <%zu, %zu>!\n";
 /// Command line parameters error message
 TErrorMessage Parameters_ERR_FMT_IncorrectInputFileFormat = "Error: Incorrect input file\"%s\" format!\n";
 /// Command line parameters error message

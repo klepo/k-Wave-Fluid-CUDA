@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              23 February 2016, 15:04 (revised)
+ *              22 April    2016, 15:21 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -82,7 +82,7 @@ class TKSpaceFirstOrder3DSolver
     virtual void Compute();
 
     /// Print parameters of the simulation.
-    void PrintParametersOfSimulation(FILE * file);
+    void PrintParametersOfSimulation();
 
     /// Get memory usage in MB on the CPU side.
     size_t GetHostMemoryUsageInMB();
@@ -95,9 +95,6 @@ class TKSpaceFirstOrder3DSolver
 
     /// Print the code name and license.
     void PrintFullNameCodeAndLicense(FILE * file);
-
-    /// Set processor affinity.
-    void SetProcessorAffinity();
 
     /// Get total simulation time.
     double GetTotalTime()          const { return TotalTime.GetElapsedTime(); };

@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        02 December  2014, 16:17 (created) \n
- *              24 March     2016, 14:05 (revised)
+ *              20 April     2016, 14:17 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -176,9 +176,6 @@ class TMatrixContainer
     {
       return static_cast<T &> (*(MatrixContainer[MatrixID].MatrixPtr));
     };
-
-    /// Try to guess how much memory is necessary to run the simulation.
-    size_t GetSpeculatedMemoryFootprintInMegabytes();
 
   protected:
 

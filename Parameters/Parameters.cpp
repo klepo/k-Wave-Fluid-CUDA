@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2012, 13:39 (created) \n
- *              20 April     2016, 10:43 (revised)
+ *              22 April     2016, 15:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -44,6 +44,8 @@
 #include <Parameters/CUDAParameters.h>
 #include <Utils/MatrixNames.h>
 #include <Logger/ErrorMessages.h>
+#include <Logger/OutputMessages.h>
+#include <Logger/Logger.h>
 
 
 using namespace std;
@@ -84,18 +86,14 @@ TParameters* TParameters::GetInstance()
 //----------------------------------------------------------------------------
 
 /**
- * Parse command line.
+ * Parse command line and read scalar values from the input file to initialise
+ * the class and the simulation.
  * @param [in] argc
  * @param [in] argv
  */
-void TParameters::ParseCommandLine(int argc, char** argv)
+void TParameters::Init(int argc, char** argv)
 {
-
   CommandLinesParameters.ParseCommandLine(argc, argv);
-
-  // this must be here to read the GPU parameters and report a potential error
-  int DeviceIdx = CommandLinesParameters.GetGPUDeviceIdx();
-  CUDAParameters.SelectDevice(DeviceIdx); // throws an exception when wrong
 
   if (CommandLinesParameters.IsVersion())
   {
@@ -114,13 +112,63 @@ void TParameters::ParseCommandLine(int argc, char** argv)
   {
     fprintf(stderr,
             Parameters_ERR_FMT_Illegal_StartTime_value,
-            static_cast<size_t> (1),
+            1l,
             Nt);
     CommandLinesParameters.PrintUsageAndExit();
   }
 
 }// end of ParseCommandLine
 //----------------------------------------------------------------------------
+
+
+/**
+ * Select a GPU device for execution.
+ */
+void TParameters::SelectDevice()
+{
+  TLogger::Log(TLogger::Basic,
+               Parameters_OUT_FMT_SelectedGPUDeviceID);
+  TLogger::Flush(TLogger::Basic);
+
+  int DeviceIdx = CommandLinesParameters.GetGPUDeviceIdx();
+  CUDAParameters.SelectDevice(DeviceIdx); // throws an exception when wrong
+
+  TLogger::Log(TLogger::Basic,
+               Parameters_OUT_FMT_PrintOutGPUDevice,
+               CUDAParameters.GetDeviceIdx());
+
+
+  TLogger::Log(TLogger::Basic,
+               Parameters_OUT_FMT_GPUDeviceInfo,
+               CUDAParameters.GetDeviceName().c_str());
+
+}// end of SelectDevice
+//------------------------------------------------------------------------------
+
+
+/**
+ * Print parameters of the simulation, based in the actual level of verbosity.
+ */
+void TParameters::PrintSimulatoinSetup()
+{
+  TLogger::Log(TLogger::Basic,
+               Main_OUT_FMT_NumberOfThreads,
+               GetNumberOfThreads());
+
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_SmallSeparator);
+
+  TLogger::Log(TLogger::Basic,
+               Parameters_OUT_FMT_DomainSize,
+               GetFullDimensionSizes().X,
+               GetFullDimensionSizes().Y,
+               GetFullDimensionSizes().Z);
+
+  TLogger::Log(TLogger::Basic,
+               Parameters_OUT_FMT_Length,
+               Get_Nt());
+}// end of PrintParametersOfTask
+//------------------------------------------------------------------------------
+
 
 /**
  * Read scalar values from the input HDF5 file.

@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              12 April    2016, 15:17 (revised)
+ *              22 April    2016, 15:21 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -312,21 +312,6 @@ void TKSpaceFirstOrder3DSolver::Compute()
 //------------------------------------------------------------------------------
 
 /**
- * Print parameters of the simulation.
- * @param [in,out] file - where to print the parameters
- */
-void TKSpaceFirstOrder3DSolver::PrintParametersOfSimulation(FILE * file)
-{
-  fprintf(file, "Domain dims:     [%4lu, %4lu, %4lu]\n",
-                Parameters->GetFullDimensionSizes().X,
-                Parameters->GetFullDimensionSizes().Y,
-                Parameters->GetFullDimensionSizes().Z);
-
-  fprintf(file,"Simulation time steps:  %lu\n", Parameters->Get_Nt());
-}// end of PrintParametersOfTask
-//------------------------------------------------------------------------------
-
-/**
  * Get peak GPU memory usage.
  * @return Peak memory usage in MBs.
  *
@@ -474,31 +459,6 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense(FILE * file)
   fprintf(file,"+----------------------------------------------------+\n");
   fprintf(file,"\n");
 }// end of GetFullCodeAndLincence
-//------------------------------------------------------------------------------
-
-
-/**
- * Set processor affinity.
- */
-void TKSpaceFirstOrder3DSolver::SetProcessorAffinity()
-{
-  // Linux Build
-  #ifdef __linux__
-    //GNU compiler
-    #if (defined(__GNUC__) || defined(__GNUG__)) && !(defined(__clang__) || defined(__INTEL_COMPILER))
-      setenv("OMP_PROC_BIND","TRUE",1);
-    #endif
-
-    #ifdef __INTEL_COMPILER
-      setenv("KMP_AFFINITY","none",1);
-    #endif
-  #endif
-
-  // Windows build is always compiled by the Intel Compiler
-  #ifdef _WIN64
-    _putenv_s("KMP_AFFINITY","none");
-  #endif
-}//end of SetProcessorAffinity
 //------------------------------------------------------------------------------
 
 

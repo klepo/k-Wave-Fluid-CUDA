@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        19 April    2016, 12:52 (created) \n
- *              19 April    2016, 12:52 (revised)
+ *              22 April    2016, 15:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -75,4 +75,17 @@ void TLogger::Log(const TLogLevel QueryLevel,
     va_end(args);
   }
 }// end of Log
+//------------------------------------------------------------------------------
+
+/**
+ * Flush logger
+ * @param [in] QueryLevel - Log level of the flush
+ */
+void TLogger::Flush(const TLogLevel QueryLevel)
+{
+  if (QueryLevel <= TLogger::LogLevel)
+  {
+    fflush(stdout);
+  }
+}// end of Flush
 //------------------------------------------------------------------------------

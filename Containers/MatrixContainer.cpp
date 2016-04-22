@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        02 December  2014, 16:17 (created) \n
- *              20 April     2016, 10:32 (revised)
+ *              20 April     2016, 14:17 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -496,62 +496,6 @@ void TMatrixContainer::CopyAllMatricesFromDevice()
     it->second.MatrixPtr->CopyFromDevice();
   }
 }// end of CopyAllMatricesFromGPU
-//------------------------------------------------------------------------------
-
-/*
- *  Prior to allocating any memory we can approximate the amount of memory
- *  required, this is useful to determine if the target device memory is large
- *  enough for running the simulation.
- *  Returns the number of megabytes that will be in use by all matrices.
- *
- * @todo - I have no idea how this was calculated - it is very suspicious!!
- */
-size_t TMatrixContainer::GetSpeculatedMemoryFootprintInMegabytes()
-{
-  TParameters * Params = TParameters::GetInstance();
-
-  size_t total_float_elements = 0;
-  size_t total_long_elements = 0;
-  size_t intermediate_element_count;
-
-  for (auto it = MatrixContainer.begin(); it != MatrixContainer.end(); it++)
-  {
-
-  // if we expect the matrix to exist (by anticipating a non-zero
-  // dimension size) use that value for the memory estimate
-  intermediate_element_count = (it->second.DimensionSizes.X *
-                                it->second.DimensionSizes.Y *
-                                it->second.DimensionSizes.Z);
-
-  if (intermediate_element_count != 0)
-  {
-    // if this data type is based off a long
-    if (it->second.MatrixDataType == TMatrixRecord::mdtIndex)
-      total_long_elements += intermediate_element_count;
-    else
-      total_float_elements += intermediate_element_count;
-  }
-}
-
-//convert from bytes to megabytes and return
-//also fix to a linear regression model to improve accuracy of estimation
-
-//linear model from all data on 2 platforms
-float b_0 = 168.08536;
-float b_1 = 1.22851;
-
-//linear model from trinity
-//float b_0 = 78.194739;
-//float b_1 = 1.233752;
-
-//linear model from infib2
-//float b_0 = 86.36;
-//float b_1 = 1.146;
-
-return b_0 + b_1 *
-        ((((total_float_elements * sizeof (float)))+
-          ((total_long_elements * sizeof (long)))) >> 20);
-}// end of GetSpeculatedMemoryFootprintInMegabytes
 //------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------//

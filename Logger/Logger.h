@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        19 April    2016, 12:52 (created) \n
- *              19 April    2016, 12:52 (revised)
+ *              22 April    2016, 15:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -70,6 +70,10 @@ class TLogger
     static void Log(const TLogLevel QueryLevel,
                     const char *    Format,
                     ...);
+
+    /// Flush logger
+    static void Flush(const TLogLevel QueryLevel);
+
 
   private:
     /// Default constructor is not allowed, static class

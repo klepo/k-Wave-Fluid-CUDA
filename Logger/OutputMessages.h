@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        19 April    2016, 12:52 (created) \n
- *              19 April    2016, 12:52 (revised)
+ *              22 April    2016, 15:24 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -37,10 +37,67 @@
  * @typedef TOutputMessage
  * @brief Datatype for output messages
  */
-typedef const char * const TOutputMessage;
+typedef const char* const TOutputMessage;
+
+// colors are defined here
+//http://stackoverflow.com/questions/3585846/color-text-in-terminal-aplications-in-unix
+
+//----------------------------- Main module outputs --------------------------//
+
+/// Main file output message
+TOutputMessage Main_OUT_FMT_SmallSeparator  = "--------------------------------------\n";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_CodeName  = "     %s\n";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_NumberOfThreads = "Number of CPU threads:       %9zu\n";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_Initialisatoin  = "........... Initialization ...........\n";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_MemoryAllocation= "Memory allocation                 ";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_DataLoading     = "Data loading                      ";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_InitElapsedTime = "Elapsed time:             %11.2fs\n";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_RecoveredForm = "Recovered from t_index:       %8ld\n\n";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_Computation     = "............. Computation ............\n";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_Summary         = "............... Summary ..............\n";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_HostMemoryUsage  = "Peak host memory in use:    %8zuMB\n";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_DeviceMemoryUsage= "Peak device memory in use:  %8zuMB\n";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_TotalExecutionTime= "Total execution time:        %8.2fs\n";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_LegExecutionTime  = "This leg execution time:     %8.2fs\n";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_EndOfComputation  = "         End of computation  \n";
 
 
-TOutputMessage MAIN_OUT_FMT_SmallSeparator = "--------------------------------------\n";
+/// Main file output message
+TOutputMessage Main_OUT_FMT_Done = "Done\n";
+/// Main file output message
+//TOutputMessage Main_OUT_FMT_Failed = "\x1B[31m\b\b\b Failed\033[0m\n" ;
+TOutputMessage Main_OUT_FMT_Failed = "\b\bFailed\n" ;
+
+
+//----------------------- Parameters module outputs --------------------------//
+/// Parameter module log message
+TOutputMessage Parameters_OUT_FMT_SelectedGPUDeviceID = "Selected GPU device id:      ";
+/// Parameter module log message
+TOutputMessage Parameters_OUT_FMT_PrintOutGPUDevice   = "%9d\n";
+/// Parameter module log message
+TOutputMessage Parameters_OUT_FMT_GPUDeviceInfo       = "GPU Device info: %21s\n";
+/// Parameter module log message
+TOutputMessage Parameters_OUT_FMT_DomainSize          = "Domain dims:        [%4lu, %4lu, %4lu]\n";
+/// Parameter module log message
+TOutputMessage Parameters_OUT_FMT_Length              = "Simulation time steps:       %9lu\n";
+
+
+
+
 
 #endif /* OUTPUTMESSAGES_H */
 

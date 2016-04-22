@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July     2012, 10:57 (created) \n
- *              10 February 2016, 13:10 (revised)
+ *              22 April    2016, 15:26 (revised)
  *
  *
  *
@@ -273,6 +273,10 @@ Optional parameters:
   --checkpoint_file <file_name>   : HDF5 checkpoint file
   --checkpoint_interval <seconds> : Stop after a given number of seconds and
                                       store the actual state
+
+  --verbose <level>               : Level of verbosity <0,2>
+                                      0 - Basic, 1 - Advanced, 2 - Full
+                                      (default = 0 (Basic))
 
   -h                              : Print help
   --help                          : Print help
@@ -674,11 +678,10 @@ These are only defined if (p_source_flag == 1)
 #endif
 
 #include <KSpaceSolver/KSpaceFirstOrder3DSolver.h>
+#include <Logger/Logger.h>
+#include <Logger/OutputMessages.h>
 
 using namespace std;
-
-/// separator
-static const char * FMT_SmallSeparator = "--------------------------------\n";
 
 /**
  * The main function of the kspaceFirstOrder3D-CUDA
@@ -692,26 +695,21 @@ int main(int argc, char** argv)
   TKSpaceFirstOrder3DSolver KSpaceSolver;
 
   // print header
-  fprintf(stdout, "---%s", FMT_SmallSeparator);
-  fprintf(stdout, "    %s\n", KSpaceSolver.GetCodeName().c_str());
-  fprintf(stdout, "---%s", FMT_SmallSeparator);
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_SmallSeparator);
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_CodeName, KSpaceSolver.GetCodeName().c_str());
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_SmallSeparator);
 
   // Create parameters and parse command line
   TParameters* Parameters = TParameters::GetInstance();
 
   try
   {
-    fprintf(stdout, "Selected GPU device id:   ");
-    fflush(stdout);
-   // parse commandline and set GPU
-    Parameters->ParseCommandLine(argc, argv);
+    // Initialise Parameters by parsing the command line and reading input file scalars
+    Parameters->Init(argc, argv);
+    // Select GPU
+    Parameters->SelectDevice();
 
-    fprintf(stdout, "%9d\n", Parameters->CUDAParameters.GetDeviceIdx());
-    fprintf(stdout,
-          "GPU Device info: %18s\n",
-          Parameters->CUDAParameters.GetDeviceName().c_str());
-
-    // Must be here, after the GPU was acquired
+    // When we know the GPU, we can print out the code version
     if (Parameters->IsVersion())
     {
       KSpaceSolver.PrintFullNameCodeAndLicense(stdout);
@@ -720,34 +718,30 @@ int main(int argc, char** argv)
   }
   catch (exception &e)
   {
-    // must be repeated in case the GPU we want to printout the codeversion
+     TLogger::Log(TLogger::Basic, Main_OUT_FMT_Failed);
+    // must be repeated in case the GPU we want to printout the code version
     // and all GPUs are busy
     if (Parameters->IsVersion())
     {
       KSpaceSolver.PrintFullNameCodeAndLicense(stdout);
     }
 
-    fprintf(stdout, "\nK-Wave panic in initialisation: \n %s\n", e.what());
+    fprintf(stderr, "\nK-Wave panic in initialisation: \n %s\n", e.what());
     return EXIT_FAILURE;
   }
 
-
   // set number of threads and bind them to cores
   #ifdef _OPENMP
-    KSpaceSolver.SetProcessorAffinity();
     omp_set_num_threads(Parameters->GetNumberOfThreads());
   #endif
 
-  fprintf(stdout,
-          "Number of CPU threads:    %9ld\n",
-          Parameters->GetNumberOfThreads());
+  // Print simulation setup
+  Parameters->PrintSimulatoinSetup();
 
-  KSpaceSolver.PrintParametersOfSimulation(stdout);
-
-  fprintf(stdout,"---%s",FMT_SmallSeparator);
-  fprintf(stdout,".......... Initialization .........\n");
-  fprintf(stdout,"Memory allocation .............");
-  fflush(stdout);
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_SmallSeparator);
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_Initialisatoin);
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_MemoryAllocation);
+  TLogger::Flush(TLogger::Basic);
 
   // allocate memory
   try
@@ -756,55 +750,76 @@ int main(int argc, char** argv)
   }
   catch (exception e)
   {
-    fprintf(stdout, "Failed!\nK-Wave panic: Not enough memory to run this simulation!\n%s\n", e.what());
+    TLogger::Log(TLogger::Basic, Main_OUT_FMT_Failed);
     fprintf(stderr, "K-Wave panic: Not enough memory to run this simulation! \n%s\n", e.what());
     return EXIT_FAILURE;
   }
-  fprintf(stdout, "Done\n");
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_Done);
 
   // Load data from disk
-  fprintf(stdout, "Data loading...................");
-  fflush(stdout);
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_DataLoading);
+  TLogger::Flush(TLogger::Basic);
+
   try
   {
     KSpaceSolver.LoadInputData();
   }
   catch (ios::failure e)
   {
-    fprintf(stdout, "Failed!\nK-Wave panic: Data loading was not successful!\n%s\n",e.what());
+    TLogger::Log(TLogger::Basic, Main_OUT_FMT_Failed);
     fprintf(stderr, "K-Wave panic: Data loading was not successful! \n%s\n",e.what());
     return EXIT_FAILURE;
   }
-  fprintf(stdout, "Done\n");
 
-  fprintf(stdout,"Elapsed time:          %11.2fs\n",KSpaceSolver.GetDataLoadTime());
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_Done);
+
+  TLogger::Log(TLogger::Basic,
+               Main_OUT_FMT_InitElapsedTime,
+               KSpaceSolver.GetDataLoadTime());
 
   if (Parameters->Get_t_index() > 0)
   {
-    fprintf(stdout, "Recovered from t_index: %8ld\n", Parameters->Get_t_index());
+    TLogger::Log(TLogger::Basic,
+                 Main_OUT_FMT_RecoveredForm,
+                 Parameters->Get_t_index());
   }
 
   // start computation
-  fprintf(stdout,"---%s",FMT_SmallSeparator);
-  fprintf(stdout, "........... Computation ...........\n");
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_SmallSeparator);
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_Computation);
 
   KSpaceSolver.Compute();
 
-  fprintf(stdout,"%s",FMT_SmallSeparator);
-  fprintf(stdout, "............ Summary ...........\n");
-  fprintf(stdout, "Peak Host memory in use:   %1ldMB\n",KSpaceSolver.GetHostMemoryUsageInMB());
-  fprintf(stdout, "Peak Device memory in use: %1ldMB\n",KSpaceSolver.GetDeviceMemoryUsageInMB());
+  // summary
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_SmallSeparator);
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_Summary);
 
+  TLogger::Log(TLogger::Basic,
+               Main_OUT_FMT_HostMemoryUsage,
+               KSpaceSolver.GetHostMemoryUsageInMB());
+
+  TLogger::Log(TLogger::Basic,
+               Main_OUT_FMT_DeviceMemoryUsage,
+               KSpaceSolver.GetDeviceMemoryUsageInMB());
+
+
+ // Elapsed Time time
   if (KSpaceSolver.GetCumulatedTotalTime() != KSpaceSolver.GetTotalTime())
   {
-    fprintf(stdout,"This leg execution time:%7.2fs\n",KSpaceSolver.GetTotalTime());
+    TLogger::Log(TLogger::Basic,
+               Main_OUT_FMT_LegExecutionTime,
+               KSpaceSolver.GetTotalTime());
+
   }
-  fprintf(stdout, "Total execution time:  %8.2fs\n",KSpaceSolver.GetCumulatedTotalTime());
+  TLogger::Log(TLogger::Basic,
+               Main_OUT_FMT_TotalExecutionTime,
+               KSpaceSolver.GetCumulatedTotalTime());
 
 
-  fprintf(stdout,"%s",FMT_SmallSeparator);
-  fprintf(stdout,"       End of computation \n");
-  fprintf(stdout,"%s",FMT_SmallSeparator);
+  // end of computation
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_SmallSeparator);
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_EndOfComputation);
+  TLogger::Log(TLogger::Basic, Main_OUT_FMT_SmallSeparator);
 
   return EXIT_SUCCESS;
 }// end of main
