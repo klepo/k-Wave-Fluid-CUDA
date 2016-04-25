@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        19 April    2016, 12:52 (created) \n
- *              22 April    2016, 15:24 (revised)
+ *              25 April    2016, 13:56 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -53,9 +53,9 @@ TOutputMessage Main_OUT_FMT_NumberOfThreads = "Number of CPU threads:       %9zu
 /// Main file output message
 TOutputMessage Main_OUT_FMT_Initialisatoin  = "........... Initialization ...........\n";
 /// Main file output message
-TOutputMessage Main_OUT_FMT_MemoryAllocation= "Memory allocation                 ";
+TOutputMessage Main_OUT_FMT_MemoryAllocation= "Memory allocation:                ";
 /// Main file output message
-TOutputMessage Main_OUT_FMT_DataLoading     = "Data loading                      ";
+TOutputMessage Main_OUT_FMT_DataLoading     = "Data loading:                     ";
 /// Main file output message
 TOutputMessage Main_OUT_FMT_InitElapsedTime = "Elapsed time:             %11.2fs\n";
 /// Main file output message
@@ -93,10 +93,122 @@ TOutputMessage Parameters_OUT_FMT_GPUDeviceInfo       = "GPU Device info: %21s\n
 /// Parameter module log message
 TOutputMessage Parameters_OUT_FMT_DomainSize          = "Domain dims:        [%4lu, %4lu, %4lu]\n";
 /// Parameter module log message
-TOutputMessage Parameters_OUT_FMT_Length              = "Simulation time steps:       %9lu\n";
+TOutputMessage Parameters_OUT_FMT_Length              = "Simulation time steps:       %9zu\n";
 
 
+//------------------ TKSpaceFirstOrder3DSolver module outputs ----------------//
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_Version       = "kspaceFirstOrder3D-CUDA v1.1";
 
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_FFTPlans      = "FFT plans creation:               ";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_PreProcessing = "Pre-processing phase:             ";
+
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CurrentHostMemory   = "Current host memory in use:   %6zuMB\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CurrentDeviceMemory = "Current device memory in use: %6zuMB\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_PreProcessingTime   = "Elapsed time:                %8.2fs\n";
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_LongSeparator        = "-------------------------------------------------------------\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CheckpointInterrupt  = ".............. Interrupted to checkpoint! ...................\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_Simulation           = "....................... Simulation ..........................\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_ProgressHeader       = "Progress...ElapsedTime........TimeToGo......TimeOfTermination\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_Progress             = "%5li%c      %9.3fs      %9.3fs      %02i/%02i/%02i %02i:%02i:%02i\n";
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CheckpointTimeSteps  = "Number of time steps completed:                    %10zu\n";
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_ElapsedTimeLong    = "Elapsed time:                                       %8.2fs\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CheckpointProgress = "Checkpoint in progress            ";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_PostProcessing     = "Post-processing phase             ";
+
+
+//------------------ TKSpaceFirstOrder3DSolver module Print code version ----------------//
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_BuildNoDateTime =
+    "\n"
+    "+----------------------------------------------------+\n"
+    "| Build Number:     kspaceFirstOrder3D v3.4          |\n"
+    "| Build date:       %*.*s                      |\n"
+    "| Build time:       %*.*s                         |\n";
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_GitHash = "Git hash: %s |\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_LicenseEmptyLine = "|                                                    |\n";
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CodeLinux    = "| Operating System: Linux x64                        |\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CodeWindows  = "| Operating System: Windows x64                      |\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CodeMacOS    = "| Operating System: Mac OS X x64                     |\n";
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_GNUCompiler   = "| Compiler name:    GNU C++ %.19s                    |\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_IntelCompiler = "| Compiler name:    Intel C++ %d                   |\n";
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_AVX2  = "| Instruction set:  Intel AVX 2                      |\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_AVX   = "| Instruction set:  Intel AVX                        |\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_SSE42 = "| Instruction set:  Intel SSE 4.2                    |\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_SSE41 = "| Instruction set:  Intel SSE 4.1                    |\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_SSE3  = "| Instruction set:  Intel SSE 3                      |\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_SSE2  = "| Instruction set:  Intel SSE 2                      |\n";
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_GPURuntimeNA = "| GPU Runtime:      N/A                              |\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_GPURuntime   = "| GPU Runtime:      %d.%d                              |\n";
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADriver    = "| CUDA Driver:      %d.%d                              |\n";
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNA  =
+    "| CUDA code arch:   N/A                              |\n"
+    "|                                                    |\n"
+    "| CUDA Device Idx:  N/A                              |\n"
+    "| CUDA Device Name: N/A                              |\n"
+    "| CUDA Capability:  N/A                              |\n";
+
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CUDACodeArch   = "| CUDA code arch:   %1.1f                              |\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADevice     = "| CUDA Device Idx:  %d                                |\n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceName = "| CUDA Device Name: %s %.*s| \n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding =  "                                        ";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADCapability = "| CUDA Capability:  %d.%d                              |\n";
+
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_Licence =
+    "+----------------------------------------------------+\n"
+    "| Copyright (C) 2016 Jiri Jaros, Bradley Treeby and  |\n"
+    "|                    Beau Johnston                   |\n"
+    "| http://www.k-wave.org                              |\n"
+    "+----------------------------------------------------+\n";
 
 
 #endif /* OUTPUTMESSAGES_H */

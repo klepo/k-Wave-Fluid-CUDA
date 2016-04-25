@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        19 April    2016, 12:52 (created) \n
- *              22 April    2016, 15:22 (revised)
+ *              25 April    2016, 13:59 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -34,7 +34,7 @@
 #ifndef TLOGGER_H
 #define TLOGGER_H
 
-
+#include <Logger/OutputMessages.h>
 
 /**
  * @class TLogger

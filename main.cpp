@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July     2012, 10:57 (created) \n
- *              22 April    2016, 15:26 (revised)
+ *              25 April    2016, 14:00 (revised)
  *
  *
  *
@@ -679,7 +679,6 @@ These are only defined if (p_source_flag == 1)
 
 #include <KSpaceSolver/KSpaceFirstOrder3DSolver.h>
 #include <Logger/Logger.h>
-#include <Logger/OutputMessages.h>
 
 using namespace std;
 
@@ -712,7 +711,7 @@ int main(int argc, char** argv)
     // When we know the GPU, we can print out the code version
     if (Parameters->IsVersion())
     {
-      KSpaceSolver.PrintFullNameCodeAndLicense(stdout);
+      KSpaceSolver.PrintFullNameCodeAndLicense();
       return EXIT_SUCCESS;
     }
   }
@@ -723,7 +722,7 @@ int main(int argc, char** argv)
     // and all GPUs are busy
     if (Parameters->IsVersion())
     {
-      KSpaceSolver.PrintFullNameCodeAndLicense(stdout);
+      KSpaceSolver.PrintFullNameCodeAndLicense();
     }
 
     fprintf(stderr, "\nK-Wave panic in initialisation: \n %s\n", e.what());
