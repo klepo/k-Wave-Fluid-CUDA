@@ -407,6 +407,11 @@ void TCommandLineParameters::PrintComandlineParamers()
               TCommandlineParamereres_OUT_FMT_CollectionBeginsAt,
               StartTimeStep+1);
 
+  if (CopySensorMask)
+  {
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_CopySensorMaskYes);
+  }
 }// end of PrintSetup
 //------------------------------------------------------------------------------
 

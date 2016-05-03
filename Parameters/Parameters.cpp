@@ -168,8 +168,17 @@ void TParameters::PrintSimulatoinSetup()
                Parameters_OUT_FMT_Length,
                Get_Nt());
 
-  // Print all comandline parameters
+  // Print all commandline parameters
   CommandLinesParameters.PrintComandlineParamers();
+
+  if (Get_sensor_mask_type() == smt_index)
+  {
+    TLogger::Log(TLogger::Advanced, TParamereres_OUT_FMT_SensorMaskTypeIndex);
+  }
+  if (Get_sensor_mask_type() == smt_corners)
+  {
+    TLogger::Log(TLogger::Advanced, TParamereres_OUT_FMT_SensorMaskTypeCuboid);
+  }
 }// end of PrintParametersOfTask
 //------------------------------------------------------------------------------
 

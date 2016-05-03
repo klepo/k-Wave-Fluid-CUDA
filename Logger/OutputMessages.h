@@ -94,6 +94,10 @@ TOutputMessage Parameters_OUT_FMT_GPUDeviceInfo       = "GPU Device info: %21s\n
 TOutputMessage Parameters_OUT_FMT_DomainSize          = "Domain dims:        [%4lu, %4lu, %4lu]\n";
 /// Parameter module log message
 TOutputMessage Parameters_OUT_FMT_Length              = "Simulation time steps:       %9lu\n";
+/// ComandlineParamerers module log message
+TOutputMessage TParamereres_OUT_FMT_SensorMaskTypeIndex = "Sensor mask type:                Index\n";
+/// ComandlineParamerers module log message
+TOutputMessage TParamereres_OUT_FMT_SensorMaskTypeCuboid = "Sensor mask type:               Cuboid\n";
 
 
 //------------------ TKSpaceFirstOrder3DSolver module outputs ----------------//
@@ -234,6 +238,8 @@ TOutputMessage TCommandlineParamereres_OUT_FMT_BenchmarkTimeStepCount = "Benchma
 TOutputMessage TCommandlineParamereres_OUT_FMT_QuantitySampling       = "Sampling: %.*s %s \n";
 /// ComandlineParamerers module log message
 TOutputMessage TCommandlineParamereres_OUT_FMT_CollectionBeginsAt     = "Collection begins at timestep:%8lu\n";
+/// ComandlineParamerers module log message
+TOutputMessage TCommandlineParamereres_OUT_FMT_CopySensorMaskYes      = "Copy sensor mask to output file:   Yes\n";
 
 #endif /* OUTPUTMESSAGES_H */
 
