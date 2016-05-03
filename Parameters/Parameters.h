@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        08 December 2011, 16:34 (created)      \n
- *              22 April    2016, 15:25 (revised)
+ *              03 May      2016, 17:34 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -261,6 +261,9 @@ class TParameters
 
     /// is --copy_mask set
     bool IsCopySensorMask()            const {return CommandLinesParameters.IsCopySensorMask();};
+
+    /// Get Git hash of the code
+    string GetGitHash()  const;
 
     /// Class with CUDA Parameters (runtime setup)
     TCUDAParameters CUDAParameters;

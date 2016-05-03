@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        19 April    2016, 12:52 (created) \n
- *              03 May      2016, 13:41 (revised)
+ *              03 May      2016, 17:33 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -59,7 +59,7 @@ TOutputMessage Main_OUT_FMT_DataLoading     = "Data loading:                    
 /// Main file output message
 TOutputMessage Main_OUT_FMT_InitElapsedTime = "Elapsed time:             %11.2fs\n";
 /// Main file output message
-TOutputMessage Main_OUT_FMT_RecoveredForm = "Recovered from t_index:       %8ld\n\n";
+TOutputMessage Main_OUT_FMT_RecoveredForm = "Recovered from t_index:       %8ld\n";
 /// Main file output message
 TOutputMessage Main_OUT_FMT_Computation     = "............. Computation ............\n";
 /// Main file output message
@@ -95,9 +95,22 @@ TOutputMessage Parameters_OUT_FMT_DomainSize          = "Domain dims:        [%4
 /// Parameter module log message
 TOutputMessage Parameters_OUT_FMT_Length              = "Simulation time steps:       %9lu\n";
 /// ComandlineParamerers module log message
-TOutputMessage TParamereres_OUT_FMT_SensorMaskTypeIndex = "Sensor mask type:                Index\n";
+TOutputMessage TParamereres_OUT_FMT_SensorMaskTypeIndex  = "Sensor mask type:                Index\n";
 /// ComandlineParamerers module log message
 TOutputMessage TParamereres_OUT_FMT_SensorMaskTypeCuboid = "Sensor mask type:               Cuboid\n";
+/// ComandlineParamerers module log message
+TOutputMessage TParamereres_OUT_FMT_GitHashCentered = "               Git Hash     \n";
+
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_ReadingInputFile       = "  Reading input file              ";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_ReadingCheckpointFile  = "  Reading checkpoint file         ";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_ReadingOuptutFile      = "  Reading output file             ";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CreatingOutputFile     = "  Creating output file            ";
+
 
 
 //------------------ TKSpaceFirstOrder3DSolver module outputs ----------------//
@@ -148,7 +161,7 @@ TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_BuildNoDateTime =
     "| Build time:       %*.*s                         |\n";
 
 /// KSpaceFirstOrder3DSolver module log message
-TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_GitHash = "Git hash: %s |\n";
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_GitHash = "| Git hash: %s |\n";
 /// KSpaceFirstOrder3DSolver module log message
 TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_LicenseEmptyLine = "|                                                    |\n";
 
@@ -215,7 +228,7 @@ TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_Licence =
     "+----------------------------------------------------+\n";
 
 
-//------------- TCommandlineParamerers module Print code version --------------//
+//------------ TCommandlineParamerers module Print code version --------------//
 /// ComandlineParamerers module log message
 TOutputMessage TCommandlineParamereres_OUT_FMT_InputFile  = "Input file:  ";
 
@@ -235,11 +248,13 @@ TOutputMessage TCommandlineParamereres_OUT_FMT_CompressionLevel       = "Compres
 /// ComandlineParamerers module log message
 TOutputMessage TCommandlineParamereres_OUT_FMT_BenchmarkTimeStepCount = "Benchmark time steps:         %8lu\n";
 /// ComandlineParamerers module log message
-TOutputMessage TCommandlineParamereres_OUT_FMT_QuantitySampling       = "Sampling: %.*s %s \n";
+TOutputMessage TCommandlineParamereres_OUT_FMT_QuantitySampling       = "Sampling flag: %.*s %s \n";
 /// ComandlineParamerers module log message
 TOutputMessage TCommandlineParamereres_OUT_FMT_CollectionBeginsAt     = "Collection begins at timestep:%8lu\n";
 /// ComandlineParamerers module log message
 TOutputMessage TCommandlineParamereres_OUT_FMT_CopySensorMaskYes      = "Copy sensor mask to output file:   Yes\n";
+
+TOutputMessage OUT_FMT_NewLine = "\n";
 
 #endif /* OUTPUTMESSAGES_H */
 

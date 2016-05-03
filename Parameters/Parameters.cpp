@@ -95,6 +95,10 @@ void TParameters::Init(int argc, char** argv)
 {
   CommandLinesParameters.ParseCommandLine(argc, argv);
 
+  TLogger::Log(TLogger::Full, TParamereres_OUT_FMT_GitHashCentered);
+  TLogger::Log(TLogger::Full, GetGitHash().c_str());
+  TLogger::Log(TLogger::Full, OUT_FMT_NewLine);
+  TLogger::Log(TLogger::Full, Main_OUT_FMT_SmallSeparator);
   if (CommandLinesParameters.IsVersion())
   {
     return;
@@ -508,10 +512,24 @@ void TParameters::SaveScalarsToHDF5File(THDF5_File & HDF5_OutputFile)
 
     HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, sensor_mask_type_Name, SensorMaskTypeNumericValue);
   }
-
 }// end of SaveScalarsToHDF5File
-
 //------------------------------------------------------------------------------
+
+/**
+ * Get GitHash of the code
+ * @return githash
+ */
+string TParameters::GetGitHash() const
+{
+#if (defined (__KWAVE_GIT_HASH__))
+  return string(__KWAVE_GIT_HASH__);
+#else
+  return "";
+#endif
+}// end of GetGitHash
+//------------------------------------------------------------------------------
+
+
 
 //----------------------------------------------------------------------------//
 //                              Implementation                                //

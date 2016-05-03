@@ -263,7 +263,7 @@ void TCommandLineParameters::PrintComandlineParamers()
   TLogger::Log(TLogger::Advanced,Main_OUT_FMT_SmallSeparator);
 
 
-  constexpr int PaddingOffset = 40 - 13;
+  constexpr int PaddingOffset = 40 - 18;
   // Sampled p quantities
   if (Store_p_raw)
   {

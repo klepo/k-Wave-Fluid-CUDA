@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              25 April    2016, 14:53 (revised)
+ *              03 May      2016, 17:32 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -113,7 +113,6 @@ TKSpaceFirstOrder3DSolver::~TKSpaceFirstOrder3DSolver()
  * The method allocates the matrix container and create all matrices and
  * creates all output streams.
  *
- * @todo remove the warning after going over
  */
 void TKSpaceFirstOrder3DSolver::AllocateMemory()
 {
@@ -154,7 +153,13 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
   THDF5_File& HDF5_CheckpointFile = Parameters->HDF5_CheckpointFile;
 
   // Load data from disk
+
+  TLogger::Log(TLogger::Full, OUT_FMT_NewLine);
+  TLogger::Log(TLogger::Full, TKSpaceFirstOrder3DSolver_OUT_FMT_ReadingInputFile);
+  TLogger::Flush(TLogger::Full);
+
   MatrixContainer.LoadDataFromInputHDF5File(HDF5_InputFile);
+  TLogger::Log(TLogger::Full, Main_OUT_FMT_Done);
 
   // close the input file
   HDF5_InputFile.Close();
@@ -166,6 +171,9 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
   //-------------------- Read data from the checkpoint file ------------------//
   if (RecoverFromPrevState)
   {
+    TLogger::Log(TLogger::Full, TKSpaceFirstOrder3DSolver_OUT_FMT_ReadingCheckpointFile);
+    TLogger::Flush(TLogger::Full);
+
     // Open checkpoint file
     HDF5_CheckpointFile.Open(Parameters->GetCheckpointFileName().c_str());
 
@@ -183,9 +191,13 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
     MatrixContainer.LoadDataFromCheckpointHDF5File(HDF5_CheckpointFile);
 
     HDF5_CheckpointFile.Close();
+    TLogger::Log(TLogger::Full, Main_OUT_FMT_Done);
 
     //------------- Read data from the output file ---------------------------//
     // Reopen output file for RW access
+    TLogger::Log(TLogger::Full, TKSpaceFirstOrder3DSolver_OUT_FMT_ReadingOuptutFile);
+    TLogger::Flush(TLogger::Full);
+
     HDF5_OutputFile.Open(Parameters->GetOutputFileName().c_str(), H5F_ACC_RDWR);
 
     //Read file header of the output file
@@ -196,12 +208,17 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
 
     // Reopen streams
     OutputStreamContainer.ReopenStreams();
+    TLogger::Log(TLogger::Full, Main_OUT_FMT_Done);
   }
   else
   {
     //-------------------- First round of multi-leg simulation ---------------//
     // Create the output file
+    TLogger::Log(TLogger::Full, TKSpaceFirstOrder3DSolver_OUT_FMT_CreatingOutputFile);
+    TLogger::Flush(TLogger::Full);
+
     HDF5_OutputFile.Create(Parameters->GetOutputFileName().c_str());
+    TLogger::Log(TLogger::Full, Main_OUT_FMT_Done);
 
     // Create the steams, link them with the sampled matrices
     // however DO NOT allocate memory!
@@ -403,11 +420,12 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense()
                8,8,__TIME__);
 
 
-  #if (defined (__KWAVE_GIT_HASH__))
+  if (Parameters->GetGitHash() != "")
+  {
     TLogger::Log(TLogger::Basic,
                  TKSpaceFirstOrder3DSolver_OUT_FMT_GitHash,
-                 __KWAVE_GIT_HASH__);
-  #endif
+                 Parameters->GetGitHash().c_str());
+  }
 
   TLogger::Log(TLogger::Basic, TKSpaceFirstOrder3DSolver_OUT_FMT_LicenseEmptyLine);
 
