@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        29 August   2012, 11:25 (created) \n
- *              20 April    2015, 10:43 (revised)
+ *              03 May      2016, 13:51 (revised)
  *
  * @section Params Command Line Parameters
  * The CUDA/C++ code requires two mandatory parameters and accepts a few optional
@@ -216,6 +216,10 @@ class TCommandLineParameters
     /// Get Checkpoint file name
     std::string GetCheckpointFileName() const {return CheckpointFileName;};
 
+    /// Word wrap file name
+    std::string WordWrapFileName(const std::string Text,
+                                 const size_t Indentation = 0,
+                                 const size_t LineLength  = 40);
 
     /// Get GPU device ID specified by the user (not necessary the one the code runs on)
     int GetGPUDeviceIdx()               const {return GPUDeviceIdx;};
@@ -279,7 +283,7 @@ class TCommandLineParameters
     /// Print usage and exit
     void PrintUsageAndExit();
     /// Print setup
-    void PrintSetup();
+    void PrintComandlineParamers();
     /// Parse command line
     void ParseCommandLine(int argc, char** argv);
 
@@ -300,7 +304,6 @@ class TCommandLineParameters
 
     /// NumberOfThreads value.
     size_t NumberOfThreads;
-
 
     /// id of selected GPU devices.
     int GPUDeviceIdx;

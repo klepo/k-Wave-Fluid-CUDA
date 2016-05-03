@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2012, 13:39 (created) \n
- *              22 April     2016, 15:22 (revised)
+ *              02 May       2016, 13:53 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -157,6 +157,7 @@ void TParameters::PrintSimulatoinSetup()
 
   TLogger::Log(TLogger::Basic, Main_OUT_FMT_SmallSeparator);
 
+  // Print simulation size
   TLogger::Log(TLogger::Basic,
                Parameters_OUT_FMT_DomainSize,
                GetFullDimensionSizes().X,
@@ -166,6 +167,9 @@ void TParameters::PrintSimulatoinSetup()
   TLogger::Log(TLogger::Basic,
                Parameters_OUT_FMT_Length,
                Get_Nt());
+
+  // Print all comandline parameters
+  CommandLinesParameters.PrintComandlineParamers();
 }// end of PrintParametersOfTask
 //------------------------------------------------------------------------------
 

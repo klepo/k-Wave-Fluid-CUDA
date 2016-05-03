@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        19 April    2016, 12:52 (created) \n
- *              25 April    2016, 13:56 (revised)
+ *              03 May      2016, 13:41 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -49,7 +49,7 @@ TOutputMessage Main_OUT_FMT_SmallSeparator  = "---------------------------------
 /// Main file output message
 TOutputMessage Main_OUT_FMT_CodeName  = "     %s\n";
 /// Main file output message
-TOutputMessage Main_OUT_FMT_NumberOfThreads = "Number of CPU threads:       %9zu\n";
+TOutputMessage Main_OUT_FMT_NumberOfThreads = "Number of CPU threads:       %9lu\n";
 /// Main file output message
 TOutputMessage Main_OUT_FMT_Initialisatoin  = "........... Initialization ...........\n";
 /// Main file output message
@@ -65,9 +65,9 @@ TOutputMessage Main_OUT_FMT_Computation     = "............. Computation .......
 /// Main file output message
 TOutputMessage Main_OUT_FMT_Summary         = "............... Summary ..............\n";
 /// Main file output message
-TOutputMessage Main_OUT_FMT_HostMemoryUsage  = "Peak host memory in use:    %8zuMB\n";
+TOutputMessage Main_OUT_FMT_HostMemoryUsage  = "Peak host memory in use:    %8luMB\n";
 /// Main file output message
-TOutputMessage Main_OUT_FMT_DeviceMemoryUsage= "Peak device memory in use:  %8zuMB\n";
+TOutputMessage Main_OUT_FMT_DeviceMemoryUsage= "Peak device memory in use:  %8luMB\n";
 /// Main file output message
 TOutputMessage Main_OUT_FMT_TotalExecutionTime= "Total execution time:        %8.2fs\n";
 /// Main file output message
@@ -93,7 +93,7 @@ TOutputMessage Parameters_OUT_FMT_GPUDeviceInfo       = "GPU Device info: %21s\n
 /// Parameter module log message
 TOutputMessage Parameters_OUT_FMT_DomainSize          = "Domain dims:        [%4lu, %4lu, %4lu]\n";
 /// Parameter module log message
-TOutputMessage Parameters_OUT_FMT_Length              = "Simulation time steps:       %9zu\n";
+TOutputMessage Parameters_OUT_FMT_Length              = "Simulation time steps:       %9lu\n";
 
 
 //------------------ TKSpaceFirstOrder3DSolver module outputs ----------------//
@@ -106,9 +106,9 @@ TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_PreProcessing = "Pre-processing
 
 
 /// KSpaceFirstOrder3DSolver module log message
-TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CurrentHostMemory   = "Current host memory in use:   %6zuMB\n";
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CurrentHostMemory   = "Current host memory in use:   %6luMB\n";
 /// KSpaceFirstOrder3DSolver module log message
-TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CurrentDeviceMemory = "Current device memory in use: %6zuMB\n";
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CurrentDeviceMemory = "Current device memory in use: %6luMB\n";
 /// KSpaceFirstOrder3DSolver module log message
 TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_PreProcessingTime   = "Elapsed time:                %8.2fs\n";
 
@@ -124,7 +124,7 @@ TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_ProgressHeader       = "Progres
 TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_Progress             = "%5li%c      %9.3fs      %9.3fs      %02i/%02i/%02i %02i:%02i:%02i\n";
 
 /// KSpaceFirstOrder3DSolver module log message
-TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CheckpointTimeSteps  = "Number of time steps completed:                    %10zu\n";
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CheckpointTimeSteps  = "Number of time steps completed:                    %10u\n";
 
 /// KSpaceFirstOrder3DSolver module log message
 TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_ElapsedTimeLong    = "Elapsed time:                                       %8.2fs\n";
@@ -210,6 +210,30 @@ TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_Licence =
     "| http://www.k-wave.org                              |\n"
     "+----------------------------------------------------+\n";
 
+
+//------------- TCommandlineParamerers module Print code version --------------//
+/// ComandlineParamerers module log message
+TOutputMessage TCommandlineParamereres_OUT_FMT_InputFile  = "Input file:  ";
+
+/// ComandlineParamerers module log message
+TOutputMessage TCommandlineParamereres_OUT_FMT_OutputFile = "Output file: ";
+
+/// ComandlineParamerers module log message
+TOutputMessage TCommandlineParamereres_OUT_FMT_CheckpointFile = "Check file:  ";
+
+/// ComandlineParamerers module log message
+TOutputMessage TCommandlineParamereres_OUT_FMT_CheckpointInterval     = "Checkpoint interval:         %8lus\n";
+
+/// ComandlineParamerers module log message
+TOutputMessage TCommandlineParamereres_OUT_FMT_PrintProgressInterval  = "Print progress interval:     %8lu%%\n";
+/// ComandlineParamerers module log message
+TOutputMessage TCommandlineParamereres_OUT_FMT_CompressionLevel       = "Compression level:            %8lu\n";
+/// ComandlineParamerers module log message
+TOutputMessage TCommandlineParamereres_OUT_FMT_BenchmarkTimeStepCount = "Benchmark time steps:         %8lu\n";
+/// ComandlineParamerers module log message
+TOutputMessage TCommandlineParamereres_OUT_FMT_QuantitySampling       = "Sampling: %.*s %s \n";
+/// ComandlineParamerers module log message
+TOutputMessage TCommandlineParamereres_OUT_FMT_CollectionBeginsAt     = "Collection begins at timestep:%8lu\n";
 
 #endif /* OUTPUTMESSAGES_H */
 

@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        29 August   2012, 11:25 (created) \n
- *              20 April    2016, 10:42 (revised)
+ *              03 May      2016, 13:51 (revised)
  *
  *
  * @section License
@@ -95,6 +95,53 @@ TCommandLineParameters::TCommandLineParameters() :
 }// end of TCommandLineParameters
 //------------------------------------------------------------------------------
 
+/** Routine to word wrap filename based on / character
+ * @param [in]  Text
+ * @param [in]  Indentation - indentation of the second and following lines
+ * @param [in ] LineLenght
+ * @return wrapped string
+ */
+std::string TCommandLineParameters::WordWrapFileName(const std::string Text,
+                                                     const size_t Indentation,
+                                                     const size_t LineLength)
+{
+  std::istringstream words(Text);
+  std::ostringstream wrapped;
+  std::string word;
+  std::string IndentationString;
+
+  // create indentation
+  for (size_t i = 0; i < Indentation; i++)
+  {
+    IndentationString += ' ';
+  }
+
+
+  if (words.good())
+  {
+    std::getline(words, word, '/');
+    wrapped << word;
+    size_t space_left = LineLength - word.length();
+
+    while (words.good())
+    {
+      getline(words, word, '/');
+      if (space_left < word.length() + 1)
+      {
+        wrapped << "/\n" << IndentationString << word;
+        space_left = LineLength - word.length() - Indentation - 1;
+      }
+      else
+      {
+        wrapped << '/' << word;
+        space_left -= word.length() + 1;
+      }
+    }
+  }
+  return wrapped.str();
+}// end of WordWrapFileName
+//------------------------------------------------------------------------------
+
 /**
  * Print usage and exit.
  */
@@ -169,48 +216,197 @@ void TCommandLineParameters::PrintUsageAndExit()
 //------------------------------------------------------------------------------
 
 /**
- * Print setup.
+ * Print out commandline parameters
  */
-void TCommandLineParameters::PrintSetup()
+void TCommandLineParameters::PrintComandlineParamers()
 {
-  printf("List of enabled parameters:\n");
+  TLogger::Log(TLogger::Advanced,Main_OUT_FMT_SmallSeparator);
 
-  printf("  Input  file               %s\n",InputFileName.c_str());
-  printf("  Output file               %s\n",OutputFileName.c_str());
-  printf("\n");
+  TLogger::Log(TLogger::Advanced,
+               WordWrapFileName(TCommandlineParamereres_OUT_FMT_InputFile + InputFileName + "\n", 14, 40).c_str());
 
-  printf("  GPU device number     %d\n", GPUDeviceIdx);
+  TLogger::Log(TLogger::Advanced,
+               WordWrapFileName(TCommandlineParamereres_OUT_FMT_OutputFile + OutputFileName + "\n", 14, 40).c_str());
 
-  printf("\n");
 
-  printf("  Verbose interval[%%]      %zu\n", ProgressPrintInterval);
-  printf("  Compression level         %zu\n", CompressionLevel);
-  printf("\n");
-  printf("  Benchmark flag            %d\n",  BenchmarkFlag);
-  printf("  Benchmark time steps      %zu\n", BenchmarkTimeStepsCount);
-  printf("\n");
-  printf("  Checkpoint_file           %s\n",  CheckpointFileName.c_str());
-  printf("  Checkpoint_interval       %zu\n", CheckpointInterval);
-  printf("\n");
-  printf("  Store p_raw               %d\n", Store_p_raw);
-  printf("  Store p_rms               %d\n", Store_p_rms);
-  printf("  Store p_max               %d\n", Store_p_max);
-  printf("  Store p_min               %d\n", Store_p_min);
-  printf("  Store p_max_all           %d\n", Store_p_max_all);
-  printf("  Store p_min_all           %d\n", Store_p_min_all);
-  printf("  Store p_final             %d\n", Store_p_final);
-  printf("\n");
-  printf("  Store u_raw               %d\n", Store_u_raw);
-  printf("  Store u_non_staggered_raw %d\n", Store_u_non_staggered_raw);
-  printf("  Store u_rms               %d\n", Store_u_rms);
-  printf("  Store u_max               %d\n", Store_u_max);
-  printf("  Store u_min               %d\n", Store_u_min);
-  printf("  Store u_max_all           %d\n", Store_u_max_all);
-  printf("  Store u_min_all           %d\n", Store_u_min_all);
-  printf("  Store u_final             %d\n", Store_u_final);
-  printf("\n");
+  if (IsCheckpointEnabled())
+  {
+    TLogger::Log(TLogger::Advanced,
+               WordWrapFileName(TCommandlineParamereres_OUT_FMT_CheckpointFile + CheckpointFileName + "\n", 14, 40).c_str());
 
-  printf("  Collection begins at  %zu\n", StartTimeStep+1);
+    TLogger::Log(TLogger::Advanced,Main_OUT_FMT_SmallSeparator);
+
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_CheckpointInterval,
+                 CheckpointInterval);
+  }
+  else
+  {
+    TLogger::Log(TLogger::Advanced,Main_OUT_FMT_SmallSeparator);
+  }
+
+
+  TLogger::Log(TLogger::Advanced,
+               TCommandlineParamereres_OUT_FMT_CompressionLevel,
+               CompressionLevel);
+
+  TLogger::Log(TLogger::Full,
+               TCommandlineParamereres_OUT_FMT_PrintProgressInterval,
+               ProgressPrintInterval);
+
+  if (BenchmarkFlag)
+  TLogger::Log(TLogger::Full,
+               TCommandlineParamereres_OUT_FMT_BenchmarkTimeStepCount,
+               BenchmarkTimeStepsCount);
+
+
+  TLogger::Log(TLogger::Advanced,Main_OUT_FMT_SmallSeparator);
+
+
+  constexpr int PaddingOffset = 40 - 13;
+  // Sampled p quantities
+  if (Store_p_raw)
+  {
+    const int paddingLength = PaddingOffset - strlen("p_raw");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "p_raw");
+  }
+  if (Store_p_rms)
+  {
+    const int paddingLength = PaddingOffset - strlen("p_rms");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "p_rms");
+  }
+  if (Store_p_max)
+  {
+    const int paddingLength = PaddingOffset - strlen("p_max");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "p_max");
+  }
+  if (Store_p_min)
+  {
+    const int paddingLength = PaddingOffset - strlen("p_min");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "p_min");
+  }
+  if (Store_p_max_all)
+  {
+    const int paddingLength = PaddingOffset - strlen("p_max_all");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "p_max_all");
+  }
+  if (Store_p_min_all)
+  {
+    const int paddingLength = PaddingOffset - strlen("p_min_all");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "p_min_all");
+  }
+  if (Store_p_final)
+  {
+    const int paddingLength = PaddingOffset - strlen("p_final");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "p_final");
+  }
+
+  // Sampled u quantities
+  if (Store_u_raw)
+  {
+    const int paddingLength = PaddingOffset - strlen("u_raw");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "u_raw");
+  }
+  if (Store_u_non_staggered_raw)
+  {
+    const int paddingLength = PaddingOffset - strlen("u_non_staggered_raw");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "u_non_staggered_raw");
+  }
+  if (Store_u_rms)
+  {
+    const int paddingLength = PaddingOffset - strlen("u_rms");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "u_rms");
+  }
+  if (Store_u_max)
+  {
+    const int paddingLength = PaddingOffset - strlen("u_max");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "u_max");
+  }
+  if (Store_u_min)
+  {
+    const int paddingLength = PaddingOffset - strlen("u_min");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "u_min");
+  }
+  if (Store_u_max_all)
+  {
+    const int paddingLength = PaddingOffset - strlen("u_max_all");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "u_max_all");
+  }
+  if (Store_u_min_all)
+  {
+    const int paddingLength = PaddingOffset - strlen("u_min_all");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "u_min_all");
+  }
+  if (Store_u_final)
+  {
+    const int paddingLength = PaddingOffset - strlen("u_final");
+    TLogger::Log(TLogger::Advanced,
+                 TCommandlineParamereres_OUT_FMT_QuantitySampling,
+                 paddingLength,
+                 TKSpaceFirstOrder3DSolver_OUT_FMT_CUDADeviceNamePadding,
+                 "u_final");
+  }
+
+  TLogger::Log(TLogger::Advanced,
+              TCommandlineParamereres_OUT_FMT_CollectionBeginsAt,
+              StartTimeStep+1);
+
 }// end of PrintSetup
 //------------------------------------------------------------------------------
 
