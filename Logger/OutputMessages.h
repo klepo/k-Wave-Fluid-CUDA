@@ -148,7 +148,19 @@ TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_ElapsedTimeLong    = "Elapsed t
 /// KSpaceFirstOrder3DSolver module log message
 TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CheckpointProgress = "Checkpoint in progress            ";
 /// KSpaceFirstOrder3DSolver module log message
-TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_PostProcessing     = "Post-processing phase             ";
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_PostProcessing         =  "Post-processing phase             ";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_StoringCheckpointData  = "  Storing checkpoint data         ";
+
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_StoringSensorData      = "  Storing sensor data             ";
+
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CUDASolverGridShape     = "CUDA solver  grid [Blocks, Threads]: [%5d,%4d] \n";
+/// KSpaceFirstOrder3DSolver module log message
+TOutputMessage TKSpaceFirstOrder3DSolver_OUT_FMT_CUDASamplerGridShape    = "CUDA sampler grid [Blocks, Threads]: [%5d,%4d] \n";
+
+
+
 
 
 //------------------ TKSpaceFirstOrder3DSolver module Print code version ----------------//

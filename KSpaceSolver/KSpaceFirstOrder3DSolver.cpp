@@ -275,25 +275,20 @@ void TKSpaceFirstOrder3DSolver::Compute()
                TKSpaceFirstOrder3DSolver_OUT_FMT_PreProcessingTime,
                PreProcessingTime.GetElapsedTime());
 
-  /*
-   *@todo - add this as level 2 of verbosity
-  fprintf(stdout,
-          "1D configuration [Blocks, Threads]: [%d, %d]\n",
-          Parameters->CUDAParameters.GetSolverGridSize1D(),
-          Parameters->CUDAParameters.GetSolverBlockSize1D());
 
-  fprintf(stdout,
-          "3D Grid configuration : [X, Y, Z]: [%d, %d, %d]\n",
-          Parameters->CUDAParameters.GetSolverGridSize3D().x,
-          Parameters->CUDAParameters.GetSolverGridSize3D().y,
-          Parameters->CUDAParameters.GetSolverGridSize3D().z);
+  TLogger::Log(TLogger::Full,Main_OUT_FMT_SmallSeparator);
 
-  fprintf(stdout,
-          "3D Block configuration : [X, Y, Z]: [%d, %d, %d]\n",
-          Parameters->CUDAParameters.GetSolverBlockSize3D().x,
-          Parameters->CUDAParameters.GetSolverBlockSize3D().y,
-          Parameters->CUDAParameters.GetSolverBlockSize3D().z);
-*/
+  TLogger::Log(TLogger::Full,
+               TKSpaceFirstOrder3DSolver_OUT_FMT_CUDASolverGridShape,
+               Parameters->CUDAParameters.GetSolverGridSize1D(),
+               Parameters->CUDAParameters.GetSolverBlockSize1D());
+
+  TLogger::Log(TLogger::Full,
+               TKSpaceFirstOrder3DSolver_OUT_FMT_CUDASamplerGridShape,
+               Parameters->CUDAParameters.GetSamplerGridSize1D(),
+               Parameters->CUDAParameters.GetSamplerBlockSize1D()
+               );
+
   SimulationTime.Start();
     ComputeMainLoop();
   SimulationTime.Stop();
@@ -1771,6 +1766,10 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   // if it happens and the file is opened (from the recovery, close it)
   if (HDF5_CheckpointFile.IsOpened()) HDF5_CheckpointFile.Close();
 
+  TLogger::Log(TLogger::Full, OUT_FMT_NewLine);
+  TLogger::Log(TLogger::Full,TKSpaceFirstOrder3DSolver_OUT_FMT_StoringCheckpointData);
+  TLogger::Flush(TLogger::Full);
+
   // Create the new file (overwrite the old one)
   HDF5_CheckpointFile.Create(Parameters->GetCheckpointFileName().c_str());
 
@@ -1804,11 +1803,17 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   CheckpointFileHeader.WriteHeaderToCheckpointFile(HDF5_CheckpointFile);
 
   HDF5_CheckpointFile.Close();
+  TLogger::Log(TLogger::Full, Main_OUT_FMT_Done);
 
   // checkpoint only if necessary (t_index > start_index), we're here one step ahead!
   if (Parameters->Get_t_index() > Parameters->GetStartTimeIndex())
   {
+    TLogger::Log(TLogger::Full,TKSpaceFirstOrder3DSolver_OUT_FMT_StoringSensorData);
+    TLogger::Flush(TLogger::Full);
+
     OutputStreamContainer.CheckpointStreams();
+
+    TLogger::Log(TLogger::Full, Main_OUT_FMT_Done);
   }
 
   OutputStreamContainer.CloseStreams();
