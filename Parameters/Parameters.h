@@ -407,8 +407,7 @@ class TParameters
     static TParameters *ParametersSingleInstance;
 
   private:
-    /// Print usage and exit
-    void PrintUsageAndExit();
+
 };// end of TParameters
 
 #endif	/* PARAMETERS_H */

@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2012, 13:39 (created) \n
- *              02 May       2016, 13:53 (revised)
+ *              18 July      2016, 13:04 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -95,15 +95,17 @@ void TParameters::Init(int argc, char** argv)
 {
   CommandLinesParameters.ParseCommandLine(argc, argv);
 
-  TLogger::Log(TLogger::Full, TParamereres_OUT_FMT_GitHashCentered);
-  TLogger::Log(TLogger::Full, GetGitHash().c_str());
-  TLogger::Log(TLogger::Full, OUT_FMT_NewLine);
-  TLogger::Log(TLogger::Full, Main_OUT_FMT_SmallSeparator);
+  if (GetGitHash() != "")
+  {
+    TLogger::Log(TLogger::Full, TParamereres_OUT_FMT_GitHash, GetGitHash().c_str());
+    TLogger::Log(TLogger::Full, OUT_FMT_Separator);
+  }
   if (CommandLinesParameters.IsVersion())
   {
     return;
   }
 
+  TLogger::Log(TLogger::Basic, OUT_FMT_ReadingConfiguration);
   ReadScalarsFromHDF5InputFile(HDF5_InputFile);
 
   if (CommandLinesParameters.IsBenchmarkFlag())
@@ -114,13 +116,16 @@ void TParameters::Init(int argc, char** argv)
   if ((Nt <= CommandLinesParameters.GetStartTimeIndex()) ||
       (0 > CommandLinesParameters.GetStartTimeIndex()))
   {
-    fprintf(stderr,
-            Parameters_ERR_FMT_Illegal_StartTime_value,
-            1l,
-            Nt);
-    CommandLinesParameters.PrintUsageAndExit();
+     char ErrorMessage[256];
+     snprintf(ErrorMessage,
+              256,
+              Parameters_ERR_FMT_Illegal_StartTime_value,
+              1l,
+              Nt);
+    throw std::invalid_argument(ErrorMessage);
   }
 
+  TLogger::Log(TLogger::Basic, OUT_FMT_Done);
 }// end of ParseCommandLine
 //----------------------------------------------------------------------------
 
@@ -131,19 +136,19 @@ void TParameters::Init(int argc, char** argv)
 void TParameters::SelectDevice()
 {
   TLogger::Log(TLogger::Basic,
-               Parameters_OUT_FMT_SelectedGPUDeviceID);
+               OUT_FMT_SelectedDeviceId);
   TLogger::Flush(TLogger::Basic);
 
   int DeviceIdx = CommandLinesParameters.GetGPUDeviceIdx();
   CUDAParameters.SelectDevice(DeviceIdx); // throws an exception when wrong
 
   TLogger::Log(TLogger::Basic,
-               Parameters_OUT_FMT_PrintOutGPUDevice,
+               OUT_FMT_DeviceId,
                CUDAParameters.GetDeviceIdx());
 
 
   TLogger::Log(TLogger::Basic,
-               Parameters_OUT_FMT_GPUDeviceInfo,
+               OUT_FMT_DeviceName,
                CUDAParameters.GetDeviceName().c_str());
 
 }// end of SelectDevice
@@ -156,32 +161,36 @@ void TParameters::SelectDevice()
 void TParameters::PrintSimulatoinSetup()
 {
   TLogger::Log(TLogger::Basic,
-               Main_OUT_FMT_NumberOfThreads,
+               OUT_FMT_NumberOfThreads,
                GetNumberOfThreads());
 
-  TLogger::Log(TLogger::Basic, Main_OUT_FMT_SmallSeparator);
+  TLogger::Log(TLogger::Basic,  OUT_FMT_SimulationDetailsTitle);
 
+
+  char DomainsSizeText[48];
+  snprintf(DomainsSizeText, 48, OUT_FMT_DomainSizeFormat,
+          GetFullDimensionSizes().X,
+          GetFullDimensionSizes().Y,
+          GetFullDimensionSizes().Z );
   // Print simulation size
   TLogger::Log(TLogger::Basic,
-               Parameters_OUT_FMT_DomainSize,
-               GetFullDimensionSizes().X,
-               GetFullDimensionSizes().Y,
-               GetFullDimensionSizes().Z);
+               OUT_FMT_DomainSize,
+               DomainsSizeText);
 
   TLogger::Log(TLogger::Basic,
-               Parameters_OUT_FMT_Length,
+               OUT_FMT_SimulationLength,
                Get_Nt());
 
-  // Print all commandline parameters
+  // Print all command line parameters
   CommandLinesParameters.PrintComandlineParamers();
 
   if (Get_sensor_mask_type() == smt_index)
   {
-    TLogger::Log(TLogger::Advanced, TParamereres_OUT_FMT_SensorMaskTypeIndex);
+    TLogger::Log(TLogger::Advanced, OUT_FMT_SensorMaskTypeIndex);
   }
   if (Get_sensor_mask_type() == smt_corners)
   {
-    TLogger::Log(TLogger::Advanced, TParamereres_OUT_FMT_SensorMaskTypeCuboid);
+    TLogger::Log(TLogger::Advanced, OUT_FMT_SensorMaskTypeCuboid);
   }
 }// end of PrintParametersOfTask
 //------------------------------------------------------------------------------
@@ -199,16 +208,8 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
 
   if (!HDF5_InputFile.IsOpened())
   {
-    // Open file
-    try
-    {
-      HDF5_InputFile.Open(CommandLinesParameters.GetInputFileName().c_str());
-    }
-    catch (ios::failure e)
-    {
-      fprintf(stderr, "%s", e.what());
-      PrintUsageAndExit();
-    }
+    // Open file -- exceptions handled in main
+    HDF5_InputFile.Open(CommandLinesParameters.GetInputFileName().c_str());
   }
 
   HDF5_FileHeader.ReadHeaderFromInputFile(HDF5_InputFile);
@@ -396,8 +397,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
     HDF5_InputFile.ReadScalarValue(HDF5RootGroup, alpha_power_Name, alpha_power);
     if (alpha_power == 1.0f)
     {
-      fprintf(stderr, "%s", Parameters_ERR_FMT_Illegal_alpha_power_value);
-      PrintUsageAndExit();
+      throw std::invalid_argument(Parameters_ERR_FMT_Illegal_alpha_power_value);
     }
 
     alpha_coeff_scalar_flag = HDF5_InputFile.GetDatasetDimensionSizes(HDF5RootGroup, alpha_coeff_Name) == ScalarSizes;
@@ -560,20 +560,11 @@ TParameters::TParameters() :
         rho0_scalar_flag(false), rho0_scalar(0.0f), rho0_sgx_scalar(0.0f), rho0_sgy_scalar(0.0f), rho0_sgz_scalar(0.0f)
 {
 
-}// end of TFFT1DParameters
+}// end of TParameters()
 //----------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------//
 //                              Implementation                              //
 //                              private methods                             //
 //--------------------------------------------------------------------------//
-
-/**
- * Print usage end exit.
- */
-void TParameters::PrintUsageAndExit()
-{
-  CommandLinesParameters.PrintUsageAndExit();
-}// end of PrintUsage
-//------------------------------------------------------------------------------
 

@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        27 July     2012, 14:14 (created) \n
- *              20 April    2016, 10:32 (revised)
+ *              14 July     2016, 10:32 (revised)
  *
 
 * @section License
@@ -167,7 +167,6 @@ void THDF5_File::Close()
   {
     char ErrorMessage[256];
     snprintf(ErrorMessage, 256, HDF5_ERR_FMT_FileNotClosed, FileName.c_str());
-
     throw ios::failure(ErrorMessage);
   }
 
@@ -210,7 +209,7 @@ hid_t THDF5_File::CreateGroup(const hid_t  ParentGroup,
   }
 
   return HDF5_group_id;
-};// end of CreateGroup
+}// end of CreateGroup
 
 
 /**

@@ -194,10 +194,10 @@ class TMatrixContainer
     TMatrixContainer & operator = (const TMatrixContainer& src);
 
     /// Print error and throw an exception.
-    void PrintErrorAndThrowException(const char* FMT,
-                                     const string HDF5MatrixName,
-                                     const char* File,
-                                     const int Line);
+    void CreateErrorAndThrowException(const char*  FMT,
+                                      const string HDF5MatrixName,
+                                      const char*  File,
+                                      const int    Line);
 
 };// end of TMatrixContainer
 //------------------------------------------------------------------------------

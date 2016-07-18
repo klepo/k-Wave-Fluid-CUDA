@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        02 December  2014, 16:17 (created) \n
- *              20 April     2016, 14:17 (revised)
+ *              08 July      2016, 15:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -67,9 +67,9 @@ void TMatrixContainer::CreateAllObjects()
   {
     if (it->second.MatrixPtr != NULL)
     { // the data is already allocated
-      PrintErrorAndThrowException(MatrixContainer_ERR_FMT_ReloactaionError,
-                                  it->second.HDF5MatrixName,
-                                  __FILE__,  __LINE__);
+      CreateErrorAndThrowException(MatrixContainer_ERR_FMT_ReloactaionError,
+                                   it->second.HDF5MatrixName,
+                                   __FILE__,  __LINE__);
     }
 
     switch (it->second.MatrixDataType)
@@ -100,9 +100,9 @@ void TMatrixContainer::CreateAllObjects()
 
       default: // unknown matrix type
       {
-        PrintErrorAndThrowException(MatrixContainer_ERR_FMT_RecordUnknownDistributionType,
-                                    it->second.HDF5MatrixName,
-                                    __FILE__, __LINE__);
+        CreateErrorAndThrowException(MatrixContainer_ERR_FMT_RecordUnknownDistributionType,
+                                     it->second.HDF5MatrixName,
+                                     __FILE__, __LINE__);
         break;
       }
     }// switch
@@ -508,19 +508,20 @@ void TMatrixContainer::CopyAllMatricesFromDevice()
 
 /*
  * Print error and and throw an exception.
- * @throw bad_alloc
+ * @throw invalid_argument
  *
  * @param [in] FMT - format of error
  * @param [in] HDF5MatrixName - HDF5 dataset name
  * @param [in] File  File of error
  * @param [in] Line  Line of error
  */
-void TMatrixContainer::PrintErrorAndThrowException(const char* FMT,
-                                                   const string HDF5MatrixName,
-                                                   const char* File,
-                                                   const int Line)
+void TMatrixContainer::CreateErrorAndThrowException(const char * FMT,
+                                                    const string HDF5MatrixName,
+                                                    const char * File,
+                                                    const int    Line)
 {
-  fprintf(stderr,FMT, HDF5MatrixName.c_str(), File, Line);
-  throw bad_alloc();
+  char ErrorMessage[256];
+  snprintf(ErrorMessage, 256, FMT, HDF5MatrixName.c_str(), File, Line);
+  throw std::invalid_argument(ErrorMessage);
 }// end of PrintErrorAndAbort
 //------------------------------------------------------------------------------

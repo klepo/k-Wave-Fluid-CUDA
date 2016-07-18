@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        19 April    2016, 12:52 (created) \n
- *              25 April    2016, 13:59 (revised)
+ *              18 July     2016, 13:35 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -35,6 +35,7 @@
 #define TLOGGER_H
 
 #include <Logger/OutputMessages.h>
+#include <Logger/ErrorMessages.h>
 
 /**
  * @class TLogger
@@ -65,15 +66,30 @@ class TLogger
 
     /// Change the log level
     static void SetLevel(const TLogLevel ActualLogLevel);
+    /// Get the log level
+    static TLogLevel GetLevel() {return LogLevel;};
 
     /// Log desired activity
     static void Log(const TLogLevel QueryLevel,
-                    const char *    Format,
+                    const char*    Format,
                     ...);
+
+    /// Log an error
+    static void Error(const char* Format,
+                      ...);
+
+    /// Log an error and Terminate
+    static void ErrorAndTerminate(const char* Format,
+                                  ...);
 
     /// Flush logger
     static void Flush(const TLogLevel QueryLevel);
 
+    /// Wrap the line based on logger conventions
+    static std::string WordWrapString(const std::string& InputString,
+                                      const std::string& Delimiters,
+                                      const int          Indentation = 0,
+                                      const int          LineSize    = 65);
 
   private:
     /// Default constructor is not allowed, static class
@@ -84,6 +100,11 @@ class TLogger
     ~TLogger();
 
     static TLogLevel LogLevel;
+
+ private:
+  /// Extract a word (string between two delimiters)
+  static std::string GetWord(std::istringstream& TextStream,
+                             const std::string&  Delimiters);
 
 }; // TLogger
 

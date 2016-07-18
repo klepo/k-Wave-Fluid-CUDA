@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 November 2015, 16:49 (created) \n
- *              20 April    2016, 10:42 (revised)
+ *              18 July     2016, 13:51 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -31,7 +31,7 @@
  */
 
 #include <stdexcept>
-#include <stdio.h>
+#include <string.h>
 #include <cuda_runtime.h>
 
 #include <Parameters/CUDAParameters.h>
@@ -71,6 +71,20 @@ TCUDAParameters::TCUDAParameters() :
 //----------------------------------------------------------------------------//
 
 /**
+ * Return the name of device used
+ * @return  - device name
+ */
+std::string TCUDAParameters::GetDeviceName() const
+{
+  if (strcmp(DeviceProperties.name, "") == 0)
+  {
+    return "N/A";
+  }
+  return DeviceProperties.name;
+}// end of GetDeviceName
+//------------------------------------------------------------------------------
+
+/**
  * Select cuda device for execution. If no device is specified, the first free is
  * chosen. The routine also checks whether the CUDA runtime and driver version
  * match and whether the GPU is supported by the code.
@@ -99,14 +113,9 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
     for (int testDevice = 0; testDevice < NumOfDevices; testDevice++)
     {
       // try to set the GPU and reset it
-      lastError = cudaSetDevice(testDevice);
-      //printf("\ncudaSetDevice for Idx   %d \t Error id %d \t error message \"%s\" \n", testDevice, lastError,  cudaGetErrorString(lastError));
-
-      lastError = cudaDeviceReset();
-      //printf("cudaDeviceReset for Idx %d \t Error id %d \t error message \"%s\" \n", testDevice, lastError, cudaGetErrorString(lastError));
-
+      cudaSetDevice(testDevice);
+      cudaDeviceReset();
       lastError = cudaGetLastError();
-      //printf("GetLastError after Reset for Idx %d \t Error id %d \t error message \"%s\" \n", testDevice, lastError, cudaGetErrorString(lastError));
 
       // Reset was done properly, test CUDA code version
       if (lastError == cudaSuccess)
@@ -114,11 +123,10 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
         // Read the GPU SM version and the kernel version
         bool cudaCodeVersionOK = CheckCUDACodeVersion();
         lastError = cudaGetLastError();
-        //printf("CheckCUDACodeVersion for Idx %d \t Error id %d \t error message %s \n", testDevice, lastError, cudaGetErrorString(lastError));
 
         if (cudaCodeVersionOK && (lastError == cudaSuccess))
         {
-          // acquirte the GPU
+          // acquire the GPU
           this->DeviceIdx = testDevice;
           DeviceFound = true;
           break;
@@ -127,7 +135,6 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
 
       // GPU was busy, reset and continue
       lastError = cudaDeviceReset();
-      //printf("cudaDeviceReset after unsuccessful allocation Idx %d \t Error id %d \t error message \"%s\" \n", testDevice, lastError, cudaGetErrorString(lastError));
 
       //clear last error
       cudaGetLastError();
@@ -151,23 +158,16 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
      }
 
     // set the device and copy it's properties
-    lastError = cudaSetDevice(this->DeviceIdx);
-    //printf("\ncudaSetDevice for Idx   %d \t Error id %d \t error message \"%s\" \n", this->DeviceIdx, lastError,  cudaGetErrorString(lastError));
-
-    lastError = cudaDeviceReset();
-    //printf("cudaDeviceReset for Idx %d \t Error id %d \t error message \"%s\" \n", this->DeviceIdx, lastError, cudaGetErrorString(lastError));
-
+    cudaSetDevice(this->DeviceIdx);
+    cudaDeviceReset();
     lastError = cudaGetLastError();
-    //printf("GetLastError after Reset for Idx %d \t Error id %d \t error message \"%s\" \n", this->DeviceIdx, lastError, cudaGetErrorString(lastError));
 
     bool cudaCodeVersionOK = CheckCUDACodeVersion();
     lastError = cudaGetLastError();
-    //printf("CheckCUDACodeVersion for Idx %d \t Error id %d \t error message %s \n", this->DeviceIdx, lastError, cudaGetErrorString(lastError));
 
     if ((lastError != cudaSuccess) || (!cudaCodeVersionOK))
     {
       lastError = cudaDeviceReset();
-      //printf("cudaDeviceReset for Idx %d \t Error id %d \t error message \"%s\" \n", this->DeviceIdx, lastError, cudaGetErrorString(lastError));
 
       char ErrorMessage[256];
       snprintf(ErrorMessage, 256, CUDAParameters_ERR_FMT_DeviceIsBusy, this->DeviceIdx);
@@ -259,8 +259,6 @@ void TCUDAParameters::SetKernelConfiguration()
 //------------------------------------------------------------------------------
 
 
-
-
 /**
  * Upload useful simulation constants into device constant memory
  */
@@ -290,8 +288,6 @@ void TCUDAParameters::SetUpDeviceConstants()
   ConstantsToTransfer.FFTDividerY = 1.0f / FullDimensionSizes.Y;
   ConstantsToTransfer.FFTDividerZ = 1.0f / FullDimensionSizes.Z;
 
-
-
   ConstantsToTransfer.dt  = Params->Get_dt();
   ConstantsToTransfer.dt2 = Params->Get_dt() * 2.0f;
   ConstantsToTransfer.c2  = Params->Get_c0_scalar();
@@ -315,9 +311,6 @@ void TCUDAParameters::SetUpDeviceConstants()
   ConstantsToTransfer.u_source_index_size = Params->Get_u_source_index_size();
   ConstantsToTransfer.u_source_mode       = Params->Get_u_source_mode();
   ConstantsToTransfer.u_source_many       = Params->Get_u_source_many();
-
-
-
 
   ConstantsToTransfer.SetUpCUDADeviceConstatns();
 }// end of SetUpDeviceConstants
@@ -364,7 +357,7 @@ void TCUDAParameters::CheckCUDAVersion()
 //------------------------------------------------------------------------------
 
 /**
- *
+ * Check whether the GPU has SM 2.0 at least
  * @return The GPU version
  */
 bool TCUDAParameters::CheckCUDACodeVersion()
