@@ -1,17 +1,19 @@
 # /**
 # * @File        Makefile
 # * @Author      Jiri Jaros
-# * @Affiliation FIT, Brno University of Technology
+# *              Faculty of Information Technology
+# *              Brno University of Technology 
 # * @Email       jarosjir@fit.vutbr.cz
 # * @Comments    Linux makefile for Anselm
 # * 
-# * @Tool        kspaceFirstOrder3D 2.15
-# * @Created     24 September 2012, 10:57 AM
-# * @LastModif   11 February 2014, 17:55 PM
+# * @Tool        kspaceFirstOrder3D 3.4
+# * @Created     02 December  2014, 12:32 
+# * @LastModif   14 July      2016, 15:44
 #
 # * @License: 
-# * This file is part of the C++ extension of the k-Wave Toolbox (http://www.k-wave.org)
-# * Copyright (C) 2013 Jiri Jaros and Bradley Treeby
+# * This file is part of the C++ extension of the k-Wave Toolbox
+# * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros, Beau Johnston
+# * and Bradley Treeby
 # * 
 # * This file is part of the k-Wave. k-Wave is free software: you can redistribute it 
 # * and/or modify it under the terms of the GNU Lesser General Public License as 
@@ -28,96 +30,63 @@
 # */
 
 #################################################################################
-#	The source codes can be compiled ONLY under Linux x64 			#
-#	by GNU g++ 4.3 and newer OR Intel Compiler icpc 11			#
-#	The code uses STATIC Linking by default					#
-#										#
-#	Necessary libraries:							#
-#		- FFTW 3.0 and newer OR Intel MKL 11 and newer			#
-#		- HDF5 version 1.8 and newer					#
-#										#
-#	How to compile libraries						#
-#		- FFTW : download from "http://www.fftw.org/" 			#
-#			run configure script with following parameters:		#
-#			--enable-float --enable-sse --enable-openmp		#
-#		- MKL  : Only if not using FFTW. Dowload from 			#
-#			 "http://software.intel.com/en-us/intel-mkl" 	        #
-#		- HDF5 : download from http://www.hdfgroup.org/HDF5/ 		#
-#			run configure script with these parameters:	        #		
-#			--enable-hl 						#
-#									      	#
-#	This makefile enables static and dynamic compilation using 		#
-#		1) GNU gcc + FFTW  						#
-#		2) Intel compiler + Intel MKL					#
-#									      	#
-#									      	#
+#   This makefile is a tailored for the Anselm supercomputer                    #
+#   Please load following modules:                                              #
+#      gcc/4.8.1 cuda/7.5 hdf5/1.8.13                                           #
+#                                                                               #
+#   The code requires compilator suporitng C++-11 standard!                     #
+#                                                                               #
+#   This makefile enables dynamic compilation only                              #
+#                                                                               #
 #################################################################################
 
 
 #################################################################################
-#	  Set following flags based on your compiler and library paths 		#
+#        Set following flags based on your compiler and library paths           #
 #################################################################################
-
-# Select compiler
-
-#COMPILER = Intel
-
-# static lining is deafult
-LINKING = STATIC
-#LINKING = DYNAMIC
-
-
-#load following modues for GNU
-# module load gcc/4.8.1
-# module load hdf5/1.8.13
-# module load cuda/6.5.14
-
-
-#load following modules for Intel
-#module load intel/13.5.192(default)
-#module load hdf5/1.8.13
-
-#HDF5=$(HOME)/Software/hdf5-1.8.10-serial-icc
-
 
 #Get GIT hash (only if you biuld form Gitlab repository)
 KWAVE_GIT_HASH=$(shell git rev-parse HEAD)
 #Otherwise, use the last official build hash
+#KWAVE_GIT_HASH=43e7bcfd05ffa7497ee6a895e34df9a424f56a9e
+#################################################################################
 
-############################## GNU g++ + FFTW ###################################
-#GNU version
-CXX	   = nvcc
 
-KW = "abcd"
-
-CXXFLAGS = -Xcompiler="-mtune=native -march=native -mavx -O3 -fopenmp -ffast-math -fassociative-math" \
-           -std=c++11  -I$(HDF5_INC_DIR)  -I. -Xptxas -v 
-           #-D__KWAVE_GIT_HASH__="aa1234"            
-           #\"$(KWAVE_GIT_HASH)\"
+#HDF5_LIB_DIR=/home/jarosjir/Software/hdf5-serial/1.8.13/gcc4.8.1-sse2/lib
+#HDF5_INC_DIR=/home/jarosjir/Software/hdf5-serial/1.8.13/gcc4.8.1-sse2/include
+############################## NVCC + GNU g++ ###################################
+CXX = nvcc
+ 
+# Set compiler flags and header files directories
+CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math -march=native -mtune=native" \
+           -O3 -std=c++11  -I$(HDF5_INC_DIR) -I.  --restrict \
+	   -D__KWAVE_GIT_HASH__=\"$(KWAVE_GIT_HASH)\" \
+           --generate-code arch=compute_35,code=sm_35 \
+           --device-c
   
-LDFLAGS  = -Xcompiler="-fopenmp" -Xlinker="-rpath,$(HDF5_LIB_DIR):$(CUDADIR)/lib64" -std=c++11  -L$(HDF5_LIB_DIR)
-LIBS     = -lhdf5 -lhdf5_hl -lz -lcufft
+LDFLAGS  = -Xcompiler="-fopenmp " -Xlinker="-rpath,$(HDF5_LIB_DIR):$(CUDADIR)/lib64 " -std=c++11  -L$(HDF5_LIB_DIR)  -L$(CUDADIR)/lib64
 
 
-
-
+LIBS	  = -lhdf5_hl \
+            -lhdf5    \
+            -lcufft   \
+            -ldl
 
 
 ################################# Compile #####################################
 
-
 TARGET		= kspaceFirstOrder3D-CUDA
 
-all:		$(TARGET)	
+all:		$(TARGET)
 
 
-$(TARGET):	CUDA/CUDAImplementations.o \
-		CUDA/CUDATuner.o \
-		Containers/MatrixContainer.o \
+$(TARGET):	Containers/MatrixContainer.o \
 		Containers/MatrixRecord.o \
 		Containers/OutputStreamContainer.o \
 		HDF5/HDF5_File.o \
 		KSpaceSolver/KSpaceFirstOrder3DSolver.o \
+		KSpaceSolver/SolverCUDAKernels.o \
+		Logger/Logger.o	\
 		MatrixClasses/BaseFloatMatrix.o \
 		MatrixClasses/BaseIndexMatrix.o \
 		MatrixClasses/CUFFTComplexMatrix.o \
@@ -126,20 +95,24 @@ $(TARGET):	CUDA/CUDAImplementations.o \
 		MatrixClasses/RealMatrix.o \
 		OutputHDF5Streams/BaseOutputHDF5Stream.o \
 		OutputHDF5Streams/IndexOutputHDF5Stream.o \
+		OutputHDF5Streams/CuboidOutputHDF5Stream.o \
 		OutputHDF5Streams/WholeDomainOutputHDF5Stream.o \
+		OutputHDF5Streams/OutputStreamsCUDAKernels.o \
 		Parameters/CommandLineParameters.o \
 		Parameters/Parameters.o \
+		Parameters/CUDAParameters.o \
+		Parameters/CUDADeviceConstants.o \
 		main.o
 
 
 	$(CXX) $(LDFLAGS) main.o	\
-		CUDA/CUDAImplementations.o \
-		CUDA/CUDATuner.o \
 		Containers/MatrixContainer.o \
 		Containers/MatrixRecord.o \
 		Containers/OutputStreamContainer.o \
 		HDF5/HDF5_File.o \
 		KSpaceSolver/KSpaceFirstOrder3DSolver.o \
+		KSpaceSolver/SolverCUDAKernels.o \
+		Logger/Logger.o \
 		MatrixClasses/BaseFloatMatrix.o \
 		MatrixClasses/BaseIndexMatrix.o \
 		MatrixClasses/CUFFTComplexMatrix.o \
@@ -148,9 +121,13 @@ $(TARGET):	CUDA/CUDAImplementations.o \
 		MatrixClasses/RealMatrix.o \
 		OutputHDF5Streams/BaseOutputHDF5Stream.o \
 		OutputHDF5Streams/IndexOutputHDF5Stream.o \
+		OutputHDF5Streams/CuboidOutputHDF5Stream.o \
 		OutputHDF5Streams/WholeDomainOutputHDF5Stream.o \
+		OutputHDF5Streams/OutputStreamsCUDAKernels.o \
 		Parameters/CommandLineParameters.o \
 		Parameters/Parameters.o \
+		Parameters/CUDAParameters.o \
+		Parameters/CUDADeviceConstants.o \
 		$(LIBS)			\
 		-o $@
 
@@ -158,9 +135,15 @@ $(TARGET).o : $(TARGET).cpp
 	$(CXX) $(CXXFLAGS) -c $(TARGET).cpp 
 
 
-CUDA/CUDAImplementations.o : CUDA/CUDAImplementations.cu
-	$(CXX) $(CXXFLAGS) -c CUDA/CUDAImplementations.cu -o CUDA/CUDAImplementations.o
-clean:
-	rm -f *.o HDF5/*.o KSpaceSolver/*.o MatrixClasses/*.o Parameters/*.o Containers/*.o  CUDA/*.o OutputHDF5Stream/*.o $(TARGET)
+KSpaceSolver/SolverCUDAKernels.o : KSpaceSolver/SolverCUDAKernels.cu
+	$(CXX) $(CXXFLAGS) -c KSpaceSolver/SolverCUDAKernels.cu -o KSpaceSolver/SolverCUDAKernels.o
+	
+OutputHDF5Streams/OutputStreamsCUDAKernels.o : OutputHDF5Streams/OutputStreamsCUDAKernels.cu
+	$(CXX) $(CXXFLAGS) -c OutputHDF5Streams/OutputStreamsCUDAKernels.cu -o OutputHDF5Streams/OutputStreamsCUDAKernels.o
 
+Parameters/CUDADeviceConstants.o  : Parameters/CUDADeviceConstants.cu
+	$(CXX) $(CXXFLAGS) -c Parameters/CUDADeviceConstants.cu -o Parameters/CUDADeviceConstants.o
+	
+clean:
+	rm -f *.o HDF5/*.o KSpaceSolver/*.o MatrixClasses/*.o Parameters/*.o Containers/*.o  OutputHDF5Streams/*.o Logger/*.o $(TARGET)
 

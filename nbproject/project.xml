@@ -18,6 +18,7 @@
                 <sourceRootElem>Utils</sourceRootElem>
                 <sourceRootElem>Containers</sourceRootElem>
                 <sourceRootElem>OutputHDF5Streams</sourceRootElem>
+                <sourceRootElem>Logger</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>

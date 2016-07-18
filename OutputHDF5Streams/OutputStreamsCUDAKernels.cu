@@ -11,7 +11,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        27 January   2015, 17:21 (created) \n
- *              12 April     2016, 15:03 (revised)
+ *              20 April     2016, 10:40 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -42,7 +42,7 @@
 #include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
 #include <Parameters/Parameters.h>
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
 #include <Utils/CUDAUtils.cuh>
 
 using namespace std;

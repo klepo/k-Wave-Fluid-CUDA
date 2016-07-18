@@ -78,9 +78,8 @@ class TCUDAParameters
     /// Get Number of blocks for the 1D data sampling kernels
     int GetSamplerGridSize1D()         const { return SamplerGridSize1D;       }
 
-    /// Type of the device used.
-    std::string GetDeviceName()        const { return DeviceProperties.name;   }
-
+    /// Get the name of the device used.
+    std::string GetDeviceName()        const;
 
     /// Select cuda device for execution.
     void SelectDevice(const int DeviceIdx = DefaultDeviceIdx);

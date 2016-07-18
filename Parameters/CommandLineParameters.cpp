@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        29 August   2012, 11:25 (created) \n
- *              17 June     2015, 10:01 (revised)
+ *              18 July     2016, 13:56 (revised)
  *
  *
  * @section License
@@ -41,16 +41,18 @@
   #include <GetoptWin64/Getopt.h>
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <sstream>
+#include <cstring>
 #include <limits>
+#include <stdexcept>
+
 #ifdef _OPENMP
   #include <omp.h>
 #endif
 
+#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
 #include <Parameters/CommandLineParameters.h>
-#include <Utils/ErrorMessages.h>
+#include <HDF5/HDF5_File.h>
 
 //--------------------------------------------------------------------------//
 //-------------------------- Constants -------------------------------------//
@@ -73,7 +75,7 @@ TCommandLineParameters::TCommandLineParameters() :
 
         GPUDeviceIdx(-1), // default is undefined -1
 
-        VerboseInterval(DefaultVerboseInterval),
+        ProgressPrintInterval(DefaultProgressPrintInterval),
         CompressionLevel(DefaultCompressionLevel),
         BenchmarkFlag (false), BenchmarkTimeStepsCount(0),
         CheckpointInterval(0),
@@ -92,117 +94,168 @@ TCommandLineParameters::TCommandLineParameters() :
 //------------------------------------------------------------------------------
 
 /**
- * Print usage and exit.
+ * Print usage.
  */
-void TCommandLineParameters::PrintUsageAndExit()
+void TCommandLineParameters::PrintUsage()
 {
-  printf("---------------------------------- Usage ---------------------------------\n");
-  printf("Mandatory parameters:\n");
-  printf("  -i Input_file_name              : HDF5 input file\n");
-  printf("  -o Output_file_name             : HDF5 output file\n");
-  printf("\n");
-  printf("Optional parameters: \n");
+  TLogger::Log(TLogger::Basic, OUT_FMT_UsagePart1);
 
   #ifdef _OPENMP
-    printf("  -t <num_threads>                : Number of CPU threads\n");
-    printf("                                      (default = %d)\n", omp_get_num_procs());
+    TLogger::Log(TLogger::Basic,
+                 OUT_FMT_UsageThreads,
+                 omp_get_num_procs());
   #endif
 
-  printf("  -g <device_number>              : GPU device to run on\n");
-  printf("                                      (default = device with most memory)\n");
-
-  printf("  -r Progress_report_interval_in_%%: Progress print interval\n");
-  printf("                                      (default = %ld%%)\n",DefaultVerboseInterval);
-  printf("  -c Output_file_compression_level: Deflate compression level <0,9>\n");
-  printf("                                      (default = %ld)\n",DefaultCompressionLevel );
-  printf("  --benchmark <steps>             : Run a specified number of time steps\n");
-  printf("  --checkpoint_file <file_name>   : HDF5 Checkpoint file\n");
-  printf("  --checkpoint_interval <seconds> : Stop after a given number of seconds and\n");
-  printf("                                      store the actual state\n");
-
-  printf("\n");
-  printf("  -h                              : Print help\n");
-  printf("  --help                          : Print help\n");
-  printf("  --version                       : Print version\n");
-  printf("\n");
-
-  printf("Output flags:\n");
-  printf("  -p                              : Store acoustic pressure \n");
-  printf("                                      (default if nothing else is on)\n");
-  printf("                                      (the same as --p_raw)\n");
-  printf("  --p_raw                         : Store raw time series of p (default)\n");
-  printf("  --p_rms                         : Store rms of p\n");
-  printf("  --p_max                         : Store max of p\n");
-  printf("  --p_min                         : Store min of p\n");
-  printf("  --p_max_all                     : Store max of p (whole domain)\n");
-  printf("  --p_min_all                     : Store min of p (whole domain)\n");
-  printf("  --p_final                       : Store final pressure field \n");
-  printf("\n");
-  printf("  -u                              : Store ux, uy, uz\n");
-  printf("                                      (the same as --u_raw)\n");
-  printf("  --u_raw                         : Store raw time series of ux, uy, uz\n");
-  printf("  --u_non_staggered_raw           : Store non-staggered raw time series of\n");
-  printf("                                      ux, uy, uz \n");
-  printf("  --u_rms                         : Store rms of ux, uy, uz\n");
-  printf("  --u_max                         : Store max of ux, uy, uz\n");
-  printf("  --u_min                         : Store min of ux, uy, uz\n");
-  printf("  --u_max_all                     : Store max of ux, uy, uz (whole domain)\n");
-  printf("  --u_min_all                     : Store min of ux, uy, uz (whole domain)\n");
-  printf("  --u_final                       : Store final acoustic velocity\n");
-  printf("\n");
-
-  printf("  -s Start_time_step              : Time step when data collection begins\n");
-  printf("                                      (default = 1)\n");
-  printf("--------------------------------------------------------------------------\n");
-  printf("\n");
-
-  exit(EXIT_FAILURE);
-}// end of PrintUsageAndExit
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_UsagePart2,
+               DefaultProgressPrintInterval,
+               DefaultCompressionLevel);
+}// end of PrintUsage
 //------------------------------------------------------------------------------
 
 /**
- * Print setup.
+ * Print out commandline parameters.
  */
-void TCommandLineParameters::PrintSetup()
+void TCommandLineParameters::PrintComandlineParamers()
 {
-  printf("List of enabled parameters:\n");
+  TLogger::Log(TLogger::Advanced,OUT_FMT_Separator);
 
-  printf("  Input  file               %s\n",InputFileName.c_str());
-  printf("  Output file               %s\n",OutputFileName.c_str());
-  printf("\n");
+  TLogger::Log(TLogger::Advanced,
+               TLogger::WordWrapString(OUT_FMT_InputFile + InputFileName,
+                                       ERR_FMTPathDelimiters,
+                                       15).c_str());
 
-  printf("  GPU device number     %d\n", GPUDeviceIdx);
+  TLogger::Log(TLogger::Advanced,
+               TLogger::WordWrapString(OUT_FMT_OutputFile + OutputFileName,
+                                       ERR_FMTPathDelimiters,
+                                       15).c_str());
 
-  printf("\n");
 
-  printf("  Verbose interval[%%]      %ld\n", VerboseInterval);
-  printf("  Compression level         %ld\n", CompressionLevel);
-  printf("\n");
-  printf("  Benchmark flag            %d\n", BenchmarkFlag);
-  printf("  Benchmark time steps      %ld\n", BenchmarkTimeStepsCount);
-  printf("\n");
-  printf("  Checkpoint_file           %s\n", CheckpointFileName.c_str());
-  printf("  Checkpoint_interval       %ld\n", CheckpointInterval);
-  printf("\n");
-  printf("  Store p_raw               %d\n", Store_p_raw);
-  printf("  Store p_rms               %d\n", Store_p_rms);
-  printf("  Store p_max               %d\n", Store_p_max);
-  printf("  Store p_min               %d\n", Store_p_min);
-  printf("  Store p_max_all           %d\n", Store_p_max_all);
-  printf("  Store p_min_all           %d\n", Store_p_min_all);
-  printf("  Store p_final             %d\n", Store_p_final);
-  printf("\n");
-  printf("  Store u_raw               %d\n", Store_u_raw);
-  printf("  Store u_non_staggered_raw %d\n", Store_u_non_staggered_raw);
-  printf("  Store u_rms               %d\n", Store_u_rms);
-  printf("  Store u_max               %d\n", Store_u_max);
-  printf("  Store u_min               %d\n", Store_u_min);
-  printf("  Store u_max_all           %d\n", Store_u_max_all);
-  printf("  Store u_min_all           %d\n", Store_u_min_all);
-  printf("  Store u_final             %d\n", Store_u_final);
-  printf("\n");
+  if (IsCheckpointEnabled())
+  {
+    TLogger::Log(TLogger::Advanced,
+                 TLogger::WordWrapString(OUT_FMT_CheckpointFile + CheckpointFileName,
+                                         ERR_FMTPathDelimiters,
+                                         15).c_str());
 
-  printf("  Collection begins at  %ld\n", StartTimeStep+1);
+    TLogger::Log(TLogger::Advanced,OUT_FMT_Separator);
+
+    TLogger::Log(TLogger::Advanced,
+                 OUT_FMT_CheckpointInterval,
+                 CheckpointInterval);
+  }
+  else
+  {
+    TLogger::Log(TLogger::Advanced,OUT_FMT_Separator);
+  }
+
+
+  TLogger::Log(TLogger::Advanced,
+               OUT_FMT_CompressionLevel,
+               CompressionLevel);
+
+  TLogger::Log(TLogger::Full,
+               OUT_FMT_PrintProgressInterval,
+               ProgressPrintInterval);
+
+  if (BenchmarkFlag)
+  TLogger::Log(TLogger::Full,
+               OUT_FMT_BenchmarkTimeStepCount,
+               BenchmarkTimeStepsCount);
+
+
+  TLogger::Log(TLogger::Advanced,OUT_FMT_QuantitySampling);
+
+
+  std::string SampledQuantitiesList = "";
+
+  // Sampled p quantities
+  if (Store_p_raw)
+  {
+    SampledQuantitiesList += "p_raw, ";
+  }
+  if (Store_p_rms)
+  {
+    SampledQuantitiesList += "p_rms, ";
+  }
+  if (Store_p_max)
+  {
+    SampledQuantitiesList += "p_max, ";
+  }
+  if (Store_p_min)
+  {
+    SampledQuantitiesList += "p_min, ";
+  }
+  if (Store_p_max_all)
+  {
+    SampledQuantitiesList += "p_max_all, ";
+  }
+  if (Store_p_min_all)
+  {
+    SampledQuantitiesList += "p_min_all, ";
+  }
+  if (Store_p_final)
+  {
+    SampledQuantitiesList += "p_final, ";
+  }
+
+  // Sampled u quantities
+  if (Store_u_raw)
+  {
+    SampledQuantitiesList += "u_raw, ";
+  }
+  if (Store_u_rms)
+  {
+    SampledQuantitiesList += "u_rms, ";
+  }
+  if (Store_u_max)
+  {
+    SampledQuantitiesList += "u_max, ";
+  }
+  if (Store_u_min)
+  {
+    SampledQuantitiesList += "u_min, ";
+  }
+  if (Store_u_max_all)
+  {
+    SampledQuantitiesList += "u_max_all, ";
+  }
+  if (Store_u_min_all)
+  {
+    SampledQuantitiesList += "u_min_all, ";
+  }
+  if (Store_u_final)
+  {
+    SampledQuantitiesList += "u_final, ";
+  }
+
+  if (Store_u_non_staggered_raw)
+  {
+    SampledQuantitiesList += "u_non_staggered_raw, ";
+  }
+
+  // remove comma and space symbols
+  if (SampledQuantitiesList.length() > 0)
+  {
+    SampledQuantitiesList.pop_back();
+    SampledQuantitiesList.pop_back();
+  }
+
+  TLogger::Log(TLogger::Advanced,
+               TLogger::WordWrapString(SampledQuantitiesList,
+                                       " ",2).c_str());
+
+  TLogger::Log(TLogger::Advanced,OUT_FMT_Separator);
+
+  TLogger::Log(TLogger::Advanced,
+              OUT_FMT_SamplingBeginsAt,
+              StartTimeStep+1);
+
+  if (CopySensorMask)
+  {
+    TLogger::Log(TLogger::Advanced,
+                 OUT_FMT_CopySensorMaskYes);
+  }
 }// end of PrintSetup
 //------------------------------------------------------------------------------
 
@@ -214,43 +267,52 @@ void TCommandLineParameters::PrintSetup()
 void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
 {
   char c;
-  int longIndex;
+  int longIndex = -1;
   bool CheckpointFlag = false;
 
+  const int ErrorLineIndentation = 9;
+
+  // all optional arguments are in fact requested. This was chosen to prevent
+  // getopt error messages and provide custom error handling.
   #ifdef _OPENMP
     const char * shortOpts = "i:o:r:c:t:g:puhs:";
   #else
-    const char * shortOpts = "i:o:r:c:g:puIhs:";
+    const char * shortOpts = "i:o:r:c:g:puhs:";
   #endif
 
   const struct option longOpts[] =
   {
-    { "benchmark",            required_argument, NULL, 0},
+    { "benchmark",            required_argument, NULL, 1 },
+    { "copy_sensor_mask",     no_argument,       NULL, 2 },
+    { "checkpoint_file"    ,  required_argument, NULL, 3 },
+    { "checkpoint_interval",  required_argument, NULL, 4 },
     { "help",                 no_argument, NULL,      'h'},
-    { "version",              no_argument, NULL, 0 },
-    { "checkpoint_file"    ,  required_argument, NULL, 0 },
-    { "checkpoint_interval",  required_argument, NULL, 0 },
+    { "verbose",              required_argument, NULL, 5 },
+    { "version",              no_argument, NULL,       6 },
 
     { "p_raw",                no_argument, NULL,'p' },
-    { "p_rms",                no_argument, NULL, 0 },
-    { "p_max",                no_argument, NULL, 0 },
-    { "p_min",                no_argument, NULL, 0},
-    { "p_max_all",            no_argument, NULL, 0},
-    { "p_min_all",            no_argument, NULL, 0},
-    { "p_final",              no_argument, NULL, 0 },
+    { "p_rms",                no_argument, NULL, 10 },
+    { "p_max",                no_argument, NULL, 11 },
+    { "p_min",                no_argument, NULL, 12 },
+    { "p_max_all",            no_argument, NULL, 13 },
+    { "p_min_all",            no_argument, NULL, 14 },
+    { "p_final",              no_argument, NULL, 15 },
 
     { "u_raw",                no_argument, NULL,'u' },
-    { "u_non_staggered_raw",  no_argument, NULL, 0},
-    { "u_rms",                no_argument, NULL, 0},
-    { "u_max",                no_argument, NULL, 0},
-    { "u_min",                no_argument, NULL, 0},
-    { "u_max_all",            no_argument, NULL, 0},
-    { "u_min_all",            no_argument, NULL, 0},
-    { "u_final",              no_argument, NULL, 0},
+    { "u_rms",                no_argument, NULL, 20},
+    { "u_max",                no_argument, NULL, 21},
+    { "u_min",                no_argument, NULL, 22},
+    { "u_max_all",            no_argument, NULL, 23},
+    { "u_min_all",            no_argument, NULL, 24},
+    { "u_final",              no_argument, NULL, 25},
+    { "u_non_staggered_raw",  no_argument, NULL, 26},
 
-    { "copy_sensor_mask",     no_argument, NULL, 0},
     { NULL,                   no_argument, NULL, 0}
   };
+
+  // all optional arguments are in fact requested. This was chosen to prevent
+  // getopt error messages and provide custom error handling.
+  opterr = 0;
 
   // Short parameters //
   while ((c = getopt_long (argc, argv, shortOpts, longOpts, &longIndex )) != -1)
@@ -259,69 +321,242 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
     {
       case 'i':
       {
-        InputFileName = optarg;
+        // test if the wile was correctly entered (if not, getopt could eat
+        // the following parameter)
+        if ((optarg != NULL) &&
+            ((strlen(optarg) > 0) && (optarg[0] != '-')))
+        {
+          InputFileName = optarg;
+        }
+        else
+        {
+          PrintUsage();
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoInputFile,
+                                                             " ",
+                                                             ErrorLineIndentation).c_str());
+        }
         break;
       }
 
       case 'o':
       {
-        OutputFileName = optarg;
+        // test if the wile was correctly entered (if not, getopt could eat
+        // the following parameter)
+        if ((optarg != NULL) &&
+            ((strlen(optarg) > 0) && (optarg[0] != '-')))
+        {
+          OutputFileName = optarg;
+        }
+        else
+        {
+          PrintUsage();
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoOutputFile,
+                                                             " ",
+                                                             ErrorLineIndentation).c_str());
+        }
         break;
       }
 
       case 'r':
       {
-        if ((optarg == NULL) || (atoi(optarg) <= 0))
+        try
         {
-          fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoVerboseIntreval);
-          PrintUsageAndExit();
+          int ConvertedValue = std::stoi(optarg);
+          if ((ConvertedValue  < 1) || (ConvertedValue  > 100))
+          {
+            throw std::invalid_argument("-r");
+          }
+          ProgressPrintInterval = std::stoll(optarg);
         }
-        else
+        catch (...)
         {
-          VerboseInterval = atoi(optarg);
+          PrintUsage();
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoProgressPrintIntreval,
+                                                             " ",
+                                                             ErrorLineIndentation).c_str());
         }
         break;
       }
 
       case 't':
       {
-        if ((optarg == NULL) || (atoi(optarg) <= 0))
+        try
         {
-          fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoThreadNumbers);
-          PrintUsageAndExit();
+          if (std::stoi(optarg) < 1)
+          {
+            throw std::invalid_argument("-t");
+          }
+          NumberOfThreads = std::stoll(optarg);
         }
-        else
+        catch (...)
         {
-          NumberOfThreads = atoi(optarg);
+          PrintUsage();
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoThreadNumbers,
+                                                             " ",
+                                                             ErrorLineIndentation).c_str());
         }
         break;
       }
 
       case 'g':
       {
-        if ((optarg == NULL) || (atoi(optarg) < -1))
+        try
         {
-          fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoGPUNumbers);
-          PrintUsageAndExit();
+          GPUDeviceIdx = std::stoi(optarg);
+          if (GPUDeviceIdx < 0)
+          {
+            throw std::invalid_argument("-g");
+          }
         }
-        else
+        catch (...)
         {
-          GPUDeviceIdx = atoi(optarg);
+          PrintUsage();
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoGPUNumber,
+                                                             " ",
+                                                             ErrorLineIndentation).c_str());
         }
         break;
       }
 
       case 'c':
       {
-        if ((optarg == NULL) || (atoi(optarg) < 0) || atoi(optarg) > 9)
+        try
         {
-          fprintf(stderr,"%s", CommandlineParameters_ERR_FMT_NoCompressionLevel);
-          PrintUsageAndExit();
+          int CovertedValue = std::stoi(optarg);
+          if ((CovertedValue < 0) || (CovertedValue > 9))
+          {
+            throw std::invalid_argument("-c");
+          }
+          CompressionLevel = std::stoll(optarg);
+        }
+        catch (...)
+        {
+          PrintUsage();
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCompressionLevel,
+                                                             " ",
+                                                             ErrorLineIndentation).c_str());
+        }
+        break;
+      }
+
+      case 'h':
+      {
+        PrintUsage();
+        exit(EXIT_SUCCESS);
+      }
+
+      case 's':
+      {
+        try
+        {
+          if (std::stoll(optarg) < 1)
+          {
+            throw std::invalid_argument("-s");
+          }
+          StartTimeStep = std::stoll(optarg) - 1;
+        }
+        catch (...)
+        {
+          PrintUsage();
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoStartTimestep,
+                                                             " ",
+                                                             ErrorLineIndentation).c_str());
+        }
+        break;
+      }
+
+      case 1: // benchmark
+      {
+        try
+        {
+          BenchmarkFlag = true;
+          if (std::stoll(optarg) <= 0)
+          {
+            throw std::invalid_argument("benchmark");
+          }
+          BenchmarkTimeStepsCount = std::stoll(optarg);
+        }
+        catch (...)
+        {
+          PrintUsage();
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoBenchmarkTimeStepCount,
+                                                             " ",
+                                                             ErrorLineIndentation).c_str());
+        }
+        break;
+      }
+
+      case 2: // copy_sensor_mask
+      {
+        CopySensorMask = true;
+        break;
+      }
+
+      case 3: // checkpoint_file
+      {
+        CheckpointFlag = true;
+        // test if the wile was correctly entered (if not, getopt could eat
+        // the following parameter)
+        if ((optarg != NULL) &&
+            ((strlen(optarg) > 0) && (optarg[0] != '-')))
+        {
+          CheckpointFileName = optarg;
         }
         else
         {
-          CompressionLevel = atoi(optarg);
+          PrintUsage();
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCheckpointFile,
+                                                             " ",
+                                                             ErrorLineIndentation).c_str());
         }
+        break;
+      }
+
+      case 4: // checkpoint_interval
+      {
+        try
+        {
+          CheckpointFlag = true;
+          if (std::stoll(optarg) <= 0)
+          {
+           throw std::invalid_argument("checkpoint_interval");
+          }
+          CheckpointInterval = std::stoll(optarg);
+        }
+        catch (...)
+        {
+          PrintUsage();
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCheckpointInterval,
+                                                             " ",
+                                                             ErrorLineIndentation).c_str());
+        }
+        break;
+      }
+
+      case 5: // verbose
+      {
+        try
+        {
+          int VerboseLevel = std::stoi(optarg);
+          if ((VerboseLevel < 0) || (VerboseLevel > 2))
+          {
+            throw std::invalid_argument("verbose");
+          }
+          TLogger::SetLevel(static_cast<TLogger::TLogLevel> (VerboseLevel));
+        }
+        catch (...)
+        {
+          PrintUsage();
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_BadVerboseLevel,
+                                                             " ",
+                                                             ErrorLineIndentation).c_str());
+        }
+        break;
+      }
+
+      case 6: // version
+      {
+        PrintVersion = true;
         break;
       }
 
@@ -331,176 +566,212 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         break;
       }
 
+      case 10: // p_rms
+      {
+        Store_p_rms = true;
+        break;
+      }
+
+      case 11: // p_max
+      {
+        Store_p_max = true;
+        break;
+      }
+
+      case 12: // p_min
+      {
+        Store_p_min = true;
+        break;
+      }
+
+      case 13: // p_max_all
+      {
+        Store_p_max_all = true;
+        break;
+      }
+
+      case 14: // p_min_all
+      {
+        Store_p_min_all = true;
+        break;
+      }
+
+      case 15: // p_final
+      {
+        Store_p_final = true;
+        break;
+      }
+
       case 'u':
       {
         Store_u_raw = true;
         break;
       }
 
-      case 'h':
+      case 20: // u_rms
       {
-        PrintUsageAndExit();
+        Store_u_rms = true;
         break;
       }
 
-      case 's':
+      case 21: // u_max
       {
-        if ((optarg == NULL) || (atoi(optarg) < 1))
-        {
-          fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoStartTimestep);
-          PrintUsageAndExit();
-        }
-        StartTimeStep = atoi(optarg) - 1;
+        Store_u_max = true;
         break;
       }
 
-      /* long option without a short arg */
-      case 0:
+      case 22: // u_min
       {
-        if(strcmp("benchmark",longOpts[longIndex].name) == 0)
-        {
-          BenchmarkFlag = true;
-          if ((optarg == NULL) || (atoi(optarg) <= 0))
-          {
-            fprintf(stderr, "%s",CommandlineParameters_ERR_FMT_NoBenchmarkTimeStepCount);
-            PrintUsageAndExit();
-          }
-          else
-          {
-            BenchmarkTimeStepsCount = atoi(optarg);
-          }
-          break;
-        }
-
-
-        if(strcmp("checkpoint_file", longOpts[longIndex].name ) == 0)
-        {
-          CheckpointFlag = true;
-          if ((optarg == NULL))
-          {
-            fprintf(stderr,"%s", CommandlineParameters_ERR_FMT_NoCheckpointFile);
-            PrintUsageAndExit();
-          }
-          else
-          {
-            CheckpointFileName = optarg;
-          }
-          break;
-        }
-
-        if(strcmp("checkpoint_interval", longOpts[longIndex].name) == 0)
-        {
-          CheckpointFlag = true;
-          if ((optarg == NULL) || (atoi(optarg) <= 0))
-          {
-            fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoCheckpointInterval);
-            PrintUsageAndExit();
-          }
-          else
-          {
-            CheckpointInterval = atoi(optarg);
-          }
-          break;
-        }
-
-        if(strcmp("version", longOpts[longIndex].name) == 0)
-        {
-          PrintVersion = true;
-          break;
-        }
-
-        if(strcmp("p_rms", longOpts[longIndex].name) == 0)
-        {
-          Store_p_rms = true;
-          break;
-        }
-
-        if(strcmp("p_max", longOpts[longIndex].name) == 0)
-        {
-          Store_p_max = true;
-          break;
-        }
-
-        if (strcmp("p_min", longOpts[longIndex].name) == 0)
-        {
-          Store_p_min = true;
-          break;
-        }
-
-        if (strcmp("p_max_all", longOpts[longIndex].name) == 0)
-        {
-          Store_p_max_all = true;
-          break;
-        }
-
-        if (strcmp("p_min_all", longOpts[longIndex].name) == 0)
-        {
-          Store_p_min_all = true;
-          break;
-        }
-
-        if(strcmp("p_final", longOpts[longIndex].name) == 0)
-        {
-          Store_p_final = true;
-          break;
-        }
-
-        //-- velocity related flags
-        else if (strcmp("u_non_staggered_raw", longOpts[longIndex].name) == 0)
-        {
-          Store_u_non_staggered_raw = true;
-          break;
-        }
-
-        if(strcmp("u_rms", longOpts[longIndex].name) == 0)
-        {
-          Store_u_rms = true;
-          break;
-        }
-
-        if(strcmp("u_max", longOpts[longIndex].name) == 0)
-        {
-          Store_u_max = true;
-          break;
-        }
-
-        if (strcmp("u_min", longOpts[longIndex].name) == 0)
-        {
-          Store_u_min = true;
-          break;
-        }
-
-        if (strcmp("u_max_all", longOpts[longIndex].name) == 0)
-        {
-          Store_u_max_all = true;
-          break;
-        }
-
-        if (strcmp("u_min_all", longOpts[longIndex].name) == 0)
-        {
-          Store_u_min_all = true;
-          break;
-        }
-
-        if(strcmp("u_final", longOpts[longIndex].name) == 0)
-        {
-          Store_u_final = true;
-          break;
-        }
-
-        if (strcmp("copy_sensor_mask", longOpts[longIndex].name) == 0)
-        {
-          CopySensorMask = true;
-          break;
-        }
-        //else
-        PrintUsageAndExit();
+        Store_u_min = true;
         break;
+      }
+
+      case 23: // u_max_all
+      {
+        Store_u_max_all = true;
+        break;
+      }
+
+      case 24: // u_min_all
+      {
+        Store_u_min_all = true;
+        break;
+      }
+
+      case 25: // u_final
+      {
+        Store_u_final = true;
+        break;
+      }
+
+      case 26: // u_non_staggered_raw
+      {
+        Store_u_non_staggered_raw = true;
+        break;
+      }
+
+      // unknown parameter or a missing mandatory argument
+      case ':':
+      case '?':
+      {
+        switch (optopt)
+        {
+          case 'i':
+          {
+            PrintUsage();
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoInputFile,
+                                                               " ",
+                                                               ErrorLineIndentation).c_str());
+            break;
+          }
+          case 'o':
+          {
+            PrintUsage();
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoOutputFile,
+                                                               " ",
+                                                               ErrorLineIndentation).c_str());
+            break;
+          }
+
+          case 'r':
+          {
+            PrintUsage();
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoProgressPrintIntreval,
+                                                               " ",
+                                                               ErrorLineIndentation).c_str());
+            break;
+          }
+
+          case 'c':
+          {
+            PrintUsage();
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCompressionLevel,
+                                                               " ",
+                                                               ErrorLineIndentation).c_str());
+            break;
+          }
+
+          case 't':
+          {
+            PrintUsage();
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoThreadNumbers,
+                                                               " ",
+                                                               ErrorLineIndentation).c_str());
+            break;
+          }
+
+          case 'g':
+          {
+            PrintUsage();
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoGPUNumber,
+                                                               " ",
+                                                               ErrorLineIndentation).c_str());
+            break;
+          }
+
+          case 's':
+          {
+            PrintUsage();
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoStartTimestep,
+                                                               " ",
+                                                               ErrorLineIndentation).c_str());
+            break;
+          }
+
+          case 1: // benchmark
+          {
+            PrintUsage();
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoBenchmarkTimeStepCount,
+                                                               " ",
+                                                               ErrorLineIndentation).c_str());
+            break;
+          }
+
+          case 3: // checkpoint_file
+          {
+            PrintUsage();
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCheckpointFile,
+                                                               " ",
+                                                               ErrorLineIndentation).c_str());
+            break;
+          }
+
+          case 4: // checkpoint_interval
+          {
+            PrintUsage();
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCheckpointInterval,
+                                                               " ",
+                                                               ErrorLineIndentation).c_str());
+            break;
+          }
+
+          case 5: // verbose
+          {
+            PrintUsage();
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_BadVerboseLevel,
+                                                               " ",
+                                                               ErrorLineIndentation).c_str());
+            break;
+          }
+
+          default :
+          {
+            PrintUsage();
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_UnknownParameterOrMissingArgument,
+                                                               " ",
+                                                               ErrorLineIndentation).c_str());
+            break;
+          }
+        }
       }
 
       default:
       {
-        PrintUsageAndExit();
+        PrintUsage();
+        TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_UnknownParameter,
+                                                           " ",
+                                                           ErrorLineIndentation).c_str());
+        break;
       }
     }
   }
@@ -510,30 +781,40 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
   //-- Post checks --//
   if (InputFileName == "")
   {
-    fprintf(stderr,"%s",CommandlineParameters_ERR_FMT_NoInputFile);
-    PrintUsageAndExit();
+    PrintUsage();
+    TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoInputFile,
+                                                       " ",
+                                                       ErrorLineIndentation).c_str());
   }
 
   if (OutputFileName == "")
   {
-    fprintf(stderr,"%s",CommandlineParameters_ERR_FMT_NoOutputFile);
-    PrintUsageAndExit();
+    PrintUsage();
+    TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoOutputFile,
+                                                       " ",
+                                                       ErrorLineIndentation).c_str());
   }
 
   if (CheckpointFlag)
   {
     if (CheckpointFileName == "")
     {
-      fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoCheckpointFile);
-      PrintUsageAndExit();
+      PrintUsage();
+      TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCheckpointFile,
+                                                         " ",
+                                                         ErrorLineIndentation).c_str());
     }
+
     if (CheckpointInterval <= 0)
     {
-      fprintf(stderr, "%s", CommandlineParameters_ERR_FMT_NoCheckpointInterval);
-      PrintUsageAndExit();
+      PrintUsage();
+      TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCheckpointInterval,
+                                                         " ",
+                                                         ErrorLineIndentation).c_str());
     }
   }
 
+  // set a default flag if necessary
   if (!(Store_p_raw     || Store_p_rms     || Store_p_max   || Store_p_min ||
         Store_p_max_all || Store_p_min_all || Store_p_final ||
         Store_u_raw     || Store_u_non_staggered_raw        ||

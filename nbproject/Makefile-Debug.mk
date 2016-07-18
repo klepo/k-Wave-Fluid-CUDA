@@ -41,6 +41,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/HDF5/HDF5_File.o \
 	${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o \
 	${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o \
+	${OBJECTDIR}/Logger/Logger.o \
 	${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o \
 	${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o \
@@ -63,8 +64,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=-Xcompiler="-Wall -fopenmp -mavx -g" --resource-usage -arch=compute_52 -code=sm_52 --device-c
-CXXFLAGS=-Xcompiler="-Wall -fopenmp -mavx -g" --resource-usage -arch=compute_52 -code=sm_52 --device-c
+CCFLAGS=-Xcompiler="-g -Wall -fopenmp" -G -arch=compute_52 -code=sm_52 --device-c
+CXXFLAGS=-Xcompiler="-g -Wall -fopenmp" -G -arch=compute_52 -code=sm_52 --device-c
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -73,7 +74,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-L/usr/local/hdf5-serial/lib -L/usr/local/cuda/lib64 /usr/local/hdf5-serial/lib/libhdf5_hl.a /usr/local/hdf5-serial/lib/libhdf5.a -lz -lcufft
+LDLIBSOPTIONS=-L/usr/local/hdf5-serial/lib -L/usr/local/cuda/lib64 /usr/local/hdf5-serial/lib/libhdf5_hl.a /usr/local/hdf5-serial/lib/libhdf5.a -lz /usr/local/cuda/lib64/libcufft_static.a /usr/local/cuda/lib64/libculibos.a /usr/local/cuda/lib64/libcudart_static.a
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
@@ -83,9 +84,15 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: /usr/local/hdf5-se
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: /usr/local/hdf5-serial/lib/libhdf5.a
 
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: /usr/local/cuda/lib64/libcufft_static.a
+
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: /usr/local/cuda/lib64/libculibos.a
+
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: /usr/local/cuda/lib64/libcudart_static.a
+
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	nvcc -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda ${OBJECTFILES} ${LDLIBSOPTIONS} -Xcompiler="-Wall -fopenmp -mavx -g" --resource-usage -arch=compute_52 -code=sm_52
+	nvcc -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda ${OBJECTFILES} ${LDLIBSOPTIONS} -Xcompiler="-g -Wall -fopenmp" -G -arch=compute_52 -code=sm_52
 
 ${OBJECTDIR}/Containers/MatrixContainer.o: Containers/MatrixContainer.cpp 
 	${MKDIR} -p ${OBJECTDIR}/Containers
@@ -110,6 +117,10 @@ ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o: KSpaceSolver/KSpaceFirstOr
 ${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o: KSpaceSolver/SolverCUDAKernels.cu 
 	${MKDIR} -p ${OBJECTDIR}/KSpaceSolver
 	$(COMPILE.cc) -g -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o KSpaceSolver/SolverCUDAKernels.cu
+
+${OBJECTDIR}/Logger/Logger.o: Logger/Logger.cpp 
+	${MKDIR} -p ${OBJECTDIR}/Logger
+	$(COMPILE.cc) -g -I./ -I/usr/local/hdf5-serial/include -std=c++11 -o ${OBJECTDIR}/Logger/Logger.o Logger/Logger.cpp
 
 ${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o: MatrixClasses/BaseFloatMatrix.cpp 
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses

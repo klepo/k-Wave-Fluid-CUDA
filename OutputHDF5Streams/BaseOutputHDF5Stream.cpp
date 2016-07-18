@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2012, 10:30 (created) \n
- *              12 April     2016, 15:05 (revised)
+ *              14 July      2016, 10:40 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -38,7 +38,7 @@
 #include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
 #include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
 #include <Parameters/Parameters.h>
 
 
@@ -92,7 +92,7 @@ using namespace std;
   this->HDF5_RootObjectName = new char[strlen(HDF5_RootObjectName)];
   strcpy(this->HDF5_RootObjectName, HDF5_RootObjectName);
 
- };// end of TBaseOutputHDF5Stream
+ }// end of TBaseOutputHDF5Stream
 //------------------------------------------------------------------------------
 
 
@@ -153,7 +153,6 @@ void TBaseOutputHDF5Stream::AllocateMemory()
 
   if (!HostStoreBuffer)
   {
-    fprintf(stderr, Matrix_ERR_FMT_Not_Enough_Memory, "TBaseOutputHDF5Stream");
     throw bad_alloc();
   }
 

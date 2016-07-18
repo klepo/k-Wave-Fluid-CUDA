@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        29 August   2012, 11:25 (created) \n
- *              17 June     2015, 10:00 (revised)
+ *              14 July     2016, 13:51 (revised)
  *
  * @section Params Command Line Parameters
  * The CUDA/C++ code requires two mandatory parameters and accepts a few optional
@@ -108,60 +108,70 @@
  * the outputs.
  *
 \verbatim
----------------------------------- Usage ---------------------------------
-Mandatory parameters:
-  -i <input_file_name>            : HDF5 input file
-  -o <output_file_name>           : HDF5 output file
-
-Optional parameters:
-  -t <num_threads>                : Number of CPU threads
-                                      (default = all )
-  -g <device_number>              : GPU device to run on
-                                      (default = device with most  memory)
-
-  -r <interval_in_%>              : Progress print interval
-                                      (default = 5%)
-  -c <comp_level>                 : Output file compression level <0,9>
-                                      (default = 0)
-  --benchmark <steps>             : Run a specified number of time steps
-
-  --checkpoint_file <file_name>   : HDF5 checkpoint file
-  --checkpoint_interval <seconds> : Stop after a given number of seconds and
-                                      store the actual state
-
-  -h                              : Print help
-  --help                          : Print help
-  --version                       : Print version
-
-Output flags:
-  -p                              : Store acoustic pressure
-                                      (default if nothing else is on)
-                                      (the same as --p_raw)
-  --p_raw                         : Store raw time series of p (default)
-  --p_rms                         : Store rms of p
-  --p_max                         : Store max of p
-  --p_min                         : Store min of p
-  --p_max_all                     : Store max of p (whole domain)
-  --p_min_all                     : Store min of p (whole domain)
-  --p_final                       : Store final pressure field
-
-  -u                              : Store ux, uy, uz
-                                      (the same as --u_raw)
-  --u_raw                         : Store raw time series of ux, uy, uz
-  --u_non_staggered_raw           : Store non-staggered raw time series of
-                                      ux, uy, uz
-  --u_rms                         : Store rms of ux, uy, uz
-  --u_max                         : Store max of ux, uy, uz
-  --u_min                         : Store min of ux, uy, uz
-  --u_max_all                     : Store max of ux, uy, uz (whole domain)
-  --u_min_all                     : Store min of ux, uy, uz (whole domain)
-  --u_final                       : Store final acoustic velocity
-
-  --copy_sensor_mask              : Copy sensor mask to the output file
-
-  -s <timestep>                   : Time step when data collection begins
-                                      (default = 1)
---------------------------------------------------------------------------
+┌───────────────────────────────────────────────────────────────┐
+│                 kspaceFirstOrder3D-CUDA v1.1                  │
+├───────────────────────────────────────────────────────────────┤
+│                             Usage                             │
+├───────────────────────────────────────────────────────────────┤
+│                     Mandatory parameters                      │
+├───────────────────────────────────────────────────────────────┤
+│ -i <file_name>                │ HDF5 input file               │
+│ -o <file_name>                │ HDF5 output file              │
+├───────────────────────────────┴───────────────────────────────┤
+│                      Optional parameters                      │
+├───────────────────────────────┬───────────────────────────────┤
+│ -t <num_threads>              │ Number of CPU threads         │
+│                               │  (default =  4)               │
+│ -g <device_number>            │ GPU device to run on          │
+│                               │   (default = the first free)  │
+│ -r <interval_in_%>            │ Progress print interval       │
+│                               │   (default =  5%)             │
+│ -c <compression_level>        │ Compression level <0,9>       │
+│                               │   (default = 0)               │
+│ --benchmark <time_steps>      │ Run only a specified number   │
+│                               │   of time steps               │
+│ --verbose <level>             │ Level of verbosity <0,2>      │
+│                               │   0 - basic, 1 - advanced,    │
+│                               │   2 - full                    │
+│                               │   (default = basic)           │
+│ -h, --help                    │ Print help                    │
+│ --version                     │ Print version and build info  │
+├───────────────────────────────┼───────────────────────────────┤
+│ --checkpoint_file <file_name> │ HDF5 Checkpoint file          │
+│ --checkpoint_interval <sec>   │ Checkpoint after a given      │
+│                               │   number of seconds           │
+├───────────────────────────────┴───────────────────────────────┤
+│                          Output flags                         │
+├───────────────────────────────┬───────────────────────────────┤
+│ -p                            │ Store acoustic pressure       │
+│                               │   (default output flag)       │
+│                               │   (the same as --p_raw)       │
+│ --p_raw                       │ Store raw time series of p    │
+│ --p_rms                       │ Store rms of p                │
+│ --p_max                       │ Store max of p                │
+│ --p_min                       │ Store min of p                │
+│ --p_max_all                   │ Store max of p (whole domain) │
+│ --p_min_all                   │ Store min of p (whole domain) │
+│ --p_final                     │ Store final pressure field    │
+├───────────────────────────────┼───────────────────────────────┤
+│ -u                            │ Store ux, uy, uz              │
+│                               │    (the same as --u_raw)      │
+│ --u_raw                       │ Store raw time series of      │
+│                               │    ux, uy, uz                 │
+│ --u_non_staggered_raw         │ Store non-staggered raw time  │
+│                               │   series of ux, uy, uz        │
+│ --u_rms                       │ Store rms of ux, uy, uz       │
+│ --u_max                       │ Store max of ux, uy, uz       │
+│ --u_min                       │ Store min of ux, uy, uz       │
+│ --u_max_all                   │ Store max of ux, uy, uz       │
+│                               │   (whole domain)              │
+│ --u_min_all                   │ Store min of ux, uy, uz       │
+│                               │   (whole domain)              │
+│ --u_final                     │ Store final acoustic velocity │
+├───────────────────────────────┼───────────────────────────────┤
+│ -s <time_step>                │ When data collection begins   │
+│                               │   (default = 1)               │
+└───────────────────────────────┴───────────────────────────────┘
 \endverbatim
  *
  * @section License
@@ -212,7 +222,6 @@ class TCommandLineParameters
     /// Get Checkpoint file name
     std::string GetCheckpointFileName() const {return CheckpointFileName;};
 
-
     /// Get GPU device ID specified by the user (not necessary the one the code runs on)
     int GetGPUDeviceIdx()               const {return GPUDeviceIdx;};
 
@@ -227,8 +236,8 @@ class TCommandLineParameters
     size_t GetCompressionLevel()        const {return CompressionLevel;};
     /// Get number of threads
     size_t GetNumberOfThreads()         const {return NumberOfThreads;};
-    /// Get verbose interval
-    size_t GetVerboseInterval()         const {return VerboseInterval;};
+    /// Get progress print interval
+    size_t GetProgressPrintInterval()   const {return ProgressPrintInterval;};
     /// Get start time index when sensor data collection begins
     size_t GetStartTimeIndex()          const {return StartTimeStep;};
 
@@ -273,9 +282,9 @@ class TCommandLineParameters
     bool IsCopySensorMask()             const {return CopySensorMask;};
 
     /// Print usage and exit
-    void PrintUsageAndExit();
+    void PrintUsage();
     /// Print setup
-    void PrintSetup();
+    void PrintComandlineParamers();
     /// Parse command line
     void ParseCommandLine(int argc, char** argv);
 
@@ -297,12 +306,11 @@ class TCommandLineParameters
     /// NumberOfThreads value.
     size_t NumberOfThreads;
 
-
     /// id of selected GPU devices.
     int GPUDeviceIdx;
 
-    /// VerboseInterval value.
-    size_t VerboseInterval;
+    /// ProgressInterval value.
+    size_t ProgressPrintInterval;
     // CompressionLevel value.
     size_t CompressionLevel;
 
@@ -355,8 +363,8 @@ class TCommandLineParameters
 
     /// Default compression level.
     static const size_t DefaultCompressionLevel = 0;
-    /// Default verbose interval.
-    static const size_t DefaultVerboseInterval  = 5;
+    /// Default progress print interval.
+    static const size_t DefaultProgressPrintInterval  = 5;
 };// end of class TCommandLineParameters
 
 #endif /* TCOMMANDLINESPARAMETERS_H */

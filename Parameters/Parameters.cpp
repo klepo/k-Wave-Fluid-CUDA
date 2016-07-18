@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2012, 13:39 (created) \n
- *              12 April     2016, 15:20 (revised)
+ *              18 July      2016, 13:04 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -43,7 +43,9 @@
 #include <Parameters/Parameters.h>
 #include <Parameters/CUDAParameters.h>
 #include <Utils/MatrixNames.h>
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
+#include <Logger/OutputMessages.h>
+#include <Logger/Logger.h>
 
 
 using namespace std;
@@ -84,24 +86,26 @@ TParameters* TParameters::GetInstance()
 //----------------------------------------------------------------------------
 
 /**
- * Parse command line.
+ * Parse command line and read scalar values from the input file to initialise
+ * the class and the simulation.
  * @param [in] argc
  * @param [in] argv
  */
-void TParameters::ParseCommandLine(int argc, char** argv)
+void TParameters::Init(int argc, char** argv)
 {
-
   CommandLinesParameters.ParseCommandLine(argc, argv);
 
-  // this must be here to read the GPU parameters and report a potential error
-  int DeviceIdx = CommandLinesParameters.GetGPUDeviceIdx();
-  CUDAParameters.SelectDevice(DeviceIdx); // throws an exception when wrong
-
+  if (GetGitHash() != "")
+  {
+    TLogger::Log(TLogger::Full, TParamereres_OUT_FMT_GitHash, GetGitHash().c_str());
+    TLogger::Log(TLogger::Full, OUT_FMT_Separator);
+  }
   if (CommandLinesParameters.IsVersion())
   {
     return;
   }
 
+  TLogger::Log(TLogger::Basic, OUT_FMT_ReadingConfiguration);
   ReadScalarsFromHDF5InputFile(HDF5_InputFile);
 
   if (CommandLinesParameters.IsBenchmarkFlag())
@@ -112,15 +116,85 @@ void TParameters::ParseCommandLine(int argc, char** argv)
   if ((Nt <= CommandLinesParameters.GetStartTimeIndex()) ||
       (0 > CommandLinesParameters.GetStartTimeIndex()))
   {
-    fprintf(stderr,
-            Parameters_ERR_FMT_Illegal_StartTime_value,
-            static_cast<size_t> (1),
-            Nt);
-    CommandLinesParameters.PrintUsageAndExit();
+     char ErrorMessage[256];
+     snprintf(ErrorMessage,
+              256,
+              Parameters_ERR_FMT_Illegal_StartTime_value,
+              1l,
+              Nt);
+    throw std::invalid_argument(ErrorMessage);
   }
 
+  TLogger::Log(TLogger::Basic, OUT_FMT_Done);
 }// end of ParseCommandLine
 //----------------------------------------------------------------------------
+
+
+/**
+ * Select a GPU device for execution.
+ */
+void TParameters::SelectDevice()
+{
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_SelectedDeviceId);
+  TLogger::Flush(TLogger::Basic);
+
+  int DeviceIdx = CommandLinesParameters.GetGPUDeviceIdx();
+  CUDAParameters.SelectDevice(DeviceIdx); // throws an exception when wrong
+
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_DeviceId,
+               CUDAParameters.GetDeviceIdx());
+
+
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_DeviceName,
+               CUDAParameters.GetDeviceName().c_str());
+
+}// end of SelectDevice
+//------------------------------------------------------------------------------
+
+
+/**
+ * Print parameters of the simulation, based in the actual level of verbosity.
+ */
+void TParameters::PrintSimulatoinSetup()
+{
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_NumberOfThreads,
+               GetNumberOfThreads());
+
+  TLogger::Log(TLogger::Basic,  OUT_FMT_SimulationDetailsTitle);
+
+
+  char DomainsSizeText[48];
+  snprintf(DomainsSizeText, 48, OUT_FMT_DomainSizeFormat,
+          GetFullDimensionSizes().X,
+          GetFullDimensionSizes().Y,
+          GetFullDimensionSizes().Z );
+  // Print simulation size
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_DomainSize,
+               DomainsSizeText);
+
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_SimulationLength,
+               Get_Nt());
+
+  // Print all command line parameters
+  CommandLinesParameters.PrintComandlineParamers();
+
+  if (Get_sensor_mask_type() == smt_index)
+  {
+    TLogger::Log(TLogger::Advanced, OUT_FMT_SensorMaskTypeIndex);
+  }
+  if (Get_sensor_mask_type() == smt_corners)
+  {
+    TLogger::Log(TLogger::Advanced, OUT_FMT_SensorMaskTypeCuboid);
+  }
+}// end of PrintParametersOfTask
+//------------------------------------------------------------------------------
+
 
 /**
  * Read scalar values from the input HDF5 file.
@@ -134,16 +208,8 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
 
   if (!HDF5_InputFile.IsOpened())
   {
-    // Open file
-    try
-    {
-      HDF5_InputFile.Open(CommandLinesParameters.GetInputFileName().c_str());
-    }
-    catch (ios::failure e)
-    {
-      fprintf(stderr, "%s", e.what());
-      PrintUsageAndExit();
-    }
+    // Open file -- exceptions handled in main
+    HDF5_InputFile.Open(CommandLinesParameters.GetInputFileName().c_str());
   }
 
   HDF5_FileHeader.ReadHeaderFromInputFile(HDF5_InputFile);
@@ -331,8 +397,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
     HDF5_InputFile.ReadScalarValue(HDF5RootGroup, alpha_power_Name, alpha_power);
     if (alpha_power == 1.0f)
     {
-      fprintf(stderr, "%s", Parameters_ERR_FMT_Illegal_alpha_power_value);
-      PrintUsageAndExit();
+      throw std::invalid_argument(Parameters_ERR_FMT_Illegal_alpha_power_value);
     }
 
     alpha_coeff_scalar_flag = HDF5_InputFile.GetDatasetDimensionSizes(HDF5RootGroup, alpha_coeff_Name) == ScalarSizes;
@@ -447,10 +512,24 @@ void TParameters::SaveScalarsToHDF5File(THDF5_File & HDF5_OutputFile)
 
     HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, sensor_mask_type_Name, SensorMaskTypeNumericValue);
   }
-
 }// end of SaveScalarsToHDF5File
-
 //------------------------------------------------------------------------------
+
+/**
+ * Get GitHash of the code
+ * @return githash
+ */
+string TParameters::GetGitHash() const
+{
+#if (defined (__KWAVE_GIT_HASH__))
+  return string(__KWAVE_GIT_HASH__);
+#else
+  return "";
+#endif
+}// end of GetGitHash
+//------------------------------------------------------------------------------
+
+
 
 //----------------------------------------------------------------------------//
 //                              Implementation                                //
@@ -481,20 +560,11 @@ TParameters::TParameters() :
         rho0_scalar_flag(false), rho0_scalar(0.0f), rho0_sgx_scalar(0.0f), rho0_sgy_scalar(0.0f), rho0_sgz_scalar(0.0f)
 {
 
-}// end of TFFT1DParameters
+}// end of TParameters()
 //----------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------//
 //                              Implementation                              //
 //                              private methods                             //
 //--------------------------------------------------------------------------//
-
-/**
- * Print usage end exit.
- */
-void TParameters::PrintUsageAndExit()
-{
-  CommandLinesParameters.PrintUsageAndExit();
-}// end of PrintUsage
-//------------------------------------------------------------------------------
 

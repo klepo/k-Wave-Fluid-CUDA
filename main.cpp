@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July     2012, 10:57 (created) \n
- *              10 February 2016, 13:10 (revised)
+ *              14 July     2016, 13:50 (revised)
  *
  *
  *
@@ -246,67 +246,71 @@ HDF5_DIR=/usr/local/hdf5-1.8.9 \endverbatim
  *
  *
 \verbatim
----------------------------------- Usage ---------------------------------
-Mandatory parameters:
-  -i <input_file_name>            : HDF5 input file
-  -o <output_file_name>           : HDF5 output file
+┌───────────────────────────────────────────────────────────────┐
+│                 kspaceFirstOrder3D-CUDA v1.1                  │
+├───────────────────────────────────────────────────────────────┤
+│                             Usage                             │
+├───────────────────────────────────────────────────────────────┤
+│                     Mandatory parameters                      │
+├───────────────────────────────────────────────────────────────┤
+│ -i <file_name>                │ HDF5 input file               │
+│ -o <file_name>                │ HDF5 output file              │
+├───────────────────────────────┴───────────────────────────────┤
+│                      Optional parameters                      │
+├───────────────────────────────┬───────────────────────────────┤
+│ -t <num_threads>              │ Number of CPU threads         │
+│                               │  (default =  4)               │
+│ -g <device_number>            │ GPU device to run on          │
+│                               │   (default = the first free)  │
+│ -r <interval_in_%>            │ Progress print interval       │
+│                               │   (default =  5%)             │
+│ -c <compression_level>        │ Compression level <0,9>       │
+│                               │   (default = 0)               │
+│ --benchmark <time_steps>      │ Run only a specified number   │
+│                               │   of time steps               │
+│ --verbose <level>             │ Level of verbosity <0,2>      │
+│                               │   0 - basic, 1 - advanced,    │
+│                               │   2 - full                    │
+│                               │   (default = basic)           │
+│ -h, --help                    │ Print help                    │
+│ --version                     │ Print version and build info  │
+├───────────────────────────────┼───────────────────────────────┤
+│ --checkpoint_file <file_name> │ HDF5 Checkpoint file          │
+│ --checkpoint_interval <sec>   │ Checkpoint after a given      │
+│                               │   number of seconds           │
+├───────────────────────────────┴───────────────────────────────┤
+│                          Output flags                         │
+├───────────────────────────────┬───────────────────────────────┤
+│ -p                            │ Store acoustic pressure       │
+│                               │   (default output flag)       │
+│                               │   (the same as --p_raw)       │
+│ --p_raw                       │ Store raw time series of p    │
+│ --p_rms                       │ Store rms of p                │
+│ --p_max                       │ Store max of p                │
+│ --p_min                       │ Store min of p                │
+│ --p_max_all                   │ Store max of p (whole domain) │
+│ --p_min_all                   │ Store min of p (whole domain) │
+│ --p_final                     │ Store final pressure field    │
+├───────────────────────────────┼───────────────────────────────┤
+│ -u                            │ Store ux, uy, uz              │
+│                               │    (the same as --u_raw)      │
+│ --u_raw                       │ Store raw time series of      │
+│                               │    ux, uy, uz                 │
+│ --u_non_staggered_raw         │ Store non-staggered raw time  │
+│                               │   series of ux, uy, uz        │
+│ --u_rms                       │ Store rms of ux, uy, uz       │
+│ --u_max                       │ Store max of ux, uy, uz       │
+│ --u_min                       │ Store min of ux, uy, uz       │
+│ --u_max_all                   │ Store max of ux, uy, uz       │
+│                               │   (whole domain)              │
+│ --u_min_all                   │ Store min of ux, uy, uz       │
+│                               │   (whole domain)              │
+│ --u_final                     │ Store final acoustic velocity │
+├───────────────────────────────┼───────────────────────────────┤
+│ -s <time_step>                │ When data collection begins   │
+│                               │   (default = 1)               │
+└───────────────────────────────┴───────────────────────────────┘
 
-Optional parameters:
-  -t <num_threads>                : Number of CPU threads
-                                      (default = all )
-  -g <device_number>              : GPU device to run on
-                                      (default = device with most  memory)
-
-  --BlockSize1D <num_threads>     : Run 1D CUDA kernels with block size
-                                      (default is 256 threads per block)
-  --BlockSize3D <num_threads_x>   : Run 3D CUDA kernels with block size
-                <num_threads_y>        in x, y and z dimensions");
-                <num_threads_z>       (default is x=256 y=1 z=1 threads
-                                       per block)");
-
-  -r <interval_in_%>              : Progress print interval
-                                      (default = 5%)
-  -c <comp_level>                 : Output file compression level <0,9>
-                                      (default = 0)
-  --benchmark <steps>             : Run a specified number of time steps
-
-  --checkpoint_file <file_name>   : HDF5 checkpoint file
-  --checkpoint_interval <seconds> : Stop after a given number of seconds and
-                                      store the actual state
-
-  -h                              : Print help
-  --help                          : Print help
-  --version                       : Print version
-
-Output flags:
-  -p                              : Store acoustic pressure
-                                      (default if nothing else is on)
-                                      (the same as --p_raw)
-  --p_raw                         : Store raw time series of p (default)
-  --p_rms                         : Store rms of p
-  --p_max                         : Store max of p
-  --p_min                         : Store min of p
-  --p_max_all                     : Store max of p (whole domain)
-  --p_min_all                     : Store min of p (whole domain)
-  --p_final                       : Store final pressure field
-
-  -u                              : Store ux, uy, uz
-                                      (the same as --u_raw)
-  --u_raw                         : Store raw time series of ux, uy, uz
-  --u_non_staggered_raw           : Store non-staggered raw time series of
-                                      ux, uy, uz
-  --u_rms                         : Store rms of ux, uy, uz
-  --u_max                         : Store max of ux, uy, uz
-  --u_min                         : Store min of ux, uy, uz
-  --u_max_all                     : Store max of ux, uy, uz (whole domain)
-  --u_min_all                     : Store min of ux, uy, uz (whole domain)
-  --u_final                       : Store final acoustic velocity
-
-  --copy_sensor_mask              : Copy sensor mask to the output file
-
-  -s <timestep>                   : Time step when data collection begins
-                                      (default = 1)
---------------------------------------------------------------------------
 \endverbatim
  *
  *
@@ -674,11 +678,9 @@ These are only defined if (p_source_flag == 1)
 #endif
 
 #include <KSpaceSolver/KSpaceFirstOrder3DSolver.h>
+#include <Logger/Logger.h>
 
 using namespace std;
-
-/// separator
-static const char * FMT_SmallSeparator = "--------------------------------\n";
 
 /**
  * The main function of the kspaceFirstOrder3D-CUDA
@@ -692,119 +694,148 @@ int main(int argc, char** argv)
   TKSpaceFirstOrder3DSolver KSpaceSolver;
 
   // print header
-  fprintf(stdout, "---%s", FMT_SmallSeparator);
-  fprintf(stdout, "    %s\n", KSpaceSolver.GetCodeName().c_str());
-  fprintf(stdout, "---%s", FMT_SmallSeparator);
+  TLogger::Log(TLogger::Basic, OUT_FMT_FirstSeparator);
+  TLogger::Log(TLogger::Basic, OUT_FMT_CodeName, KSpaceSolver.GetCodeName().c_str());
+  TLogger::Log(TLogger::Basic, OUT_FMT_Separator);
 
   // Create parameters and parse command line
   TParameters* Parameters = TParameters::GetInstance();
 
+  //-------------- Init simulation ----------------//
   try
   {
-    fprintf(stdout, "Selected GPU device id:   ");
-    fflush(stdout);
-   // parse commandline and set GPU
-    Parameters->ParseCommandLine(argc, argv);
+    // Initialise Parameters by parsing the command line and reading input file scalars
+    Parameters->Init(argc, argv);
+    // Select GPU
+    Parameters->SelectDevice();
 
-    fprintf(stdout, "%9d\n", Parameters->CUDAParameters.GetDeviceIdx());
-    fprintf(stdout,
-          "GPU Device info: %18s\n",
-          Parameters->CUDAParameters.GetDeviceName().c_str());
-
-    // Must be here, after the GPU was acquired
+    // When we know the GPU, we can print out the code version
     if (Parameters->IsVersion())
     {
-      KSpaceSolver.PrintFullNameCodeAndLicense(stdout);
+      KSpaceSolver.PrintFullNameCodeAndLicense();
       return EXIT_SUCCESS;
     }
   }
-  catch (exception &e)
+  catch (const exception &e)
   {
-    // must be repeated in case the GPU we want to printout the codeversion
+     TLogger::Log(TLogger::Basic, OUT_FMT_Failed);
+    // must be repeated in case the GPU we want to printout the code version
     // and all GPUs are busy
     if (Parameters->IsVersion())
     {
-      KSpaceSolver.PrintFullNameCodeAndLicense(stdout);
+      KSpaceSolver.PrintFullNameCodeAndLicense();
     }
 
-    fprintf(stdout, "\nK-Wave panic in initialisation: \n %s\n", e.what());
-    return EXIT_FAILURE;
+    if (!Parameters->IsVersion())
+    {
+      TLogger::Log(TLogger::Basic, OUT_FMT_LastSeparator);
+    }
+    TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),ERR_FMTPathDelimiters, 9).c_str());
   }
-
 
   // set number of threads and bind them to cores
   #ifdef _OPENMP
-    KSpaceSolver.SetProcessorAffinity();
     omp_set_num_threads(Parameters->GetNumberOfThreads());
   #endif
 
-  fprintf(stdout,
-          "Number of CPU threads:    %9ld\n",
-          Parameters->GetNumberOfThreads());
+  // Print simulation setup
+  Parameters->PrintSimulatoinSetup();
 
-  KSpaceSolver.PrintParametersOfSimulation(stdout);
+  TLogger::Log(TLogger::Basic, OUT_FMT_InitialisatoinHeader);
 
-  fprintf(stdout,"---%s",FMT_SmallSeparator);
-  fprintf(stdout,".......... Initialization .........\n");
-  fprintf(stdout,"Memory allocation .............");
-  fflush(stdout);
-
-  // allocate memory
+  //-------------- Allocate memory----------------//
   try
   {
     KSpaceSolver.AllocateMemory();
   }
-  catch (exception e)
+  catch (const std::bad_alloc& e)
   {
-    fprintf(stdout, "Failed!\nK-Wave panic: Not enough memory to run this simulation!\n%s\n", e.what());
-    fprintf(stderr, "K-Wave panic: Not enough memory to run this simulation! \n%s\n", e.what());
-    return EXIT_FAILURE;
+    TLogger::Log(TLogger::Basic, OUT_FMT_Failed);
+    TLogger::Log(TLogger::Basic, OUT_FMT_LastSeparator);
+    TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_Not_Enough_Memory," ", 9).c_str());
   }
-  fprintf(stdout, "Done\n");
+  catch (const std::exception& e)
+  {
+    TLogger::Log(TLogger::Basic, OUT_FMT_Failed);
+    TLogger::Log(TLogger::Basic, OUT_FMT_LastSeparator);
+    TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),
+                                                       ERR_FMTPathDelimiters,
+                                                       13).c_str());
+  }
 
-  // Load data from disk
-  fprintf(stdout, "Data loading...................");
-  fflush(stdout);
+  //-------------- Load input data ----------------//
   try
   {
     KSpaceSolver.LoadInputData();
   }
-  catch (ios::failure e)
+  catch (const ios::failure& e)
   {
-    fprintf(stdout, "Failed!\nK-Wave panic: Data loading was not successful!\n%s\n",e.what());
-    fprintf(stderr, "K-Wave panic: Data loading was not successful! \n%s\n",e.what());
-    return EXIT_FAILURE;
+    TLogger::Log(TLogger::Basic, OUT_FMT_Failed);
+    TLogger::Log(TLogger::Basic, OUT_FMT_LastSeparator);
+    TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),
+                                                       ERR_FMTPathDelimiters,
+                                                       9).c_str());
   }
-  fprintf(stdout, "Done\n");
+  catch (const exception& e)
+  {
+    TLogger::Log(TLogger::Basic, OUT_FMT_Failed);
+    TLogger::Log(TLogger::Basic, OUT_FMT_LastSeparator);
 
-  fprintf(stdout,"Elapsed time:          %11.2fs\n",KSpaceSolver.GetDataLoadTime());
+    const string ErrorMessage = string(ERR_FMT_UnknownError) + e.what();
+    TLogger::ErrorAndTerminate(TLogger::WordWrapString(ErrorMessage,
+                                                       ERR_FMTPathDelimiters,
+                                                       13).c_str());
+  }
+
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_ElapsedTime,
+               KSpaceSolver.GetDataLoadTime());
+
 
   if (Parameters->Get_t_index() > 0)
   {
-    fprintf(stdout, "Recovered from t_index: %8ld\n", Parameters->Get_t_index());
+    TLogger::Log(TLogger::Basic, OUT_FMT_Separator);
+    TLogger::Log(TLogger::Basic,
+                 OUT_FMT_RecoveredForm,
+                 Parameters->Get_t_index());
   }
+
 
   // start computation
-  fprintf(stdout,"---%s",FMT_SmallSeparator);
-  fprintf(stdout, "........... Computation ...........\n");
-
+  TLogger::Log(TLogger::Basic, OUT_FMT_Separator);
+  // exception are caught inside due to different log formats
   KSpaceSolver.Compute();
 
-  fprintf(stdout,"%s",FMT_SmallSeparator);
-  fprintf(stdout, "............ Summary ...........\n");
-  fprintf(stdout, "Peak Host memory in use:   %1ldMB\n",KSpaceSolver.GetHostMemoryUsageInMB());
-  fprintf(stdout, "Peak Device memory in use: %1ldMB\n",KSpaceSolver.GetDeviceMemoryUsageInMB());
 
-  if (KSpaceSolver.GetCumulatedTotalTime() != KSpaceSolver.GetTotalTime())
+
+  // summary
+  TLogger::Log(TLogger::Basic, OUT_FMT_SummaryHeader);
+
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_HostMemoryUsage,
+               KSpaceSolver.GetHostMemoryUsageInMB());
+
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_DeviceMemoryUsage,
+               KSpaceSolver.GetDeviceMemoryUsageInMB());
+
+TLogger::Log(TLogger::Basic, OUT_FMT_Separator);
+
+// Elapsed Time time
+if (KSpaceSolver.GetCumulatedTotalTime() != KSpaceSolver.GetTotalTime())
   {
-    fprintf(stdout,"This leg execution time:%7.2fs\n",KSpaceSolver.GetTotalTime());
+    TLogger::Log(TLogger::Basic,
+                 OUT_FMT_LegExecutionTime,
+                 KSpaceSolver.GetTotalTime());
+
   }
-  fprintf(stdout, "Total execution time:  %8.2fs\n",KSpaceSolver.GetCumulatedTotalTime());
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_TotalExecutionTime,
+               KSpaceSolver.GetCumulatedTotalTime());
 
 
-  fprintf(stdout,"%s",FMT_SmallSeparator);
-  fprintf(stdout,"       End of computation \n");
-  fprintf(stdout,"%s",FMT_SmallSeparator);
+  // end of computation
+  TLogger::Log(TLogger::Basic, OUT_FMT_EndOfComputation);
 
   return EXIT_SUCCESS;
 }// end of main

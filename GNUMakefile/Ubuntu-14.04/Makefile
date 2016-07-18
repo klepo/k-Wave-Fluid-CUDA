@@ -8,11 +8,11 @@
 # * 
 # * @Tool        kspaceFirstOrder3D 3.4
 # * @Created     02 December  2014, 12:32 
-# * @LastModif   23 February  2016, 1:36
+# * @LastModif   14 July      2016, 16:49
 #
 # * @License: 
 # * This file is part of the C++ extension of the k-Wave Toolbox
-# * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
+# * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros, Beau Johnston
 # * and Bradley Treeby
 # * 
 # * This file is part of the k-Wave. k-Wave is free software: you can redistribute it 
@@ -31,9 +31,9 @@
 
 #################################################################################
 #	The source codes can be compiled ONLY under Linux x64 			#
-#	by GNU g++ 4.8 and newer OR Intel Compiler icpc 11 and newer 		#
+#	by GNU g++ 4.8 and newer OR Intel Compiler icpc 14 and newer 		#
 #	The newer compiler, the more advanced instruction set can be used	#
-#	We recomend compilation with g++ 4.8/4.9 or icpc 13/14                  #
+#	We recomend compilation with g++ 4.8/4.9 or icpc 14/15                  #
 #                                                                               #
 #       The code also requires CUDA 6.5                                         #
 #                                                                               #
@@ -78,11 +78,11 @@ CPU_ARCH = native
 #CPU_ARCH = SSE4
 #CPU_ARCH = AVX
 #CPU_ARCH = AVX2
-
+    
 #Get GIT hash (only if you biuld form Gitlab repository)
 KWAVE_GIT_HASH=$(shell git rev-parse HEAD)
 #Otherwise, use the last official build hash
-#KWAVE_GIT_HASH=43e7bcfd05ffa7497ee6a895e34df9a424f56a9e
+#KWAVE_GIT_HASH=7e82d0f5aff0ce420721fc2e2280067df4eda2ad
 #################################################################################
 
 
@@ -91,19 +91,19 @@ CXX = nvcc
  
 
 # Set compiler flags and header files directories
-CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math -msse2" \
-           -O3 -std=c++11  -I$(HDF5_DIR)/include  -I.  -ccbin=g++-4.8 --restrict\
-	    --generate-code arch=compute_20,code=sm_20	\
-	    --generate-code arch=compute_20,code=sm_21	\
-	    --generate-code arch=compute_30,code=sm_30	\
-	    --generate-code arch=compute_32,code=sm_32	\
-	    --generate-code arch=compute_35,code=sm_35	\
-	    --generate-code arch=compute_37,code=sm_37	\
-	    --generate-code arch=compute_50,code=sm_50	\
-	    --generate-code arch=compute_52,code=sm_52	\
-	    --generate-code arch=compute_53,code=sm_53	\
-	    --device-c
-
+CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math -march=native" \
+           -O3 -std=c++11  -I$(HDF5_DIR)/include  -I.  -ccbin=g++-4.8 --restrict \
+	   -D__KWAVE_GIT_HASH__=\"$(KWAVE_GIT_HASH)\"  \
+	   --generate-code arch=compute_20,code=sm_20	\
+	   --generate-code arch=compute_20,code=sm_21	\
+	   --generate-code arch=compute_30,code=sm_30	\
+	   --generate-code arch=compute_32,code=sm_32	\
+	   --generate-code arch=compute_35,code=sm_35	\
+	   --generate-code arch=compute_37,code=sm_37	\
+	   --generate-code arch=compute_50,code=sm_50	\
+	   --generate-code arch=compute_52,code=sm_52	\
+	   --generate-code arch=compute_53,code=sm_53	\
+	   --device-c
 
   
 LDFLAGS  =  -Xcompiler="-fopenmp" \
@@ -136,6 +136,7 @@ $(TARGET):	Containers/MatrixContainer.o \
 		HDF5/HDF5_File.o \
 		KSpaceSolver/KSpaceFirstOrder3DSolver.o \
 		KSpaceSolver/SolverCUDAKernels.o \
+		Logger/Logger.o	\
 		MatrixClasses/BaseFloatMatrix.o \
 		MatrixClasses/BaseIndexMatrix.o \
 		MatrixClasses/CUFFTComplexMatrix.o \
@@ -161,6 +162,7 @@ $(TARGET):	Containers/MatrixContainer.o \
 		HDF5/HDF5_File.o \
 		KSpaceSolver/KSpaceFirstOrder3DSolver.o \
 		KSpaceSolver/SolverCUDAKernels.o \
+		Logger/Logger.o	\
 		MatrixClasses/BaseFloatMatrix.o \
 		MatrixClasses/BaseIndexMatrix.o \
 		MatrixClasses/CUFFTComplexMatrix.o \
@@ -185,15 +187,12 @@ $(TARGET).o : $(TARGET).cpp
 
 KSpaceSolver/SolverCUDAKernels.o : KSpaceSolver/SolverCUDAKernels.cu
 	$(CXX) $(CXXFLAGS) -c KSpaceSolver/SolverCUDAKernels.cu -o KSpaceSolver/SolverCUDAKernels.o
-	
+
 OutputHDF5Streams/OutputStreamsCUDAKernels.o : OutputHDF5Streams/OutputStreamsCUDAKernels.cu
 	$(CXX) $(CXXFLAGS) -c OutputHDF5Streams/OutputStreamsCUDAKernels.cu -o OutputHDF5Streams/OutputStreamsCUDAKernels.o
 
 Parameters/CUDADeviceConstants.o \ : Parameters/CUDADeviceConstants.cu
 	$(CXX) $(CXXFLAGS) -c Parameters/CUDADeviceConstants.cu -o Parameters/CUDADeviceConstants.o
-	
+
 clean:
-	rm -f *.o HDF5/*.o KSpaceSolver/*.o MatrixClasses/*.o Parameters/*.o Containers/*.o  OutputHDF5Streams/*.o $(TARGET)
-
-
-
+	rm -f *.o HDF5/*.o KSpaceSolver/*.o MatrixClasses/*.o Parameters/*.o Containers/*.o  OutputHDF5Streams/*.o Logger/*.o $(TARGET)

@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        08 December 2011, 16:34 (created)      \n
- *              17 June     2015, 10:08 (revised)
+ *              03 May      2016, 17:34 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -72,8 +72,15 @@ class TParameters
       ParametersSingleInstance = NULL;
     };
 
-    /// Parse command line.
-    void ParseCommandLine(int argc, char** argv);
+    /// Parse command line and read scalar values to init the class.
+    void Init(int argc, char** argv);
+
+    /// Select cuda device for execution.
+    void SelectDevice();
+
+    /// Print the simulation setup (all parameters)
+    void PrintSimulatoinSetup();
+
     /// Read scalar values from the input HDF5 file.
     void ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile);
     /// Save scalar values into the output HDF5 file
@@ -207,8 +214,8 @@ class TParameters
     size_t GetCompressionLevel()   const {return CommandLinesParameters.GetCompressionLevel();};
     /// Get number of threads.
     size_t GetNumberOfThreads()    const {return CommandLinesParameters.GetNumberOfThreads();};
-    /// Get verbose interval.
-    size_t GetVerboseInterval()    const {return CommandLinesParameters.GetVerboseInterval();};
+    /// Get progress print interval.
+    size_t GetProgressPrintInterval() const {return CommandLinesParameters.GetProgressPrintInterval();};
 
     /// Get start time index for sensor recording.
     size_t GetStartTimeIndex()     const {return CommandLinesParameters.GetStartTimeIndex();};
@@ -254,6 +261,9 @@ class TParameters
 
     /// is --copy_mask set
     bool IsCopySensorMask()            const {return CommandLinesParameters.IsCopySensorMask();};
+
+    /// Get Git hash of the code
+    string GetGitHash()  const;
 
     /// Class with CUDA Parameters (runtime setup)
     TCUDAParameters CUDAParameters;
@@ -397,8 +407,7 @@ class TParameters
     static TParameters *ParametersSingleInstance;
 
   private:
-    /// Print usage and exit
-    void PrintUsageAndExit();
+
 };// end of TParameters
 
 #endif	/* PARAMETERS_H */

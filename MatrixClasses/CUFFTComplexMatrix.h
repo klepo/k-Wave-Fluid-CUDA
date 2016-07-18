@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        09 August    2011, 13:10 (created) \n
- *              08 July      2015, 16:47 (revised)
+ *              20 July      2015, 10:38 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -39,7 +39,7 @@
 #include <map>
 
 #include <MatrixClasses/ComplexMatrix.h>
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
 
 /**
  * @class TCUFFTComplexMatrix

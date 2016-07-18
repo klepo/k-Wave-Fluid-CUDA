@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2011, 12:13 (created) \n
- *              12 April     2016, 15:04 (revised)
+ *              11 July      2016, 15:15 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -37,13 +37,11 @@
 #include <assert.h>
 
 #include <cuda_runtime.h>
-#include <iostream> //fprintf
-#include <stdlib.h> //exit
 
 #include <MatrixClasses/BaseFloatMatrix.h>
 
 #include <Utils/DimensionSizes.h>
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
 
 
 using std::string;
@@ -158,7 +156,6 @@ void TBaseFloatMatrix::AllocateMemory()
   pMatrixData = static_cast<float *> (_mm_malloc(SizeInBytes, DATA_ALIGNMENT));
   if (!pMatrixData)
   {
-    fprintf(stderr,Matrix_ERR_FMT_Not_Enough_Memory, "TBaseFloatMatrix");
     throw bad_alloc();
   }
 
@@ -174,7 +171,6 @@ void TBaseFloatMatrix::AllocateMemory()
 
   if (!pdMatrixData)
   {
-    fprintf(stderr,Matrix_ERR_FMT_Not_Enough_Memory, "TBaseFloatMatrix");
     throw bad_alloc();
   }
   // This has to be done for simulations based on input sources

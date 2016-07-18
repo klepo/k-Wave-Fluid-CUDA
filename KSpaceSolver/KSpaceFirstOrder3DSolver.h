@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              23 February 2016, 15:04 (revised)
+ *              25 April    2016, 14:47 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -82,7 +82,7 @@ class TKSpaceFirstOrder3DSolver
     virtual void Compute();
 
     /// Print parameters of the simulation.
-    void PrintParametersOfSimulation(FILE * file);
+    void PrintParametersOfSimulation();
 
     /// Get memory usage in MB on the CPU side.
     size_t GetHostMemoryUsageInMB();
@@ -90,14 +90,11 @@ class TKSpaceFirstOrder3DSolver
     size_t GetDeviceMemoryUsageInMB();
 
 
-    // Get code name.
-    const string GetCodeName() const { return "kspaceFirstOrder3D-CUDA v1.1"; };
+    // Get code name - release code version.
+    const string GetCodeName() const;
 
     /// Print the code name and license.
-    void PrintFullNameCodeAndLicense(FILE * file);
-
-    /// Set processor affinity.
-    void SetProcessorAffinity();
+    void PrintFullNameCodeAndLicense();
 
     /// Get total simulation time.
     double GetTotalTime()          const { return TotalTime.GetElapsedTime(); };
@@ -128,9 +125,6 @@ protected:
 
     /// operator = not allowed for public.
     TKSpaceFirstOrder3DSolver& operator = (const TKSpaceFirstOrder3DSolver& src);
-
-    /// Determine device memory.
-    bool DoesDeviceHaveEnoughMemory();
 
     /// Initialize FFT plans.
     void InitializeFFTPlans();
@@ -224,9 +218,6 @@ protected:
 
     /// Print progress statistics.
     void PrintStatistics();
-
-    /// Print the header of the progress statistics.
-    void PrintOutputHeader();
 
     /// Is time to checkpoint (save actual state on disk).
     bool IsTimeToCheckpoint();

@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        26 July     2011, 14:17 (created) \n
- *              12 April    2016, 15:06 (revised)
+ *              14 July     2016, 13:36 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -35,14 +35,9 @@
 #include <immintrin.h>
 #include <assert.h>
 
-#include <cuda_runtime.h>
-#include <iostream> //fprintf
-#include <stdlib.h> //exit
-
-
 #include <MatrixClasses/BaseIndexMatrix.h>
 #include <Utils/DimensionSizes.h>
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
 
 
 using std::string;
@@ -121,7 +116,6 @@ void TBaseIndexMatrix::AllocateMemory()
 
   if (!pMatrixData)
   {
-    fprintf(stderr,Matrix_ERR_FMT_Not_Enough_Memory, "TBaseIndexMatrix");
     throw bad_alloc();
   }
 
@@ -137,7 +131,6 @@ void TBaseIndexMatrix::AllocateMemory()
 
   if (!pdMatrixData)
   {
-    fprintf(stderr,Matrix_ERR_FMT_Not_Enough_Memory, "TBaseIndexMatrix");
     throw bad_alloc();
   }
 }// end of AllocateMemory

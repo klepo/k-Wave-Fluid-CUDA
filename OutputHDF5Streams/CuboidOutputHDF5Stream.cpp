@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        13 February 2015, 12:51 (created)
- *              12 April    2016, 15:04 (revised)
+ *              20 April    2016, 10:40 (revised)
  *
  *
  * @section License
@@ -36,7 +36,7 @@
 #include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
 #include <Parameters/Parameters.h>
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
 
 //--------------------------------------------------------------------------//
 //                              Constants                                   //

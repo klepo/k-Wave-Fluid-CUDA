@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        12 July     2012, 10:27 (created)\n
- *              12 April    2016, 15:17 (revised)
+ *              14 July     2016, 15:19 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,16 +50,16 @@
   #include <omp.h>
 #endif
 
-#include <iostream>
 #include <omp.h>
 #include <time.h>
-#include <sstream>
 #include <limits>
 #include <cstdio>
 
 #include <KSpaceSolver/KSpaceFirstOrder3DSolver.h>
 
-#include <Utils/ErrorMessages.h>
+#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
+
 #include <KSpaceSolver/SolverCUDAKernels.cuh>
 #include <Containers/MatrixContainer.h>
 
@@ -74,7 +74,7 @@ using namespace std;
 //                             Public methods                                 //
 //----------------------------------------------------------------------------//
 
-/*
+/**
  * Constructor of the class.
  */
 TKSpaceFirstOrder3DSolver::TKSpaceFirstOrder3DSolver() :
@@ -92,7 +92,7 @@ TKSpaceFirstOrder3DSolver::TKSpaceFirstOrder3DSolver() :
 }// end of TKSpace3DSolver
 //------------------------------------------------------------------------------
 
-/*
+/**
  * Destructor of the class.
  */
 TKSpaceFirstOrder3DSolver::~TKSpaceFirstOrder3DSolver()
@@ -110,48 +110,17 @@ TKSpaceFirstOrder3DSolver::~TKSpaceFirstOrder3DSolver()
 
 
 /**
- * Try to estimate how much memory is needed for the simulation and if it seems
- * it won't be possible to run the simulation, print warning
- * @return false if the simulation is likely to fail because of out of memory
- *
- * @todo take a look and remove
- */
-bool TKSpaceFirstOrder3DSolver::DoesDeviceHaveEnoughMemory()
-{
-  size_t free, total, available_device_memory, estimate_of_required_memory;
-
-  cudaMemGetInfo(&free,&total);
-  available_device_memory = (free >> 20);
-
-  estimate_of_required_memory = MatrixContainer.GetSpeculatedMemoryFootprintInMegabytes();
-
-  return !(estimate_of_required_memory > available_device_memory);
-}// end of DoesDeviceHaveEnoughMemory
-//------------------------------------------------------------------------------
-
-/*
  * The method allocates the matrix container and create all matrices and
  * creates all output streams.
  *
- * @todo remove the warning after going over
  */
 void TKSpaceFirstOrder3DSolver::AllocateMemory()
 {
+  TLogger::Log(TLogger::Basic, OUT_FMT_MemoryAllocation);
+  TLogger::Flush(TLogger::Basic);
+
   // create container, then all matrices
   MatrixContainer.AddMatricesIntoContainer();
-
-  //if the size of the simulation will use more memory than the target
-  //device contains, notify the user that the simulation will probably crash.
-  if(!DoesDeviceHaveEnoughMemory())
-  {
-    fprintf(stdout,"\n");
-    fprintf(stdout,"Warning!\n");
-    fprintf(stdout,"The simulation may be too big for the target device!");
-    fprintf(stdout,"\n");
-    fprintf(stdout,"If there is a crash (GPUassert or K-Wave panic) ");
-    fprintf(stdout,"this is the probable cause.\n");
-    fflush(stdout);
-  }
 
   MatrixContainer.CreateAllObjects();
 
@@ -159,6 +128,7 @@ void TKSpaceFirstOrder3DSolver::AllocateMemory()
   //@todo Think about moving under LoadInputData routine...
   OutputStreamContainer.AddStreamsIntoContainer(MatrixContainer);
 
+  TLogger::Log(TLogger::Basic, OUT_FMT_Done);
 }// end of AllocateMemory
 //------------------------------------------------------------------------------
 
@@ -172,12 +142,15 @@ void TKSpaceFirstOrder3DSolver::FreeMemory()
 }// end of FreeMemory
 //------------------------------------------------------------------------------
 
-/*
+/**
  * Load data from the input file provided by the Parameter class and creates
  * the output time series streams.
  */
 void TKSpaceFirstOrder3DSolver::LoadInputData()
 {
+  // Load data from disk
+  TLogger::Log(TLogger::Basic, OUT_FMT_DataLoading);
+  TLogger::Flush(TLogger::Basic);
 
   DataLoadTime.Start();
 
@@ -187,18 +160,27 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
   THDF5_File& HDF5_CheckpointFile = Parameters->HDF5_CheckpointFile;
 
   // Load data from disk
+  TLogger::Log(TLogger::Full, OUT_FMT_FinishLineNoDone);
+  TLogger::Log(TLogger::Full, OUT_FMT_ReadingInputFile);
+  TLogger::Flush(TLogger::Full);
+
   MatrixContainer.LoadDataFromInputHDF5File(HDF5_InputFile);
 
   // close the input file
   HDF5_InputFile.Close();
 
-  // The simulation does not use checkpointing or this is the first turn
+  TLogger::Log(TLogger::Full, OUT_FMT_Done);
+
+  // The simulation does not use check pointing or this is the first turn
   bool RecoverFromPrevState = (Parameters->IsCheckpointEnabled() &&
                                THDF5_File::IsHDF5(Parameters->GetCheckpointFileName().c_str()));
 
   //-------------------- Read data from the checkpoint file ------------------//
   if (RecoverFromPrevState)
   {
+    TLogger::Log(TLogger::Full, OUT_FMT_ReadingCheckpointFile);
+    TLogger::Flush(TLogger::Full);
+
     // Open checkpoint file
     HDF5_CheckpointFile.Open(Parameters->GetCheckpointFileName().c_str());
 
@@ -216,9 +198,13 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
     MatrixContainer.LoadDataFromCheckpointHDF5File(HDF5_CheckpointFile);
 
     HDF5_CheckpointFile.Close();
+    TLogger::Log(TLogger::Full, OUT_FMT_Done);
 
     //------------- Read data from the output file ---------------------------//
     // Reopen output file for RW access
+    TLogger::Log(TLogger::Full, OUT_FMT_ReadingOuptutFile);
+    TLogger::Flush(TLogger::Full);
+
     HDF5_OutputFile.Open(Parameters->GetOutputFileName().c_str(), H5F_ACC_RDWR);
 
     //Read file header of the output file
@@ -229,12 +215,17 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
 
     // Reopen streams
     OutputStreamContainer.ReopenStreams();
+    TLogger::Log(TLogger::Full, OUT_FMT_Done);
   }
   else
   {
     //-------------------- First round of multi-leg simulation ---------------//
     // Create the output file
+    TLogger::Log(TLogger::Full, OUT_FMT_CreatingOutputFile);
+    TLogger::Flush(TLogger::Full);
+
     HDF5_OutputFile.Create(Parameters->GetOutputFileName().c_str());
+    TLogger::Log(TLogger::Full, OUT_FMT_Done);
 
     // Create the steams, link them with the sampled matrices
     // however DO NOT allocate memory!
@@ -242,10 +233,15 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
   }
 
   DataLoadTime.Stop();
+
+  if (TLogger::GetLevel() != TLogger::Full)
+  {
+    TLogger::Log(TLogger::Basic, OUT_FMT_Done);
+  }
 }// end of LoadInputData
 //------------------------------------------------------------------------------
 
-/*
+/**
  * This method computes k-space First Order 3D simulation.
  * It launches calculation on a given dataset going through
  * FFT initialization, pre-processing, main loop and post-processing phases.
@@ -255,108 +251,171 @@ void TKSpaceFirstOrder3DSolver::Compute()
 {
   PreProcessingTime.Start();
 
-  fprintf(stdout,"FFT plans creation............."); fflush(stdout);
+  TLogger::Log(TLogger::Basic, OUT_FMT_FFTPlans);
+  TLogger::Flush(TLogger::Basic);
 
-  // initilaise all cuda FFT plans
-  InitializeFFTPlans();
+  // fft initialisation and preprocessing
+  try
+  {
+    // initilaise all cuda FFT plans
+    InitializeFFTPlans();
+    TLogger::Log(TLogger::Basic, OUT_FMT_Done);
 
-  fprintf(stdout,"Done \n");
-  fprintf(stdout,"Pre-processing phase..........."); fflush(stdout);
+    TLogger::Log(TLogger::Basic,OUT_FMT_PreProcessing);
+    TLogger::Flush(TLogger::Basic);
 
-  /// preprocessing is done on CPU and must pretend the CUDA configuration
-  PreProcessingPhase();
-  PreProcessingTime.Stop();
-  fprintf(stdout,"Done \n");
+    // preprocessing is done on CPU and must pretend the CUDA configuration
+    PreProcessingPhase();
 
-  // Set kernel configurations
-  Parameters->CUDAParameters.SetKernelConfiguration();
+    PreProcessingTime.Stop();
 
-  // Set up constant memory - copy over to GPU
-  // Constant memory uses some variables calculated during preprocessing
-  Parameters->CUDAParameters.SetUpDeviceConstants();
+    // Set kernel configurations
+    Parameters->CUDAParameters.SetKernelConfiguration();
 
-  fprintf(stdout,"Current Host memory in use:   %3ldMB\n", GetHostMemoryUsageInMB());
-  fprintf(stdout,"Current Device memory in use: %3ldMB\n", GetDeviceMemoryUsageInMB());
-  fprintf(stdout,"Elapsed time:             %8.2fs\n",      PreProcessingTime.GetElapsedTime());
+    // Set up constant memory - copy over to GPU
+    // Constant memory uses some variables calculated during preprocessing
+    Parameters->CUDAParameters.SetUpDeviceConstants();
 
-  /*
-   *@todo - add this as level 2 of verbosity
-  fprintf(stdout,
-          "1D configuration [Blocks, Threads]: [%d, %d]\n",
-          Parameters->CUDAParameters.GetSolverGridSize1D(),
-          Parameters->CUDAParameters.GetSolverBlockSize1D());
+    TLogger::Log(TLogger::Basic, OUT_FMT_Done);
+  }
+  catch (const exception& e)
+  {
+    TLogger::Log(TLogger::Basic, OUT_FMT_Failed);
+    TLogger::Log(TLogger::Basic, OUT_FMT_LastSeparator);
 
-  fprintf(stdout,
-          "3D Grid configuration : [X, Y, Z]: [%d, %d, %d]\n",
-          Parameters->CUDAParameters.GetSolverGridSize3D().x,
-          Parameters->CUDAParameters.GetSolverGridSize3D().y,
-          Parameters->CUDAParameters.GetSolverGridSize3D().z);
+    TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),ERR_FMTPathDelimiters,9).c_str());
+  }
 
-  fprintf(stdout,
-          "3D Block configuration : [X, Y, Z]: [%d, %d, %d]\n",
-          Parameters->CUDAParameters.GetSolverBlockSize3D().x,
-          Parameters->CUDAParameters.GetSolverBlockSize3D().y,
-          Parameters->CUDAParameters.GetSolverBlockSize3D().z);
-*/
-  SimulationTime.Start();
+  // Logger header for simulation
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_ElapsedTime,
+               PreProcessingTime.GetElapsedTime());
+
+  TLogger::Log(TLogger::Basic,OUT_FMT_ComputationalResourcesHeader);
+
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_CurrentHostMemory,
+               GetHostMemoryUsageInMB());
+
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_CurrentDeviceMemory,
+               GetDeviceMemoryUsageInMB());
+
+  char GridDimensions[19];
+  snprintf(GridDimensions, 19, OUT_FMT_CUDAGridShapeFormat,
+           Parameters->CUDAParameters.GetSolverGridSize1D(),
+           Parameters->CUDAParameters.GetSolverBlockSize1D());
+
+  TLogger::Log(TLogger::Full,
+               OUT_FMT_CUDASolverGridShape,
+               GridDimensions);
+
+  snprintf(GridDimensions, 18, OUT_FMT_CUDAGridShapeFormat,
+           Parameters->CUDAParameters.GetSamplerGridSize1D(),
+           Parameters->CUDAParameters.GetSamplerBlockSize1D());
+
+  TLogger::Log(TLogger::Full,
+               OUT_FMT_CUDASamplerGridShape,
+               GridDimensions);
+
+  // Main loop
+  try
+  {
+    SimulationTime.Start();
+
     ComputeMainLoop();
-  SimulationTime.Stop();
+    SimulationTime.Stop();
+    TLogger::Log(TLogger::Basic,OUT_FMT_SimulatoinEndSeparator);
+  }
+  catch (const exception& e)
+  {
+    TLogger::Log(TLogger::Basic,
+                 OUT_FMT_SimulatoinFinalSeparator,
+                 GridDimensions);
+    TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),ERR_FMTPathDelimiters,9).c_str());
+  }
 
   //Post processing region
   PostProcessingTime.Start();
-  if (IsCheckpointInterruption())
-  { // Checkpoint
-    fprintf(stdout,"-------------------------------------------------------------\n");
-    fprintf(stdout,".............. Interrupted to checkpoint! ...................\n");
-    fprintf(stdout,"Number of time steps completed:                    %10ld\n",
-            Parameters->Get_t_index());
-    fprintf(stdout,"Elapsed time:                                       %8.2fs\n",
-            SimulationTime.GetElapsedTime());
-    fprintf(stdout,"-------------------------------------------------------------\n");
-    fprintf(stdout,"Checkpoint in progress......"); fflush(stdout);
 
-    SaveCheckpointData();
-  }
-  else
-  { // Finish
-    fprintf(stdout,"-------------------------------------------------------------\n");
-    fprintf(stdout,"Elapsed time:                                       %8.2fs\n",
-            SimulationTime.GetElapsedTime());
-    fprintf(stdout,"-------------------------------------------------------------\n");
-    fprintf(stdout,"Post-processing phase......."); fflush(stdout);
+  try
+  {
+    if (IsCheckpointInterruption())
+    { // Checkpoint
+      TLogger::Log(TLogger::Basic,
+                   OUT_FMT_ElapsedTime,
+                   SimulationTime.GetElapsedTime());
 
-    PostProcessing();
+      TLogger::Log(TLogger::Basic,
+                   OUT_FMT_CheckpointTimeSteps,
+                   Parameters->Get_t_index());
 
-    // if checkpointing is enabled and the checkpoint file was created in the past, delete it
-    if (Parameters->IsCheckpointEnabled())
-    {
-      std::remove(Parameters->GetCheckpointFileName().c_str());
+      TLogger::Log(TLogger::Basic, OUT_FMT_CheckpointHeader);
+
+      TLogger::Log(TLogger::Basic, OUT_FMT_CreatingCheckpoint);
+      TLogger::Flush(TLogger::Basic);
+
+      if (TLogger::GetLevel() == TLogger::Full)
+      {
+        TLogger::Log(TLogger::Basic, OUT_FMT_FinishLineNoDone);
+      }
+
+      SaveCheckpointData();
+
+      if (TLogger::GetLevel() != TLogger::Full)
+      {
+        TLogger::Log(TLogger::Basic, OUT_FMT_Done);
+      }
+    }
+    else
+    { // Finish
+
+      TLogger::Log(TLogger::Basic,
+                   OUT_FMT_ElapsedTime,
+                   SimulationTime.GetElapsedTime());
+
+      TLogger::Log(TLogger::Basic,OUT_FMT_Separator);
+
+      TLogger::Log(TLogger::Basic, OUT_FMT_PostProcessing);
+
+      TLogger::Flush(TLogger::Basic);
+      PostProcessing();
+
+      // if checkpointing is enabled and the checkpoint file was created in the past, delete it
+      if (Parameters->IsCheckpointEnabled())
+      {
+        std::remove(Parameters->GetCheckpointFileName().c_str());
+      }
+      TLogger::Log(TLogger::Basic, OUT_FMT_Done);
     }
   }
+  catch (const exception &e)
+  {
+    TLogger::Log(TLogger::Basic, OUT_FMT_Failed);
+    TLogger::Log(TLogger::Basic, OUT_FMT_LastSeparator);
 
+    TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),ERR_FMTPathDelimiters,9).c_str());
+  }
   PostProcessingTime.Stop();
 
-  fprintf(stdout,"Done \n");
-  fprintf(stdout,"Elapsed time:          %8.2fs\n", PostProcessingTime.GetElapsedTime());
+  // Final data written
+  try
+  {
+    WriteOutputDataInfo();
+    Parameters->HDF5_OutputFile.Close();
 
-  WriteOutputDataInfo();
-  Parameters->HDF5_OutputFile.Close();
+    TLogger::Log(TLogger::Basic,
+                 OUT_FMT_ElapsedTime,
+                 PostProcessingTime.GetElapsedTime());
+    }
+  catch (const exception &e)
+  {
+    TLogger::Log(TLogger::Basic, OUT_FMT_LastSeparator);
+
+    TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),ERR_FMTPathDelimiters,9).c_str());
+  }
+
 }// end of Compute()
-//------------------------------------------------------------------------------
-
-/**
- * Print parameters of the simulation.
- * @param [in,out] file - where to print the parameters
- */
-void TKSpaceFirstOrder3DSolver::PrintParametersOfSimulation(FILE * file)
-{
-  fprintf(file, "Domain dims:     [%4lu, %4lu, %4lu]\n",
-                Parameters->GetFullDimensionSizes().X,
-                Parameters->GetFullDimensionSizes().Y,
-                Parameters->GetFullDimensionSizes().Z);
-
-  fprintf(file,"Simulation time steps:  %lu\n", Parameters->Get_Nt());
-}// end of PrintParametersOfTask
 //------------------------------------------------------------------------------
 
 /**
@@ -371,6 +430,16 @@ size_t TKSpaceFirstOrder3DSolver::GetDeviceMemoryUsageInMB()
 
   return ((total-free) >> 20);
 }// end of GetDeviceMemoryUsageInMB
+//------------------------------------------------------------------------------
+
+/**
+ * Get release code version
+ * @return core name
+ */
+const string TKSpaceFirstOrder3DSolver::GetCodeName() const
+{
+  return string(TKSpaceFirstOrder3DSolver_OUT_FMT_Version);
+}// end of GetCodeName
 //------------------------------------------------------------------------------
 
 /**
@@ -405,133 +474,123 @@ size_t TKSpaceFirstOrder3DSolver::GetHostMemoryUsageInMB()
 }// end of ShowMemoryUsageInMB
 //------------------------------------------------------------------------------
 
-/*
+/**
  * Print Full code name and the license
  *
  * @param [in] file - file to print the data (stdout)
  */
-void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense(FILE * file)
+void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense()
 {
-  fprintf(file,"\n");
-  fprintf(file,"+----------------------------------------------------+\n");
-  fprintf(file,"| Build Number:     kspaceFirstOrder3D v3.4          |\n");
-  fprintf(file,"| Build date:       %*.*s                      |\n", 10,11,__DATE__);
-  fprintf(file,"| Build time:       %*.*s                         |\n", 8,8,__TIME__);
-  #if (defined (__KWAVE_GIT_HASH__))
-    fprintf(file,"| Git hash: %s |\n",__KWAVE_GIT_HASH__);
-  #endif
-  fprintf(file,"|                                                    |\n");
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_BuildNoDateTime,
+               10,11,__DATE__,
+               8,8,__TIME__);
+
+
+  if (Parameters->GetGitHash() != "")
+  {
+    TLogger::Log(TLogger::Basic,
+                 OUT_FMT_VersionGitHash,
+                 Parameters->GetGitHash().c_str());
+  }
+
+  TLogger::Log(TLogger::Basic, OUT_FMT_Separator);
 
   // OS detection
   #ifdef __linux__
-    fprintf(file,"| Operating System: Linux x64                        |\n");
+    TLogger::Log(TLogger::Basic, OUT_FMT_LinuxBuild);
   #elif __APPLE__
-    fprintf(file,"| Operating System: Mac OS X x64                   |\n");
+    TLogger::Log(TLogger::Basic, OUT_FMT_MacOSBuild);
   #elif _WIN32
-    fprintf(file,"| Operating System: Windows x64                    |\n");
+    TLogger::Log(TLogger::Basic, OUT_FMT_WindowsBuild);
   #endif
 
   // Compiler detections
   #if (defined(__GNUC__) || defined(__GNUG__)) && !(defined(__clang__) || defined(__INTEL_COMPILER))
-    fprintf(file,"| Compiler name:    GNU C++ %.19s                    |\n", __VERSION__);
+    TLogger::Log(TLogger::Basic,
+                 OUT_FMT_GNUCompiler,
+                 __VERSION__);
   #endif
   #ifdef __INTEL_COMPILER
-    fprintf(file,"| Compiler name:    Intel C++ %d                   |\n", __INTEL_COMPILER);
+    TLogger::Log(TLogger::Basic,
+                 OUT_FMT_IntelCompiler,
+                 __INTEL_COMPILER);
   #endif
-      // instruction set
-  #if (defined (__AVX2__))
-    fprintf(file,"| Instruction set:  Intel AVX 2                      |\n");
-  #elif (defined (__AVX__))
-    fprintf(file,"| Instruction set:  Intel AVX                        |\n");
-  #elif (defined (__SSE4_2__))
-    fprintf(file,"| Instruction set:  Intel SSE 4.2                    |\n");
-  #elif (defined (__SSE4_1__))
-    fprintf(file,"| Instruction set:  Intel SSE 4.1                    |\n");
-  #elif (defined (__SSE3__))
-    fprintf(file,"| Instruction set:  Intel SSE 3                      |\n");
-  #elif (defined (__SSE2__))
-    fprintf(file,"| Instruction set:  Intel SSE 2                      |\n");
+  #ifdef _MSC_VER
+	TLogger::Log(TLogger::Basic,
+               OUT_FMT_VisualStudioCompiler,
+               _MSC_VER);
   #endif
 
-  fprintf(file,"|                                                    |\n");
+      // instruction set
+  #if (defined (__AVX2__))
+    TLogger::Log(TLogger::Basic, OUT_FMT_AVX2);
+  #elif (defined (__AVX__))
+    TLogger::Log(TLogger::Basic, OUT_FMT_AVX);
+  #elif (defined (__SSE4_2__))
+    TLogger::Log(TLogger::Basic, OUT_FMT_SSE42);
+  #elif (defined (__SSE4_1__))
+    TLogger::Log(TLogger::Basic, OUT_FMT_SSE41);
+  #elif (defined (__SSE3__))
+    TLogger::Log(TLogger::Basic, OUT_FMT_SSE3);
+  #elif (defined (__SSE2__))
+    TLogger::Log(TLogger::Basic, OUT_FMT_SSE2);
+  #endif
+
+  TLogger::Log(TLogger::Basic, OUT_FMT_Separator);
 
  // CUDA detection
   int cudaRuntimeVersion;
   if (cudaRuntimeGetVersion(&cudaRuntimeVersion) != cudaSuccess)
   {
-    fprintf(file,"| GPU Runtime:      N/A                              |\n");
+    TLogger::Log(TLogger::Basic, OUT_FMT_CUDARuntimeNA);
   }
   else
   {
-    fprintf(file,"| GPU Runtime:      %d.%d                              |\n",
-            cudaRuntimeVersion/1000, (cudaRuntimeVersion%100)/10);
+    TLogger::Log(TLogger::Basic,
+                 OUT_FMT_CUDARuntime,
+                 cudaRuntimeVersion/1000, (cudaRuntimeVersion%100)/10);
   }
 
   int cudaDriverVersion;
   cudaDriverGetVersion(&cudaDriverVersion);
-  fprintf(file,"| CUDA Driver:      %d.%d                              |\n",
-          cudaDriverVersion/1000, (cudaDriverVersion%100)/10);
+  TLogger::Log(TLogger::Basic,
+               OUT_FMT_CUDADriver,
+               cudaDriverVersion/1000, (cudaDriverVersion%100)/10);
 
 
   // no GPU was found
   if (Parameters->CUDAParameters.GetDeviceIdx() == -1)
   {
-    fprintf(file,"| CUDA code arch:   N/A                              |\n");
-    fprintf(file,"|                                                    |\n");
-
-    fprintf(file,"| CUDA Device Idx:  N/A                              |\n");
-    fprintf(file,"| CUDA Device Name: N/A                              |\n");
-    fprintf(file,"| CUDA Capability:  N/A                              |\n");
+    TLogger::Log(TLogger::Basic, OUT_FMT_CUDADeviceInfoNA);
   }
   else
   {
-    fprintf(file,"| CUDA code arch:   %1.1f                              |\n",
-            SolverCUDAKernels::GetCUDACodeVersion()/10.f);
-    fprintf(file,"|                                                    |\n");
+    TLogger::Log(TLogger::Basic,
+                  OUT_FMT_CUDACodeArch,
+                  SolverCUDAKernels::GetCUDACodeVersion()/10.f);
+    TLogger::Log(TLogger::Basic, OUT_FMT_Separator);
 
-    fprintf(file,"| CUDA Device Idx:  %d                                |\n",
-            Parameters->CUDAParameters.GetDeviceIdx());
+    TLogger::Log(TLogger::Basic,
+                 OUT_FMT_CUDADevice,
+                 Parameters->CUDAParameters.GetDeviceIdx());
 
-    int paddingLength = 54 - ( 22 +   strlen(Parameters->CUDAParameters.GetDeviceName().c_str()));
-    fprintf(file,"| CUDA Device Name: %s %.*s| \n",
-            Parameters->CUDAParameters.GetDeviceName().c_str(),paddingLength,"                                        ");
+    int paddingLength = 65 - ( 22 +   strlen(Parameters->CUDAParameters.GetDeviceName().c_str()));
 
-    fprintf(file,"| CUDA Capability:  %d.%d                              |\n",
-            Parameters->CUDAParameters.GetDeviceProperties().major, Parameters->CUDAParameters.GetDeviceProperties().minor);
+    TLogger::Log(TLogger::Basic,
+                 OUT_FMT_CUDADeviceName,
+                 Parameters->CUDAParameters.GetDeviceName().c_str(),
+                 paddingLength,
+                 OUT_FMT_CUDADeviceNamePadding);
+
+    TLogger::Log(TLogger::Basic,
+                 OUT_FMT_CUDADCapability,
+                 Parameters->CUDAParameters.GetDeviceProperties().major,
+                 Parameters->CUDAParameters.GetDeviceProperties().minor);
   }
 
-  fprintf(file,"|                                                    |\n");
-  fprintf(file,"| Copyright (C) 2015 Jiri Jaros, Bradley Treeby and  |\n");
-  fprintf(file,"|                    Beau Johnston                   |\n");
-  fprintf(file,"| http://www.k-wave.org                              |\n");
-  fprintf(file,"+----------------------------------------------------+\n");
-  fprintf(file,"\n");
+  TLogger::Log(TLogger::Basic, OUT_FMT_Licence);
 }// end of GetFullCodeAndLincence
-//------------------------------------------------------------------------------
-
-
-/**
- * Set processor affinity.
- */
-void TKSpaceFirstOrder3DSolver::SetProcessorAffinity()
-{
-  // Linux Build
-  #ifdef __linux__
-    //GNU compiler
-    #if (defined(__GNUC__) || defined(__GNUG__)) && !(defined(__clang__) || defined(__INTEL_COMPILER))
-      setenv("OMP_PROC_BIND","TRUE",1);
-    #endif
-
-    #ifdef __INTEL_COMPILER
-      setenv("KMP_AFFINITY","none",1);
-    #endif
-  #endif
-
-  // Windows build is always compiled by the Intel Compiler
-  #ifdef _WIN64
-    _putenv_s("KMP_AFFINITY","none");
-  #endif
-}//end of SetProcessorAffinity
 //------------------------------------------------------------------------------
 
 
@@ -539,7 +598,7 @@ void TKSpaceFirstOrder3DSolver::SetProcessorAffinity()
 //                            Protected methods                              //
 //---------------------------------------------------------------------------//
 
-/*
+/**
  * Initialize FFT plans.
  */
 void TKSpaceFirstOrder3DSolver::InitializeFFTPlans()
@@ -1464,7 +1523,7 @@ void TKSpaceFirstOrder3DSolver::Compute_uxyz()
 }// end of Compute_uxyz()
 //------------------------------------------------------------------------------
 
-/*
+/**
  * Add u source to the particle velocity.
  */
 void TKSpaceFirstOrder3DSolver::Add_u_source()
@@ -1544,7 +1603,7 @@ void TKSpaceFirstOrder3DSolver::Calculate_shifted_velocity()
 //------------------------------------------------------------------------------
 
 
-/*
+/**
  * Compute the main time loop of KSpaceFirstOrder3D.
  */
 void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
@@ -1560,7 +1619,8 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
     ActPercent = (Parameters->Get_t_index() / (Parameters->Get_Nt() / 100));
   }
 
-  PrintOutputHeader();
+  // Progress header
+  TLogger::Log(TLogger::Basic,OUT_FMT_SimulationHeader);
 
   // Initial copy of data to the GPU
   MatrixContainer.CopyAllMatricesToDevice();
@@ -1632,7 +1692,7 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
 }// end of ComputeMainLoop()
 //------------------------------------------------------------------------------
 
-/*
+/**
  * Print progress statistics.
  */
 void TKSpaceFirstOrder3DSolver::PrintStatistics()
@@ -1643,7 +1703,7 @@ void TKSpaceFirstOrder3DSolver::PrintStatistics()
 
   if (t_index > (ActPercent * Nt * 0.01f) )
   {
-    ActPercent += Parameters->GetVerboseInterval();
+    ActPercent += Parameters->GetProgressPrintInterval();
 
     IterationTime.Stop();
 
@@ -1657,28 +1717,17 @@ void TKSpaceFirstOrder3DSolver::PrintStatistics()
     now += ToGo;
     current = localtime(&now);
 
-    fprintf(stdout, "%5li%c      %9.3fs      %9.3fs      %02i/%02i/%02i %02i:%02i:%02i\n",
-            (size_t) ((t_index) / (Nt * 0.01f)),'%',
-            ElTime, ToGo,
-            current->tm_mday, current->tm_mon+1, current->tm_year-100,
-            current->tm_hour, current->tm_min, current->tm_sec
-            );
-
-    fflush(stdout);
+    TLogger::Log(TLogger::Basic,
+                 OUT_FMT_SimulatoinProgress,
+                 (size_t) ((t_index) / (Nt * 0.01f)),'%',
+                 ElTime, ToGo,
+                 current->tm_mday, current->tm_mon+1, current->tm_year-100,
+                 current->tm_hour, current->tm_min, current->tm_sec);
+    TLogger::Flush(TLogger::Basic);
   }
 }// end of KSpaceFirstOrder3DSolver
 //------------------------------------------------------------------------------
 
-/**
- * Print the header of the progress statistics.
- */
-void TKSpaceFirstOrder3DSolver::PrintOutputHeader()
-{
-  fprintf(stdout, "-------------------------------------------------------------\n");
-  fprintf(stdout, "....................... Simulation ..........................\n");
-  fprintf(stdout, "Progress...ElapsedTime........TimeToGo......TimeOfTermination\n");
-}// end of PrintOtputHeader
-//------------------------------------------------------------------------------
 
 /**
  * Is time to checkpoint?
@@ -1748,7 +1797,7 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
 }// end of PostProcessing
 //------------------------------------------------------------------------------
 
-/*
+/**
  * Store sensor data.
  * This routine exploits asynchronous behavior. It first performs IO from the i-1th
  * step while waiting for ith step to come to the point of sampling.
@@ -1794,6 +1843,9 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   // if it happens and the file is opened (from the recovery, close it)
   if (HDF5_CheckpointFile.IsOpened()) HDF5_CheckpointFile.Close();
 
+  TLogger::Log(TLogger::Full,OUT_FMT_StoringCheckpointData);
+  TLogger::Flush(TLogger::Full);
+
   // Create the new file (overwrite the old one)
   HDF5_CheckpointFile.Create(Parameters->GetCheckpointFileName().c_str());
 
@@ -1827,11 +1879,17 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   CheckpointFileHeader.WriteHeaderToCheckpointFile(HDF5_CheckpointFile);
 
   HDF5_CheckpointFile.Close();
+  TLogger::Log(TLogger::Full, OUT_FMT_Done);
 
   // checkpoint only if necessary (t_index > start_index), we're here one step ahead!
   if (Parameters->Get_t_index() > Parameters->GetStartTimeIndex())
   {
+    TLogger::Log(TLogger::Full,OUT_FMT_StoringSensorData);
+    TLogger::Flush(TLogger::Full);
+
     OutputStreamContainer.CheckpointStreams();
+
+    TLogger::Log(TLogger::Full, OUT_FMT_Done);
   }
 
   OutputStreamContainer.CloseStreams();

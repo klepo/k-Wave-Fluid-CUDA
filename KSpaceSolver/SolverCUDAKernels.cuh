@@ -327,6 +327,6 @@ namespace SolverCUDAKernels
   /// Compute the velocity shift in Fourier space over the Z axis
   void ComputeVelocityShiftInZ(TCUFFTComplexMatrix&  FFT_shift_temp,
                                const TComplexMatrix& z_shift_neg_r);
-};
+}
 
 #endif /*SOLVER_CUDA_KERNELS_CUH*/
