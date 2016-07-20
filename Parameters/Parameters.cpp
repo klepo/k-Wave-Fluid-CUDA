@@ -70,17 +70,17 @@ TParameters* TParameters::ParametersSingleInstance = NULL;
 /**
  * Get instance of singleton class.
  */
-TParameters* TParameters::GetInstance()
+TParameters& TParameters::GetInstance()
 {
   if(!ParametersInstanceFlag)
   {
       ParametersSingleInstance = new TParameters();
       ParametersInstanceFlag = true;
-      return ParametersSingleInstance;
+      return *ParametersSingleInstance;
   }
   else
   {
-      return ParametersSingleInstance;
+      return *ParametersSingleInstance;
   }
 }// end of GetInstance()
 //----------------------------------------------------------------------------

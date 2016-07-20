@@ -115,7 +115,7 @@ class TBaseOutputHDF5Stream
     /// Copy constructor not allowed.
     TBaseOutputHDF5Stream(const TBaseOutputHDF5Stream & src);
     /// Operator = not allowed (we don't want any data movements).
-    TBaseOutputHDF5Stream & operator = (const TBaseOutputHDF5Stream & src);
+    TBaseOutputHDF5Stream& operator = (const TBaseOutputHDF5Stream & src);
 
     /// A generic function to allocate memory - not used in the base class.
     virtual void AllocateMemory();

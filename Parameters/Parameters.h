@@ -59,7 +59,7 @@ class TParameters
     enum TSensorMaskType {smt_index = 0, smt_corners = 1};
 
     /// Get instance of the singleton class
-    static TParameters* GetInstance();
+    static TParameters& GetInstance();
 
     /// Destructor.
     virtual ~TParameters()

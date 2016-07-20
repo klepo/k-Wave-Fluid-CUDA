@@ -112,11 +112,11 @@ void TIndexOutputHDF5Stream::Create()
 
   size_t NumberOfSampledElementsPerStep = SensorMask.GetTotalElementCount();
 
-  TParameters* Params = TParameters::GetInstance();
+  const TParameters& params = TParameters::GetInstance();
 
   // Derive dataset dimension sizes
   TDimensionSizes DatasetSize(NumberOfSampledElementsPerStep,
-          (ReductionOp == roNONE) ?  Params->Get_Nt() - Params->GetStartTimeIndex() : 1,
+          (ReductionOp == roNONE) ?  params.Get_Nt() - params.GetStartTimeIndex() : 1,
           1);
 
   // Set HDF5 chunk size
@@ -132,7 +132,7 @@ void TIndexOutputHDF5Stream::Create()
                                                 HDF5_RootObjectName,
                                                 DatasetSize,
                                                 ChunkSize,
-                                                Params->GetCompressionLevel());
+                                                params.GetCompressionLevel());
 
     // Write dataset parameters
   HDF5_File.WriteMatrixDomainType(HDF5_File.GetRootGroup(),
@@ -160,7 +160,7 @@ void TIndexOutputHDF5Stream::Create()
 void TIndexOutputHDF5Stream::Reopen()
 {
   // Get parameters
-  TParameters* Params = TParameters::GetInstance();
+  const TParameters& params = TParameters::GetInstance();
 
   // Set buffer size
   BufferSize = SensorMask.GetTotalElementCount();
@@ -175,8 +175,8 @@ void TIndexOutputHDF5Stream::Reopen()
 
   if (ReductionOp == roNONE)
   { // raw time series - just seek to the right place in the dataset
-    SampledTimeStep = (Params->Get_t_index() < Params->GetStartTimeIndex()) ?
-                        0 : (Params->Get_t_index() - Params->GetStartTimeIndex());
+    SampledTimeStep = (params.Get_t_index() < params.GetStartTimeIndex()) ?
+                        0 : (params.Get_t_index() - params.GetStartTimeIndex());
 
   }
   else
@@ -184,7 +184,7 @@ void TIndexOutputHDF5Stream::Reopen()
     SampledTimeStep = 0;
 
     // Read data from disk only if there were anything stored there (t_index >= start_index)
-    if (TParameters::GetInstance()->Get_t_index() > TParameters::GetInstance()->GetStartTimeIndex())
+    if (TParameters::GetInstance().Get_t_index() > TParameters::GetInstance().GetStartTimeIndex())
     {
       // Since there is only a single timestep in the dataset, I can read the whole dataset
       HDF5_File.ReadCompleteDataset(HDF5_File.GetRootGroup(),

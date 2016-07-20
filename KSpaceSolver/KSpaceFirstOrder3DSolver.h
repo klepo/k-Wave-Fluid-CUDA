@@ -225,7 +225,7 @@ protected:
     /// Was the loop interrupted to checkpoint?
     bool IsCheckpointInterruption() const
     {
-      return (Parameters->Get_t_index() != Parameters->Get_Nt());
+      return (Parameters.Get_t_index() != Parameters.Get_Nt());
     };
 
     /// Check the output file has the correct format and version.
@@ -556,40 +556,40 @@ protected:
     /// Get the Temp_1_RS3D matrix from the container.
     TRealMatrix& Get_Temp_1_RS3D()
     {
-      return MatrixContainer.GetMatrix<TRealMatrix>(Temp_1_RS3D);
+      return MatrixContainer.GetMatrix<TRealMatrix>(temp_1_real_3D);
     };
     /// Get the Temp_2_RS3D matrix from the container.
     TRealMatrix& Get_Temp_2_RS3D()
     {
-      return MatrixContainer.GetMatrix<TRealMatrix>(Temp_2_RS3D);
+      return MatrixContainer.GetMatrix<TRealMatrix>(temp_2_real_3D);
     };
     /// Get the Temp_3_RS3D matrix from the container.
     TRealMatrix& Get_Temp_3_RS3D()
     {
-      return MatrixContainer.GetMatrix<TRealMatrix>(Temp_3_RS3D);
+      return MatrixContainer.GetMatrix<TRealMatrix>(temp_3_real_3D);
     };
 
 
     /// Get the CUFFT_X_temp from the container.
     TCUFFTComplexMatrix& Get_CUFFT_X_temp()
     {
-      return MatrixContainer.GetMatrix<TCUFFTComplexMatrix>(CUFFT_X_temp);
+      return MatrixContainer.GetMatrix<TCUFFTComplexMatrix>(cufft_x_temp);
     };
     /// Get the FFT_Y_temp from the container.
     TCUFFTComplexMatrix  & Get_CUFFT_Y_temp()
     {
-      return MatrixContainer.GetMatrix<TCUFFTComplexMatrix>(CUFFT_Y_temp);
+      return MatrixContainer.GetMatrix<TCUFFTComplexMatrix>(cufft_y_temp);
     };
     /// Get the FFT_Z_temp from the container.
     TCUFFTComplexMatrix  & Get_CUFFT_Z_temp()
     {
-      return MatrixContainer.GetMatrix<TCUFFTComplexMatrix>(CUFFT_Z_temp);
+      return MatrixContainer.GetMatrix<TCUFFTComplexMatrix>(cufft_z_temp);
     };
 
     /// Get the FFT_shift_temp the container.
     TCUFFTComplexMatrix& Get_CUFFT_shift_temp()
     {
-      return MatrixContainer.GetMatrix<TCUFFTComplexMatrix>(CUFFT_shift_temp);
+      return MatrixContainer.GetMatrix<TCUFFTComplexMatrix>(cufft_shift_temp);
     };
 
 private:
@@ -607,7 +607,7 @@ private:
     bool IsTimestepRightAfterRestore;
 
     /// Global parameters of the simulation
-    TParameters* Parameters;
+    TParameters& Parameters;
 
     /// Total time of the simulation
     TTimeMeasure TotalTime;

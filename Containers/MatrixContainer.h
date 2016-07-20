@@ -5,36 +5,33 @@
  *              Brno University of Technology \n
  *              jarosjir@fit.vutbr.cz
  *
- * @brief       The header file containing the matrix and container and related
- *              matrix record.
+ * @brief       The header file containing the matrix container and the related
+ *              matrix record class.
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        02 December  2014, 16:17 (created) \n
- *              20 April     2016, 14:17 (revised)
+ *              19 July      2016, 14:06 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
- * and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation, either version
- * 3 of the License, or (at your option) any later version.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
+ * If not, see http://www.gnu.org/licenses/.
  */
 
 #ifndef MATRIX_CONTAINER_H
 #define	MATRIX_CONTAINER_H
 
-#include <string.h>
+#include <cstring>
 #include <map>
 
 #include <MatrixClasses/BaseMatrix.h>
@@ -51,10 +48,10 @@
 
 
 /**
- * @enum TMatrixID
- * @brief Matrix identifers of all matrices in the k-space code
+ * @enum TMatrixIdx
+ * @brief Matrix identifers of all matrices in the k-space code, mames based on the Matlab notation.
  */
-enum TMatrixID
+enum TMatrixIdx
 {
   kappa, c2, p,
 
@@ -83,123 +80,115 @@ enum TMatrixID
   delay_mask,
 
   //--------------Temporary matrices -------------//
-  Temp_1_RS3D , Temp_2_RS3D , Temp_3_RS3D,
-  CUFFT_X_temp, CUFFT_Y_temp, CUFFT_Z_temp, CUFFT_shift_temp
+  temp_1_real_3D, temp_2_real_3D, temp_3_real_3D,
+  cufft_x_temp, cufft_y_temp, cufft_z_temp, cufft_shift_temp
 };// end of TMatrixID
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 /**
- * @class TMatrixContainer
- * @brief Class implementing the matrix container.
- * @details This container is responsible to maintain all the matrices in the
- *          code except the output streams. The matrices are allocated, freed, loaded
- *          stored and checkpointed from here.
+ * @class   TMatrixContainer
+ * @brief   Class implementing the matrix container.
+ * @details This container is responsible to maintain all the matrices in the code except the output
+ *          streams. The matrices are allocated, freed, loaded stored and check-pointed from here.
  */
 class TMatrixContainer
 {
   public:
 
-    /// Constructor
-    TMatrixContainer() {};
-    /// Destructor - no need for virtual destructor (no polymorphism).
+    /// Constructor.
+    TMatrixContainer();
+    /// Destructor.
     ~TMatrixContainer();
 
     /**
-     * @brief Get number of matrices in the container.
-     * @details Get number of matrices in the container.
-     * @return number of matrices in the container.
+     * @brief   Get the number of matrices in the container.
+     * @details Get the number of matrices in the container.
+     * @return  The number of matrices in the container.
      */
-    size_t size()
+    inline size_t Size() const
     {
-      return MatrixContainer.size();
+      return matrixContainer.size();
     };
 
     /**
-     * @brief Is the container empty?
+     * @brief   Is the container empty?
      * @details Is the container empty?
-     * @return true if the container is empty.
+     * @return  true if the container is empty.
      */
-    bool empty() const
+    inline bool IsEmpty() const
     {
-      return MatrixContainer.empty();
-    };
-
-    /// Create instances of all objects in the container.
-    void CreateAllObjects();
-    /// Set all matrices recored - populate the container.
-    void AddMatricesIntoContainer();
-    /// Free all matrices - destroy them.
-    void FreeAllMatrices();
-
-    /// Load all matrices from the HDF5 file.
-    void LoadDataFromInputHDF5File(THDF5_File & HDF5_File);
-    /// Load all matrices from the HDF5 file.
-    void LoadDataFromCheckpointHDF5File(THDF5_File & HDF5_File);
-    /// Store selected matrices into the checkpoint file.
-    void StoreDataIntoCheckpointHDF5File(THDF5_File & HDF5_File);
-
-    /// Copy host (CPU) matrices to GPU Device memory.
-    void CopyAllMatricesToDevice();
-    /// Copy GPU Device memory matrices to host (CPU) memory (Debugging only).
-    void CopyAllMatricesFromDevice();
-
-    /**
-     * Get matrix record
-     * @param [in] MatrixID - Matrix identifier
-     * @return the matrix record.
-     */
-    inline TMatrixRecord& GetMatrixRecord(const TMatrixID MatrixID)
-    {
-      return MatrixContainer[MatrixID];
+      return matrixContainer.empty();
     };
 
     /**
-     * operator []
-     * @param [in]  MatrixID - Matrix identifier
+     * @brief   operator []
+     * @details operator []
+     * @param [in]  matrixIdx - Matrix identifier
      * @return the matrix record
      */
-    inline TMatrixRecord& operator [] (const TMatrixID MatrixID)
+    inline TMatrixRecord& operator [] (const TMatrixIdx matrixIdx)
     {
-      return MatrixContainer[MatrixID];
+      return matrixContainer[matrixIdx];
     };
 
     /**
-     * @brief Get the matrix with a specific type from the container.
-     * @details This template routine returns the reference to the matrix recasted to
-     * the specific class.
-     * @param [in] MatrixID - Matrix identifier
-     * @return Base Matrix
+     * @brief   Get the matrix with a specific type from the container.
+     * @details This template routine returns the reference to the matrix re-casted to the specific
+     *          class type.
+     * @param [in] matrixIdx - Matrix identifier
+     * @return     reference to the Matrix
      */
     template <typename T>
-    inline T& GetMatrix(const TMatrixID MatrixID)
+    inline T& GetMatrix(const TMatrixIdx matrixIdx)
     {
-      return static_cast<T &> (*(MatrixContainer[MatrixID].MatrixPtr));
+      return static_cast<T &> (*(matrixContainer[matrixIdx].matrixPtr));
     };
+
+
+    /// Create all matrices in the container.
+    void CreateMatrices();
+    /// Populate the container based on the simulation type.
+    void AddMatrices();
+    /// Destroy and free all matrices.
+    void FreeMatrices();
+
+    /// Load all matrices from the input HDF5 file.
+    void LoadDataFromInputFile(THDF5_File& inputFile);
+    /// Load all matrices from the output HDF5 file.
+    void LoadDataFromCheckpointFile(THDF5_File& checkpointFile);
+    /// Store selected matrices into the checkpoint file.
+    void StoreDataIntoCheckpointFile(THDF5_File& checkpointFile);
+
+    /// Copy all matrices from host to device (CPU -> GPU).
+    void CopyMatricesToDevice();
+    /// Copy all matrices from device to host (GPU -> CPU).
+    void CopyMatricesFromDevice();
+
 
   protected:
 
   private:
 
-    /// Datatype for map associating the matrix ID enum and matrix record.
-    typedef map<TMatrixID, TMatrixRecord> TMatrixRecordContainer;
+    /// Datatype for the map associating the matrix ID enum and matrix record.
+    typedef map<TMatrixIdx, TMatrixRecord> TMatrixRecordContainer;
 
-    // map holding the container
-    TMatrixRecordContainer MatrixContainer;
+    /// map holding the container
+    TMatrixRecordContainer matrixContainer;
 
-    // Copy constructor is not allowed for public
+    /// Copy constructor is not allowed for public
     TMatrixContainer(const TMatrixContainer& orig);
 
     /// Operator = is not allowed for public.
     TMatrixContainer & operator = (const TMatrixContainer& src);
 
     /// Print error and throw an exception.
-    void CreateErrorAndThrowException(const char*  FMT,
-                                      const string HDF5MatrixName,
-                                      const char*  File,
-                                      const int    Line);
+    void CreateErrorAndThrowException(const char*   messageFormat,
+                                      const string& matrixName,
+                                      const char*   file,
+                                      const int     line);
 
 };// end of TMatrixContainer
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 #endif	/* MATRIX_CONTAINER_H */
 

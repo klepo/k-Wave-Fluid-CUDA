@@ -100,7 +100,7 @@ void TWholeDomainOutputHDF5Stream::Create()
                                                 HDF5_RootObjectName,
                                                 SourceMatrix.GetDimensionSizes(),
                                                 ChunkSize,
-                                                TParameters::GetInstance()->GetCompressionLevel());
+                                                TParameters::GetInstance().GetCompressionLevel());
 
   // Write dataset parameters
   HDF5_File.WriteMatrixDomainType(HDF5_File.GetRootGroup(),
@@ -124,7 +124,7 @@ void TWholeDomainOutputHDF5Stream::Create()
  */
 void TWholeDomainOutputHDF5Stream::Reopen()
 {
-  TParameters* Params = TParameters::GetInstance();
+  const TParameters& params = TParameters::GetInstance();
 
   // Set buffer size
   BufferSize = SourceMatrix.GetTotalElementCount();
@@ -139,13 +139,13 @@ void TWholeDomainOutputHDF5Stream::Reopen()
   SampledTimeStep = 0;
   if (ReductionOp == roNONE)
   { // seek in the dataset
-    SampledTimeStep = (Params->Get_t_index() < Params->GetStartTimeIndex()) ?
-                        0 : (Params->Get_t_index() - Params->GetStartTimeIndex());
+    SampledTimeStep = (params.Get_t_index() < params.GetStartTimeIndex()) ?
+                        0 : (params.Get_t_index() - params.GetStartTimeIndex());
   }
   else
   { // reload data
     // Read data from disk only if there were anything stored there (t_index > start_index) (one step ahead)
-    if (TParameters::GetInstance()->Get_t_index() > TParameters::GetInstance()->GetStartTimeIndex())
+    if (params.Get_t_index() > params.GetStartTimeIndex())
     {
       HDF5_File.ReadCompleteDataset(HDF5_File.GetRootGroup(),
                                     HDF5_RootObjectName,

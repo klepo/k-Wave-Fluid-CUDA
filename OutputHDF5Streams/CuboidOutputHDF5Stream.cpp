@@ -147,13 +147,13 @@ void TCuboidOutputHDF5Stream::Create()
 void TCuboidOutputHDF5Stream::Reopen()
 {
   // Get parameters
-  TParameters * Params = TParameters::GetInstance();
+  const TParameters& params = TParameters::GetInstance();
 
   SampledTimeStep = 0;
   if (ReductionOp == roNONE) // set correct sampled timestep for raw data series
   {
-    SampledTimeStep = (Params->Get_t_index() < Params->GetStartTimeIndex()) ?
-                        0 : (Params->Get_t_index() - Params->GetStartTimeIndex());
+    SampledTimeStep = (params.Get_t_index() < params.GetStartTimeIndex()) ?
+                        0 : (params.Get_t_index() - params.GetStartTimeIndex());
   }
 
   // Create the memory buffer if necessary and set starting address
@@ -186,7 +186,7 @@ void TCuboidOutputHDF5Stream::Reopen()
     CuboidsInfo.push_back(CuboidInfo);
 
     // read only if there is anything to read
-    if (Params->Get_t_index() > Params->GetStartTimeIndex())
+    if (params.Get_t_index() > params.GetStartTimeIndex())
     {
       if (ReductionOp != roNONE)
       { // Reload data
@@ -206,7 +206,7 @@ void TCuboidOutputHDF5Stream::Reopen()
   }
 
   // copy data over to the GPU only if there is anything to read
-  if (Params->Get_t_index() > Params->GetStartTimeIndex())
+  if (params.Get_t_index() > params.GetStartTimeIndex())
   {
     CopyDataToDevice();
   }
@@ -394,11 +394,11 @@ void TCuboidOutputHDF5Stream::Close()
  */
 hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t Index)
 {
-  TParameters* Params = TParameters::GetInstance();
+  const TParameters& params = TParameters::GetInstance();
 
   // if time series then Number of steps else 1
   size_t NumberOfSampledTimeSteps = (ReductionOp == roNONE)
-                                      ? Params->Get_Nt() - Params->GetStartTimeIndex()
+                                      ? params.Get_Nt() - params.GetStartTimeIndex()
                                       : 0; // will be a 3D dataset
   // Set cuboid dimensions (subtract two corners (add 1) and use the appropriate component)
   TDimensionSizes CuboidSize((SensorMask.GetBottomRightCorner(Index) - SensorMask.GetTopLeftCorner(Index)).X,
@@ -426,7 +426,7 @@ hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t Index)
                                                       HDF5_DatasetName,
                                                       CuboidSize,
                                                       CuboidChunkSize,
-                                                      Params->GetCompressionLevel()
+                                                      params.GetCompressionLevel()
                                                      );
 
   // Write dataset parameters

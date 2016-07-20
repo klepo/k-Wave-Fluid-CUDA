@@ -699,18 +699,18 @@ int main(int argc, char** argv)
   TLogger::Log(TLogger::Basic, OUT_FMT_Separator);
 
   // Create parameters and parse command line
-  TParameters* Parameters = TParameters::GetInstance();
+  TParameters& params = TParameters::GetInstance();
 
   //-------------- Init simulation ----------------//
   try
   {
     // Initialise Parameters by parsing the command line and reading input file scalars
-    Parameters->Init(argc, argv);
+    params.Init(argc, argv);
     // Select GPU
-    Parameters->SelectDevice();
+    params.SelectDevice();
 
     // When we know the GPU, we can print out the code version
-    if (Parameters->IsVersion())
+    if (params.IsVersion())
     {
       KSpaceSolver.PrintFullNameCodeAndLicense();
       return EXIT_SUCCESS;
@@ -721,12 +721,12 @@ int main(int argc, char** argv)
      TLogger::Log(TLogger::Basic, OUT_FMT_Failed);
     // must be repeated in case the GPU we want to printout the code version
     // and all GPUs are busy
-    if (Parameters->IsVersion())
+    if (params.IsVersion())
     {
       KSpaceSolver.PrintFullNameCodeAndLicense();
     }
 
-    if (!Parameters->IsVersion())
+    if (!params.IsVersion())
     {
       TLogger::Log(TLogger::Basic, OUT_FMT_LastSeparator);
     }
@@ -735,11 +735,11 @@ int main(int argc, char** argv)
 
   // set number of threads and bind them to cores
   #ifdef _OPENMP
-    omp_set_num_threads(Parameters->GetNumberOfThreads());
+    omp_set_num_threads(params.GetNumberOfThreads());
   #endif
 
   // Print simulation setup
-  Parameters->PrintSimulatoinSetup();
+  params.PrintSimulatoinSetup();
 
   TLogger::Log(TLogger::Basic, OUT_FMT_InitialisatoinHeader);
 
@@ -792,12 +792,12 @@ int main(int argc, char** argv)
                KSpaceSolver.GetDataLoadTime());
 
 
-  if (Parameters->Get_t_index() > 0)
+  if (params.Get_t_index() > 0)
   {
     TLogger::Log(TLogger::Basic, OUT_FMT_Separator);
     TLogger::Log(TLogger::Basic,
                  OUT_FMT_RecoveredForm,
-                 Parameters->Get_t_index());
+                 params.Get_t_index());
   }
 
 

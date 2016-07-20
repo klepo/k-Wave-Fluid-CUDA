@@ -207,9 +207,9 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
  */
 void TCUDAParameters::SetKernelConfiguration()
 {
-  TParameters * Parameters = TParameters::GetInstance();
+  const TParameters& params = TParameters::GetInstance();
 
-  TDimensionSizes FullDims(Parameters->GetFullDimensionSizes());
+  TDimensionSizes FullDims(params.GetFullDimensionSizes());
 
   // Set kernel configuration for 1D kernels
   // The goal here is to have blocks of size 256 threads and at least 8 x times
@@ -245,12 +245,12 @@ void TCUDAParameters::SetKernelConfiguration()
   SamplerGridSize1D  = DeviceProperties.multiProcessorCount * 8;
 
   // tune number of blocks for index based sensor mask
-  if (Parameters->Get_sensor_mask_type() == TParameters::TSensorMaskType::smt_index)
+  if (params.Get_sensor_mask_type() == TParameters::TSensorMaskType::smt_index)
   {
     // the sensor mask is smaller than 2048 * SMs than use a smaller number of blocks
-    if ((size_t(SamplerGridSize1D) * size_t(SamplerBlockSize1D)) > Parameters->Get_sensor_mask_index_size())
+    if ((size_t(SamplerGridSize1D) * size_t(SamplerBlockSize1D)) > params.Get_sensor_mask_index_size())
     {
-      SamplerGridSize1D  = int((Parameters->Get_sensor_mask_index_size()  + size_t(SamplerBlockSize1D) - 1 )
+      SamplerGridSize1D  = int((params.Get_sensor_mask_index_size()  + size_t(SamplerBlockSize1D) - 1 )
                                / size_t(SamplerBlockSize1D));
     }
   }
@@ -266,9 +266,9 @@ void TCUDAParameters::SetUpDeviceConstants()
 {
    TCUDADeviceConstants ConstantsToTransfer;
 
-   TParameters * Params = TParameters::GetInstance();
-   TDimensionSizes  FullDimensionSizes = Params->GetFullDimensionSizes();
-   TDimensionSizes  ReducedDimensionSizes = Params->GetReducedDimensionSizes();
+   TParameters& params = TParameters::GetInstance();
+   TDimensionSizes  FullDimensionSizes = params.GetFullDimensionSizes();
+   TDimensionSizes  ReducedDimensionSizes = params.GetReducedDimensionSizes();
 
   // Set values for constant memory
   ConstantsToTransfer.Nx  = FullDimensionSizes.X;
@@ -288,29 +288,29 @@ void TCUDAParameters::SetUpDeviceConstants()
   ConstantsToTransfer.FFTDividerY = 1.0f / FullDimensionSizes.Y;
   ConstantsToTransfer.FFTDividerZ = 1.0f / FullDimensionSizes.Z;
 
-  ConstantsToTransfer.dt  = Params->Get_dt();
-  ConstantsToTransfer.dt2 = Params->Get_dt() * 2.0f;
-  ConstantsToTransfer.c2  = Params->Get_c0_scalar();
+  ConstantsToTransfer.dt  = params.Get_dt();
+  ConstantsToTransfer.dt2 = params.Get_dt() * 2.0f;
+  ConstantsToTransfer.c2  = params.Get_c0_scalar();
 
-  ConstantsToTransfer.rho0_scalar     = Params->Get_rho0_scalar();
-  ConstantsToTransfer.dt_rho0_scalar  = Params->Get_rho0_scalar() * Params->Get_dt();
-  ConstantsToTransfer.rho0_sgx_scalar = Params->Get_rho0_sgx_scalar();
-  ConstantsToTransfer.rho0_sgy_scalar = Params->Get_rho0_sgy_scalar(),
-  ConstantsToTransfer.rho0_sgz_scalar = Params->Get_rho0_sgz_scalar(),
+  ConstantsToTransfer.rho0_scalar     = params.Get_rho0_scalar();
+  ConstantsToTransfer.dt_rho0_scalar  = params.Get_rho0_scalar() * params.Get_dt();
+  ConstantsToTransfer.rho0_sgx_scalar = params.Get_rho0_sgx_scalar();
+  ConstantsToTransfer.rho0_sgy_scalar = params.Get_rho0_sgy_scalar(),
+  ConstantsToTransfer.rho0_sgz_scalar = params.Get_rho0_sgz_scalar(),
 
-  ConstantsToTransfer.BonA_scalar       = Params->Get_BonA_scalar();
-  ConstantsToTransfer.Absorb_tau_scalar = Params->Get_absorb_tau_scalar();
-  ConstantsToTransfer.Absorb_eta_scalar = Params->Get_absorb_eta_scalar();
+  ConstantsToTransfer.BonA_scalar       = params.Get_BonA_scalar();
+  ConstantsToTransfer.Absorb_tau_scalar = params.Get_absorb_tau_scalar();
+  ConstantsToTransfer.Absorb_eta_scalar = params.Get_absorb_eta_scalar();
 
 
   /// source masks
-  ConstantsToTransfer.p_source_index_size = Params->Get_p_source_index_size();
-  ConstantsToTransfer.p_source_mode       = Params->Get_p_source_mode();
-  ConstantsToTransfer.p_source_many       = Params->Get_p_source_many();
+  ConstantsToTransfer.p_source_index_size = params.Get_p_source_index_size();
+  ConstantsToTransfer.p_source_mode       = params.Get_p_source_mode();
+  ConstantsToTransfer.p_source_many       = params.Get_p_source_many();
 
-  ConstantsToTransfer.u_source_index_size = Params->Get_u_source_index_size();
-  ConstantsToTransfer.u_source_mode       = Params->Get_u_source_mode();
-  ConstantsToTransfer.u_source_many       = Params->Get_u_source_many();
+  ConstantsToTransfer.u_source_index_size = params.Get_u_source_index_size();
+  ConstantsToTransfer.u_source_mode       = params.Get_u_source_mode();
+  ConstantsToTransfer.u_source_many       = params.Get_u_source_many();
 
   ConstantsToTransfer.SetUpCUDADeviceConstatns();
 }// end of SetUpDeviceConstants

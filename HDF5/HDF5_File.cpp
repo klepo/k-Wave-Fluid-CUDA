@@ -1604,7 +1604,7 @@ void THDF5_FileHeader::SetMemoryConsumption(const size_t TotalMemory)
 
   HDF5_FileHeaderValues[hdf5_fhi_total_memory_consumption]     = Text;
 
-  snprintf(Text, 20, "%ld MB",TotalMemory / TParameters::GetInstance()->GetNumberOfThreads());
+  snprintf(Text, 20, "%ld MB",TotalMemory / TParameters::GetInstance().GetNumberOfThreads());
   HDF5_FileHeaderValues[hdf5_fhi_peak_core_memory_consumption] = Text;
 }// end of SetMemoryConsumption
 //------------------------------------------------------------------------------
@@ -1673,7 +1673,7 @@ void THDF5_FileHeader::GetExecutionTimes(double& TotalTime,
 void THDF5_FileHeader::SetNumberOfCores()
 {
   char Text[12] = "";
-  snprintf(Text, 12, "%ld", TParameters::GetInstance()->GetNumberOfThreads());
+  snprintf(Text, 12, "%ld", TParameters::GetInstance().GetNumberOfThreads());
 
   HDF5_FileHeaderValues[hdf5_fhi_number_of_cores] = Text;
 }// end of SetNumberOfCores

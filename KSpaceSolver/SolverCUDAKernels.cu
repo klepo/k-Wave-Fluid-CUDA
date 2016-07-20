@@ -68,7 +68,7 @@ extern __constant__ TCUDADeviceConstants CUDADeviceConstants;
  */
 inline int GetSolverBlockSize1D()
 {
-  return TParameters::GetInstance()->CUDAParameters.GetSolverBlockSize1D();
+  return TParameters::GetInstance().CUDAParameters.GetSolverBlockSize1D();
 };
 
 /**
@@ -77,7 +77,7 @@ inline int GetSolverBlockSize1D()
  */
 inline int GetSolverGridSize1D()
 {
-  return TParameters::GetInstance()->CUDAParameters.GetSolverGridSize1D();
+  return TParameters::GetInstance().CUDAParameters.GetSolverGridSize1D();
 };
 
 /**
@@ -86,7 +86,7 @@ inline int GetSolverGridSize1D()
  */
 inline dim3 GetSolverTransposeBlockSize()
 {
-  return TParameters::GetInstance()->CUDAParameters.GetSolverTransposeBlockSize();
+  return TParameters::GetInstance().CUDAParameters.GetSolverTransposeBlockSize();
 };
 
 /**
@@ -95,7 +95,7 @@ inline dim3 GetSolverTransposeBlockSize()
  */
 inline dim3 GetSolverTransposeGirdSize()
 {
-  return TParameters::GetInstance()->CUDAParameters.GetSolverTransposeGirdSize();
+  return TParameters::GetInstance().CUDAParameters.GetSolverTransposeGirdSize();
 };
 
 
