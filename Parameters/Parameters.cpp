@@ -206,7 +206,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
 {
   TDimensionSizes ScalarSizes(1,1,1);
 
-  if (!HDF5_InputFile.IsOpened())
+  if (!HDF5_InputFile.IsOpen())
   {
     // Open file -- exceptions handled in main
     HDF5_InputFile.Open(CommandLinesParameters.GetInputFileName().c_str());
@@ -215,7 +215,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
   HDF5_FileHeader.ReadHeaderFromInputFile(HDF5_InputFile);
 
   // check file type
-  if (HDF5_FileHeader.GetFileType() != THDF5_FileHeader::hdf5_ft_input)
+  if (HDF5_FileHeader.GetFileType() != THDF5_FileHeader::INPUT)
   {
     char ErrorMessage[256] = "";
     snprintf(ErrorMessage,
@@ -281,7 +281,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
   ReducedDimensionSizes.Z = Z;
 
   // if the file is of version 1.0, there must be a sensor mask index (backward compatibility)
-  if (HDF5_FileHeader.GetFileVersion() == THDF5_FileHeader::hdf5_fv_10)
+  if (HDF5_FileHeader.GetFileVersion() == THDF5_FileHeader::VERSION_10)
   {
     sensor_mask_ind_size = HDF5_InputFile.GetDatasetElementCount(HDF5RootGroup, sensor_mask_index_Name);
 
@@ -293,7 +293,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
   }// version 1.0
 
   // This is the current version 1.1
-  if (HDF5_FileHeader.GetFileVersion() == THDF5_FileHeader::hdf5_fv_11)
+  if (HDF5_FileHeader.GetFileVersion() == THDF5_FileHeader::VERSION_11)
   {
     // read sensor mask type as a size_t value to enum
     size_t SensorMaskTypeNumericValue = 0;

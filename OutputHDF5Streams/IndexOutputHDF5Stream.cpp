@@ -137,10 +137,10 @@ void TIndexOutputHDF5Stream::Create()
     // Write dataset parameters
   HDF5_File.WriteMatrixDomainType(HDF5_File.GetRootGroup(),
                                   HDF5_RootObjectName,
-                                  THDF5_File::hdf5_mdt_real);
+                                  THDF5_File::REAL);
   HDF5_File.WriteMatrixDataType  (HDF5_File.GetRootGroup(),
                                   HDF5_RootObjectName,
-                                  THDF5_File::hdf5_mdt_float);
+                                  THDF5_File::FLOAT);
 
   // Sampled time step
   SampledTimeStep = 0;

@@ -76,7 +76,7 @@ void TRealMatrix::ReadDataFromHDF5File(THDF5_File & HDF5_File,
                                        const char * MatrixName)
 {
   // test matrix datatype
-  if (HDF5_File.ReadMatrixDataType(HDF5_File.GetRootGroup(), MatrixName) != THDF5_File::hdf5_mdt_float)
+  if (HDF5_File.ReadMatrixDataType(HDF5_File.GetRootGroup(), MatrixName) != THDF5_File::FLOAT)
   {
     char ErrorMessage[256];
     snprintf(ErrorMessage, 256, Matrix_ERR_FMT_MatrixNotFloat, MatrixName);
@@ -84,7 +84,7 @@ void TRealMatrix::ReadDataFromHDF5File(THDF5_File & HDF5_File,
   }
 
 
-  if (HDF5_File.ReadMatrixDomainType(HDF5_File.GetRootGroup(), MatrixName) != THDF5_File::hdf5_mdt_real)
+  if (HDF5_File.ReadMatrixDomainType(HDF5_File.GetRootGroup(), MatrixName) != THDF5_File::REAL)
   {
     char ErrorMessage[256];
     snprintf(ErrorMessage, 256, Matrix_ERR_FMT_MatrixNotReal, MatrixName);
@@ -150,10 +150,10 @@ void TRealMatrix::WriteDataToHDF5File(THDF5_File & HDF5_File,
   // Write data and domain type
   HDF5_File.WriteMatrixDataType  (HDF5_File.GetRootGroup(),
                                   MatrixName,
-                                  THDF5_File::hdf5_mdt_float);
+                                  THDF5_File::FLOAT);
   HDF5_File.WriteMatrixDomainType(HDF5_File.GetRootGroup(),
                                   MatrixName,
-                                  THDF5_File::hdf5_mdt_real);
+                                  THDF5_File::REAL);
 }// end of WriteDataToHDF5File
 //------------------------------------------------------------------------------
 

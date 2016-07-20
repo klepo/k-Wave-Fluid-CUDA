@@ -53,7 +53,7 @@ struct TMatrixRecord
    */
   enum TMatrixDataType
   {
-    mdtReal, mdtComplex, mdtIndex, mdtCUFFT
+    REAL, COMPLEX, INDEX, CUFFT
   };
 
   /// Default constructor.

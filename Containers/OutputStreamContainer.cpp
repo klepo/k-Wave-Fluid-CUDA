@@ -9,7 +9,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        04 December  2014, 11:41 (created) \n
- *              19 July      2016, 17:17 (revised)
+ *              19 July      2016, 17:28 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -53,7 +53,7 @@ TOutputStreamContainer::~TOutputStreamContainer()
  * Add all streams in the simulation to the container, set all streams records here! \n
  * Please note, the Matrix container has to be populated before calling this routine.
  *
- * @param [in] matrixContainer - matrix container to link the steams with sampled matrices and
+ * @param [in] matrixContainer - Matrix container to link the steams with sampled matrices and
  *                               sensor masks
  */
 void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
@@ -367,12 +367,12 @@ void TOutputStreamContainer::FreeStreams()
 
 /**
  * Create a new output stream.
- * @param [in] matrixContainer  - name of the HDF5 dataset or group
- * @param [in] sampledMatrixIdx - code id of the matrix
- * @param [in] fileDatasetName  - name of the HDF5 dataset or group
- * @param [in] reductionOp      - reduction operator
+ * @param [in] matrixContainer  - Name of the HDF5 dataset or group
+ * @param [in] sampledMatrixIdx - Code id of the matrix
+ * @param [in] fileDatasetName  - Name of the HDF5 dataset or group
+ * @param [in] reductionOp      - Reduction operator
  *
- * @return new output stream with defined links
+ * @return New output stream with defined links
  *
  */
 TBaseOutputHDF5Stream* TOutputStreamContainer::CreateNewOutputStream(TMatrixContainer& matrixContainer,

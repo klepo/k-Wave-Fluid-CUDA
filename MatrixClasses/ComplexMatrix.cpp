@@ -75,7 +75,7 @@ void TComplexMatrix::ReadDataFromHDF5File(THDF5_File & HDF5_File,
                                           const char * MatrixName)
 {
   // check data type
-  if (HDF5_File.ReadMatrixDataType(HDF5_File.GetRootGroup(), MatrixName) != THDF5_File::hdf5_mdt_float)
+  if (HDF5_File.ReadMatrixDataType(HDF5_File.GetRootGroup(), MatrixName) != THDF5_File::FLOAT)
   {
     char ErrorMessage[256];
     snprintf(ErrorMessage, 256, Matrix_ERR_FMT_MatrixNotFloat, MatrixName);
@@ -83,7 +83,7 @@ void TComplexMatrix::ReadDataFromHDF5File(THDF5_File & HDF5_File,
   }
 
   // check domain type
-  if (HDF5_File.ReadMatrixDomainType(HDF5_File.GetRootGroup(), MatrixName) != THDF5_File::hdf5_mdt_complex)
+  if (HDF5_File.ReadMatrixDomainType(HDF5_File.GetRootGroup(), MatrixName) != THDF5_File::COMPLEX)
   {
     char ErrorMessage[256];
     snprintf(ErrorMessage, 256, Matrix_ERR_FMT_MatrixNotComplex, MatrixName);
@@ -137,11 +137,11 @@ void TComplexMatrix::WriteDataToHDF5File(THDF5_File & HDF5_File,
  // Write data and domain type
   HDF5_File.WriteMatrixDataType(HDF5_File.GetRootGroup(),
                                 MatrixName,
-                                THDF5_File::hdf5_mdt_float);
+                                THDF5_File::FLOAT);
 
   HDF5_File.WriteMatrixDomainType(HDF5_File.GetRootGroup(),
                                   MatrixName,
-                                  THDF5_File::hdf5_mdt_complex);
+                                  THDF5_File::COMPLEX);
 }// end of WriteDataToHDF5File
 //---------------------------------------------------------------------------
 

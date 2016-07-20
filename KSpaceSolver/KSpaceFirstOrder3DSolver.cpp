@@ -1839,7 +1839,7 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   // Create Checkpoint file
   THDF5_File & HDF5_CheckpointFile = Parameters.HDF5_CheckpointFile;
   // if it happens and the file is opened (from the recovery, close it)
-  if (HDF5_CheckpointFile.IsOpened()) HDF5_CheckpointFile.Close();
+  if (HDF5_CheckpointFile.IsOpen()) HDF5_CheckpointFile.Close();
 
   TLogger::Log(TLogger::Full,OUT_FMT_StoringCheckpointData);
   TLogger::Flush(TLogger::Full);
@@ -1870,7 +1870,7 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   // Write checkpoint file header
   THDF5_FileHeader CheckpointFileHeader = Parameters.HDF5_FileHeader;
 
-  CheckpointFileHeader.SetFileType(THDF5_FileHeader::hdf5_ft_checkpoint);
+  CheckpointFileHeader.SetFileType(THDF5_FileHeader::CHECKPOINT);
   CheckpointFileHeader.SetCodeName(GetCodeName());
   CheckpointFileHeader.SetActualCreationTime();
 
@@ -1913,7 +1913,7 @@ void  TKSpaceFirstOrder3DSolver::WriteOutputDataInfo()
   HDF5_FileHeader.SetMajorFileVersion();
   HDF5_FileHeader.SetMinorFileVersion();
   HDF5_FileHeader.SetActualCreationTime();
-  HDF5_FileHeader.SetFileType(THDF5_FileHeader::hdf5_ft_output);
+  HDF5_FileHeader.SetFileType(THDF5_FileHeader::OUTPUT);
   HDF5_FileHeader.SetHostName();
 
   // @todo - what to store here???
@@ -1971,7 +1971,7 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
   THDF5_File       & OutputFile       = Parameters.HDF5_OutputFile;
 
   // test file type
-  if (OutputFileHeader.GetFileType() != THDF5_FileHeader::hdf5_ft_output)
+  if (OutputFileHeader.GetFileType() != THDF5_FileHeader::OUTPUT)
   {
     char ErrorMessage[256] = "";
     snprintf(ErrorMessage,
@@ -2053,7 +2053,7 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
   CheckpointFileHeader.ReadHeaderFromCheckpointFile(HDF5_CheckpointFile);
 
   // test file type
-  if (CheckpointFileHeader.GetFileType() != THDF5_FileHeader::hdf5_ft_checkpoint)
+  if (CheckpointFileHeader.GetFileType() != THDF5_FileHeader::CHECKPOINT)
   {
     char ErrorMessage[256] = "";
     snprintf(ErrorMessage,

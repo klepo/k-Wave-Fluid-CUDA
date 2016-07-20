@@ -432,10 +432,10 @@ hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t Index)
   // Write dataset parameters
   HDF5_File.WriteMatrixDomainType(HDF5_GroupId,
                                   HDF5_DatasetName,
-                                  THDF5_File::hdf5_mdt_real);
+                                  THDF5_File::REAL);
   HDF5_File.WriteMatrixDataType  (HDF5_GroupId,
                                   HDF5_DatasetName,
-                                  THDF5_File::hdf5_mdt_float);
+                                  THDF5_File::FLOAT);
 
   return HDF5_DatasetId;
 }//end of CreateCuboidDatasets

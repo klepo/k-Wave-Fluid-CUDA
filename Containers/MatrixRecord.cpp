@@ -45,7 +45,7 @@
  */
 TMatrixRecord::TMatrixRecord() :
         matrixPtr(nullptr),
-        dataType(mdtReal),
+        dataType(REAL),
         dimensionSizes(),
         loadData(false),
         checkpoint(false),
@@ -57,7 +57,7 @@ TMatrixRecord::TMatrixRecord() :
 
 /**
  * Copy constructor of TMatrixRecord.
- * @param [in] src - matrix record to be copied from.
+ * @param [in] src - Source
  */
 TMatrixRecord::TMatrixRecord(const TMatrixRecord& src) :
         matrixPtr(src.matrixPtr),
@@ -74,8 +74,8 @@ TMatrixRecord::TMatrixRecord(const TMatrixRecord& src) :
 
 /**
  * operator = of TMatrixRecord.
- * @param [in] src - source object
- * @return a filled object
+ * @param [in] src - Source object
+ * @return A filled object
  */
 TMatrixRecord& TMatrixRecord::operator = (const TMatrixRecord& src)
 {

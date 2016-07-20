@@ -125,7 +125,7 @@ class TMatrixContainer
      * @brief   operator []
      * @details operator []
      * @param [in]  matrixIdx - Matrix identifier
-     * @return the matrix record
+     * @return Matrix record
      */
     inline TMatrixRecord& operator [] (const TMatrixIdx matrixIdx)
     {
@@ -137,7 +137,7 @@ class TMatrixContainer
      * @details This template routine returns the reference to the matrix re-casted to the specific
      *          class type.
      * @param [in] matrixIdx - Matrix identifier
-     * @return     reference to the Matrix
+     * @return     Reference to the Matrix
      */
     template <typename T>
     inline T& GetMatrix(const TMatrixIdx matrixIdx)
