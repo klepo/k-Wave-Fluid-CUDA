@@ -98,16 +98,16 @@ TCommandLineParameters::TCommandLineParameters() :
  */
 void TCommandLineParameters::PrintUsage()
 {
-  TLogger::Log(TLogger::Basic, OUT_FMT_UsagePart1);
+  TLogger::Log(TLogger::BASIC, OUT_FMT_USAGE_PART_1);
 
   #ifdef _OPENMP
-    TLogger::Log(TLogger::Basic,
-                 OUT_FMT_UsageThreads,
+    TLogger::Log(TLogger::BASIC,
+                 OUT_FMT_USAGE_THREADS,
                  omp_get_num_procs());
   #endif
 
-  TLogger::Log(TLogger::Basic,
-               OUT_FMT_UsagePart2,
+  TLogger::Log(TLogger::BASIC,
+               OUT_FMT_USAGE_PART_2,
                DefaultProgressPrintInterval,
                DefaultCompressionLevel);
 }// end of PrintUsage
@@ -118,53 +118,53 @@ void TCommandLineParameters::PrintUsage()
  */
 void TCommandLineParameters::PrintComandlineParamers()
 {
-  TLogger::Log(TLogger::Advanced,OUT_FMT_Separator);
+  TLogger::Log(TLogger::ADVANCED,OUT_FMT_SEPARATOR);
 
-  TLogger::Log(TLogger::Advanced,
-               TLogger::WordWrapString(OUT_FMT_InputFile + InputFileName,
-                                       ERR_FMTPathDelimiters,
+  TLogger::Log(TLogger::ADVANCED,
+               TLogger::WordWrapString(OUT_FMT_INPUT_FILE + InputFileName,
+                                       ERR_FMT_PATH_DELIMITERS,
                                        15).c_str());
 
-  TLogger::Log(TLogger::Advanced,
-               TLogger::WordWrapString(OUT_FMT_OutputFile + OutputFileName,
-                                       ERR_FMTPathDelimiters,
+  TLogger::Log(TLogger::ADVANCED,
+               TLogger::WordWrapString(OUT_FMT_OUTPUT_FILE + OutputFileName,
+                                       ERR_FMT_PATH_DELIMITERS,
                                        15).c_str());
 
 
   if (IsCheckpointEnabled())
   {
-    TLogger::Log(TLogger::Advanced,
-                 TLogger::WordWrapString(OUT_FMT_CheckpointFile + CheckpointFileName,
-                                         ERR_FMTPathDelimiters,
+    TLogger::Log(TLogger::ADVANCED,
+                 TLogger::WordWrapString(OUT_FMT_CHECKPOINT_FILE + CheckpointFileName,
+                                         ERR_FMT_PATH_DELIMITERS,
                                          15).c_str());
 
-    TLogger::Log(TLogger::Advanced,OUT_FMT_Separator);
+    TLogger::Log(TLogger::ADVANCED,OUT_FMT_SEPARATOR);
 
-    TLogger::Log(TLogger::Advanced,
-                 OUT_FMT_CheckpointInterval,
+    TLogger::Log(TLogger::ADVANCED,
+                 OUT_FMT_CHECKPOINT_INTERVAL,
                  CheckpointInterval);
   }
   else
   {
-    TLogger::Log(TLogger::Advanced,OUT_FMT_Separator);
+    TLogger::Log(TLogger::ADVANCED,OUT_FMT_SEPARATOR);
   }
 
 
-  TLogger::Log(TLogger::Advanced,
-               OUT_FMT_CompressionLevel,
+  TLogger::Log(TLogger::ADVANCED,
+               OUT_FMT_COMPRESSION_LEVEL,
                CompressionLevel);
 
-  TLogger::Log(TLogger::Full,
-               OUT_FMT_PrintProgressInterval,
+  TLogger::Log(TLogger::FULL,
+               OUT_FMT_PRINT_PROGRESS_INTERVAL,
                ProgressPrintInterval);
 
   if (BenchmarkFlag)
-  TLogger::Log(TLogger::Full,
-               OUT_FMT_BenchmarkTimeStepCount,
+  TLogger::Log(TLogger::FULL,
+               OUT_FMT_BENCHMARK_TIME_STEP,
                BenchmarkTimeStepsCount);
 
 
-  TLogger::Log(TLogger::Advanced,OUT_FMT_QuantitySampling);
+  TLogger::Log(TLogger::ADVANCED,OUT_FMT_SAMPLING_FLAGS);
 
 
   std::string SampledQuantitiesList = "";
@@ -241,20 +241,20 @@ void TCommandLineParameters::PrintComandlineParamers()
     SampledQuantitiesList.pop_back();
   }
 
-  TLogger::Log(TLogger::Advanced,
+  TLogger::Log(TLogger::ADVANCED,
                TLogger::WordWrapString(SampledQuantitiesList,
                                        " ",2).c_str());
 
-  TLogger::Log(TLogger::Advanced,OUT_FMT_Separator);
+  TLogger::Log(TLogger::ADVANCED,OUT_FMT_SEPARATOR);
 
-  TLogger::Log(TLogger::Advanced,
-              OUT_FMT_SamplingBeginsAt,
+  TLogger::Log(TLogger::ADVANCED,
+              OUT_FMT_SAMPLING_BEGINS_AT,
               StartTimeStep+1);
 
   if (CopySensorMask)
   {
-    TLogger::Log(TLogger::Advanced,
-                 OUT_FMT_CopySensorMaskYes);
+    TLogger::Log(TLogger::ADVANCED,
+                 OUT_FMT_COPY_SENSOR_MASK);
   }
 }// end of PrintSetup
 //------------------------------------------------------------------------------
@@ -331,7 +331,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         else
         {
           PrintUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoInputFile,
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_INPUT_FILE,
                                                              " ",
                                                              ErrorLineIndentation).c_str());
         }
@@ -350,7 +350,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         else
         {
           PrintUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoOutputFile,
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_OUTPUT_FILE,
                                                              " ",
                                                              ErrorLineIndentation).c_str());
         }
@@ -371,7 +371,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         catch (...)
         {
           PrintUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoProgressPrintIntreval,
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(FMT_NO_PROGRESS_PRINT_INTERVAL,
                                                              " ",
                                                              ErrorLineIndentation).c_str());
         }
@@ -391,7 +391,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         catch (...)
         {
           PrintUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoThreadNumbers,
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_THREAD_NUMBER,
                                                              " ",
                                                              ErrorLineIndentation).c_str());
         }
@@ -411,7 +411,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         catch (...)
         {
           PrintUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoGPUNumber,
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_GPU_NUMBER,
                                                              " ",
                                                              ErrorLineIndentation).c_str());
         }
@@ -432,7 +432,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         catch (...)
         {
           PrintUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCompressionLevel,
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_COMPRESSION_LEVEL,
                                                              " ",
                                                              ErrorLineIndentation).c_str());
         }
@@ -458,7 +458,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         catch (...)
         {
           PrintUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoStartTimestep,
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_START_TIME_STEP,
                                                              " ",
                                                              ErrorLineIndentation).c_str());
         }
@@ -479,7 +479,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         catch (...)
         {
           PrintUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoBenchmarkTimeStepCount,
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_BENCHMARK_STEP_SET,
                                                              " ",
                                                              ErrorLineIndentation).c_str());
         }
@@ -505,7 +505,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         else
         {
           PrintUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCheckpointFile,
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_FILE,
                                                              " ",
                                                              ErrorLineIndentation).c_str());
         }
@@ -526,7 +526,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         catch (...)
         {
           PrintUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCheckpointInterval,
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_INTERVAL,
                                                              " ",
                                                              ErrorLineIndentation).c_str());
         }
@@ -547,7 +547,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         catch (...)
         {
           PrintUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_BadVerboseLevel,
+          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_VERBOSE_LEVEL,
                                                              " ",
                                                              ErrorLineIndentation).c_str());
         }
@@ -659,7 +659,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           case 'i':
           {
             PrintUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoInputFile,
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_INPUT_FILE,
                                                                " ",
                                                                ErrorLineIndentation).c_str());
             break;
@@ -667,7 +667,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           case 'o':
           {
             PrintUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoOutputFile,
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_OUTPUT_FILE,
                                                                " ",
                                                                ErrorLineIndentation).c_str());
             break;
@@ -676,7 +676,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           case 'r':
           {
             PrintUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoProgressPrintIntreval,
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(FMT_NO_PROGRESS_PRINT_INTERVAL,
                                                                " ",
                                                                ErrorLineIndentation).c_str());
             break;
@@ -685,7 +685,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           case 'c':
           {
             PrintUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCompressionLevel,
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_COMPRESSION_LEVEL,
                                                                " ",
                                                                ErrorLineIndentation).c_str());
             break;
@@ -694,7 +694,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           case 't':
           {
             PrintUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoThreadNumbers,
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_THREAD_NUMBER,
                                                                " ",
                                                                ErrorLineIndentation).c_str());
             break;
@@ -703,7 +703,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           case 'g':
           {
             PrintUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoGPUNumber,
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_GPU_NUMBER,
                                                                " ",
                                                                ErrorLineIndentation).c_str());
             break;
@@ -712,7 +712,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           case 's':
           {
             PrintUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoStartTimestep,
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_START_TIME_STEP,
                                                                " ",
                                                                ErrorLineIndentation).c_str());
             break;
@@ -721,7 +721,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           case 1: // benchmark
           {
             PrintUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoBenchmarkTimeStepCount,
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_BENCHMARK_STEP_SET,
                                                                " ",
                                                                ErrorLineIndentation).c_str());
             break;
@@ -730,7 +730,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           case 3: // checkpoint_file
           {
             PrintUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCheckpointFile,
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_FILE,
                                                                " ",
                                                                ErrorLineIndentation).c_str());
             break;
@@ -739,7 +739,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           case 4: // checkpoint_interval
           {
             PrintUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCheckpointInterval,
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_INTERVAL,
                                                                " ",
                                                                ErrorLineIndentation).c_str());
             break;
@@ -748,7 +748,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           case 5: // verbose
           {
             PrintUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_BadVerboseLevel,
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_VERBOSE_LEVEL,
                                                                " ",
                                                                ErrorLineIndentation).c_str());
             break;
@@ -757,7 +757,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           default :
           {
             PrintUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_UnknownParameterOrMissingArgument,
+            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_UNKNOW_PARAMETER_OR_ARGUMENT,
                                                                " ",
                                                                ErrorLineIndentation).c_str());
             break;
@@ -768,7 +768,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
       default:
       {
         PrintUsage();
-        TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_UnknownParameter,
+        TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_UNKNOWN_PARAMETER,
                                                            " ",
                                                            ErrorLineIndentation).c_str());
         break;
@@ -782,7 +782,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
   if (InputFileName == "")
   {
     PrintUsage();
-    TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoInputFile,
+    TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_INPUT_FILE,
                                                        " ",
                                                        ErrorLineIndentation).c_str());
   }
@@ -790,7 +790,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
   if (OutputFileName == "")
   {
     PrintUsage();
-    TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoOutputFile,
+    TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_OUTPUT_FILE,
                                                        " ",
                                                        ErrorLineIndentation).c_str());
   }
@@ -800,7 +800,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
     if (CheckpointFileName == "")
     {
       PrintUsage();
-      TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCheckpointFile,
+      TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_FILE,
                                                          " ",
                                                          ErrorLineIndentation).c_str());
     }
@@ -808,7 +808,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
     if (CheckpointInterval <= 0)
     {
       PrintUsage();
-      TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NoCheckpointInterval,
+      TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_INTERVAL,
                                                          " ",
                                                          ErrorLineIndentation).c_str());
     }

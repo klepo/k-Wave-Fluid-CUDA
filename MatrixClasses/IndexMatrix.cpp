@@ -86,7 +86,7 @@ void TIndexMatrix::ReadDataFromHDF5File(THDF5_File& HDF5_File,
           THDF5_File::LONG)
   {
       char ErrorMessage[256];
-      snprintf(ErrorMessage, 256, Matrix_ERR_FMT_MatrixNotLong,MatrixName);
+      snprintf(ErrorMessage, 256, ERR_FMT_MATRIX_NOT_INDEX,MatrixName);
       throw ios::failure(ErrorMessage);
   }
 
@@ -94,7 +94,7 @@ void TIndexMatrix::ReadDataFromHDF5File(THDF5_File& HDF5_File,
           THDF5_File::REAL)
   {
     char ErrorMessage[256];
-    snprintf(ErrorMessage, 256, Matrix_ERR_FMT_MatrixNotReal,MatrixName);
+    snprintf(ErrorMessage, 256, ERR_FMT_MATRIX_NOT_REAL,MatrixName);
     throw ios::failure(ErrorMessage);
   }
 

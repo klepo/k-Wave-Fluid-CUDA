@@ -75,21 +75,21 @@ cufftHandle TCUFFTComplexMatrix::cufft_plan_1DZ_C2R = static_cast<cufftHandle>(N
  */
 std::map<cufftResult, TErrorMessage> TCUFFTComplexMatrix::cuFFTErrorMessages
 {
-  {CUFFT_INVALID_PLAN             , CUFFTComplexMatrix_ERR_FMT_INVALID_PLAN},
-  {CUFFT_ALLOC_FAILED             , CUFFTComplexMatrix_ERR_FMT_CUFFT_ALLOC_FAILED},
-  {CUFFT_INVALID_TYPE             , CUFFTComplexMatrix_ERR_FMT_CUFFT_INVALID_TYPE},
-  {CUFFT_INVALID_VALUE            , CUFFTComplexMatrix_ERR_FMT_CUFFT_INVALID_VALUE},
-  {CUFFT_INTERNAL_ERROR           , CUFFTComplexMatrix_ERR_FMT_CUFFT_INVALID_VALUE},
-  {CUFFT_EXEC_FAILED              , CUFFTComplexMatrix_ERR_FMT_CUFFT_EXEC_FAILED},
-  {CUFFT_SETUP_FAILED             , CUFFTComplexMatrix_ERR_FMT_CUFFT_SETUP_FAILED},
-  {CUFFT_INVALID_SIZE             , CUFFTComplexMatrix_ERR_FMT_CUFFT_INVALID_SIZE},
-  {CUFFT_UNALIGNED_DATA           , CUFFTComplexMatrix_ERR_FMT_CUFFT_UNALIGNED_DATA},
-  {CUFFT_INCOMPLETE_PARAMETER_LIST, CUFFTComplexMatrix_ERR_FMT_CUFFT_INCOMPLETE_PARAMETER_LIST},
-  {CUFFT_INVALID_DEVICE           , CUFFTComplexMatrix_ERR_FMT_CUFFT_INVALID_DEVICE},
-  {CUFFT_PARSE_ERROR              , CUFFTComplexMatrix_ERR_FMT_CUFFT_PARSE_ERROR},
-  {CUFFT_NO_WORKSPACE             , CUFFTComplexMatrix_ERR_FMT_CUFFT_NO_WORKSPACE},
-  {CUFFT_NOT_IMPLEMENTED          , CUFFTComplexMatrix_ERR_FMT_CUFFT_NOT_IMPLEMENTED},
-  {CUFFT_LICENSE_ERROR            , CUFFTComplexMatrix_ERR_FMT_CUFFT_LICENSE_ERROR}
+  {CUFFT_INVALID_PLAN             , ERR_FMT_CUFFT_INVALID_PLAN},
+  {CUFFT_ALLOC_FAILED             , ERR_FMT_CUFFT_ALLOC_FAILED},
+  {CUFFT_INVALID_TYPE             , ERR_FMT_CUFFT_INVALID_TYPE},
+  {CUFFT_INVALID_VALUE            , ERR_FMT_CUFFT_INVALID_VALUE},
+  {CUFFT_INTERNAL_ERROR           , ERR_FMT_CUFFT_INVALID_VALUE},
+  {CUFFT_EXEC_FAILED              , ERR_FMT_CUFFT_EXEC_FAILED},
+  {CUFFT_SETUP_FAILED             , eRR_FMT_CUFFT_SETUP_FAILED},
+  {CUFFT_INVALID_SIZE             , ERR_FMT_CUFFT_INVALID_SIZE},
+  {CUFFT_UNALIGNED_DATA           , ERR_FMT_CUFFT_UNALIGNED_DATA},
+  {CUFFT_INCOMPLETE_PARAMETER_LIST, ERR_FMT_CUFFT_INCOMPLETE_PARAMETER_LIST},
+  {CUFFT_INVALID_DEVICE           , ERR_FMT_CUFFT_INVALID_DEVICE},
+  {CUFFT_PARSE_ERROR              , ERR_FMT_CUFFT_PARSE_ERROR},
+  {CUFFT_NO_WORKSPACE             , ERR_FMT_CUFFT_NO_WORKSPACE},
+  {CUFFT_NOT_IMPLEMENTED          , eRR_FMT_CUFFT_NOT_IMPLEMENTED},
+  {CUFFT_LICENSE_ERROR            , ERR_FMT_CUFFT_LICENSE_ERROR}
 };
 //-------------------------------------------------------------------------------
 
@@ -724,7 +724,7 @@ void TCUFFTComplexMatrix::ThrowCUFFTException(const cufftResult cufftError,
   }
   else // unknown error
   {
-    snprintf(ErrorMessage, 256, CUFFTComplexMatrix_ERR_FMT_CUFFT_UNKNOWN_ERROR, TransformTypeName);
+    snprintf(ErrorMessage, 256, ERR_FMT_CUFFT_UNKNOWN_ERROR, TransformTypeName);
   }
 
   // Throw exception

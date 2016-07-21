@@ -97,15 +97,15 @@ void TParameters::Init(int argc, char** argv)
 
   if (GetGitHash() != "")
   {
-    TLogger::Log(TLogger::Full, TParamereres_OUT_FMT_GitHash, GetGitHash().c_str());
-    TLogger::Log(TLogger::Full, OUT_FMT_Separator);
+    TLogger::Log(TLogger::FULL, OUT_FMT_GIT_HASH_LEFT, GetGitHash().c_str());
+    TLogger::Log(TLogger::FULL, OUT_FMT_SEPARATOR);
   }
   if (CommandLinesParameters.IsVersion())
   {
     return;
   }
 
-  TLogger::Log(TLogger::Basic, OUT_FMT_ReadingConfiguration);
+  TLogger::Log(TLogger::BASIC, OUT_FMT_READING_CONFIGURATION);
   ReadScalarsFromHDF5InputFile(HDF5_InputFile);
 
   if (CommandLinesParameters.IsBenchmarkFlag())
@@ -119,13 +119,13 @@ void TParameters::Init(int argc, char** argv)
      char ErrorMessage[256];
      snprintf(ErrorMessage,
               256,
-              Parameters_ERR_FMT_Illegal_StartTime_value,
+              ERR_FMT_ILLEGAL_START_TIME_VALUE,
               1l,
               Nt);
     throw std::invalid_argument(ErrorMessage);
   }
 
-  TLogger::Log(TLogger::Basic, OUT_FMT_Done);
+  TLogger::Log(TLogger::BASIC, OUT_FMT_DONE);
 }// end of ParseCommandLine
 //----------------------------------------------------------------------------
 
@@ -135,20 +135,20 @@ void TParameters::Init(int argc, char** argv)
  */
 void TParameters::SelectDevice()
 {
-  TLogger::Log(TLogger::Basic,
-               OUT_FMT_SelectedDeviceId);
-  TLogger::Flush(TLogger::Basic);
+  TLogger::Log(TLogger::BASIC,
+               OUT_FMT_SELECTED_DEVICE);
+  TLogger::Flush(TLogger::BASIC);
 
   int DeviceIdx = CommandLinesParameters.GetGPUDeviceIdx();
   CUDAParameters.SelectDevice(DeviceIdx); // throws an exception when wrong
 
-  TLogger::Log(TLogger::Basic,
-               OUT_FMT_DeviceId,
+  TLogger::Log(TLogger::BASIC,
+               OUT_FMT_DEVICE_ID,
                CUDAParameters.GetDeviceIdx());
 
 
-  TLogger::Log(TLogger::Basic,
-               OUT_FMT_DeviceName,
+  TLogger::Log(TLogger::BASIC,
+               OUT_FMT_DEVICE_NAME,
                CUDAParameters.GetDeviceName().c_str());
 
 }// end of SelectDevice
@@ -160,25 +160,25 @@ void TParameters::SelectDevice()
  */
 void TParameters::PrintSimulatoinSetup()
 {
-  TLogger::Log(TLogger::Basic,
-               OUT_FMT_NumberOfThreads,
+  TLogger::Log(TLogger::BASIC,
+               OUT_FMT_NUMBER_OF_THREADS,
                GetNumberOfThreads());
 
-  TLogger::Log(TLogger::Basic,  OUT_FMT_SimulationDetailsTitle);
+  TLogger::Log(TLogger::BASIC,  OUT_FMT_SIMULATION_DETAIL_TITLE);
 
 
   char DomainsSizeText[48];
-  snprintf(DomainsSizeText, 48, OUT_FMT_DomainSizeFormat,
+  snprintf(DomainsSizeText, 48, OUT_FMT_DOMAIN_SIZE_FORMAT,
           GetFullDimensionSizes().X,
           GetFullDimensionSizes().Y,
           GetFullDimensionSizes().Z );
   // Print simulation size
-  TLogger::Log(TLogger::Basic,
-               OUT_FMT_DomainSize,
+  TLogger::Log(TLogger::BASIC,
+               OUT_FMT_DOMAIN_SIZE,
                DomainsSizeText);
 
-  TLogger::Log(TLogger::Basic,
-               OUT_FMT_SimulationLength,
+  TLogger::Log(TLogger::BASIC,
+               OUT_FMT_SIMULATION_LENGTH,
                Get_Nt());
 
   // Print all command line parameters
@@ -186,11 +186,11 @@ void TParameters::PrintSimulatoinSetup()
 
   if (Get_sensor_mask_type() == smt_index)
   {
-    TLogger::Log(TLogger::Advanced, OUT_FMT_SensorMaskTypeIndex);
+    TLogger::Log(TLogger::ADVANCED, OUT_FMT_SENSOR_MASK_INDEX);
   }
   if (Get_sensor_mask_type() == smt_corners)
   {
-    TLogger::Log(TLogger::Advanced, OUT_FMT_SensorMaskTypeCuboid);
+    TLogger::Log(TLogger::ADVANCED, OUT_FMT_SENSOR_MASK_CUBOID);
   }
 }// end of PrintParametersOfTask
 //------------------------------------------------------------------------------
@@ -220,7 +220,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
     char ErrorMessage[256] = "";
     snprintf(ErrorMessage,
              256,
-             Parameters_ERR_FMT_IncorrectInputFileFormat,
+             ERR_FMT_BAD_INPUT_FILE_FORMAT,
              GetInputFileName().c_str());
     throw ios::failure(ErrorMessage);
   }
@@ -231,7 +231,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
     char ErrorMessage[256] = "";
     snprintf(ErrorMessage,
              256,
-             Parameters_ERR_FMT_IncorrectMajorHDF5FileVersion,
+             ERR_FMT_BAD_MAJOR_File_Version,
              GetInputFileName().c_str(),
              HDF5_FileHeader.GetCurrentHDF5_MajorVersion().c_str());
     throw ios::failure(ErrorMessage);
@@ -242,7 +242,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
     char ErrorMessage[256] = "";
     snprintf(ErrorMessage,
              256,
-             Parameters_ERR_FMT_IncorrectMinorHDF5FileVersion,
+             ERR_FMT_BAD_MINOR_FILE_VERSION,
              GetInputFileName().c_str(),
              HDF5_FileHeader.GetCurrentHDF5_MinorVersion().c_str());
     throw ios::failure(ErrorMessage);
@@ -288,7 +288,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
     //if -u_non_staggered_raw enabled, throw an error - not supported
     if (IsStore_u_non_staggered_raw())
     {
-      throw ios::failure(Parameters_ERR_FMT_UNonStaggeredNotSupportedForFile10);
+      throw ios::failure(ERR_FMT_U_NON_STAGGERED_NOT_SUPPORTED_FILE_VERSION);
     }
   }// version 1.0
 
@@ -314,7 +314,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
       }
       default:
       {
-        throw ios::failure(Parameters_ERR_FMT_WrongSensorMaskType);
+        throw ios::failure(ERR_FMT_BAD_SENSOR_MASK_TYPE);
         break;
       }
     }//case
@@ -397,7 +397,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
     HDF5_InputFile.ReadScalarValue(HDF5RootGroup, alpha_power_Name, alpha_power);
     if (alpha_power == 1.0f)
     {
-      throw std::invalid_argument(Parameters_ERR_FMT_Illegal_alpha_power_value);
+      throw std::invalid_argument(ERR_FMT_ILLEGAL_ALPHA_POWER_VALUE);
     }
 
     alpha_coeff_scalar_flag = HDF5_InputFile.GetDatasetDimensionSizes(HDF5RootGroup, alpha_coeff_Name) == ScalarSizes;

@@ -73,7 +73,7 @@ void TMatrixContainer::CreateMatrices()
   {
     if (it.second.matrixPtr != nullptr)
     { // the data is already allocated
-      CreateErrorAndThrowException(MatrixContainer_ERR_FMT_ReloactaionError,
+      CreateErrorAndThrowException(ERR_FMT_RELOCATION_ERROR,
                                    it.second.matrixName,
                                    __FILE__,  __LINE__);
     }
@@ -106,7 +106,7 @@ void TMatrixContainer::CreateMatrices()
 
       default: // unknown matrix type
       {
-        CreateErrorAndThrowException(MatrixContainer_ERR_FMT_RecordUnknownDistributionType,
+        CreateErrorAndThrowException(ERR_FMT_BAD_MATRIX_DISTRIBUTION_TYPE,
                                      it.second.matrixName,
                                      __FILE__, __LINE__);
         break;

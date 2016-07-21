@@ -142,7 +142,7 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
 
     if (!DeviceFound)
     {
-      throw std::runtime_error(CUDAParameters_ERR_FMT_NoFreeDevice);
+      throw std::runtime_error(ERR_FMT_NO_FREE_DEVICE);
     }
   }
   else // select a device the user wants
@@ -152,7 +152,7 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
     if ((this->DeviceIdx > NumOfDevices - 1) || (this->DeviceIdx < 0))
     {
       char ErrorMessage[256];
-      snprintf(ErrorMessage, 256, CUDAParameters_ERR_FMT_WrongDeviceIdx, this->DeviceIdx, NumOfDevices-1);
+      snprintf(ErrorMessage, 256, eRR_FMT_BAD_DEVICE_IDX, this->DeviceIdx, NumOfDevices-1);
       // Throw exception
       throw std::runtime_error(ErrorMessage);
      }
@@ -170,7 +170,7 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
       lastError = cudaDeviceReset();
 
       char ErrorMessage[256];
-      snprintf(ErrorMessage, 256, CUDAParameters_ERR_FMT_DeviceIsBusy, this->DeviceIdx);
+      snprintf(ErrorMessage, 256, ERR_FMT_DEVICE_IS_BUSY, this->DeviceIdx);
       throw std::runtime_error(ErrorMessage);
     }
   }
@@ -193,7 +193,7 @@ void TCUDAParameters::SelectDevice(const int DeviceIdx)
   if (!CheckCUDACodeVersion())
   {
     char ErrorMessage[256];
-    snprintf(ErrorMessage,256, CUDAParameters_ERR_FM_GPUNotSupported, this->DeviceIdx);
+    snprintf(ErrorMessage,256, ERR_FMT_GPU_NOT_SUPPORTED, this->DeviceIdx);
     throw std::runtime_error(ErrorMessage);
   }
 }// end of SelectCUDADevice
@@ -335,12 +335,12 @@ void TCUDAParameters::CheckCUDAVersion()
 
   if (cudaRuntimeGetVersion(&cudaRuntimeVersion) != cudaSuccess)
   {
-    throw std::runtime_error(CUDAParameters_ERR_FM_CannotReadCUDAVersion);
+    throw std::runtime_error(ERR_FM_CANNOT_READ_CUDA_VERSION);
   }
 
   if (cudaDriverGetVersion(&cudaDriverVersion) != cudaSuccess)
   {
-    throw std::runtime_error(CUDAParameters_ERR_FM_CannotReadCUDAVersion);
+    throw std::runtime_error(ERR_FM_CANNOT_READ_CUDA_VERSION);
   }
 
   if (cudaDriverVersion < cudaRuntimeVersion)
@@ -348,7 +348,7 @@ void TCUDAParameters::CheckCUDAVersion()
     char ErrorMessage[256];
     snprintf(ErrorMessage,
              256,
-             CUDAParameters_ERR_FMT_InsufficientCUDADriver,
+             ERR_FMT_INSUFFICIENT_CUDA_DRIVER,
              cudaRuntimeVersion / 1000, (cudaRuntimeVersion % 100) / 10,
              cudaDriverVersion  / 1000, (cudaDriverVersion  % 100) / 10);
     throw std::runtime_error(ErrorMessage);

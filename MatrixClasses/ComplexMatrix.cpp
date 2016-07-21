@@ -78,7 +78,7 @@ void TComplexMatrix::ReadDataFromHDF5File(THDF5_File & HDF5_File,
   if (HDF5_File.ReadMatrixDataType(HDF5_File.GetRootGroup(), MatrixName) != THDF5_File::FLOAT)
   {
     char ErrorMessage[256];
-    snprintf(ErrorMessage, 256, Matrix_ERR_FMT_MatrixNotFloat, MatrixName);
+    snprintf(ErrorMessage, 256, ERR_FMT_MATRIX_NOT_FLOAT, MatrixName);
     throw ios::failure(ErrorMessage);
   }
 
@@ -86,7 +86,7 @@ void TComplexMatrix::ReadDataFromHDF5File(THDF5_File & HDF5_File,
   if (HDF5_File.ReadMatrixDomainType(HDF5_File.GetRootGroup(), MatrixName) != THDF5_File::COMPLEX)
   {
     char ErrorMessage[256];
-    snprintf(ErrorMessage, 256, Matrix_ERR_FMT_MatrixNotComplex, MatrixName);
+    snprintf(ErrorMessage, 256, ERR_FMT_MATRIX_NOT_COMPLEX, MatrixName);
     throw ios::failure(ErrorMessage);
   }
 

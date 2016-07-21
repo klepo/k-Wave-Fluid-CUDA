@@ -9,26 +9,24 @@
  *              info and error messages (stdout, and stderr).
  *
  * @version     kspaceFirstOrder3D 3.4
+ *
  * @date        19 April    2016, 12:52 (created) \n
- *              18 July     2016, 13:35 (revised)
+ *              21 July     2016, 11:12 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
- * and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation, either version
- * 3 of the License, or (at your option) any later version.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
+ * If not, see http://www.gnu.org/licenses/.
  */
 
 #include <cstdarg>
@@ -39,196 +37,201 @@
 #include <Logger/OutputMessages.h>
 #include <Logger/ErrorMessages.h>
 
-
-//----------------------------------------------------------------------------//
-//------------------------------    Public     -------------------------------//
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//--------------------------------------- Public methods -----------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 /// static declaration of the LogLevel private field
-TLogger::TLogLevel TLogger::LogLevel = Basic;
+TLogger::TLogLevel TLogger::logLevel = BASIC;
 
 
 /**
- * Initialise/change logging level
- * @param [in] ActualLogLevel
+ * Initialise or change logging level.
+ *
+ * @param [in] actualLogLevel - Log level for the logger
  */
-void TLogger::SetLevel(const TLogLevel ActualLogLevel)
+void TLogger::SetLevel(const TLogLevel actualLogLevel)
 {
-  LogLevel = ActualLogLevel;
+  logLevel = actualLogLevel;
 }/// end of SetLevel
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 /**
- * Log desired activity
- * @param [in] QueryLevel - Log level of the message
- * @param [in] Format     - Format of the message
- * @param ...           - other parameters
+ * Log desired activity.
+ *
+ * @param [in] queryLevel - Log level of the message
+ * @param [in] format     - Format of the message
+ * @param ...             - other parameters of the message
  */
-void TLogger::Log(const TLogLevel QueryLevel,
-                  const char*     Format,
+void TLogger::Log(const TLogLevel queryLevel,
+                  const char*     format,
                   ...)
 {
-  if (QueryLevel <= TLogger::LogLevel )
+  if (queryLevel <= TLogger::logLevel)
   {
     va_list args;
-    va_start(args, Format);
-    vfprintf(stdout, Format, args);
+    va_start(args, format);
+    vfprintf(stdout, format, args);
     va_end(args);
   }
 }// end of Log
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
- * Log an error
- * @param [in] Format - Format of the message
- * @param ...
+ * Log an error.
+ *
+ * @param [in] format - Format of the error message
+ * @param ...         - Other parameters of the error message
  */
-void TLogger::Error(const char* Format,
+void TLogger::Error(const char* format,
                     ...)
 {
   fprintf(stderr, ERR_FMT_HEAD);
 
   va_list args;
-  va_start(args, Format);
-  vfprintf(stderr, Format, args);
+  va_start(args, format);
+  vfprintf(stderr, format, args);
   va_end(args);
 
   fprintf(stderr, ERR_FMT_TAIL);
 }// end of Error
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
- * Log an error and Terminate
- * @param [in] Format - Format of the message
- * @param ...
+ * Log an error and terminate the execution.
+ *
+ * @param [in] format - Format of the error message
+ * @param ...         - Other parameters of the error message
  */
-void TLogger::ErrorAndTerminate(const char* Format,
+void TLogger::ErrorAndTerminate(const char* format,
                                  ...)
 {
   fprintf(stderr, ERR_FMT_HEAD);
 
   va_list args;
-  va_start(args, Format);
-  vfprintf(stderr, Format, args);
+  va_start(args, format);
+  vfprintf(stderr, format, args);
   va_end(args);
 
   fprintf(stderr, ERR_FMT_TAIL);
 
   exit(EXIT_FAILURE);
 }// end of ErrorAndTerminate
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
- * Flush logger
- * @param [in] QueryLevel - Log level of the flush
+ * Flush logger, output messages only.
+ *
+ * @param [in] queryLevel - Log level of the flush
  */
-void TLogger::Flush(const TLogLevel QueryLevel)
+void TLogger::Flush(const TLogLevel queryLevel)
 {
-  if (QueryLevel <= TLogger::LogLevel)
+  if (queryLevel <= TLogger::logLevel)
   {
     fflush(stdout);
   }
 }// end of Flush
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 /**
- * Wrap the line and based on delimiters and align it with the rest of
- * the logger output
- * @param [in] InputString - input string
- * @param [in] Delimiters  - string of delimiters, every char is a delimiter
- * @param [in] Indentation - indentation from the beginning
- * @param [in] LineSize    - line size
- * @return wrapped string
+ * Wrap the line based on delimiters and align it with the rest of the logger output.
  *
- * @note The string must not contain \t and \n characters
+ * @param [in] inputString - Input string
+ * @param [in] delimiters  - String of delimiters, every char is a delimiter
+ * @param [in] indentation - Indentation from the beginning
+ * @param [in] LineSize    - Line size
+ * @return Wrapped string
+ *
+ * @note The string must not contain tabulator and end-of-line characters.
  */
-std::string TLogger::WordWrapString(const std::string& InputString,
-                                    const std::string& Delimiters,
-                                    const int          Indentation,
-                                    const int          LineSize)
+std::string TLogger::WordWrapString(const std::string& inputString,
+                                    const std::string& delimiters,
+                                    const int          indentation,
+                                    const int          lineSize)
 {
-  std::istringstream TextStream(InputString);
-  std::string WrappedText;
-  std::string Word;
-  std::string IndentationString = OUT_FMT_VerticalLine;
+  std::istringstream textStream(inputString);
+  std::string wrappedText;
+  std::string word;
+  std::string indentationString = OUT_FMT_VERTICAL_LINE;
 
 
   // create indentation
-  for (int i = 0; i < Indentation - 1; i++)
+  for (int i = 0; i < indentation - 1; i++)
   {
-    IndentationString += ' ';
+    indentationString += ' ';
   }
 
-  WrappedText += std::string(OUT_FMT_VerticalLine) + " ";
-  int SpaceLeft = LineSize - 2;
+  wrappedText += std::string(OUT_FMT_VERTICAL_LINE) + " ";
+  int spaceLeft = lineSize - 2;
 
   // until the text is empty
-  while (TextStream.good())
+  while (textStream.good())
   {
-    Word = GetWord(TextStream, Delimiters);
-    if (SpaceLeft < (int) Word.length() + 3)
+    word = GetWord(textStream, delimiters);
+    if (spaceLeft < (int) word.length() + 3)
     { // fill the end of the line
-      for ( ; SpaceLeft > 2; SpaceLeft--)
+      for ( ; spaceLeft > 2; spaceLeft--)
       {
-        WrappedText += " ";
+        wrappedText += " ";
       }
-      WrappedText += " "+ std::string(OUT_FMT_VerticalLine) +"\n" + IndentationString + Word;
-      SpaceLeft = LineSize - (Word.length() + Indentation);
+      wrappedText += " " + std::string(OUT_FMT_VERTICAL_LINE) + "\n" + indentationString + word;
+      spaceLeft = lineSize - (word.length() + indentation);
     }
     else
     {
       // add the word at the same line
-      WrappedText += Word;
-      SpaceLeft -= Word.length();
+      wrappedText += word;
+      spaceLeft -= word.length();
 
       char c;
-      if (TextStream.get(c).good())
+      if (textStream.get(c).good())
       {
-        WrappedText += c;
-        SpaceLeft--;
+        wrappedText += c;
+        spaceLeft--;
       }
     }
   }
 
   // fill the last line
-  for ( ; SpaceLeft > 2; SpaceLeft--)
+  for ( ; spaceLeft > 2; spaceLeft--)
   {
-    WrappedText += " ";
+    wrappedText += " ";
   }
-  WrappedText += " "+ std::string(OUT_FMT_VerticalLine) + "\n";
+  wrappedText += " "+ std::string(OUT_FMT_VERTICAL_LINE) + "\n";
 
-  return WrappedText;
+  return wrappedText;
 }// end of WordWrapFileName
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------//
-//------------------------------    Private    -------------------------------//
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//--------------------------------------- Private methods ----------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 /**
- * Extract a word from a string stream based on delimiters
- * @param [in,out] TextStream - Input text stream
- * @param [in]     Delimiters - list of delimiters as a single string
- * @return         a word firm the string
+ * Extract a word from a string stream based on delimiters.
+ *
+ * @param [in,out] textStream - Input text stream
+ * @param [in]     delimiters - List of delimiters as a single string
+ * @return         A word firm the string
  */
-std::string TLogger::GetWord(std::istringstream& TextStream,
-                             const std::string&  Delimiters)
+std::string TLogger::GetWord(std::istringstream& textStream,
+                             const std::string&  delimiters)
 {
-  std::string Word = "";
+  std::string word = "";
   char c;
 
-  while (TextStream.get(c))
+  while (textStream.get(c))
   {
-    if (Delimiters.find(c) != std::string::npos)
+    if (delimiters.find(c) != std::string::npos)
     {
-      TextStream.unget();
+      textStream.unget();
       break;
     }
-    Word += c;
+    word += c;
   }
 
-  return Word;
+  return word;
 }// end of GetWord
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
