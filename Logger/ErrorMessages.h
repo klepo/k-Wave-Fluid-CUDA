@@ -138,7 +138,7 @@ TErrorMessage  ERR_FMT_MATRIX_NOT_INDEX
         = "Error: Matrix [%s] data type is not unsigned long.";
 
 
-//--------------------------------- Matrix Container  ------------------------//
+//-------------------------------------- Matrix Container ----------------------------------------//
 
 /// Matrix container error message
 TErrorMessage  ERR_FMT_BAD_MATRIX_DISTRIBUTION_TYPE =
@@ -315,7 +315,9 @@ TErrorMessage ERR_FMT_GPU_NOT_SUPPORTED
         = "Error: CUDA device id %d is not supported by this k-Wave build.";
 
 
-//------------------------------ CheckErrors header --------------------------//
+//------------------------------------- CheckErrors header ---------------------------------------//
+
+        /// CUDAParameters error message
 TErrorMessage ERR_FMT_GPU_ERROR
         = "GPU error: %s routine name: %s in file %s, line %d.";
 
@@ -361,14 +363,11 @@ inline void CheckErrors(const cudaError_t errorCode,
 //--------------------------------------------------------------------------------------------------
 
 /**
- * @brief Macro checking cuda errors and printing the file name and line
+ * @brief Macro checking cuda errors and printing the file name and line. Inspired by CUDA common
+ *        checking routines.
  */
 #define checkCudaErrors(val) CheckErrors ( (val), #val, __FILE__, __LINE__ )
 
 
 
 #endif	/* ERROR_MESSAGES_H */
-
-
-
-

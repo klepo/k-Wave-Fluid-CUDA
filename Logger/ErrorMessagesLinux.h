@@ -35,7 +35,8 @@
 
 /**
  * @typedef TErrorMessage
- * @brief Datatype for error messages
+ * @brief   Datatype for error messages.
+ * @details Datatype for error messages.
  */
 typedef const char * const TErrorMessage;
 

@@ -34,7 +34,8 @@
 
 /**
  * @typedef TOutputMessage
- * @brief Datatype for output messages
+ * @brief   Datatype for output messages.
+ * @details Datatype for output messages.
  */
 typedef const char* const TOutputMessage;
 

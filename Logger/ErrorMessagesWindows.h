@@ -43,7 +43,8 @@
 
 /**
  * @typedef TErrorMessage
- * @brief Datatype for error messages
+ * @brief   Datatype for error messages.
+ * @details Datatype for error messages.
  */
 typedef const char * const TErrorMessage;
 
@@ -53,7 +54,7 @@ TErrorMessage ERR_FMT_HEAD =
         "|            !!! K-Wave experienced a fatal error !!!           |\n"
         "+---------------------------------------------------------------+\n";
 
-        /// Error message tailer
+/// Error message tailer
 TErrorMessage ERR_FMT_TAIL =
         "+---------------------------------------------------------------+\n"
         "|                      Execution terminated                     |\n"

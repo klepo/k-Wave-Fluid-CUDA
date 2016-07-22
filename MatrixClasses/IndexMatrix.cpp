@@ -9,26 +9,24 @@
  *              matrices.
  *
  * @version     kspaceFirstOrder3D 3.4
+ *
  * @date        26 July     2011, 15:16 (created) \n
- *              20 April    2016, 10:38 (revised)
+ *              22 July     2016, 13:49 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
- * and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation, either version
- * 3 of the License, or (at your option) any later version.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
+ * If not, see http://www.gnu.org/licenses/.
  */
 
 #include <iostream>
@@ -36,186 +34,209 @@
 #include <MatrixClasses/IndexMatrix.h>
 #include <Logger/ErrorMessages.h>
 
-//----------------------------------------------------------------------------//
-//                              Constants                                     //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//------------------------------------------ CONSTANTS -------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
-//----------------------------------------------------------------------------//
-//                              Definitions                                   //
-//----------------------------------------------------------------------------//
-
-//----------------------------------------------------------------------------//
-//                              Implementation                                //
-//                              public methods                                //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//--------------------------------------- Public methods -----------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 /**
  * Constructor allocating memory.
- * @param [in] DimensionSizes - Dimension sizes
+ *
+ * @param [in] dimensionSizes - Dimension sizes
  */
-TIndexMatrix::TIndexMatrix(const TDimensionSizes & DimensionSizes)
-    : TBaseIndexMatrix()
+TIndexMatrix::TIndexMatrix(const TDimensionSizes& dimensionSizes)
+        : TBaseIndexMatrix()
 {
- pDimensionSizes = DimensionSizes;
+  this->dimensionSizes = dimensionSizes;
 
-  pTotalElementCount = pDimensionSizes.X *
-                       pDimensionSizes.Y *
-                       pDimensionSizes.Z;
+  totalElementCount = dimensionSizes.X * dimensionSizes.Y * dimensionSizes.Z;
 
-  pTotalAllocatedElementCount = pTotalElementCount;
+  totalAllocatedElementCount = totalElementCount;
 
-  pDataRowSize       = pDimensionSizes.X;
-
-  p2DDataSliceSize   = pDimensionSizes.X * pDimensionSizes.Y;
+  dataRowSize  = dimensionSizes.X;
+  dataSlabSize = dimensionSizes.X * dimensionSizes.Y;
 
   AllocateMemory();
 }// end of TIndexMatrix
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+
+/**
+ * Destructor.
+ */
+TIndexMatrix::~TIndexMatrix()
+{
+  FreeMemory();
+}
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Read data from HDF5 file (only from the root group).
- * @param [in] HDF5_File  - HDF5 file handle
- * @param [in] MatrixName - HDF5 dataset name
  *
- * @throw ios:failure if there's an error
+ * @param [in] file       - HDF5 file handle
+ * @param [in] matrixName - HDF5 dataset name
+ *
+ * @throw ios:failure if error occurs.
  */
-void TIndexMatrix::ReadDataFromHDF5File(THDF5_File& HDF5_File,
-                                       const char* MatrixName)
+void TIndexMatrix::ReadDataFromHDF5File(THDF5_File& file,
+                                        const char* matrixName)
 {
-  if (HDF5_File.ReadMatrixDataType(HDF5_File.GetRootGroup(), MatrixName) !=
-          THDF5_File::LONG)
+  if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::LONG)
   {
-      char ErrorMessage[256];
-      snprintf(ErrorMessage, 256, ERR_FMT_MATRIX_NOT_INDEX,MatrixName);
-      throw ios::failure(ErrorMessage);
+    char errMsg[256];
+    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_INDEX, matrixName);
+    throw ios::failure(errMsg);
   }
 
-  if (HDF5_File.ReadMatrixDomainType(HDF5_File.GetRootGroup(),MatrixName) !=
-          THDF5_File::REAL)
+  if (file.ReadMatrixDomainType(file.GetRootGroup(),matrixName) != THDF5_File::REAL)
   {
-    char ErrorMessage[256];
-    snprintf(ErrorMessage, 256, ERR_FMT_MATRIX_NOT_REAL,MatrixName);
-    throw ios::failure(ErrorMessage);
+    char errMsg[256];
+    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_REAL,matrixName);
+    throw ios::failure(errMsg);
   }
 
-  HDF5_File.ReadCompleteDataset(HDF5_File.GetRootGroup(),
-                                MatrixName,
-                                pDimensionSizes,
-                                pMatrixData);
+  file.ReadCompleteDataset(file.GetRootGroup(), matrixName, dimensionSizes, matrixData);
 }// end of LoadDataFromMatlabFile
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+
+/**
+ * Write data to HDF5 file.
+ *
+ * @param [in] file             - HDF5 file handle
+ * @param [in] matrixName       - HDF5 dataset name
+ * @param [in] compressionLevel - compression level
+ *
+ * @throw ios:failure if error occurs.
+ */
+void TIndexMatrix::WriteDataToHDF5File(THDF5_File&  file,
+                                       const char*  matrixName,
+                                       const size_t compressionLevel)
+{
+  // set chunks - may be necessary for long index based sensor masks
+  TDimensionSizes chunks = dimensionSizes;
+  chunks.Z = 1;
+
+  //1D matrices
+  if ((dimensionSizes.Y == 1) && (dimensionSizes.Z == 1))
+  {
+    // Chunk = 4MB
+    if (dimensionSizes.X > (4 * CHUNK_SIZE_1D_4MB))
+    {
+      chunks.X = CHUNK_SIZE_1D_4MB;
+    }
+    else if (dimensionSizes.X > (4 * CHUNK_SIZE_1D_1MB))
+    {
+      chunks.X = CHUNK_SIZE_1D_1MB;
+    }
+    else if (dimensionSizes.X > (4 * CHUNK_SIZE_1D_256KB))
+    {
+      chunks.X = CHUNK_SIZE_1D_256KB;
+    }
+  }
+
+  // create dataset and write a slab
+  hid_t dataset = file.CreateIndexDataset(file.GetRootGroup(),
+                                          matrixName,
+                                          dimensionSizes,
+                                          chunks,
+                                          compressionLevel);
+
+  file.WriteHyperSlab(dataset, TDimensionSizes(0, 0, 0), dimensionSizes, matrixData);
+
+  file.CloseDataset(dataset);
+
+  // write data and domain types
+  file.WriteMatrixDataType(file.GetRootGroup(),   matrixName, THDF5_File::LONG);
+  file.WriteMatrixDomainType(file.GetRootGroup(), matrixName, THDF5_File::REAL);
+}// end of WriteDataToHDF5File
+//--------------------------------------------------------------------------------------------------
+
+
+/**
+ * Get the top left corner of the index-th cuboid. Cuboids are stored as 6-tuples (two 3D
+ * coordinates). This gives the first three coordinates.
+ *
+ * @param [in] index - Index of the cuboid
+ * @return The top left corner
+ */
+TDimensionSizes TIndexMatrix::GetTopLeftCorner(const size_t& index) const
+{
+  size_t x =  matrixData[6 * index    ];
+  size_t y =  matrixData[6 * index + 1];
+  size_t z =  matrixData[6 * index + 2];
+
+  return TDimensionSizes(x, y, z);
+}// end of GetTopLeftCorner
+//--------------------------------------------------------------------------------------------------
+
+/**
+ * Get the top bottom right of the index-th cuboid. Cuboids are stored as 6-tuples (two 3D
+ * coordinates). This gives the first three coordinates. This routine works only on the CPU side.
+ *
+ * @param [in] index -Index of the cuboid
+ * @return The bottom right corner
+*/
+TDimensionSizes TIndexMatrix::GetBottomRightCorner(const size_t& index) const
+{
+  size_t x =  matrixData[6 * index + 3];
+  size_t y =  matrixData[6 * index + 4];
+  size_t z =  matrixData[6 * index + 5];
+
+  return TDimensionSizes(x, y, z);
+}// end of GetBottomRightCorner
+//-------------------------------------------------------------------------------------------------
+
 
 /**
  * Recompute indeces, MATLAB -> C++.
  */
 void TIndexMatrix::RecomputeIndicesToCPP()
 {
-  #pragma omp parallel for if (pTotalElementCount > 1e5)
-  for (size_t i = 0; i < pTotalElementCount; i++)
+  #pragma omp parallel for if (totalElementCount > 1e5)
+  for (size_t i = 0; i < totalElementCount; i++)
   {
-    pMatrixData[i]--;
+    matrixData[i]--;
   }
 }// end of RecomputeIndices
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Recompute indeces, C++ -> MATLAB.
  */
 void TIndexMatrix::RecomputeIndicesToMatlab()
 {
-  #pragma omp parallel for if (pTotalElementCount > 1e5)
-  for (size_t i = 0; i < pTotalElementCount; i++)
+  #pragma omp parallel for if (totalElementCount > 1e5)
+  for (size_t i = 0; i < totalElementCount; i++)
   {
-    pMatrixData[i]++;
+    matrixData[i]++;
   }
 }// end of RecomputeIndicesToMatlab
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Get total number of elements in all cuboids to be able to allocate output file.
+ *
  * @return Total sampled grid points
  */
 size_t TIndexMatrix::GetTotalNumberOfElementsInAllCuboids() const
 {
-  size_t ElementSum = 0;
-  for (size_t cuboidIdx = 0; cuboidIdx < pDimensionSizes.Y; cuboidIdx++)
+  size_t elementSum = 0;
+  for (size_t cuboidIdx = 0; cuboidIdx < dimensionSizes.Y; cuboidIdx++)
   {
-    ElementSum += (GetBottomRightCorner(cuboidIdx) -
-                   GetTopLeftCorner(cuboidIdx)).GetElementCount();
+    elementSum += (GetBottomRightCorner(cuboidIdx) - GetTopLeftCorner(cuboidIdx)).GetElementCount();
   }
 
-  return ElementSum;
+  return elementSum;
 }// end of GetTotalNumberOfElementsInAllCuboids
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
-/**
- * Write data to HDF5 file
- *
- * @param [in] HDF5_File        - HDF5 file handle
- * @param [in] MatrixName       - HDF5 Dataset name
- * @param [in] CompressionLevel - Compression level
- *
- * @throw ios:failure if there's an error
- */
-void TIndexMatrix::WriteDataToHDF5File(THDF5_File & HDF5_File,
-                                      const char  * MatrixName,
-                                      const size_t CompressionLevel)
-{
-  // set chunks - may be necessary for long index based sensor masks
-  TDimensionSizes Chunks = pDimensionSizes;
-  Chunks.Z = 1;
+//------------------------------------------------------------------------------------------------//
+//-------------------------------------- Protected methods ---------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
-  //1D matrices
-  if ((pDimensionSizes.Y == 1) && (pDimensionSizes.Z == 1))
-  {
-    // Chunk = 4MB
-    if (pDimensionSizes.X > 4 * ChunkSize_1D_4MB)
-    {
-      Chunks.X = ChunkSize_1D_4MB;
-    }
-    else if (pDimensionSizes.X > 4 * ChunkSize_1D_1MB)
-    {
-      Chunks.X = ChunkSize_1D_1MB;
-    }
-    else if (pDimensionSizes.X > 4 * ChunkSize_1D_256KB)
-    {
-      Chunks.X = ChunkSize_1D_256KB;
-    }
-  }
-
-  // create dataset and write a slab
-  hid_t HDF5_Dataset_id = HDF5_File.CreateIndexDataset(HDF5_File.GetRootGroup(),
-                                                      MatrixName,
-                                                      pDimensionSizes,
-                                                      Chunks,
-                                                      CompressionLevel);
-
-  HDF5_File.WriteHyperSlab(HDF5_Dataset_id,
-                           TDimensionSizes(0, 0, 0),
-                           pDimensionSizes,
-                           pMatrixData);
-
-  HDF5_File.CloseDataset(HDF5_Dataset_id);
-
-  // write data and domain types
-  HDF5_File.WriteMatrixDataType(HDF5_File.GetRootGroup(),
-                                MatrixName,
-                                THDF5_File::LONG);
-
-  HDF5_File.WriteMatrixDomainType(HDF5_File.GetRootGroup(),
-                                  MatrixName,
-                                  THDF5_File::REAL);
-}// end of WriteDataToHDF5File
-//------------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------//
-//                              Implementation                                //
-//                             protected methods                              //
-//----------------------------------------------------------------------------//
-
-//----------------------------------------------------------------------------//
-//                              Implementation                                //
-//                              private methods                               //
-//----------------------------------------------------------------------------//
-
+//------------------------------------------------------------------------------------------------//
+//--------------------------------------- Private methods ----------------------------------------//
+//------------------------------------------------------------------------------------------------//

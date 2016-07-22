@@ -47,7 +47,7 @@ class TLogger
   public:
 
    /**
-    * @enum  TLogLEvel
+    * @enum  TLogLevel
     * @brief Log level of the message.
     * @details A enum to specify at which log level the message should be displayed, or the level
     * set.

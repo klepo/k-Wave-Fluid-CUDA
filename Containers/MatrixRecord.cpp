@@ -95,7 +95,6 @@ TMatrixRecord& TMatrixRecord::operator = (const TMatrixRecord& src)
 
 /**
  * Set all values for the record.
- * @param [in] matrixPtr      - Pointer to the MatrixClass object
  * @param [in] matrixDataType - Matrix data type
  * @param [in] dimensionSizes - Dimension sizes
  * @param [in] loadData       - Load data from file?

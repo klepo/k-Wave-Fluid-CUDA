@@ -141,7 +141,7 @@ void TLogger::Flush(const TLogLevel queryLevel)
  * @param [in] inputString - Input string
  * @param [in] delimiters  - String of delimiters, every char is a delimiter
  * @param [in] indentation - Indentation from the beginning
- * @param [in] LineSize    - Line size
+ * @param [in] lineSize    - Line size
  * @return Wrapped string
  *
  * @note The string must not contain tabulator and end-of-line characters.
