@@ -271,22 +271,22 @@ void TCUDAParameters::SetUpDeviceConstants()
    TDimensionSizes  ReducedDimensionSizes = params.GetReducedDimensionSizes();
 
   // Set values for constant memory
-  ConstantsToTransfer.Nx  = FullDimensionSizes.X;
-  ConstantsToTransfer.Ny  = FullDimensionSizes.Y;
-  ConstantsToTransfer.Nz  = FullDimensionSizes.Z;
+  ConstantsToTransfer.Nx  = FullDimensionSizes.nx;
+  ConstantsToTransfer.Ny  = FullDimensionSizes.ny;
+  ConstantsToTransfer.Nz  = FullDimensionSizes.nz;
   ConstantsToTransfer.TotalElementCount = FullDimensionSizes.GetElementCount();
-  ConstantsToTransfer.SlabSize = FullDimensionSizes.X * FullDimensionSizes.Y;
+  ConstantsToTransfer.SlabSize = FullDimensionSizes.nx * FullDimensionSizes.ny;
 
-  ConstantsToTransfer.Complex_Nx = ReducedDimensionSizes.X;
-  ConstantsToTransfer.Complex_Ny = ReducedDimensionSizes.Y;
-  ConstantsToTransfer.Complex_Nz = ReducedDimensionSizes.Z;
+  ConstantsToTransfer.Complex_Nx = ReducedDimensionSizes.nx;
+  ConstantsToTransfer.Complex_Ny = ReducedDimensionSizes.ny;
+  ConstantsToTransfer.Complex_Nz = ReducedDimensionSizes.nz;
   ConstantsToTransfer.ComplexTotalElementCount = ReducedDimensionSizes.GetElementCount();
-  ConstantsToTransfer.ComplexSlabSize = ReducedDimensionSizes.X * ReducedDimensionSizes.Y;
+  ConstantsToTransfer.ComplexSlabSize = ReducedDimensionSizes.nx * ReducedDimensionSizes.ny;
 
   ConstantsToTransfer.FFTDivider  = 1.0f / FullDimensionSizes.GetElementCount();
-  ConstantsToTransfer.FFTDividerX = 1.0f / FullDimensionSizes.X;
-  ConstantsToTransfer.FFTDividerY = 1.0f / FullDimensionSizes.Y;
-  ConstantsToTransfer.FFTDividerZ = 1.0f / FullDimensionSizes.Z;
+  ConstantsToTransfer.FFTDividerX = 1.0f / FullDimensionSizes.nx;
+  ConstantsToTransfer.FFTDividerY = 1.0f / FullDimensionSizes.ny;
+  ConstantsToTransfer.FFTDividerZ = 1.0f / FullDimensionSizes.nz;
 
   ConstantsToTransfer.dt  = params.Get_dt();
   ConstantsToTransfer.dt2 = params.Get_dt() * 2.0f;

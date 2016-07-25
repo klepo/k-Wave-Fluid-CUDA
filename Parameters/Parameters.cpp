@@ -169,9 +169,9 @@ void TParameters::PrintSimulatoinSetup()
 
   char DomainsSizeText[48];
   snprintf(DomainsSizeText, 48, OUT_FMT_DOMAIN_SIZE_FORMAT,
-          GetFullDimensionSizes().X,
-          GetFullDimensionSizes().Y,
-          GetFullDimensionSizes().Z );
+          GetFullDimensionSizes().nx,
+          GetFullDimensionSizes().ny,
+          GetFullDimensionSizes().nz );
   // Print simulation size
   TLogger::Log(TLogger::BASIC,
                OUT_FMT_DOMAIN_SIZE,
@@ -250,40 +250,40 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
 
   const hid_t HDF5RootGroup = HDF5_InputFile.GetRootGroup();
 
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, Nt_Name, Nt);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, Nt_NAME, Nt);
 
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, dt_Name, dt);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, dx_Name, dx);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, dy_Name, dy);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, dz_Name, dz);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, dt_NAME, dt);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, dx_NAME, dx);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, dy_NAME, dy);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, dz_NAME, dz);
 
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, c_ref_Name,      c_ref);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, pml_x_size_Name, pml_x_size);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, pml_y_size_Name, pml_y_size);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, pml_z_size_Name, pml_z_size);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, c_ref_NAME,      c_ref);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, pml_x_size_NAME, pml_x_size);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, pml_y_size_NAME, pml_y_size);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, pml_z_size_NAME, pml_z_size);
 
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, pml_x_alpha_Name, pml_x_alpha);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, pml_y_alpha_Name, pml_y_alpha);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, pml_z_alpha_Name, pml_z_alpha);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, pml_x_alpha_NAME, pml_x_alpha);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, pml_y_alpha_NAME, pml_y_alpha);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, pml_z_alpha_NAME, pml_z_alpha);
 
   size_t X, Y, Z;
-	HDF5_InputFile.ReadScalarValue(HDF5RootGroup, Nx_Name, X);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, Ny_Name, Y);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, Nz_Name, Z);
+	HDF5_InputFile.ReadScalarValue(HDF5RootGroup, Nx_NAME, X);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, Ny_NAME, Y);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, Nz_NAME, Z);
 
 
-  FullDimensionSizes.X = X;
-  FullDimensionSizes.Y = Y;
-  FullDimensionSizes.Z = Z;
+  FullDimensionSizes.nx = X;
+  FullDimensionSizes.ny = Y;
+  FullDimensionSizes.nz = Z;
 
-  ReducedDimensionSizes.X = ((X/2) + 1);
-  ReducedDimensionSizes.Y = Y;
-  ReducedDimensionSizes.Z = Z;
+  ReducedDimensionSizes.nx = ((X/2) + 1);
+  ReducedDimensionSizes.ny = Y;
+  ReducedDimensionSizes.nz = Z;
 
   // if the file is of version 1.0, there must be a sensor mask index (backward compatibility)
   if (HDF5_FileHeader.GetFileVersion() == THDF5_FileHeader::VERSION_10)
   {
-    sensor_mask_ind_size = HDF5_InputFile.GetDatasetElementCount(HDF5RootGroup, sensor_mask_index_Name);
+    sensor_mask_ind_size = HDF5_InputFile.GetDatasetElementCount(HDF5RootGroup, sensor_mask_index_NAME);
 
     //if -u_non_staggered_raw enabled, throw an error - not supported
     if (IsStore_u_non_staggered_raw())
@@ -297,7 +297,7 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
   {
     // read sensor mask type as a size_t value to enum
     size_t SensorMaskTypeNumericValue = 0;
-    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, sensor_mask_type_Name, SensorMaskTypeNumericValue);
+    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, sensor_mask_type_NAME, SensorMaskTypeNumericValue);
 
     // convert the long value on
     switch (SensorMaskTypeNumericValue)
@@ -324,30 +324,30 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
     {
       case smt_index:
       {
-        sensor_mask_ind_size = HDF5_InputFile.GetDatasetElementCount(HDF5RootGroup, sensor_mask_index_Name);
+        sensor_mask_ind_size = HDF5_InputFile.GetDatasetElementCount(HDF5RootGroup, sensor_mask_index_NAME);
         break;
       }
       case smt_corners:
       {
         // mask dimensions are [6, N, 1] - I want to know N
-        sensor_mask_corners_size = HDF5_InputFile.GetDatasetDimensionSizes(HDF5RootGroup, sensor_mask_corners_Name).Y;
+        sensor_mask_corners_size = HDF5_InputFile.GetDatasetDimensionSizes(HDF5RootGroup, sensor_mask_corners_NAME).ny;
         break;
       }
     }// switch
   }// version 1.1
 
   // flags
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, ux_source_flag_Name, ux_source_flag);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, uy_source_flag_Name, uy_source_flag);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, uz_source_flag_Name, uz_source_flag);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, transducer_source_flag_Name, transducer_source_flag);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, ux_source_flag_NAME, ux_source_flag);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, uy_source_flag_NAME, uy_source_flag);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, uz_source_flag_NAME, uz_source_flag);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, transducer_source_flag_NAME, transducer_source_flag);
 
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, p_source_flag_Name, p_source_flag);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, p0_source_flag_Name,p0_source_flag);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, p_source_flag_NAME, p_source_flag);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, p0_source_flag_NAME,p0_source_flag);
 
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, nonuniform_grid_flag_Name, nonuniform_grid_flag);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, absorbing_flag_Name,       absorbing_flag);
-  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, nonlinear_flag_Name,       nonlinear_flag);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, nonuniform_grid_flag_NAME, nonuniform_grid_flag);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, absorbing_flag_NAME,       absorbing_flag);
+  HDF5_InputFile.ReadScalarValue(HDF5RootGroup, nonlinear_flag_NAME,       nonlinear_flag);
 
   // Vector sizes.
   if (transducer_source_flag == 0)
@@ -356,19 +356,19 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
   }
   else
   {
-    transducer_source_input_size =HDF5_InputFile.GetDatasetElementCount(HDF5RootGroup, transducer_source_input_Name);
+    transducer_source_input_size =HDF5_InputFile.GetDatasetElementCount(HDF5RootGroup, transducer_source_input_NAME);
   }
 
   if ((transducer_source_flag > 0) || (ux_source_flag > 0) || (uy_source_flag > 0) || (uz_source_flag > 0))
   {
-    u_source_index_size = HDF5_InputFile.GetDatasetElementCount(HDF5RootGroup, u_source_index_Name);
+    u_source_index_size = HDF5_InputFile.GetDatasetElementCount(HDF5RootGroup, u_source_index_NAME);
   }
 
   // uxyz_source_flags.
   if ((ux_source_flag > 0) || (uy_source_flag > 0) || (uz_source_flag > 0))
   {
-    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, u_source_many_Name, u_source_many);
-    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, u_source_mode_Name, u_source_mode);
+    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, u_source_many_NAME, u_source_many);
+    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, u_source_mode_NAME, u_source_mode);
   }
   else
   {
@@ -379,10 +379,10 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
   // p_source_flag
   if (p_source_flag != 0)
   {
-    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, p_source_many_Name, p_source_many);
-    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, p_source_mode_Name, p_source_mode);
+    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, p_source_many_NAME, p_source_many);
+    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, p_source_mode_NAME, p_source_mode);
 
-    p_source_index_size = HDF5_InputFile.GetDatasetElementCount(HDF5RootGroup, p_source_index_Name);
+    p_source_index_size = HDF5_InputFile.GetDatasetElementCount(HDF5RootGroup, p_source_index_NAME);
   }
   else
   {
@@ -394,42 +394,42 @@ void TParameters::ReadScalarsFromHDF5InputFile(THDF5_File & HDF5_InputFile)
   // absorb flag.
   if (absorbing_flag != 0)
   {
-    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, alpha_power_Name, alpha_power);
+    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, alpha_power_NAME, alpha_power);
     if (alpha_power == 1.0f)
     {
       throw std::invalid_argument(ERR_FMT_ILLEGAL_ALPHA_POWER_VALUE);
     }
 
-    alpha_coeff_scalar_flag = HDF5_InputFile.GetDatasetDimensionSizes(HDF5RootGroup, alpha_coeff_Name) == ScalarSizes;
+    alpha_coeff_scalar_flag = HDF5_InputFile.GetDatasetDimensionSizes(HDF5RootGroup, alpha_coeff_NAME) == ScalarSizes;
 
     if (alpha_coeff_scalar_flag)
     {
-      HDF5_InputFile.ReadScalarValue(HDF5RootGroup, alpha_coeff_Name, alpha_coeff_scalar);
+      HDF5_InputFile.ReadScalarValue(HDF5RootGroup, alpha_coeff_NAME, alpha_coeff_scalar);
     }
   }
 
-  c0_scalar_flag = HDF5_InputFile.GetDatasetDimensionSizes(HDF5RootGroup, c0_Name) == ScalarSizes;
+  c0_scalar_flag = HDF5_InputFile.GetDatasetDimensionSizes(HDF5RootGroup, c0_NAME) == ScalarSizes;
   if (c0_scalar_flag)
   {
-    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, c0_Name, c0_scalar);
+    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, c0_NAME, c0_scalar);
   }
 
   if (nonlinear_flag)
   {
-    BonA_scalar_flag = HDF5_InputFile.GetDatasetDimensionSizes(HDF5RootGroup, BonA_Name) == ScalarSizes;
+    BonA_scalar_flag = HDF5_InputFile.GetDatasetDimensionSizes(HDF5RootGroup, BonA_NAME) == ScalarSizes;
     if (BonA_scalar_flag)
     {
-      HDF5_InputFile.ReadScalarValue(HDF5RootGroup, BonA_Name, BonA_scalar);
+      HDF5_InputFile.ReadScalarValue(HDF5RootGroup, BonA_NAME, BonA_scalar);
     }
   }
 
-  rho0_scalar_flag = HDF5_InputFile.GetDatasetDimensionSizes(HDF5RootGroup, rho0_Name) == ScalarSizes;
+  rho0_scalar_flag = HDF5_InputFile.GetDatasetDimensionSizes(HDF5RootGroup, rho0_NAME) == ScalarSizes;
   if (rho0_scalar_flag)
   {
-    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, rho0_Name,     rho0_scalar);
-    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, rho0_sgx_Name, rho0_sgx_scalar);
-    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, rho0_sgy_Name, rho0_sgy_scalar);
-    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, rho0_sgz_Name, rho0_sgz_scalar);
+    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, rho0_NAME,     rho0_scalar);
+    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, rho0_sgx_NAME, rho0_sgx_scalar);
+    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, rho0_sgy_NAME, rho0_sgy_scalar);
+    HDF5_InputFile.ReadScalarValue(HDF5RootGroup, rho0_sgz_NAME, rho0_sgz_scalar);
     }
 }// end of ReadScalarsFromHDF5InputFile
 //----------------------------------------------------------------------------
@@ -443,58 +443,58 @@ void TParameters::SaveScalarsToHDF5File(THDF5_File & HDF5_OutputFile)
   const hid_t HDF5RootGroup = HDF5_OutputFile.GetRootGroup();
 
   // Write dimension sizes
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, Nx_Name, FullDimensionSizes.X);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, Ny_Name, FullDimensionSizes.Y);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, Nz_Name, FullDimensionSizes.Z);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, Nx_NAME, FullDimensionSizes.nx);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, Ny_NAME, FullDimensionSizes.ny);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, Nz_NAME, FullDimensionSizes.nz);
 
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, Nt_Name,  Nt);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, Nt_NAME,  Nt);
 
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, dt_Name, dt);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, dx_Name, dx);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, dy_Name, dy);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, dz_Name, dz);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, dt_NAME, dt);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, dx_NAME, dx);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, dy_NAME, dy);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, dz_NAME, dz);
 
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, c_ref_Name, c_ref);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, c_ref_NAME, c_ref);
 
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, pml_x_size_Name, pml_x_size);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, pml_y_size_Name, pml_y_size);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, pml_z_size_Name, pml_z_size);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, pml_x_size_NAME, pml_x_size);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, pml_y_size_NAME, pml_y_size);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, pml_z_size_NAME, pml_z_size);
 
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, pml_x_alpha_Name, pml_x_alpha);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, pml_y_alpha_Name, pml_y_alpha);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, pml_z_alpha_Name, pml_z_alpha);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, pml_x_alpha_NAME, pml_x_alpha);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, pml_y_alpha_NAME, pml_y_alpha);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, pml_z_alpha_NAME, pml_z_alpha);
 
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, ux_source_flag_Name, ux_source_flag);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, uy_source_flag_Name, uy_source_flag);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, uz_source_flag_Name, uz_source_flag);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, transducer_source_flag_Name, transducer_source_flag);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, ux_source_flag_NAME, ux_source_flag);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, uy_source_flag_NAME, uy_source_flag);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, uz_source_flag_NAME, uz_source_flag);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, transducer_source_flag_NAME, transducer_source_flag);
 
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, p_source_flag_Name,  p_source_flag);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, p0_source_flag_Name, p0_source_flag);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, p_source_flag_NAME,  p_source_flag);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, p0_source_flag_NAME, p0_source_flag);
 
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, nonuniform_grid_flag_Name, nonuniform_grid_flag);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, absorbing_flag_Name,       absorbing_flag);
-  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, nonlinear_flag_Name,       nonlinear_flag);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, nonuniform_grid_flag_NAME, nonuniform_grid_flag);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, absorbing_flag_NAME,       absorbing_flag);
+  HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, nonlinear_flag_NAME,       nonlinear_flag);
 
   // uxyz_source_flags.
   if ((ux_source_flag > 0) || (uy_source_flag > 0) || (uz_source_flag > 0))
   {
-    HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, u_source_many_Name, u_source_many);
-      HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, u_source_mode_Name, u_source_mode);
+    HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, u_source_many_NAME, u_source_many);
+      HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, u_source_mode_NAME, u_source_mode);
   }
 
   // p_source_flag.
   if (p_source_flag != 0)
   {
-    HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, p_source_many_Name, p_source_many);
-    HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, p_source_mode_Name, p_source_mode);
+    HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, p_source_many_NAME, p_source_many);
+    HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, p_source_mode_NAME, p_source_mode);
 
     }
 
   // absorb flag
   if (absorbing_flag != 0)
   {
-    HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, alpha_power_Name, alpha_power);
+    HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, alpha_power_NAME, alpha_power);
   }
 
   // if copy sensor mask, then copy the mask type
@@ -510,7 +510,7 @@ void TParameters::SaveScalarsToHDF5File(THDF5_File & HDF5_OutputFile)
         break;
     }// switch
 
-    HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, sensor_mask_type_Name, SensorMaskTypeNumericValue);
+    HDF5_OutputFile.WriteScalarValue(HDF5RootGroup, sensor_mask_type_NAME, SensorMaskTypeNumericValue);
   }
 }// end of SaveScalarsToHDF5File
 //------------------------------------------------------------------------------

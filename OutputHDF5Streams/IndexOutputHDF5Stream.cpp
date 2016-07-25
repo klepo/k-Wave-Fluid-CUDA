@@ -124,7 +124,7 @@ void TIndexOutputHDF5Stream::Create()
   // for chunks bigger than 32 MB
   if (NumberOfSampledElementsPerStep > (ChunkSize_4MB * 8))
   {
-      ChunkSize.X = ChunkSize_4MB; // set chunk size to MB
+      ChunkSize.nx = ChunkSize_4MB; // set chunk size to MB
   }
 
   // Create a dataset under the root group

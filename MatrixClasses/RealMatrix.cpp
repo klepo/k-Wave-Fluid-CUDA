@@ -110,23 +110,23 @@ void TRealMatrix::WriteDataToHDF5File(THDF5_File&  file,
                                       const size_t compressionLevel)
 {
   TDimensionSizes chunks = dimensionSizes;
-  chunks.Z = 1;
+  chunks.nz = 1;
 
   //1D matrices
-  if ((dimensionSizes.Y == 1) && (dimensionSizes.Z == 1))
+  if ((dimensionSizes.ny == 1) && (dimensionSizes.nz == 1))
   {
     // Chunk = 4MB
-    if (dimensionSizes.X > (4 * CHUNK_SIZE_1D_4MB))
+    if (dimensionSizes.nx > (4 * CHUNK_SIZE_1D_4MB))
     {
-      chunks.X = CHUNK_SIZE_1D_4MB;
+      chunks.nx = CHUNK_SIZE_1D_4MB;
     }
-    else if (dimensionSizes.X > (4 * CHUNK_SIZE_1D_1MB))
+    else if (dimensionSizes.nx > (4 * CHUNK_SIZE_1D_1MB))
     {
-      chunks.X = CHUNK_SIZE_1D_1MB;
+      chunks.nx = CHUNK_SIZE_1D_1MB;
     }
-    else if (dimensionSizes.X > (4 * CHUNK_SIZE_1D_256KB))
+    else if (dimensionSizes.nx > (4 * CHUNK_SIZE_1D_256KB))
     {
-      chunks.X = CHUNK_SIZE_1D_256KB;
+      chunks.nx = CHUNK_SIZE_1D_256KB;
     }
   }
 
@@ -159,12 +159,12 @@ void TRealMatrix::InitDimensions(const TDimensionSizes& dimensionSizes)
 {
   this->dimensionSizes = dimensionSizes;
 
-  totalElementCount = dimensionSizes.X * dimensionSizes.Y * dimensionSizes.Z;
+  totalElementCount = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
 
   totalAllocatedElementCount = totalElementCount;
 
-  dataRowSize  = dimensionSizes.X;
-  dataSlabSize = dimensionSizes.X * dimensionSizes.Y;
+  dataRowSize  = dimensionSizes.nx;
+  dataSlabSize = dimensionSizes.nx * dimensionSizes.ny;
 }// end of SetDimensions
 //-------------------------------------------------------------------------------------------------/
 

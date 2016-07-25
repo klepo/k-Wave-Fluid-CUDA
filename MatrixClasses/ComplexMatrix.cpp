@@ -95,7 +95,7 @@ void TComplexMatrix::ReadDataFromHDF5File(THDF5_File& file,
 
   // Initialise dimensions
   TDimensionSizes complexDims = dimensionSizes;
-  complexDims.X = 2 * complexDims.X;
+  complexDims.nx = 2 * complexDims.nx;
 
   // Read data from the file
   file.ReadCompleteDataset(file.GetRootGroup(), matrixName, complexDims, matrixData);
@@ -117,10 +117,10 @@ void TComplexMatrix::WriteDataToHDF5File(THDF5_File& file,
 {
   // set dimensions and chunks
   TDimensionSizes complexDims = dimensionSizes;
-  complexDims.X = 2 * complexDims.X;
+  complexDims.nx = 2 * complexDims.nx;
 
   TDimensionSizes chunks = complexDims;
-  complexDims.Z = 1;
+  complexDims.nz = 1;
 
   // create a dataset
   hid_t dataset = file.CreateFloatDataset(file.GetRootGroup(),
@@ -153,10 +153,10 @@ void TComplexMatrix::InitDimensions(const TDimensionSizes& dimensionSizes)
 
   this->dimensionSizes = dimensionSizes;
 
-  totalElementCount = dimensionSizes.X * dimensionSizes.Y * dimensionSizes.Z;
+  totalElementCount = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
 
-  dataRowSize  = 2 * dimensionSizes.X;
-  dataSlabSize = 2 * dimensionSizes.X * dimensionSizes.Y;
+  dataRowSize  = 2 * dimensionSizes.nx;
+  dataSlabSize = 2 * dimensionSizes.nx * dimensionSizes.ny;
   // compute actual necessary memory sizes
   totalAllocatedElementCount = 2 * totalElementCount;
 

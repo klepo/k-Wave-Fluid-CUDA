@@ -93,7 +93,7 @@ TWholeDomainOutputHDF5Stream::~TWholeDomainOutputHDF5Stream()
  */
 void TWholeDomainOutputHDF5Stream::Create()
 {
-  TDimensionSizes ChunkSize(SourceMatrix.GetDimensionSizes().X, SourceMatrix.GetDimensionSizes().Y, 1);
+  TDimensionSizes ChunkSize(SourceMatrix.GetDimensionSizes().nx, SourceMatrix.GetDimensionSizes().ny, 1);
 
   // Create a dataset under the root group
   HDF5_DatasetId = HDF5_File.CreateFloatDataset(HDF5_File.GetRootGroup(),
@@ -177,7 +177,7 @@ void TWholeDomainOutputHDF5Stream::Sample()
       const TDimensionSizes DatasetPosition(0,0,0,SampledTimeStep); //4D position in the dataset
 
       TDimensionSizes CuboidSize(SourceMatrix.GetDimensionSizes());// Size of the cuboid
-      CuboidSize.T = 1;
+      CuboidSize.nt = 1;
 
       // iterate over all cuboid to be sampled
       HDF5_File.WriteCuboidToHyperSlab(HDF5_DatasetId,
@@ -289,8 +289,8 @@ void TWholeDomainOutputHDF5Stream::FlushBufferToFile()
   // Not used for roNONE now!
   if (ReductionOp == roNONE)
   {
-      Position.T = SampledTimeStep;
-      Size.T = SampledTimeStep;
+      Position.nt = SampledTimeStep;
+      Size.nt = SampledTimeStep;
   }
 
   HDF5_File.WriteHyperSlab(HDF5_DatasetId,

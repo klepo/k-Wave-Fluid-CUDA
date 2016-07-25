@@ -52,12 +52,12 @@ TIndexMatrix::TIndexMatrix(const TDimensionSizes& dimensionSizes)
 {
   this->dimensionSizes = dimensionSizes;
 
-  totalElementCount = dimensionSizes.X * dimensionSizes.Y * dimensionSizes.Z;
+  totalElementCount = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
 
   totalAllocatedElementCount = totalElementCount;
 
-  dataRowSize  = dimensionSizes.X;
-  dataSlabSize = dimensionSizes.X * dimensionSizes.Y;
+  dataRowSize  = dimensionSizes.nx;
+  dataSlabSize = dimensionSizes.nx * dimensionSizes.ny;
 
   AllocateMemory();
 }// end of TIndexMatrix
@@ -116,23 +116,23 @@ void TIndexMatrix::WriteDataToHDF5File(THDF5_File&  file,
 {
   // set chunks - may be necessary for long index based sensor masks
   TDimensionSizes chunks = dimensionSizes;
-  chunks.Z = 1;
+  chunks.nz = 1;
 
   //1D matrices
-  if ((dimensionSizes.Y == 1) && (dimensionSizes.Z == 1))
+  if ((dimensionSizes.ny == 1) && (dimensionSizes.nz == 1))
   {
     // Chunk = 4MB
-    if (dimensionSizes.X > (4 * CHUNK_SIZE_1D_4MB))
+    if (dimensionSizes.nx > (4 * CHUNK_SIZE_1D_4MB))
     {
-      chunks.X = CHUNK_SIZE_1D_4MB;
+      chunks.nx = CHUNK_SIZE_1D_4MB;
     }
-    else if (dimensionSizes.X > (4 * CHUNK_SIZE_1D_1MB))
+    else if (dimensionSizes.nx > (4 * CHUNK_SIZE_1D_1MB))
     {
-      chunks.X = CHUNK_SIZE_1D_1MB;
+      chunks.nx = CHUNK_SIZE_1D_1MB;
     }
-    else if (dimensionSizes.X > (4 * CHUNK_SIZE_1D_256KB))
+    else if (dimensionSizes.nx > (4 * CHUNK_SIZE_1D_256KB))
     {
-      chunks.X = CHUNK_SIZE_1D_256KB;
+      chunks.nx = CHUNK_SIZE_1D_256KB;
     }
   }
 
@@ -223,7 +223,7 @@ void TIndexMatrix::RecomputeIndicesToMatlab()
 size_t TIndexMatrix::GetTotalNumberOfElementsInAllCuboids() const
 {
   size_t elementSum = 0;
-  for (size_t cuboidIdx = 0; cuboidIdx < dimensionSizes.Y; cuboidIdx++)
+  for (size_t cuboidIdx = 0; cuboidIdx < dimensionSizes.ny; cuboidIdx++)
   {
     elementSum += (GetBottomRightCorner(cuboidIdx) - GetTopLeftCorner(cuboidIdx)).GetElementCount();
   }

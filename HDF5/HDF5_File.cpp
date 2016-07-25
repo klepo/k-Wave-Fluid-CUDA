@@ -194,7 +194,7 @@ THDF5_File::~THDF5_File()
  * @throw ios::failure
  */
 hid_t THDF5_File::CreateGroup(const hid_t parentGroup,
-                              const char* groupName)
+                              TMatrixName groupName)
 {
   hid_t group = H5Gcreate(parentGroup, groupName, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
@@ -218,7 +218,7 @@ hid_t THDF5_File::CreateGroup(const hid_t parentGroup,
  * @throw ios::failure
  */
 hid_t THDF5_File::OpenGroup(const hid_t parentGroup,
-                            const char* groupName)
+                            TMatrixName groupName)
 {
   hid_t group = H5Gopen(parentGroup, groupName, H5P_DEFAULT);
 
@@ -254,7 +254,7 @@ void THDF5_File::CloseGroup(const hid_t group)
  * @throw ios::failure
  */
 hid_t THDF5_File::OpenDataset(const hid_t parentGroup,
-                              const char* datasetName)
+                              TMatrixName datasetName)
 {
   // Open dataset
   hid_t dataset = H5Dopen(parentGroup, datasetName, H5P_DEFAULT);
@@ -282,7 +282,7 @@ hid_t THDF5_File::OpenDataset(const hid_t parentGroup,
  * @throw ios::failure
  */
 hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
-                                     const char*            datasetName,
+                                     TMatrixName            datasetName,
                                      const TDimensionSizes& dimensionSizes,
                                      const TDimensionSizes& chunkSizes,
                                      const size_t           compressionLevel)
@@ -296,25 +296,25 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
   // 3D dataset
   if (dimensionSizes.Is3D())
   {
-    dims[0] = dimensionSizes.Z;
-    dims[1] = dimensionSizes.Y;
-    dims[2] = dimensionSizes.X;
+    dims[0] = dimensionSizes.nz;
+    dims[1] = dimensionSizes.ny;
+    dims[2] = dimensionSizes.nx;
 
-    chunk[0] = chunkSizes.Z;
-    chunk[1] = chunkSizes.Y;
-    chunk[2] = chunkSizes.X;
+    chunk[0] = chunkSizes.nz;
+    chunk[1] = chunkSizes.ny;
+    chunk[2] = chunkSizes.nx;
   }
   else // 4D dataset
   {
-    dims[0] = dimensionSizes.T;
-    dims[1] = dimensionSizes.Z;
-    dims[2] = dimensionSizes.Y;
-    dims[3] = dimensionSizes.X;
+    dims[0] = dimensionSizes.nt;
+    dims[1] = dimensionSizes.nz;
+    dims[2] = dimensionSizes.ny;
+    dims[3] = dimensionSizes.nx;
 
-    chunk[0] = chunkSizes.T;
-    chunk[1] = chunkSizes.Z;
-    chunk[2] = chunkSizes.Y;
-    chunk[3] = chunkSizes.X;
+    chunk[0] = chunkSizes.nt;
+    chunk[1] = chunkSizes.nz;
+    chunk[2] = chunkSizes.ny;
+    chunk[3] = chunkSizes.nx;
   }
 
   hid_t  propertyList;
@@ -378,15 +378,15 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
  * @throw ios::failure
  */
 hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
-                                     const char*            datasetName,
+                                     TMatrixName            datasetName,
                                      const TDimensionSizes& dimensionSizes,
                                      const TDimensionSizes& chunkSizes,
                                      const size_t           compressionLevel)
 {
   const int rank = 3;
 
-  hsize_t dims [rank] = {dimensionSizes.Z, dimensionSizes.Y, dimensionSizes.X};
-  hsize_t chunk[rank] = {chunkSizes.Z, chunkSizes.Y, chunkSizes.X};
+  hsize_t dims [rank] = {dimensionSizes.nz, dimensionSizes.ny, dimensionSizes.nx};
+  hsize_t chunk[rank] = {chunkSizes.nz, chunkSizes.ny, chunkSizes.nx};
 
   hid_t propertyList;
   herr_t status;
@@ -477,25 +477,25 @@ void THDF5_File::WriteHyperSlab(const hid_t            dataset,
   // 3D dataset
   if (rank == 3)
   {
-    nElement[0] = size.Z;
-    nElement[1] = size.Y;
-    nElement[2] = size.X;
+    nElement[0] = size.nz;
+    nElement[1] = size.ny;
+    nElement[2] = size.nx;
 
-    offset[0] = position.Z;
-    offset[1] = position.Y;
-    offset[2] = position.X;
+    offset[0] = position.nz;
+    offset[1] = position.ny;
+    offset[2] = position.nx;
   }
   else // 4D dataset
   {
-    nElement[0] = size.T;
-    nElement[1] = size.Z;
-    nElement[2] = size.Y;
-    nElement[3] = size.X;
+    nElement[0] = size.nt;
+    nElement[1] = size.nz;
+    nElement[2] = size.ny;
+    nElement[3] = size.nx;
 
-    offset[0] = position.T;
-    offset[1] = position.Z;
-    offset[2] = position.Y;
-    offset[3] = position.X;
+    offset[0] = position.nt;
+    offset[1] = position.nz;
+    offset[2] = position.ny;
+    offset[3] = position.nx;
   }
 
   // select hyperslab
@@ -552,25 +552,25 @@ void THDF5_File::WriteHyperSlab(const hid_t            dataset,
   // 3D dataset
   if (rank == 3)
   {
-    nElement[0] = size.Z;
-    nElement[1] = size.Y;
-    nElement[2] = size.X;
+    nElement[0] = size.nz;
+    nElement[1] = size.ny;
+    nElement[2] = size.nx;
 
-    offset[0] = position.Z;
-    offset[1] = position.Y;
-    offset[2] = position.X;
+    offset[0] = position.nz;
+    offset[1] = position.ny;
+    offset[2] = position.nx;
   }
   else // 4D dataset
   {
-    nElement[0] = size.T;
-    nElement[1] = size.Z;
-    nElement[2] = size.Y;
-    nElement[3] = size.X;
+    nElement[0] = size.nt;
+    nElement[1] = size.nz;
+    nElement[2] = size.ny;
+    nElement[3] = size.nx;
 
-    offset[0] = position.T;
-    offset[1] = position.Z;
-    offset[2] = position.Y;
-    offset[3] = position.X;
+    offset[0] = position.nt;
+    offset[1] = position.nz;
+    offset[2] = position.ny;
+    offset[3] = position.nx;
   }
 
   // select hyperslab
@@ -625,10 +625,10 @@ void THDF5_File::WriteCuboidToHyperSlab(const hid_t            dataset,
 
   // Select sizes and positions
   // The T here is always 1 (only one timestep)
-  hsize_t slabSize[rank]        = {1, cuboidSize.Z, cuboidSize.Y, cuboidSize.X};
-  hsize_t offsetInDataset[rank] = {hyperslabPosition.T, hyperslabPosition.Z, hyperslabPosition.Y, hyperslabPosition.X};
-  hsize_t offsetInMatrixData[]  = {cuboidPosition.Z, cuboidPosition.Y, cuboidPosition.X};
-  hsize_t matrixSize []         = {matrixDimensions.Z, matrixDimensions.Y, matrixDimensions.X};
+  hsize_t slabSize[rank]        = {1, cuboidSize.nz, cuboidSize.ny, cuboidSize.nx};
+  hsize_t offsetInDataset[rank] = {hyperslabPosition.nt, hyperslabPosition.nz, hyperslabPosition.ny, hyperslabPosition.nx};
+  hsize_t offsetInMatrixData[]  = {cuboidPosition.nz, cuboidPosition.ny, cuboidPosition.nx};
+  hsize_t matrixSize []         = {matrixDimensions.nz, matrixDimensions.ny, matrixDimensions.nx};
 
 
   // select hyperslab in the HDF5 dataset
@@ -700,10 +700,10 @@ void THDF5_File::WriteDataByMaskToHyperSlab(const hid_t            dataset,
   // Select sizes and positions
   // Only one timestep
   hsize_t slabSize[Rank]        = {1, 1, indexSensorSize};
-  hsize_t offsetInDataset[Rank] = {hyperslabPosition.Z, hyperslabPosition.Y, hyperslabPosition.X};
+  hsize_t offsetInDataset[Rank] = {hyperslabPosition.nz, hyperslabPosition.ny, hyperslabPosition.nx};
 
   // treat as a 1D array
-  hsize_t matrixSize = matrixDimensions.Z * matrixDimensions.Y * matrixDimensions.X;
+  hsize_t matrixSize = matrixDimensions.nz * matrixDimensions.ny * matrixDimensions.nx;
 
 
   // select hyperslab in the HDF5 dataset
@@ -754,7 +754,7 @@ void THDF5_File::WriteDataByMaskToHyperSlab(const hid_t            dataset,
  * @throw ios::failure
  */
 void THDF5_File::WriteScalarValue(const hid_t parentGroup,
-                                  const char* datasetName,
+                                  TMatrixName datasetName,
                                   const float value)
 {
   const int rank = 3;
@@ -812,7 +812,7 @@ void THDF5_File::WriteScalarValue(const hid_t parentGroup,
  * @throw ios::failure
  */
 void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
-                                  const char*  datasetName,
+                                  TMatrixName  datasetName,
                                   const size_t value)
 {
   const int rank = 3;
@@ -868,7 +868,7 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
  * @param [out] value       - Data to be read
  */
 void THDF5_File::ReadScalarValue(const hid_t parentGroup,
-                                 const char* datasetName,
+                                 TMatrixName datasetName,
                                  float&      value)
 {
   ReadCompleteDataset(parentGroup, datasetName, TDimensionSizes(1,1,1), &value);
@@ -883,7 +883,7 @@ void THDF5_File::ReadScalarValue(const hid_t parentGroup,
  * @param [out] value       - Data to be read
  */
 void THDF5_File::ReadScalarValue(const hid_t parentGroup,
-                                 const char* datasetName,
+                                 TMatrixName datasetName,
                                  size_t&     value)
 {
   ReadCompleteDataset(parentGroup, datasetName, TDimensionSizes(1,1,1), &value);
@@ -900,7 +900,7 @@ void THDF5_File::ReadScalarValue(const hid_t parentGroup,
  * @throw ios::failure
  */
 void THDF5_File::ReadCompleteDataset (const hid_t            parentGroup,
-                                      const char*            datasetName,
+                                      TMatrixName            datasetName,
                                       const TDimensionSizes& dimensionSizes,
                                       float*                 data)
 {
@@ -935,7 +935,7 @@ void THDF5_File::ReadCompleteDataset (const hid_t            parentGroup,
  * @throw ios::failure
  */
 void THDF5_File::ReadCompleteDataset(const hid_t            parentGroup,
-                                     const char*            datasetName,
+                                     TMatrixName            datasetName,
                                      const TDimensionSizes& dimensionSizes,
                                      size_t*                data)
 {
@@ -968,7 +968,7 @@ void THDF5_File::ReadCompleteDataset(const hid_t            parentGroup,
  * @throw ios::failure
  */
 TDimensionSizes THDF5_File::GetDatasetDimensionSizes(const hid_t parentGroup,
-                                                     const char* datasetName)
+                                                     TMatrixName datasetName)
 {
   const size_t ndims = GetDatasetNumberOfDimensions(parentGroup, datasetName);
 
@@ -1001,8 +1001,8 @@ TDimensionSizes THDF5_File::GetDatasetDimensionSizes(const hid_t parentGroup,
  * @return Number of dimensions
  * @throw ios::failure
  */
-size_t THDF5_File::GetDatasetNumberOfDimensions(const hid_t  parentGroup,
-                                                const char* datasetName)
+size_t THDF5_File::GetDatasetNumberOfDimensions(const hid_t parentGroup,
+                                                TMatrixName datasetName)
 {
   int dims = 0;
 
@@ -1027,8 +1027,8 @@ size_t THDF5_File::GetDatasetNumberOfDimensions(const hid_t  parentGroup,
  * @return Number of elements
  * @throw ios::failure
  */
-size_t THDF5_File::GetDatasetElementCount(const hid_t  parentGroup,
-                                          const char* datasetName)
+size_t THDF5_File::GetDatasetElementCount(const hid_t parentGroup,
+                                          TMatrixName datasetName)
 {
   hsize_t dims[3] = {0, 0, 0};
 
@@ -1052,8 +1052,8 @@ size_t THDF5_File::GetDatasetElementCount(const hid_t  parentGroup,
  * @param [in] datasetName    - Dataset name
  * @param [in] matrixDataType - Matrix data type in the file
  */
-void THDF5_File::WriteMatrixDataType(const hid_t                parentGroup,
-                                     const char*                datasetName,
+void THDF5_File::WriteMatrixDataType(const hid_t            parentGroup,
+                                     TMatrixName            datasetName,
                                      const TMatrixDataType& matrixDataType)
 {
   WriteStringAttribute(parentGroup,
@@ -1071,8 +1071,8 @@ void THDF5_File::WriteMatrixDataType(const hid_t                parentGroup,
  * @param [in] datasetName      - Dataset name
  * @param [in] matrixDomainType - Matrix domain type
  */
-void THDF5_File::WriteMatrixDomainType(const hid_t                  parentGroup,
-                                       const char*                  datasetName,
+void THDF5_File::WriteMatrixDomainType(const hid_t              parentGroup,
+                                       TMatrixName              datasetName,
                                        const TMatrixDomainType& matrixDomainType)
 {
   WriteStringAttribute(parentGroup,
@@ -1092,7 +1092,7 @@ void THDF5_File::WriteMatrixDomainType(const hid_t                  parentGroup,
  * @throw ios::failure
  */
 THDF5_File::TMatrixDataType THDF5_File::ReadMatrixDataType(const hid_t parentGroup,
-                                                           const char* datasetName)
+                                                           TMatrixName datasetName)
 {
   string paramValue = ReadStringAttribute(parentGroup, datasetName, matrixDataTypeName);
 
@@ -1125,7 +1125,7 @@ THDF5_File::TMatrixDataType THDF5_File::ReadMatrixDataType(const hid_t parentGro
  * @throw ios::failure
  */
 THDF5_File::TMatrixDomainType THDF5_File::ReadMatrixDomainType(const hid_t parentGroup,
-                                                               const char* datasetName)
+                                                               TMatrixName datasetName)
 {
   string paramValue = ReadStringAttribute(parentGroup, datasetName, matrixDomainTypeName);
 
@@ -1159,7 +1159,7 @@ THDF5_File::TMatrixDomainType THDF5_File::ReadMatrixDomainType(const hid_t paren
  * @throw ios::failure
  */
 inline void THDF5_File::WriteStringAttribute(const hid_t   parentGroup,
-                                             const char*   datasetName,
+                                             TMatrixName   datasetName,
                                              const char*   attributeName,
                                              const string& value)
 {
@@ -1187,7 +1187,7 @@ inline void THDF5_File::WriteStringAttribute(const hid_t   parentGroup,
  * @throw ios::failure
  */
 inline string THDF5_File::ReadStringAttribute(const hid_t parentGroup,
-                                              const char* datasetName,
+                                              TMatrixName datasetName,
                                               const char* attributeName)
 {
   char value[256] = "";

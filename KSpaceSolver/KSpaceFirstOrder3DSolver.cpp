@@ -188,7 +188,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
     // read the actual value of t_index
     size_t new_t_index;
     HDF5_CheckpointFile.ReadScalarValue(HDF5_CheckpointFile.GetRootGroup(),
-                                        t_index_Name,
+                                        t_index_NAME,
                                         new_t_index);
     Parameters.Set_t_index(new_t_index);
 
@@ -719,13 +719,13 @@ void TKSpaceFirstOrder3DSolver::Generate_kappa()
 
     const float c_ref_dt_pi = Parameters.Get_c_ref() * Parameters.Get_dt() * float(M_PI);
 
-    const float Nx_rec = 1.0f / static_cast<float>(Parameters.GetFullDimensionSizes().X);
-    const float Ny_rec = 1.0f / static_cast<float>(Parameters.GetFullDimensionSizes().Y);
-    const float Nz_rec = 1.0f / static_cast<float>(Parameters.GetFullDimensionSizes().Z);
+    const float Nx_rec = 1.0f / static_cast<float>(Parameters.GetFullDimensionSizes().nx);
+    const float Ny_rec = 1.0f / static_cast<float>(Parameters.GetFullDimensionSizes().ny);
+    const float Nz_rec = 1.0f / static_cast<float>(Parameters.GetFullDimensionSizes().nz);
 
-    const size_t X_Size  = Parameters.GetReducedDimensionSizes().X;
-    const size_t Y_Size  = Parameters.GetReducedDimensionSizes().Y;
-    const size_t Z_Size  = Parameters.GetReducedDimensionSizes().Z;
+    const size_t X_Size  = Parameters.GetReducedDimensionSizes().nx;
+    const size_t Y_Size  = Parameters.GetReducedDimensionSizes().ny;
+    const size_t Z_Size  = Parameters.GetReducedDimensionSizes().nz;
 
     float * kappa = Get_kappa().GetRawData();
 
@@ -774,17 +774,17 @@ void TKSpaceFirstOrder3DSolver::Generate_kappa_absorb_nabla1_absorb_nabla2()
     const float c_ref_dt_2 = Parameters.Get_c_ref() * Parameters.Get_dt() * 0.5f;
     const float pi_2       = float(M_PI) * 2.0f;
 
-    const size_t Nx = Parameters.GetFullDimensionSizes().X;
-    const size_t Ny = Parameters.GetFullDimensionSizes().Y;
-    const size_t Nz = Parameters.GetFullDimensionSizes().Z;
+    const size_t Nx = Parameters.GetFullDimensionSizes().nx;
+    const size_t Ny = Parameters.GetFullDimensionSizes().ny;
+    const size_t Nz = Parameters.GetFullDimensionSizes().nz;
 
     const float Nx_rec   = 1.0f / (float) Nx;
     const float Ny_rec   = 1.0f / (float) Ny;
     const float Nz_rec   = 1.0f / (float) Nz;
 
-    const size_t X_Size  = Parameters.GetReducedDimensionSizes().X;
-    const size_t Y_Size  = Parameters.GetReducedDimensionSizes().Y;
-    const size_t Z_Size  = Parameters.GetReducedDimensionSizes().Z;
+    const size_t X_Size  = Parameters.GetReducedDimensionSizes().nx;
+    const size_t Y_Size  = Parameters.GetReducedDimensionSizes().ny;
+    const size_t Z_Size  = Parameters.GetReducedDimensionSizes().nz;
 
     float * kappa           = Get_kappa().GetRawData();
     float * absorb_nabla1   = Get_absorb_nabla1().GetRawData();
@@ -855,9 +855,9 @@ void TKSpaceFirstOrder3DSolver::Generate_absorb_tau_absorb_eta_matrix()
   { // matrix
     #pragma omp parallel
     {
-      const size_t Z_Size  = Parameters.GetFullDimensionSizes().Z;
-      const size_t Y_Size  = Parameters.GetFullDimensionSizes().Y;
-      const size_t X_Size  = Parameters.GetFullDimensionSizes().X;
+      const size_t Z_Size  = Parameters.GetFullDimensionSizes().nz;
+      const size_t Y_Size  = Parameters.GetFullDimensionSizes().ny;
+      const size_t X_Size  = Parameters.GetFullDimensionSizes().nx;
 
       float * absorb_tau = Get_absorb_tau().GetRawData();
       float * absorb_eta = Get_absorb_eta().GetRawData();
@@ -938,9 +938,9 @@ void TKSpaceFirstOrder3DSolver::Calculate_dt_rho0_non_uniform()
     const float * duydyn_sgy = Get_dyudyn_sgy().GetRawData();
     const float * duzdzn_sgz = Get_dzudzn_sgz().GetRawData();
 
-    const size_t Z_Size = Get_dt_rho0_sgx().GetDimensionSizes().Z;
-    const size_t Y_Size = Get_dt_rho0_sgx().GetDimensionSizes().Y;
-    const size_t X_Size = Get_dt_rho0_sgx().GetDimensionSizes().X;
+    const size_t Z_Size = Get_dt_rho0_sgx().GetDimensionSizes().nz;
+    const size_t Y_Size = Get_dt_rho0_sgx().GetDimensionSizes().ny;
+    const size_t X_Size = Get_dt_rho0_sgx().GetDimensionSizes().nx;
 
     const size_t SliceSize = (X_Size * Y_Size );
 
@@ -1750,7 +1750,7 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
   {
     Get_p().CopyFromDevice();
     Get_p().WriteDataToHDF5File(Parameters.HDF5_OutputFile,
-                                p_final_Name,
+                                p_final_NAME,
                                 Parameters.GetCompressionLevel());
   }// p_final
 
@@ -1761,13 +1761,13 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
     Get_uz_sgz().CopyFromDevice();
 
     Get_ux_sgx().WriteDataToHDF5File(Parameters.HDF5_OutputFile,
-                                     ux_final_Name,
+                                     ux_final_NAME,
                                      Parameters.GetCompressionLevel());
     Get_uy_sgy().WriteDataToHDF5File(Parameters.HDF5_OutputFile,
-                                     uy_final_Name,
+                                     uy_final_NAME,
                                      Parameters.GetCompressionLevel());
     Get_uz_sgz().WriteDataToHDF5File(Parameters.HDF5_OutputFile,
-                                     uz_final_Name,
+                                     uz_final_NAME,
                                      Parameters.GetCompressionLevel());
   }// u_final
 
@@ -1781,14 +1781,14 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
     if (Parameters.Get_sensor_mask_type() == TParameters::smt_index)
     {
       Get_sensor_mask_index().RecomputeIndicesToMatlab();
-      Get_sensor_mask_index().WriteDataToHDF5File(Parameters.HDF5_OutputFile,sensor_mask_index_Name,
+      Get_sensor_mask_index().WriteDataToHDF5File(Parameters.HDF5_OutputFile,sensor_mask_index_NAME,
                                                   Parameters.GetCompressionLevel());
     }
 
     if (Parameters.Get_sensor_mask_type() == TParameters::smt_corners)
     {
       Get_sensor_mask_corners().RecomputeIndicesToMatlab();
-      Get_sensor_mask_corners().WriteDataToHDF5File(Parameters.HDF5_OutputFile,sensor_mask_corners_Name,
+      Get_sensor_mask_corners().WriteDataToHDF5File(Parameters.HDF5_OutputFile,sensor_mask_corners_NAME,
                                                     Parameters.GetCompressionLevel());
     }
   }
@@ -1853,19 +1853,19 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   MatrixContainer.StoreDataIntoCheckpointFile(HDF5_CheckpointFile);
   // Write t_index
   HDF5_CheckpointFile.WriteScalarValue(HDF5_CheckpointFile.GetRootGroup(),
-                                       t_index_Name,
+                                       t_index_NAME,
                                        Parameters.Get_t_index());
 
   // store basic dimension sizes (Nx, Ny, Nz) - Nt is not necessary
   HDF5_CheckpointFile.WriteScalarValue(HDF5_CheckpointFile.GetRootGroup(),
-                                       Nx_Name,
-                                       Parameters.GetFullDimensionSizes().X);
+                                       Nx_NAME,
+                                       Parameters.GetFullDimensionSizes().nx);
   HDF5_CheckpointFile.WriteScalarValue(HDF5_CheckpointFile.GetRootGroup(),
-                                       Ny_Name,
-                                       Parameters.GetFullDimensionSizes().Y);
+                                       Ny_NAME,
+                                       Parameters.GetFullDimensionSizes().ny);
   HDF5_CheckpointFile.WriteScalarValue(HDF5_CheckpointFile.GetRootGroup(),
-                                       Nz_Name,
-                                       Parameters.GetFullDimensionSizes().Z);
+                                       Nz_NAME,
+                                       Parameters.GetFullDimensionSizes().nz);
 
   // Write checkpoint file header
   THDF5_FileHeader CheckpointFileHeader = Parameters.HDF5_FileHeader;
@@ -1901,7 +1901,7 @@ void  TKSpaceFirstOrder3DSolver::WriteOutputDataInfo()
 {
   // write t_index into the output file
   Parameters.HDF5_OutputFile.WriteScalarValue(Parameters.HDF5_OutputFile.GetRootGroup(),
-                                               t_index_Name,
+                                               t_index_NAME,
                                                Parameters.Get_t_index());
 
   // Write scalars
@@ -2009,16 +2009,16 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
   // Check dimension sizes
   TDimensionSizes OutputDimSizes;
   OutputFile.ReadScalarValue(OutputFile.GetRootGroup(),
-                             Nx_Name,
-                             OutputDimSizes.X);
+                             Nx_NAME,
+                             OutputDimSizes.nx);
 
   OutputFile.ReadScalarValue(OutputFile.GetRootGroup(),
-                             Ny_Name,
-                             OutputDimSizes.Y);
+                             Ny_NAME,
+                             OutputDimSizes.ny);
 
   OutputFile.ReadScalarValue(OutputFile.GetRootGroup(),
-                             Nz_Name,
-                             OutputDimSizes.Z);
+                             Nz_NAME,
+                             OutputDimSizes.nz);
 
  if (Parameters.GetFullDimensionSizes() != OutputDimSizes)
  {
@@ -2026,12 +2026,12 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
     snprintf(ErrorMessage,
              256,
              ERR_FMT_OUTPUT_DIMENSIONS_NOT_MATCH,
-             OutputDimSizes.X,
-             OutputDimSizes.Y,
-             OutputDimSizes.Z,
-             Parameters.GetFullDimensionSizes().X,
-             Parameters.GetFullDimensionSizes().Y,
-             Parameters.GetFullDimensionSizes().Z);
+             OutputDimSizes.nx,
+             OutputDimSizes.ny,
+             OutputDimSizes.nz,
+             Parameters.GetFullDimensionSizes().nx,
+             Parameters.GetFullDimensionSizes().ny,
+             Parameters.GetFullDimensionSizes().nz);
 
    throw ios::failure(ErrorMessage);
  }
@@ -2091,16 +2091,16 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
   // Check dimension sizes
   TDimensionSizes CheckpointDimSizes;
   HDF5_CheckpointFile.ReadScalarValue(HDF5_CheckpointFile.GetRootGroup(),
-                                      Nx_Name,
-                                      CheckpointDimSizes.X);
+                                      Nx_NAME,
+                                      CheckpointDimSizes.nx);
 
   HDF5_CheckpointFile.ReadScalarValue(HDF5_CheckpointFile.GetRootGroup(),
-                                      Ny_Name,
-                                      CheckpointDimSizes.Y);
+                                      Ny_NAME,
+                                      CheckpointDimSizes.ny);
 
   HDF5_CheckpointFile.ReadScalarValue(HDF5_CheckpointFile.GetRootGroup(),
-                                      Nz_Name,
-                                      CheckpointDimSizes.Z);
+                                      Nz_NAME,
+                                      CheckpointDimSizes.nz);
 
  if (Parameters.GetFullDimensionSizes() != CheckpointDimSizes)
  {
@@ -2108,12 +2108,12 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
     snprintf(ErrorMessage,
              256,
              ERR_FMT_CHECKPOINT_DIMENSIONS_NOT_MATCH,
-             CheckpointDimSizes.X,
-             CheckpointDimSizes.Y,
-             CheckpointDimSizes.Z,
-             Parameters.GetFullDimensionSizes().X,
-             Parameters.GetFullDimensionSizes().Y,
-             Parameters.GetFullDimensionSizes().Z);
+             CheckpointDimSizes.nx,
+             CheckpointDimSizes.ny,
+             CheckpointDimSizes.nz,
+             Parameters.GetFullDimensionSizes().nx,
+             Parameters.GetFullDimensionSizes().ny,
+             Parameters.GetFullDimensionSizes().nz);
 
    throw ios::failure(ErrorMessage);
  }

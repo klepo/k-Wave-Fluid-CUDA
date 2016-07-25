@@ -103,9 +103,9 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_3D_R2C(const TDimensionSizes& inMatrix
 {
   cufftResult cufftError;
   cufftError = cufftPlan3d(&cufftPlan_3D_R2C,
-                           static_cast<int>(inMatrixDims.Z),
-                           static_cast<int>(inMatrixDims.Y),
-                           static_cast<int>(inMatrixDims.X),
+                           static_cast<int>(inMatrixDims.nz),
+                           static_cast<int>(inMatrixDims.ny),
+                           static_cast<int>(inMatrixDims.nx),
                            CUFFT_R2C);
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Plan_3D_R2C");
@@ -128,9 +128,9 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_3D_C2R(const TDimensionSizes& outMatri
 {
   cufftResult_t cufftError;
   cufftError = cufftPlan3d(&cufftPlan_3D_C2R,
-                           static_cast<int>(outMatrixDims.Z),
-                           static_cast<int>(outMatrixDims.Y),
-                           static_cast<int>(outMatrixDims.X),
+                           static_cast<int>(outMatrixDims.nz),
+                           static_cast<int>(outMatrixDims.ny),
+                           static_cast<int>(outMatrixDims.nx),
                            CUFFT_C2R);
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "CUDA_FFT_3D_C2R");
@@ -157,9 +157,9 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DX_R2C(const TDimensionSizes& inMatri
   cufftResult_t cufftError;
 
   // set dimensions
-  const int nx   = static_cast<int> (inMatrixDims.X);
-  const int ny   = static_cast<int> (inMatrixDims.Y);
-  const int nz   = static_cast<int> (inMatrixDims.Z);
+  const int nx   = static_cast<int> (inMatrixDims.nx);
+  const int ny   = static_cast<int> (inMatrixDims.ny);
+  const int nz   = static_cast<int> (inMatrixDims.nz);
   const int nx_2 = ((nx / 2) + 1);
 
   // set up rank and strides
@@ -207,9 +207,9 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DY_R2C(const TDimensionSizes& inMatri
   cufftResult_t cufftError;
 
   // set dimensions
-  const int nx   = static_cast<int> (inMatrixDims.X);
-  const int ny   = static_cast<int> (inMatrixDims.Y);
-  const int nz   = static_cast<int> (inMatrixDims.Z);
+  const int nx   = static_cast<int> (inMatrixDims.nx);
+  const int ny   = static_cast<int> (inMatrixDims.ny);
+  const int nz   = static_cast<int> (inMatrixDims.nz);
   const int ny_2 = ((ny / 2) + 1);
 
   // set up rank and strides
@@ -254,9 +254,9 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DZ_R2C(const TDimensionSizes& inMatri
 {
   cufftResult_t cufftError;
 
-  const int nx   = static_cast<int> (inMatrixDims.X);
-  const int ny   = static_cast<int> (inMatrixDims.Y);
-  const int nz   = static_cast<int> (inMatrixDims.Z);
+  const int nx   = static_cast<int> (inMatrixDims.nx);
+  const int ny   = static_cast<int> (inMatrixDims.ny);
+  const int nz   = static_cast<int> (inMatrixDims.nz);
   const int nz_2 = ((nz / 2) + 1);
 
   // set up rank and strides
@@ -304,9 +304,9 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DX_C2R(const TDimensionSizes& outMatr
   cufftResult_t cufftError;
 
   // set dimensions
-  const int nx   = static_cast<int> (outMatrixDims.X);
-  const int ny   = static_cast<int> (outMatrixDims.Y);
-  const int nz   = static_cast<int> (outMatrixDims.Z);
+  const int nx   = static_cast<int> (outMatrixDims.nx);
+  const int ny   = static_cast<int> (outMatrixDims.ny);
+  const int nz   = static_cast<int> (outMatrixDims.nz);
   const int nx_2 = ((nx / 2) + 1);
 
   // set up rank and strides
@@ -352,9 +352,9 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DY_C2R(const TDimensionSizes& outMatr
 {
   cufftResult_t cufftError;
   // set dimensions
-  const int nx   = static_cast<int> (outMatrixDims.X);
-  const int ny   = static_cast<int> (outMatrixDims.Y);
-  const int nz   = static_cast<int> (outMatrixDims.Z);
+  const int nx   = static_cast<int> (outMatrixDims.nx);
+  const int ny   = static_cast<int> (outMatrixDims.ny);
+  const int nz   = static_cast<int> (outMatrixDims.nz);
   const int ny_2 = ((ny / 2) + 1);
 
   // set up rank and strides
@@ -401,9 +401,9 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DZ_C2R(const TDimensionSizes& outMatr
   cufftResult_t cufftError;
 
   // set dimensions
-  const int nx   = static_cast<int> (outMatrixDims.X);
-  const int ny   = static_cast<int> (outMatrixDims.Y);
-  const int nz   = static_cast<int> (outMatrixDims.Z);
+  const int nx   = static_cast<int> (outMatrixDims.nx);
+  const int ny   = static_cast<int> (outMatrixDims.ny);
+  const int nz   = static_cast<int> (outMatrixDims.nz);
   const int nz_2 = ((nz / 2) + 1);
 
   // set up rank and strides
@@ -570,9 +570,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DX_R2C(TRealMatrix& inMatrix)
 void TCUFFTComplexMatrix::Compute_FFT_1DY_R2C(TRealMatrix& inMatrix)
 {
   /// Transpose a real 3D matrix in the X-Y direction
-  dim3 dimSizes(inMatrix.GetDimensionSizes().X,
-                inMatrix.GetDimensionSizes().Y,
-                inMatrix.GetDimensionSizes().Z);
+  dim3 dimSizes(inMatrix.GetDimensionSizes().nx,
+                inMatrix.GetDimensionSizes().ny,
+                inMatrix.GetDimensionSizes().nz);
 
   SolverCUDAKernels::TrasposeReal3DMatrixXY(deviceMatrixData,
                                             inMatrix.GetRawDeviceData(),
@@ -599,9 +599,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_R2C(TRealMatrix& inMatrix)
 void TCUFFTComplexMatrix::Compute_FFT_1DZ_R2C(TRealMatrix& inMatrix)
 {
   /// Transpose a real 3D matrix in the X-Z direction
-  dim3 dimSizes(inMatrix.GetDimensionSizes().X,
-                inMatrix.GetDimensionSizes().Y,
-                inMatrix.GetDimensionSizes().Z);
+  dim3 dimSizes(inMatrix.GetDimensionSizes().nx,
+                inMatrix.GetDimensionSizes().ny,
+                inMatrix.GetDimensionSizes().nz);
 
   SolverCUDAKernels::TrasposeReal3DMatrixXZ(deviceMatrixData,
                                             inMatrix.GetRawDeviceData(),
@@ -656,9 +656,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_C2R(TRealMatrix& outMatrix)
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_1DY_C2R");
 
   /// Transpose a real 3D matrix back in the X-Y direction
-  dim3 dimSizes(outMatrix.GetDimensionSizes().Y,
-                outMatrix.GetDimensionSizes().X,
-                outMatrix.GetDimensionSizes().Z);
+  dim3 dimSizes(outMatrix.GetDimensionSizes().ny,
+                outMatrix.GetDimensionSizes().nx,
+                outMatrix.GetDimensionSizes().nz);
 
   SolverCUDAKernels::TrasposeReal3DMatrixXY(outMatrix.GetRawDeviceData(),
                                             deviceMatrixData,
@@ -687,9 +687,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_C2R(TRealMatrix& outMatrix)
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_1DZ_C2R");
 
   /// Transpose a real 3D matrix in the Z<->X direction
-  dim3 DimSizes(outMatrix.GetDimensionSizes().Z,
-                outMatrix.GetDimensionSizes().Y,
-                outMatrix.GetDimensionSizes().X);
+  dim3 DimSizes(outMatrix.GetDimensionSizes().nz,
+                outMatrix.GetDimensionSizes().ny,
+                outMatrix.GetDimensionSizes().nx);
 
   SolverCUDAKernels::TrasposeReal3DMatrixXZ(outMatrix.GetRawDeviceData(),
                                             GetRawDeviceData(),
