@@ -61,15 +61,15 @@ class TBaseFloatMatrix : public TBaseMatrix
     }
 
     /// Get element count of the matrix.
-    virtual size_t GetTotalElementCount() const
+    virtual size_t GetElementCount() const
     {
-      return totalElementCount;
+      return nElements;
     };
 
     /// Get total allocated element count (might differ from total element count used for the simulation because of padding).
-    virtual size_t GetTotalAllocatedElementCount() const
+    virtual size_t GetAllocatedElementCount() const
     {
-      return totalAllocatedElementCount;
+      return nAllocatedElements;
     };
 
     /// Zero all elements of the matrix (NUMA first touch).
@@ -122,9 +122,9 @@ class TBaseFloatMatrix : public TBaseMatrix
     TBaseFloatMatrix& operator =(const TBaseFloatMatrix& src);
 
     /// Total number of elements.
-    size_t totalElementCount;
+    size_t nElements;
     /// Total number of allocated elements (in terms of floats).
-    size_t totalAllocatedElementCount;
+    size_t nAllocatedElements;
 
     /// Dimension sizes.
     struct TDimensionSizes dimensionSizes;

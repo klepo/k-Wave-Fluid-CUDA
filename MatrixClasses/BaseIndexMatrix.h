@@ -62,15 +62,15 @@ class TBaseIndexMatrix : public TBaseMatrix
     }
 
     /// Get total element count of the matrix.
-    virtual size_t GetTotalElementCount() const
+    virtual size_t GetElementCount() const
     {
-      return totalElementCount;
+      return nElements;
     };
 
     /// Get total allocated element count (might differ from total element count used for the simulation because of padding).
-    virtual size_t GetTotalAllocatedElementCount() const
+    virtual size_t GetAllocatedElementCount() const
     {
-      return totalAllocatedElementCount;
+      return nAllocatedElements;
     };
 
     /// Zero all elements of the matrix (NUMA first touch).
@@ -119,17 +119,17 @@ class TBaseIndexMatrix : public TBaseMatrix
     TBaseIndexMatrix & operator=(const TBaseIndexMatrix& src);
 
     /// Total number of elements.
-    size_t totalElementCount;
+    size_t nElements;
     /// Total number of allocated elements (the array size).
-    size_t totalAllocatedElementCount;
+    size_t nAllocatedElements;
 
     /// Dimension sizes.
     struct TDimensionSizes dimensionSizes;
 
     /// Size of 1D row in X dimension.
-    size_t dataRowSize;
+    size_t rowSize;
     /// Size of 2D slab (X,Y).
-    size_t dataSlabSize;
+    size_t slabSize;
 
     /// Raw CPU matrix data.
     size_t* matrixData;

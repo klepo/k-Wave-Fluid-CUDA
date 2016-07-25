@@ -398,7 +398,7 @@ hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t Index)
 
   // if time series then Number of steps else 1
   size_t NumberOfSampledTimeSteps = (ReductionOp == roNONE)
-                                      ? params.Get_Nt() - params.GetStartTimeIndex()
+                                      ? params.Get_nt() - params.GetStartTimeIndex()
                                       : 0; // will be a 3D dataset
   // Set cuboid dimensions (subtract two corners (add 1) and use the appropriate component)
   TDimensionSizes CuboidSize((SensorMask.GetBottomRightCorner(Index) - SensorMask.GetTopLeftCorner(Index)).nx,

@@ -8,27 +8,24 @@
  * @brief       The implementation file containing the command line parameters.
  *
  * @version     kspaceFirstOrder3D 3.4
+ *
  * @date        29 August   2012, 11:25 (created) \n
  *              18 July     2016, 13:56 (revised)
  *
- *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
- * and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation, either version
- * 3 of the License, or (at your option) any later version.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
+ * If not, see http://www.gnu.org/licenses/.
  */
 
 //Linux build
@@ -54,44 +51,46 @@
 #include <Parameters/CommandLineParameters.h>
 #include <HDF5/HDF5_File.h>
 
-//--------------------------------------------------------------------------//
-//-------------------------- Constants -------------------------------------//
-//--------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//------------------------------------------ CONSTANTS -------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
-//--------------------------------------------------------------------------//
-//--------------------------- Public   -------------------------------------//
-//--------------------------------------------------------------------------//
+
+
+//------------------------------------------------------------------------------------------------//
+//--------------------------------------- Public methods -----------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 /**
  * Constructor.
  */
 TCommandLineParameters::TCommandLineParameters() :
-        InputFileName(""), OutputFileName (""), CheckpointFileName(""),
+        inputFileName(""), outputFileName (""), checkpointFileName(""),
         #ifdef _OPENMP
-          NumberOfThreads(omp_get_num_procs()),
+          numberOfThreads(omp_get_num_procs()),
         #else
-          NumberOfThreads(1),
+          numberOfThreads(1),
         #endif
 
-        GPUDeviceIdx(-1), // default is undefined -1
+        cudaDeviceIdx(-1), // default is undefined -1
 
-        ProgressPrintInterval(DefaultProgressPrintInterval),
-        CompressionLevel(DefaultCompressionLevel),
-        BenchmarkFlag (false), BenchmarkTimeStepsCount(0),
-        CheckpointInterval(0),
-        PrintVersion (false),
+        progressPrintInterval(DEFAULT_PROGRESS_PRINT_INTERVAL),
+        compressionLevel(DEFAULT_COMPRESSION_LEVEL),
+        benchmarkFlag (false), benchmarkTimeStepCount(0),
+        checkpointInterval(0),
+        printVersion (false),
 
-        Store_p_raw(false), Store_p_rms(false), Store_p_max(false), Store_p_min(false),
-        Store_p_max_all(false), Store_p_min_all(false), Store_p_final(false),
-        Store_u_raw(false), Store_u_non_staggered_raw(false),
-        Store_u_rms(false), Store_u_max(false), Store_u_min(false),
-        Store_u_max_all(false), Store_u_min_all(false), Store_u_final(false),
-        CopySensorMask(false),
-        StartTimeStep(0)
+        store_p_raw(false), store_p_rms(false), store_p_max(false), store_p_min(false),
+        store_p_max_all(false), store_p_min_all(false), store_p_final(false),
+        store_u_raw(false), store_u_non_staggered_raw(false),
+        store_u_rms(false), store_u_max(false), store_u_min(false),
+        store_u_max_all(false), store_u_min_all(false), store_u_final(false),
+        copySensorMask(false),
+        startTimeStep(0)
 {
 
 }// end of TCommandLineParameters
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Print usage.
@@ -108,156 +107,145 @@ void TCommandLineParameters::PrintUsage()
 
   TLogger::Log(TLogger::BASIC,
                OUT_FMT_USAGE_PART_2,
-               DefaultProgressPrintInterval,
-               DefaultCompressionLevel);
+               DEFAULT_PROGRESS_PRINT_INTERVAL,
+               DEFAULT_COMPRESSION_LEVEL);
 }// end of PrintUsage
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Print out commandline parameters.
  */
 void TCommandLineParameters::PrintComandlineParamers()
 {
-  TLogger::Log(TLogger::ADVANCED,OUT_FMT_SEPARATOR);
+  TLogger::Log(TLogger::ADVANCED, OUT_FMT_SEPARATOR);
 
   TLogger::Log(TLogger::ADVANCED,
-               TLogger::WordWrapString(OUT_FMT_INPUT_FILE + InputFileName,
+               TLogger::WordWrapString(OUT_FMT_INPUT_FILE + inputFileName,
                                        ERR_FMT_PATH_DELIMITERS,
                                        15).c_str());
 
   TLogger::Log(TLogger::ADVANCED,
-               TLogger::WordWrapString(OUT_FMT_OUTPUT_FILE + OutputFileName,
+               TLogger::WordWrapString(OUT_FMT_OUTPUT_FILE + outputFileName,
                                        ERR_FMT_PATH_DELIMITERS,
                                        15).c_str());
-
 
   if (IsCheckpointEnabled())
   {
     TLogger::Log(TLogger::ADVANCED,
-                 TLogger::WordWrapString(OUT_FMT_CHECKPOINT_FILE + CheckpointFileName,
+                 TLogger::WordWrapString(OUT_FMT_CHECKPOINT_FILE + checkpointFileName,
                                          ERR_FMT_PATH_DELIMITERS,
                                          15).c_str());
 
-    TLogger::Log(TLogger::ADVANCED,OUT_FMT_SEPARATOR);
+    TLogger::Log(TLogger::ADVANCED, OUT_FMT_SEPARATOR);
 
-    TLogger::Log(TLogger::ADVANCED,
-                 OUT_FMT_CHECKPOINT_INTERVAL,
-                 CheckpointInterval);
+    TLogger::Log(TLogger::ADVANCED, OUT_FMT_CHECKPOINT_INTERVAL, checkpointInterval);
   }
   else
   {
-    TLogger::Log(TLogger::ADVANCED,OUT_FMT_SEPARATOR);
+    TLogger::Log(TLogger::ADVANCED, OUT_FMT_SEPARATOR);
   }
 
 
-  TLogger::Log(TLogger::ADVANCED,
-               OUT_FMT_COMPRESSION_LEVEL,
-               CompressionLevel);
+  TLogger::Log(TLogger::ADVANCED, OUT_FMT_COMPRESSION_LEVEL, compressionLevel);
 
-  TLogger::Log(TLogger::FULL,
-               OUT_FMT_PRINT_PROGRESS_INTERVAL,
-               ProgressPrintInterval);
+  TLogger::Log(TLogger::FULL,     OUT_FMT_PRINT_PROGRESS_INTERVAL, progressPrintInterval);
 
-  if (BenchmarkFlag)
-  TLogger::Log(TLogger::FULL,
-               OUT_FMT_BENCHMARK_TIME_STEP,
-               BenchmarkTimeStepsCount);
+  if (benchmarkFlag)
+  {
+    TLogger::Log(TLogger::FULL, OUT_FMT_BENCHMARK_TIME_STEP, benchmarkTimeStepCount);
+  }
+
+  TLogger::Log(TLogger::ADVANCED, OUT_FMT_SAMPLING_FLAGS);
 
 
-  TLogger::Log(TLogger::ADVANCED,OUT_FMT_SAMPLING_FLAGS);
-
-
-  std::string SampledQuantitiesList = "";
-
+  string sampledQuantitiesList = "";
   // Sampled p quantities
-  if (Store_p_raw)
+
+  if (store_p_raw)
   {
-    SampledQuantitiesList += "p_raw, ";
+    sampledQuantitiesList += "p_raw, ";
   }
-  if (Store_p_rms)
+  if (store_p_rms)
   {
-    SampledQuantitiesList += "p_rms, ";
+    sampledQuantitiesList += "p_rms, ";
   }
-  if (Store_p_max)
+  if (store_p_max)
   {
-    SampledQuantitiesList += "p_max, ";
+    sampledQuantitiesList += "p_max, ";
   }
-  if (Store_p_min)
+  if (store_p_min)
   {
-    SampledQuantitiesList += "p_min, ";
+    sampledQuantitiesList += "p_min, ";
   }
-  if (Store_p_max_all)
+  if (store_p_max_all)
   {
-    SampledQuantitiesList += "p_max_all, ";
+    sampledQuantitiesList += "p_max_all, ";
   }
-  if (Store_p_min_all)
+  if (store_p_min_all)
   {
-    SampledQuantitiesList += "p_min_all, ";
+    sampledQuantitiesList += "p_min_all, ";
   }
-  if (Store_p_final)
+  if (store_p_final)
   {
-    SampledQuantitiesList += "p_final, ";
+    sampledQuantitiesList += "p_final, ";
   }
 
   // Sampled u quantities
-  if (Store_u_raw)
+  if (store_u_raw)
   {
-    SampledQuantitiesList += "u_raw, ";
+    sampledQuantitiesList += "u_raw, ";
   }
-  if (Store_u_rms)
+  if (store_u_rms)
   {
-    SampledQuantitiesList += "u_rms, ";
+    sampledQuantitiesList += "u_rms, ";
   }
-  if (Store_u_max)
+  if (store_u_max)
   {
-    SampledQuantitiesList += "u_max, ";
+    sampledQuantitiesList += "u_max, ";
   }
-  if (Store_u_min)
+  if (store_u_min)
   {
-    SampledQuantitiesList += "u_min, ";
+    sampledQuantitiesList += "u_min, ";
   }
-  if (Store_u_max_all)
+  if (store_u_max_all)
   {
-    SampledQuantitiesList += "u_max_all, ";
+    sampledQuantitiesList += "u_max_all, ";
   }
-  if (Store_u_min_all)
+  if (store_u_min_all)
   {
-    SampledQuantitiesList += "u_min_all, ";
+    sampledQuantitiesList += "u_min_all, ";
   }
-  if (Store_u_final)
+  if (store_u_final)
   {
-    SampledQuantitiesList += "u_final, ";
+    sampledQuantitiesList += "u_final, ";
   }
 
-  if (Store_u_non_staggered_raw)
+  if (store_u_non_staggered_raw)
   {
-    SampledQuantitiesList += "u_non_staggered_raw, ";
+    sampledQuantitiesList += "u_non_staggered_raw, ";
   }
 
   // remove comma and space symbols
-  if (SampledQuantitiesList.length() > 0)
+  if (sampledQuantitiesList.length() > 0)
   {
-    SampledQuantitiesList.pop_back();
-    SampledQuantitiesList.pop_back();
+    sampledQuantitiesList.pop_back();
+    sampledQuantitiesList.pop_back();
   }
 
   TLogger::Log(TLogger::ADVANCED,
-               TLogger::WordWrapString(SampledQuantitiesList,
+               TLogger::WordWrapString(sampledQuantitiesList,
                                        " ",2).c_str());
 
-  TLogger::Log(TLogger::ADVANCED,OUT_FMT_SEPARATOR);
+  TLogger::Log(TLogger::ADVANCED, OUT_FMT_SEPARATOR);
 
-  TLogger::Log(TLogger::ADVANCED,
-              OUT_FMT_SAMPLING_BEGINS_AT,
-              StartTimeStep+1);
+  TLogger::Log(TLogger::ADVANCED, OUT_FMT_SAMPLING_BEGINS_AT, startTimeStep + 1);
 
-  if (CopySensorMask)
+  if (copySensorMask)
   {
-    TLogger::Log(TLogger::ADVANCED,
-                 OUT_FMT_COPY_SENSOR_MASK);
+    TLogger::Log(TLogger::ADVANCED, OUT_FMT_COPY_SENSOR_MASK);
   }
-}// end of PrintSetup
-//------------------------------------------------------------------------------
+}// end of PrintComandlineParamers
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Parse command line.
@@ -268,9 +256,9 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
 {
   char c;
   int longIndex = -1;
-  bool CheckpointFlag = false;
+  bool checkpointFlag = false;
 
-  const int ErrorLineIndentation = 9;
+  const int errorLineIndentation = 9;
 
   // all optional arguments are in fact requested. This was chosen to prevent
   // getopt error messages and provide custom error handling.
@@ -326,14 +314,14 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         if ((optarg != NULL) &&
             ((strlen(optarg) > 0) && (optarg[0] != '-')))
         {
-          InputFileName = optarg;
+          inputFileName = optarg;
         }
         else
         {
           PrintUsage();
           TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_INPUT_FILE,
                                                              " ",
-                                                             ErrorLineIndentation).c_str());
+                                                             errorLineIndentation).c_str());
         }
         break;
       }
@@ -345,14 +333,14 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         if ((optarg != NULL) &&
             ((strlen(optarg) > 0) && (optarg[0] != '-')))
         {
-          OutputFileName = optarg;
+          outputFileName = optarg;
         }
         else
         {
           PrintUsage();
           TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_OUTPUT_FILE,
                                                              " ",
-                                                             ErrorLineIndentation).c_str());
+                                                             errorLineIndentation).c_str());
         }
         break;
       }
@@ -361,19 +349,19 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
       {
         try
         {
-          int ConvertedValue = std::stoi(optarg);
-          if ((ConvertedValue  < 1) || (ConvertedValue  > 100))
+          int convertedValue = std::stoi(optarg);
+          if ((convertedValue  < 1) || (convertedValue  > 100))
           {
             throw std::invalid_argument("-r");
           }
-          ProgressPrintInterval = std::stoll(optarg);
+          progressPrintInterval = std::stoll(optarg);
         }
         catch (...)
         {
           PrintUsage();
           TLogger::ErrorAndTerminate(TLogger::WordWrapString(FMT_NO_PROGRESS_PRINT_INTERVAL,
                                                              " ",
-                                                             ErrorLineIndentation).c_str());
+                                                             errorLineIndentation).c_str());
         }
         break;
       }
@@ -386,14 +374,14 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           {
             throw std::invalid_argument("-t");
           }
-          NumberOfThreads = std::stoll(optarg);
+          numberOfThreads = std::stoll(optarg);
         }
         catch (...)
         {
           PrintUsage();
           TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_THREAD_NUMBER,
                                                              " ",
-                                                             ErrorLineIndentation).c_str());
+                                                             errorLineIndentation).c_str());
         }
         break;
       }
@@ -402,8 +390,8 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
       {
         try
         {
-          GPUDeviceIdx = std::stoi(optarg);
-          if (GPUDeviceIdx < 0)
+          cudaDeviceIdx = std::stoi(optarg);
+          if (cudaDeviceIdx < 0)
           {
             throw std::invalid_argument("-g");
           }
@@ -413,7 +401,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           PrintUsage();
           TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_GPU_NUMBER,
                                                              " ",
-                                                             ErrorLineIndentation).c_str());
+                                                             errorLineIndentation).c_str());
         }
         break;
       }
@@ -422,19 +410,19 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
       {
         try
         {
-          int CovertedValue = std::stoi(optarg);
-          if ((CovertedValue < 0) || (CovertedValue > 9))
+          int covertedValue = std::stoi(optarg);
+          if ((covertedValue < 0) || (covertedValue > 9))
           {
             throw std::invalid_argument("-c");
           }
-          CompressionLevel = std::stoll(optarg);
+          compressionLevel = std::stoll(optarg);
         }
         catch (...)
         {
           PrintUsage();
           TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_COMPRESSION_LEVEL,
                                                              " ",
-                                                             ErrorLineIndentation).c_str());
+                                                             errorLineIndentation).c_str());
         }
         break;
       }
@@ -453,14 +441,14 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
           {
             throw std::invalid_argument("-s");
           }
-          StartTimeStep = std::stoll(optarg) - 1;
+          startTimeStep = std::stoll(optarg) - 1;
         }
         catch (...)
         {
           PrintUsage();
           TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_START_TIME_STEP,
                                                              " ",
-                                                             ErrorLineIndentation).c_str());
+                                                             errorLineIndentation).c_str());
         }
         break;
       }
@@ -469,45 +457,45 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
       {
         try
         {
-          BenchmarkFlag = true;
+          benchmarkFlag = true;
           if (std::stoll(optarg) <= 0)
           {
             throw std::invalid_argument("benchmark");
           }
-          BenchmarkTimeStepsCount = std::stoll(optarg);
+          benchmarkTimeStepCount = std::stoll(optarg);
         }
         catch (...)
         {
           PrintUsage();
           TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_BENCHMARK_STEP_SET,
                                                              " ",
-                                                             ErrorLineIndentation).c_str());
+                                                             errorLineIndentation).c_str());
         }
         break;
       }
 
       case 2: // copy_sensor_mask
       {
-        CopySensorMask = true;
+        copySensorMask = true;
         break;
       }
 
       case 3: // checkpoint_file
       {
-        CheckpointFlag = true;
+        checkpointFlag = true;
         // test if the wile was correctly entered (if not, getopt could eat
         // the following parameter)
         if ((optarg != NULL) &&
             ((strlen(optarg) > 0) && (optarg[0] != '-')))
         {
-          CheckpointFileName = optarg;
+          checkpointFileName = optarg;
         }
         else
         {
           PrintUsage();
           TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_FILE,
                                                              " ",
-                                                             ErrorLineIndentation).c_str());
+                                                             errorLineIndentation).c_str());
         }
         break;
       }
@@ -516,19 +504,19 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
       {
         try
         {
-          CheckpointFlag = true;
+          checkpointFlag = true;
           if (std::stoll(optarg) <= 0)
           {
            throw std::invalid_argument("checkpoint_interval");
           }
-          CheckpointInterval = std::stoll(optarg);
+          checkpointInterval = std::stoll(optarg);
         }
         catch (...)
         {
           PrintUsage();
           TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_INTERVAL,
                                                              " ",
-                                                             ErrorLineIndentation).c_str());
+                                                             errorLineIndentation).c_str());
         }
         break;
       }
@@ -537,116 +525,116 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
       {
         try
         {
-          int VerboseLevel = std::stoi(optarg);
-          if ((VerboseLevel < 0) || (VerboseLevel > 2))
+          int verboseLevel = std::stoi(optarg);
+          if ((verboseLevel < 0) || (verboseLevel > 2))
           {
             throw std::invalid_argument("verbose");
           }
-          TLogger::SetLevel(static_cast<TLogger::TLogLevel> (VerboseLevel));
+          TLogger::SetLevel(static_cast<TLogger::TLogLevel> (verboseLevel));
         }
         catch (...)
         {
           PrintUsage();
           TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_VERBOSE_LEVEL,
                                                              " ",
-                                                             ErrorLineIndentation).c_str());
+                                                             errorLineIndentation).c_str());
         }
         break;
       }
 
       case 6: // version
       {
-        PrintVersion = true;
+        printVersion = true;
         break;
       }
 
       case 'p':
       {
-        Store_p_raw = true;
+        store_p_raw = true;
         break;
       }
 
       case 10: // p_rms
       {
-        Store_p_rms = true;
+        store_p_rms = true;
         break;
       }
 
       case 11: // p_max
       {
-        Store_p_max = true;
+        store_p_max = true;
         break;
       }
 
       case 12: // p_min
       {
-        Store_p_min = true;
+        store_p_min = true;
         break;
       }
 
       case 13: // p_max_all
       {
-        Store_p_max_all = true;
+        store_p_max_all = true;
         break;
       }
 
       case 14: // p_min_all
       {
-        Store_p_min_all = true;
+        store_p_min_all = true;
         break;
       }
 
       case 15: // p_final
       {
-        Store_p_final = true;
+        store_p_final = true;
         break;
       }
 
       case 'u':
       {
-        Store_u_raw = true;
+        store_u_raw = true;
         break;
       }
 
       case 20: // u_rms
       {
-        Store_u_rms = true;
+        store_u_rms = true;
         break;
       }
 
       case 21: // u_max
       {
-        Store_u_max = true;
+        store_u_max = true;
         break;
       }
 
       case 22: // u_min
       {
-        Store_u_min = true;
+        store_u_min = true;
         break;
       }
 
       case 23: // u_max_all
       {
-        Store_u_max_all = true;
+        store_u_max_all = true;
         break;
       }
 
       case 24: // u_min_all
       {
-        Store_u_min_all = true;
+        store_u_min_all = true;
         break;
       }
 
       case 25: // u_final
       {
-        Store_u_final = true;
+        store_u_final = true;
         break;
       }
 
       case 26: // u_non_staggered_raw
       {
-        Store_u_non_staggered_raw = true;
+        store_u_non_staggered_raw = true;
         break;
       }
 
@@ -661,7 +649,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
             PrintUsage();
             TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_INPUT_FILE,
                                                                " ",
-                                                               ErrorLineIndentation).c_str());
+                                                               errorLineIndentation).c_str());
             break;
           }
           case 'o':
@@ -669,7 +657,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
             PrintUsage();
             TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_OUTPUT_FILE,
                                                                " ",
-                                                               ErrorLineIndentation).c_str());
+                                                               errorLineIndentation).c_str());
             break;
           }
 
@@ -678,7 +666,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
             PrintUsage();
             TLogger::ErrorAndTerminate(TLogger::WordWrapString(FMT_NO_PROGRESS_PRINT_INTERVAL,
                                                                " ",
-                                                               ErrorLineIndentation).c_str());
+                                                               errorLineIndentation).c_str());
             break;
           }
 
@@ -687,7 +675,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
             PrintUsage();
             TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_COMPRESSION_LEVEL,
                                                                " ",
-                                                               ErrorLineIndentation).c_str());
+                                                               errorLineIndentation).c_str());
             break;
           }
 
@@ -696,7 +684,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
             PrintUsage();
             TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_THREAD_NUMBER,
                                                                " ",
-                                                               ErrorLineIndentation).c_str());
+                                                               errorLineIndentation).c_str());
             break;
           }
 
@@ -705,7 +693,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
             PrintUsage();
             TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_GPU_NUMBER,
                                                                " ",
-                                                               ErrorLineIndentation).c_str());
+                                                               errorLineIndentation).c_str());
             break;
           }
 
@@ -714,7 +702,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
             PrintUsage();
             TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_START_TIME_STEP,
                                                                " ",
-                                                               ErrorLineIndentation).c_str());
+                                                               errorLineIndentation).c_str());
             break;
           }
 
@@ -723,7 +711,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
             PrintUsage();
             TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_BENCHMARK_STEP_SET,
                                                                " ",
-                                                               ErrorLineIndentation).c_str());
+                                                               errorLineIndentation).c_str());
             break;
           }
 
@@ -732,7 +720,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
             PrintUsage();
             TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_FILE,
                                                                " ",
-                                                               ErrorLineIndentation).c_str());
+                                                               errorLineIndentation).c_str());
             break;
           }
 
@@ -741,7 +729,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
             PrintUsage();
             TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_INTERVAL,
                                                                " ",
-                                                               ErrorLineIndentation).c_str());
+                                                               errorLineIndentation).c_str());
             break;
           }
 
@@ -750,7 +738,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
             PrintUsage();
             TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_VERBOSE_LEVEL,
                                                                " ",
-                                                               ErrorLineIndentation).c_str());
+                                                               errorLineIndentation).c_str());
             break;
           }
 
@@ -759,7 +747,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
             PrintUsage();
             TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_UNKNOW_PARAMETER_OR_ARGUMENT,
                                                                " ",
-                                                               ErrorLineIndentation).c_str());
+                                                               errorLineIndentation).c_str());
             break;
           }
         }
@@ -770,58 +758,58 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         PrintUsage();
         TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_UNKNOWN_PARAMETER,
                                                            " ",
-                                                           ErrorLineIndentation).c_str());
+                                                           errorLineIndentation).c_str());
         break;
       }
     }
   }
 
-  if (PrintVersion) return;
+  if (printVersion) return;
 
   //-- Post checks --//
-  if (InputFileName == "")
+  if (inputFileName == "")
   {
     PrintUsage();
     TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_INPUT_FILE,
                                                        " ",
-                                                       ErrorLineIndentation).c_str());
+                                                       errorLineIndentation).c_str());
   }
 
-  if (OutputFileName == "")
+  if (outputFileName == "")
   {
     PrintUsage();
     TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_OUTPUT_FILE,
                                                        " ",
-                                                       ErrorLineIndentation).c_str());
+                                                       errorLineIndentation).c_str());
   }
 
-  if (CheckpointFlag)
+  if (checkpointFlag)
   {
-    if (CheckpointFileName == "")
+    if (checkpointFileName == "")
     {
       PrintUsage();
       TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_FILE,
                                                          " ",
-                                                         ErrorLineIndentation).c_str());
+                                                         errorLineIndentation).c_str());
     }
 
-    if (CheckpointInterval <= 0)
+    if (checkpointInterval <= 0)
     {
       PrintUsage();
       TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_INTERVAL,
                                                          " ",
-                                                         ErrorLineIndentation).c_str());
+                                                         errorLineIndentation).c_str());
     }
   }
 
   // set a default flag if necessary
-  if (!(Store_p_raw     || Store_p_rms     || Store_p_max   || Store_p_min ||
-        Store_p_max_all || Store_p_min_all || Store_p_final ||
-        Store_u_raw     || Store_u_non_staggered_raw        ||
-        Store_u_rms     || Store_u_max     || Store_u_min   ||
-        Store_u_max_all || Store_u_min_all || Store_u_final ))
+  if (!(store_p_raw     || store_p_rms     || store_p_max   || store_p_min ||
+        store_p_max_all || store_p_min_all || store_p_final ||
+        store_u_raw     || store_u_non_staggered_raw        ||
+        store_u_rms     || store_u_max     || store_u_min   ||
+        store_u_max_all || store_u_min_all || store_u_final ))
   {
-    Store_p_raw = true;
+    store_p_raw = true;
   }
 }// end of ParseCommandLine
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------

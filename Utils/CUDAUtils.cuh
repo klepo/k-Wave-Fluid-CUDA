@@ -38,7 +38,7 @@
  * This variable holds necessary simulation constants in the CUDA GPU memory. The variable is
  * defined in CUDADeviceConstants.cu
  */
-extern __constant__ TCUDADeviceConstants CUDADeviceConstants;
+extern __constant__ TCUDADeviceConstants cudaDeviceConstants;
 
 //------------------------------------------------------------------------------------------------//
 //--------------------------------------- Index routines -----------------------------------------//
@@ -77,9 +77,9 @@ inline __device__ unsigned int GetStride()
  */
 inline __device__ dim3 GetReal3DCoords(const unsigned int i)
 {
-  return dim3( i % CUDADeviceConstants.Nx,
-              (i / CUDADeviceConstants.Nx) % CUDADeviceConstants.Ny,
-               i / ( CUDADeviceConstants.Nx * CUDADeviceConstants.Ny));
+  return dim3( i % cudaDeviceConstants.nx,
+              (i / cudaDeviceConstants.nx) % cudaDeviceConstants.ny,
+               i / ( cudaDeviceConstants.nx * cudaDeviceConstants.ny));
 }// end of GetReal3DCoords
 //-------------------------------------------------------------------------------------------------
 
@@ -92,9 +92,9 @@ inline __device__ dim3 GetReal3DCoords(const unsigned int i)
  */
 inline __device__ dim3 GetComplex3DCoords(const unsigned int i)
 {
-  return dim3( i % CUDADeviceConstants.Complex_Nx,
-              (i / CUDADeviceConstants.Complex_Nx) % CUDADeviceConstants.Complex_Ny,
-               i / ( CUDADeviceConstants.Complex_Nx * CUDADeviceConstants.Complex_Ny));
+  return dim3( i % cudaDeviceConstants.nxComplex,
+              (i / cudaDeviceConstants.nxComplex) % cudaDeviceConstants.nyComplex,
+               i / ( cudaDeviceConstants.nxComplex * cudaDeviceConstants.nyComplex));
 }// end of GetComplex3DCoords
 //--------------------------------------------------------------------------------------------------
 

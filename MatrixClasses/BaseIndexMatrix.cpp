@@ -49,11 +49,11 @@
  * Default constructor
  */
 TBaseIndexMatrix::TBaseIndexMatrix() : TBaseMatrix(),
-                                       totalElementCount(0),
-                                       totalAllocatedElementCount(0),
+                                       nElements(0),
+                                       nAllocatedElements(0),
                                        dimensionSizes(),
-                                       dataRowSize(0),
-                                       dataSlabSize(0),
+                                       rowSize(0),
+                                       slabSize(0),
                                        matrixData(nullptr),
                                        deviceMatrixData(nullptr)
 {
@@ -67,7 +67,7 @@ TBaseIndexMatrix::TBaseIndexMatrix() : TBaseMatrix(),
 void TBaseIndexMatrix::ZeroMatrix()
 {
   #pragma omp parallel for schedule (static)
-  for (size_t i = 0; i < totalAllocatedElementCount; i++)
+  for (size_t i = 0; i < nAllocatedElements; i++)
   {
     matrixData[i] = size_t(0);
   }
@@ -81,7 +81,7 @@ void TBaseIndexMatrix::CopyToDevice()
 {
   checkCudaErrors(cudaMemcpy(deviceMatrixData,
                              matrixData,
-                             totalAllocatedElementCount * sizeof(size_t),
+                             nAllocatedElements * sizeof(size_t),
                              cudaMemcpyHostToDevice));
 
 }// end of CopyToDevice
@@ -94,7 +94,7 @@ void TBaseIndexMatrix::CopyFromDevice()
 {
   checkCudaErrors(cudaMemcpy(matrixData,
                              deviceMatrixData,
-                             totalAllocatedElementCount * sizeof(size_t),
+                             nAllocatedElements * sizeof(size_t),
                              cudaMemcpyDeviceToHost));
 }// end of CopyFromDevice
 //--------------------------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ void TBaseIndexMatrix::CopyFromDevice()
 void TBaseIndexMatrix::AllocateMemory()
 {
   //size of memory to allocate
-  size_t sizeInBytes = totalAllocatedElementCount * sizeof(size_t);
+  size_t sizeInBytes = nAllocatedElements * sizeof(size_t);
 
   matrixData = static_cast<size_t*>(_mm_malloc(sizeInBytes, DATA_ALIGNMENT));
 

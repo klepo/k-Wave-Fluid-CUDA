@@ -62,7 +62,7 @@ using namespace std;
  */
 int GetSamplerBlockSize()
 {
-  return TParameters::GetInstance().CUDAParameters.GetSamplerBlockSize1D();
+  return TParameters::GetInstance().GetCudaParameters().GetSamplerBlockSize1D();
 }// end of GetSamplerBlockSize
 //------------------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ int GetSamplerBlockSize()
  */
 int GetSamplerGridSize()
 {
-  return TParameters::GetInstance().CUDAParameters.GetSamplerGridSize1D();
+  return TParameters::GetInstance().GetCudaParameters().GetSamplerGridSize1D();
 }// end of GetSamplerGridSize
 //------------------------------------------------------------------------------
 

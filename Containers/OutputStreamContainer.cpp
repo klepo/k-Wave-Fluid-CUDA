@@ -96,7 +96,7 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
   if (params.IsStore_p_max_all())
   {
     outputStreamContainer[p_sensor_max_all] =
-            new TWholeDomainOutputHDF5Stream(params.HDF5_OutputFile,
+            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
                                              p_max_all_NAME,
                                              matrixContainer.GetMatrix<TRealMatrix>(p),
                                              TBaseOutputHDF5Stream::roMAX);
@@ -105,7 +105,7 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
   if (params.IsStore_p_min_all())
   {
     outputStreamContainer[p_sensor_min_all] =
-            new TWholeDomainOutputHDF5Stream(params.HDF5_OutputFile,
+            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
                                              p_min_all_NAME,
                                              matrixContainer.GetMatrix<TRealMatrix>(p),
                                              TBaseOutputHDF5Stream::roMIN);
@@ -195,17 +195,17 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
   if (params.IsStore_u_max_all())
   {
     outputStreamContainer[ux_sensor_max_all] =
-            new TWholeDomainOutputHDF5Stream(params.HDF5_OutputFile,
+            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
                                              ux_max_all_NAME,
                                              matrixContainer.GetMatrix<TRealMatrix>(ux_sgx),
                                              TBaseOutputHDF5Stream::roMAX);
     outputStreamContainer[uy_sensor_max_all] =
-            new TWholeDomainOutputHDF5Stream(params.HDF5_OutputFile,
+            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
                                              uy_max_all_NAME,
                                              matrixContainer.GetMatrix<TRealMatrix>(uy_sgy),
                                              TBaseOutputHDF5Stream::roMAX);
     outputStreamContainer[uz_sensor_max_all] =
-            new TWholeDomainOutputHDF5Stream(params.HDF5_OutputFile,
+            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
                                              uz_max_all_NAME,
                                              matrixContainer.GetMatrix<TRealMatrix>(uz_sgz),
                                              TBaseOutputHDF5Stream::roMAX);
@@ -214,17 +214,17 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
   if (params.IsStore_u_min_all())
   {
     outputStreamContainer[ux_sensor_min_all] =
-            new TWholeDomainOutputHDF5Stream(params.HDF5_OutputFile,
+            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
                                              ux_min_all_NAME,
                                              matrixContainer.GetMatrix<TRealMatrix>(ux_sgx),
                                              TBaseOutputHDF5Stream::roMIN);
     outputStreamContainer[uy_sensor_min_all] =
-            new TWholeDomainOutputHDF5Stream(params.HDF5_OutputFile,
+            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
                                              uy_min_all_NAME,
                                              matrixContainer.GetMatrix<TRealMatrix>(uy_sgy),
                                              TBaseOutputHDF5Stream::roMIN);
     outputStreamContainer[uz_sensor_min_all] =
-            new TWholeDomainOutputHDF5Stream(params.HDF5_OutputFile,
+            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
                                              uz_min_all_NAME,
                                              matrixContainer.GetMatrix<TRealMatrix>(uz_sgz),
                                              TBaseOutputHDF5Stream::roMIN);
@@ -384,22 +384,22 @@ TBaseOutputHDF5Stream* TOutputStreamContainer::CreateNewOutputStream(TMatrixCont
 
 
 
-  if (params.Get_sensor_mask_type() == TParameters::smt_index)
+  if (params.Get_sensor_mask_type() == TParameters::INDEX)
   {
-    return (new TIndexOutputHDF5Stream(params.HDF5_OutputFile,
-                                        fileDatasetName,
-                                        matrixContainer.GetMatrix<TRealMatrix>(sampledMatrixIdx),
-                                        matrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_index),
-                                        reductionOp)
+    return (new TIndexOutputHDF5Stream(params.GetOutputFile(),
+                                       fileDatasetName,
+                                       matrixContainer.GetMatrix<TRealMatrix>(sampledMatrixIdx),
+                                       matrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_index),
+                                       reductionOp)
             );
   }
   else
   {
-    return (new TCuboidOutputHDF5Stream(params.HDF5_OutputFile,
-                                         fileDatasetName,
-                                         matrixContainer.GetMatrix<TRealMatrix>(sampledMatrixIdx),
-                                         matrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_corners),
-                                         reductionOp)
+    return (new TCuboidOutputHDF5Stream(params.GetOutputFile(),
+                                        fileDatasetName,
+                                        matrixContainer.GetMatrix<TRealMatrix>(sampledMatrixIdx),
+                                        matrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_corners),
+                                        reductionOp)
             );
   }
 }// end of CreateNewOutputStream

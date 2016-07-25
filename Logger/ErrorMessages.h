@@ -294,7 +294,7 @@ TErrorMessage ERR_FMT_CUFFT_UNKNOWN_ERROR
 
 //------------------------------------ CUDAParameters Class --------------------------------------//
 /// CUDATuner error message
-TErrorMessage eRR_FMT_BAD_DEVICE_IDX
+TErrorMessage ERR_FMT_BAD_DEVICE_IDX
         = "Error: Wrong CUDA device id %d. Allowed devices <0, %d>.";
 /// CUDATuner error message
 TErrorMessage ERR_FMT_NO_FREE_DEVICE

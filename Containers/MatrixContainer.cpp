@@ -201,7 +201,7 @@ void TMatrixContainer::AddMatrices()
   }
 
   // linear sensor mask
-  if (params.Get_sensor_mask_type() == TParameters::smt_index)
+  if (params.Get_sensor_mask_type() == TParameters::INDEX)
   {
     matrixContainer[sensor_mask_index].Set(TMatrixRecord::INDEX,
                                            TDimensionSizes(params.Get_sensor_mask_index_size(), 1, 1),
@@ -209,7 +209,7 @@ void TMatrixContainer::AddMatrices()
   }
 
   // cuboid sensor mask
-  if (params.Get_sensor_mask_type() == TParameters::smt_corners)
+  if (params.Get_sensor_mask_type() == TParameters::CORNERS)
   {
     matrixContainer[sensor_mask_corners].Set(TMatrixRecord::INDEX,
                                              TDimensionSizes(6, params.Get_sensor_mask_corners_size(), 1),

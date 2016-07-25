@@ -153,12 +153,12 @@ void TComplexMatrix::InitDimensions(const TDimensionSizes& dimensionSizes)
 
   this->dimensionSizes = dimensionSizes;
 
-  totalElementCount = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
+  nElements = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
 
   dataRowSize  = 2 * dimensionSizes.nx;
   dataSlabSize = 2 * dimensionSizes.nx * dimensionSizes.ny;
   // compute actual necessary memory sizes
-  totalAllocatedElementCount = 2 * totalElementCount;
+  nAllocatedElements = 2 * nElements;
 
 }// end of InitDimensions
 //--------------------------------------------------------------------------------------------------

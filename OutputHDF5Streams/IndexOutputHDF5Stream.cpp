@@ -110,13 +110,13 @@ TIndexOutputHDF5Stream::~TIndexOutputHDF5Stream()
 void TIndexOutputHDF5Stream::Create()
 {
 
-  size_t NumberOfSampledElementsPerStep = SensorMask.GetTotalElementCount();
+  size_t NumberOfSampledElementsPerStep = SensorMask.GetElementCount();
 
   const TParameters& params = TParameters::GetInstance();
 
   // Derive dataset dimension sizes
   TDimensionSizes DatasetSize(NumberOfSampledElementsPerStep,
-          (ReductionOp == roNONE) ?  params.Get_Nt() - params.GetStartTimeIndex() : 1,
+          (ReductionOp == roNONE) ?  params.Get_nt() - params.GetStartTimeIndex() : 1,
           1);
 
   // Set HDF5 chunk size
@@ -163,7 +163,7 @@ void TIndexOutputHDF5Stream::Reopen()
   const TParameters& params = TParameters::GetInstance();
 
   // Set buffer size
-  BufferSize = SensorMask.GetTotalElementCount();
+  BufferSize = SensorMask.GetElementCount();
 
   // Allocate memory
    AllocateMemory();
@@ -215,7 +215,7 @@ void TIndexOutputHDF5Stream::Sample()
                                            (DeviceStoreBuffer,
                                             SourceMatrix.GetRawDeviceData(),
                                             SensorMask.GetRawDeviceData(),
-                                            SensorMask.GetTotalElementCount());
+                                            SensorMask.GetElementCount());
 
       // Record an event when the data has been copied over.
       checkCudaErrors(cudaEventRecord(EventSamplingFinished));
@@ -229,7 +229,7 @@ void TIndexOutputHDF5Stream::Sample()
                                            (DeviceStoreBuffer,
                                             SourceMatrix.GetRawDeviceData(),
                                             SensorMask.GetRawDeviceData(),
-                                            SensorMask.GetTotalElementCount());
+                                            SensorMask.GetElementCount());
 
       break;
     }// case roRMS
@@ -240,7 +240,7 @@ void TIndexOutputHDF5Stream::Sample()
                                            (DeviceStoreBuffer,
                                             SourceMatrix.GetRawDeviceData(),
                                             SensorMask.GetRawDeviceData(),
-                                            SensorMask.GetTotalElementCount());
+                                            SensorMask.GetElementCount());
       break;
     }// case roMAX
 
@@ -250,7 +250,7 @@ void TIndexOutputHDF5Stream::Sample()
                                            (DeviceStoreBuffer,
                                             SourceMatrix.GetRawDeviceData(),
                                             SensorMask.GetRawDeviceData(),
-                                            SensorMask.GetTotalElementCount());
+                                            SensorMask.GetElementCount());
       break;
     } //case roMIN
   }// switch

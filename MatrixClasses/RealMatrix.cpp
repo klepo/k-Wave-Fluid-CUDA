@@ -159,9 +159,9 @@ void TRealMatrix::InitDimensions(const TDimensionSizes& dimensionSizes)
 {
   this->dimensionSizes = dimensionSizes;
 
-  totalElementCount = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
+  nElements = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
 
-  totalAllocatedElementCount = totalElementCount;
+  nAllocatedElements = nElements;
 
   dataRowSize  = dimensionSizes.nx;
   dataSlabSize = dimensionSizes.nx * dimensionSizes.ny;

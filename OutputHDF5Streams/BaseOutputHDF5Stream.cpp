@@ -111,7 +111,7 @@ void TBaseOutputHDF5Stream::PostProcess()
 
     case roRMS:
     {
-      const float ScalingCoeff = 1.0f / (TParameters::GetInstance().Get_Nt() - TParameters::GetInstance().GetStartTimeIndex());
+      const float ScalingCoeff = 1.0f / (TParameters::GetInstance().Get_nt() - TParameters::GetInstance().GetStartTimeIndex());
 
       OutputStreamsCUDAKernels::PostProcessingRMS(DeviceStoreBuffer,
                                                   ScalingCoeff,

@@ -57,9 +57,9 @@ class TBaseMatrix
     virtual struct TDimensionSizes GetDimensionSizes() const  = 0;
 
     /// Get total element count of the matrix.
-    virtual size_t GetTotalElementCount()              const = 0;
+    virtual size_t GetElementCount()              const = 0;
     /// Get total allocated element count (might differ from the total element count used for the simulation because of e.g. padding).
-    virtual size_t GetTotalAllocatedElementCount()     const  = 0;
+    virtual size_t GetAllocatedElementCount()     const  = 0;
 
     /**
      * @brief   Read matrix from the HDF5 file.

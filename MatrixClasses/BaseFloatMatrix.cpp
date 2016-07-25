@@ -56,8 +56,8 @@ using std::string;
  * Default constructor
  */
 TBaseFloatMatrix::TBaseFloatMatrix(): TBaseMatrix(),
-                                      totalElementCount(0),
-                                      totalAllocatedElementCount(0),
+                                      nElements(0),
+                                      nAllocatedElements(0),
                                       dimensionSizes(),
                                       dataRowSize(0),
                                       dataSlabSize(0),
@@ -75,7 +75,7 @@ TBaseFloatMatrix::TBaseFloatMatrix(): TBaseMatrix(),
 void TBaseFloatMatrix::ZeroMatrix()
 {
   #pragma omp parallel for schedule (static)
-  for (size_t i = 0; i < totalAllocatedElementCount; i++)
+  for (size_t i = 0; i < nAllocatedElements; i++)
   {
     matrixData[i] = 0.0f;
   }
@@ -90,7 +90,7 @@ void TBaseFloatMatrix::ZeroMatrix()
 void TBaseFloatMatrix::ScalarDividedBy(const float scalar)
 {
   #pragma omp parallel for schedule (static)
-  for (size_t i = 0; i < totalAllocatedElementCount; i++)
+  for (size_t i = 0; i < nAllocatedElements; i++)
   {
     matrixData[i] = scalar / matrixData[i];
   }
@@ -105,7 +105,7 @@ void TBaseFloatMatrix::CopyToDevice()
 {
   checkCudaErrors(cudaMemcpy(deviceMatrixData,
                              matrixData,
-                             totalAllocatedElementCount * sizeof(float),
+                             nAllocatedElements * sizeof(float),
                              cudaMemcpyHostToDevice));
 }// end of CopyToDevice
 //--------------------------------------------------------------------------------------------------
@@ -118,7 +118,7 @@ void TBaseFloatMatrix::CopyFromDevice()
 {
   checkCudaErrors(cudaMemcpy(matrixData,
                              deviceMatrixData,
-                             totalAllocatedElementCount * sizeof(float),
+                             nAllocatedElements * sizeof(float),
                              cudaMemcpyDeviceToHost));
 }// end of CopyFromDevice
 //--------------------------------------------------------------------------------------------------
@@ -135,7 +135,7 @@ void TBaseFloatMatrix::CopyFromDevice()
 void TBaseFloatMatrix::AllocateMemory()
 {
   // Size of memory to allocate
-  size_t sizeInBytes = totalAllocatedElementCount * sizeof(float);
+  size_t sizeInBytes = nAllocatedElements * sizeof(float);
 
   // Allocate CPU memory
   matrixData = static_cast<float*> (_mm_malloc(sizeInBytes, DATA_ALIGNMENT));

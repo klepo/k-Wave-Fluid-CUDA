@@ -52,12 +52,12 @@ TIndexMatrix::TIndexMatrix(const TDimensionSizes& dimensionSizes)
 {
   this->dimensionSizes = dimensionSizes;
 
-  totalElementCount = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
+  nElements = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
 
-  totalAllocatedElementCount = totalElementCount;
+  nAllocatedElements = nElements;
 
-  dataRowSize  = dimensionSizes.nx;
-  dataSlabSize = dimensionSizes.nx * dimensionSizes.ny;
+  rowSize  = dimensionSizes.nx;
+  slabSize = dimensionSizes.nx * dimensionSizes.ny;
 
   AllocateMemory();
 }// end of TIndexMatrix
@@ -194,8 +194,8 @@ TDimensionSizes TIndexMatrix::GetBottomRightCorner(const size_t& index) const
  */
 void TIndexMatrix::RecomputeIndicesToCPP()
 {
-  #pragma omp parallel for if (totalElementCount > 1e5)
-  for (size_t i = 0; i < totalElementCount; i++)
+  #pragma omp parallel for if (nElements > 1e5)
+  for (size_t i = 0; i < nElements; i++)
   {
     matrixData[i]--;
   }
@@ -207,8 +207,8 @@ void TIndexMatrix::RecomputeIndicesToCPP()
  */
 void TIndexMatrix::RecomputeIndicesToMatlab()
 {
-  #pragma omp parallel for if (totalElementCount > 1e5)
-  for (size_t i = 0; i < totalElementCount; i++)
+  #pragma omp parallel for if (nElements > 1e5)
+  for (size_t i = 0; i < nElements; i++)
   {
     matrixData[i]++;
   }

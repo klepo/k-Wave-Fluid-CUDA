@@ -172,78 +172,102 @@ HDF5_DIR=/usr/local/hdf5-1.8.9 \endverbatim
  *
  *
  *
- * @section Parameters 3 Command Line Parameters The  C++ code requires two
- * mandatory parameters and accepts a few optional parameters and flags.  The
- * mandatory parameters \c -i and \c -o specify the input and output file. The
- * file names respect the path conventions for particular operating system.  If
- * any of the files is not specified, cannot be found or created, an error
- * message is shown.
+ * @section Parameters 3 Command Line Parameters 
+ * The CUDA/C++ code requires two mandatory parameters and accepts a few optional parameters and
+ * flags.
  *
- * The \c -t parameter sets the number of threads used, which defaults the
- * system maximum. On CPUs with Intel Hyper-Threading (HT), performance will
- * generally be better if HT is disabled in the BIOS settings. If HT is switched
- * on, the default will be to create twice as many threads as there are physical
- * processor cores, which might slow down the code execution. Therefore, if the
- * HT is on, try specifying the number of threads manually for best performance
- * (e.g., 4 for Intel Quad-Core). We recommend experimenting with this parameter
- * to find the best configuration. Note, if there are other tasks being executed
- * on the system, it might be useful to further limit the number of threads to
- * prevent system overload.
+ * The mandatory parameters \c -i and \c -o specify the input and output file. The file names
+ * respect the path conventions for particular operating system. If any of the files is not
+ * specified, cannot be found or created, an error message is shown and the code terminates.
  *
- * The \c -r parameter specifies how often the information about the
- * simulation progress is printed out. By default, the C++ code prints out
- * the actual progress  of the simulation, elapsed time and estimated time
- * of completion in the interval corresponding to 5\% of the total number of
- * times steps.
+ * The \c -t parameter sets the number of threads used, which defaults the system maximum. For the
+ * CUDA version, the number of threads is not critical, as the CPU only preprocess data. When
+ * running on desktops with multiple GPUs, or clusters with per-GPU resource allocations, it may
+ * be useful to limit the number of CPU threads.
  *
- * The \c -c parameter specifies the compression level used by the ZIP
- * library to reduce the size of the output file.  The actual compression
- * rate is highly dependant on the sensor mask shape and the  range of
- * stored quantities.  Generally, the output data is very hard to compress
- * and higher compression levels do not reduce the file size much.  The
- * default level of compression has been fixed to 3 that represents the
- * balance between compression ratio and performance degradation in most
- * cases.
+ * The \c -g parameter allows to explicitly select a GPU for the execution. The CUDA capable GPUs
+ * can be listed by the system command \c nvidia-smi. If the parameter is not specified, the code
+ * uses the first free GPU. If the GPUs are set in the CUDA DEFAULT mode, the first CUDA device
+ * is selected. In order to get the automatic round-robin GPU selection working (to e.g. execute
+ * multiple instances of the code on distinct GPUs), please set the GPUs into PROCESS_EXCLUSIVE mode.
+ * On clusters with a PBS  scheduler, this is usually done automatically, so no need to change it
+ * by user.
  *
- * The \c --benchmark parameter enables to override the total length of
- * simulation by setting a new number of time steps to simulate.  This is
- * particularly useful for performance evaluation and benchmarking on real
- * data. As the code performance is pretty stable, 50-100 time steps are
- * usually enough to predict the simulation duration. This can help to
- * quickly find an  ideal number of CPU threads.
+ * The \c -r parameter specifies how often information about the simulation progress is printed out
+ * to the command line. By default, the CUDA/C++ code prints out the  progress of the simulation,
+ * the elapsed time, and the estimated time of completion in intervals corresponding to 5% of
+ * the total number of times steps.
  *
- * The \c -h and \c --help parameters print all the parameters of the C++
- * code, while the \c --version parameter reports the code version and
- * internal build number.
+ * The \c -c parameter specifies the compression level used by the ZIP library to reduce the size of
+ * the output file. The actual compression rate is highly dependent on the shape of the sensor mask
+ * and the range of stored quantities and may be computationally expensive. In general, the output
+ * data is very hard to compress, and using higher compression levels can greatly increase the
+ * time to save data while not having a large impact on the final file size. That's why we decided
+ * to disable compression in default settings.
  *
- * The following flags specify the output quantities to be recorded during
- * the simulation and stored to disk.  If the \c -p or \c --p_raw is set, a
- * time series of acoustic pressure at the grid points specified by the
- * sensor mask is recorded.  If the \c --p_rms and/or \c --p_max is set, the
- * root mean square and/or maximum values of pressure based on the sensor
- * mask are recorded over a specified time period, respectively.  Finally,
- * if \c --p_final flag is set, the actual values for the entire acoustic
- * pressure field in the final time step of the simulation is stored (this
- * will always include the PML, regardless of the setting for \c
- * `PMLInside').
+ * The \c <tt>--benchmark</tt> parameter enables the total length of simulation (i.e., the number of
+ * time steps) to be overridden by setting a new number of time  steps to simulate. This is
+ * particularly useful for performance evaluation and benchmarking. As the code performance is
+ * relatively stable, 50-100 time steps is  usually enough to predict the simulation duration.
+ * This parameter can also be used to quickly check the simulation is set up correctly.
  *
- * The similar flags are also applicable on particle velocities (\c -u, \c
- * --u_raw, \c --u_rms, \c --u_max and \c --u_final) . In this case,
- *  a raw time series, RMS, maximum and/or the entire filed will be stored
- *  for all tree spatial components of particle velocity.
+ * The \c <tt>--verbose</tt> parameter enables to select between three levels of verbosity. For
+ * routine simulations, the verbose level of 0 (the default one) is usually sufficient. For more
+ * information about the simulation, checking the parameters of the simulation, code version,
+ * GPU used, file paths, and debugging running scripts, verbose levels 1 and 2 may be very useful.
  *
- * Finally, the acoustic intensity at every grid point can be calculated.
- * Two means aggression are possible: \c -I or \c -I_avg calculate and store
- * average acoustic intensity while \c --I_max calculates the maximum
- * acoustic intensity.
+ * The \c -h and \c --help parameters print all the parameters of the C++ code. The
+ * <tt> --version </tt>parameter reports detail information about the code useful for  debugging and
+ * bug reports. It prints out the internal version, the build date and time, the git hash allowing
+ * us to track the version of the source code, the operating system, the compiler name and version
+ * and the instruction set used.
  *
- * Note, any combination of \c p, \c u and \c I flags is admissible. If no
- * output flag is set, a time-series for acoustic pressure is stored.  If it
- * is not necessary to collect the output quantities over the entire
- * simulation, the starting time step when the collection begins can be
- * specified by \c -s parameter. Note, this parameter uses MATLAB convention
- * (starts from 1).
+ * For jobs that are expected to run for a very long time, it may be useful to  checkpoint and
+ * restart the execution. One motivation is the wall clock limit  per task on clusters where jobs
+ * must fit within a given time span (e.g. 24 hours). The second motivation is a level of
+ * fault-tolerance, where you can back up the state of the simulation after a predefined period.
+ * To enable checkpoint-restart, the user is asked to specify a file to store the actual state of
+ * the simulation by  <tt>--checkpoint_file</tt> and the period in seconds after which the
+ * simulation will be interrupted by <tt>--checkpoint_interval</tt>.  When running on a cluster,
+ * please allocate enough time for the checkpoint procedure  that can take a non-negligible amount
+ * of time (7 matrices have to be stored in  the checkpoint file and all aggregated quantities are
+ * flushed into the output file). Please note, that the checkpoint file name and path is not checked
+ * at the beginning of the simulation, but at the time the code starts checkpointing. Thus make sure
+ * the file path was correctly specified (otherwise you'll find out after the first leg that the
+ * simulation crashed). The rationale behind this is that to keep as high level of fault tolerance
+ * as possible, the checkpoint file should be touched even when really necessary.
  *
+ * When controlling a multi-leg simulation by a script loop, the parameters of the code remains the
+ * same in all legs. The first leg of the simulation creates a checkpoint  file while the last one
+ * deletes it. If the checkpoint file is not found the simulation starts from the beginning. In
+ * order to find out how many steps have been finished, please open the output file and read
+ * the variable <tt>t_index</tt> (e.g. by the h5dump command).
+ *
+ *
+ * The remaining flags specify the output quantities to be recorded during the  simulation and
+ * stored on disk analogous to  the sensor.record input. If the \c -p or \c --p\_raw flags are set
+ * (these are equivalent), a time series of  the acoustic pressure at the grid points specified by
+ * the sensor mask is recorded. If the \c --p_rms, \c --p_max, \c --p_min flags are set, the root
+ * mean square and/or maximum and/or minimum values of the pressure at the grid points specified by
+ * the sensor mask are recorded. If the \c --p_final flag is set, the values for the entire acoustic
+ * pressure field in the final time step of the simulation is stored (this will always include
+ * the PML, regardless of  the setting for <tt> `PMLInside'</tt>).
+ * The flags \c --p_max_all and \c --p_min_all allow to calculate the maximum and  minimum values
+ * over the entire acoustic pressure field, regardless on the shape of the sensor mask. Flags to
+ * record the acoustic particle velocity are defined in an analogous fashion. For proper calculation
+ * of acoustic intensity, the particle velocity has to be shifted onto the same grid as the acoustic
+ * pressure. This can be done by setting \c --u_non_staggered_raw flag, that first shifts the
+ * particle velocity and then samples the grid points specified by the sensor mask. Since the
+ * shift operation requires additional FFTs, the impact on the simulation time may be significant.
+ *
+ * Any combination of <tt>p</tt> and <tt>u</tt> flags is admissible. If no output flag is set,
+ * a time-series for the acoustic pressure is recorded. If it is not necessary to collect the output
+ * quantities over the entire simulation, the starting time step when the collection begins can
+ * be specified using the -s parameter.  Note, the index for the first time step is 1 (this follows
+ * the MATLAB indexing convention).
+ *
+ * The \c --copy_sensor_mask will copy the sensor from the input file to the output  one at the end
+ * of the simulation. This helps in post-processing and visualisation of the outputs.
  *
 \verbatim
 ┌───────────────────────────────────────────────────────────────┐
@@ -310,7 +334,6 @@ HDF5_DIR=/usr/local/hdf5-1.8.9 \endverbatim
 │ -s <time_step>                │ When data collection begins   │
 │                               │   (default = 1)               │
 └───────────────────────────────┴───────────────────────────────┘
-
 \endverbatim
  *
  *

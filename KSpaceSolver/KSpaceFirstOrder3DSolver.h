@@ -225,7 +225,7 @@ protected:
     /// Was the loop interrupted to checkpoint?
     bool IsCheckpointInterruption() const
     {
-      return (Parameters.Get_t_index() != Parameters.Get_Nt());
+      return (Parameters.Get_t_index() != Parameters.Get_nt());
     };
 
     /// Check the output file has the correct format and version.

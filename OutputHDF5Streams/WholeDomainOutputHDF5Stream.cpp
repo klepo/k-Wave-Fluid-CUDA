@@ -111,7 +111,7 @@ void TWholeDomainOutputHDF5Stream::Create()
                                   THDF5_File::FLOAT);
 
   // Set buffer size
-  BufferSize = SourceMatrix.GetTotalElementCount();
+  BufferSize = SourceMatrix.GetElementCount();
 
   // Allocate memory
   AllocateMemory();
@@ -127,7 +127,7 @@ void TWholeDomainOutputHDF5Stream::Reopen()
   const TParameters& params = TParameters::GetInstance();
 
   // Set buffer size
-  BufferSize = SourceMatrix.GetTotalElementCount();
+  BufferSize = SourceMatrix.GetElementCount();
 
   // Allocate memory
   AllocateMemory();
@@ -197,7 +197,7 @@ void TWholeDomainOutputHDF5Stream::Sample()
       OutputStreamsCUDAKernels::SampleAll<roRMS>
                                          (DeviceStoreBuffer,
                                           SourceMatrix.GetRawDeviceData(),
-                                          SourceMatrix.GetTotalElementCount());
+                                          SourceMatrix.GetElementCount());
       break;
     }// case roRMS
 
@@ -206,7 +206,7 @@ void TWholeDomainOutputHDF5Stream::Sample()
       OutputStreamsCUDAKernels::SampleAll<roMAX>
                                          (DeviceStoreBuffer,
                                           SourceMatrix.GetRawDeviceData(),
-                                          SourceMatrix.GetTotalElementCount());
+                                          SourceMatrix.GetElementCount());
       break;
     }//case roMAX
 
@@ -215,7 +215,7 @@ void TWholeDomainOutputHDF5Stream::Sample()
       OutputStreamsCUDAKernels::SampleAll<roMIN>
                                          (DeviceStoreBuffer,
                                           SourceMatrix.GetRawDeviceData(),
-                                          SourceMatrix.GetTotalElementCount());
+                                          SourceMatrix.GetElementCount());
       break;
     } //case roMIN
   }// switch
