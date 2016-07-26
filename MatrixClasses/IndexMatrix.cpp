@@ -81,7 +81,7 @@ TIndexMatrix::~TIndexMatrix()
  * @throw ios:failure if error occurs.
  */
 void TIndexMatrix::ReadDataFromHDF5File(THDF5_File& file,
-                                        const char* matrixName)
+                                        TMatrixName matrixName)
 {
   if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::LONG)
   {
@@ -111,7 +111,7 @@ void TIndexMatrix::ReadDataFromHDF5File(THDF5_File& file,
  * @throw ios:failure if error occurs.
  */
 void TIndexMatrix::WriteDataToHDF5File(THDF5_File&  file,
-                                       const char*  matrixName,
+                                       TMatrixName  matrixName,
                                        const size_t compressionLevel)
 {
   // set chunks - may be necessary for long index based sensor masks

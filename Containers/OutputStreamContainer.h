@@ -142,7 +142,7 @@ class TOutputStreamContainer
     TBaseOutputHDF5Stream* CreateNewOutputStream(TMatrixContainer& matrixContainer,
                                                  const TMatrixIdx  sampledMatrixIdx,
                                                  const TMatrixName fileDatasetName,
-                                                 const TBaseOutputHDF5Stream::TReductionOperator reductionOp);
+                                                 const TBaseOutputHDF5Stream::TReduceOperator reduceOp);
 
     /// Copy constructor not allowed for public.
     TOutputStreamContainer(const TOutputStreamContainer&);

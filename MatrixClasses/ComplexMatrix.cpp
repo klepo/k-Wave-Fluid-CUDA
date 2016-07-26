@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2011, 14:02 (created) \n
- *              21 July     2016, 15:55 (revised)
+ *              26 July     2016, 12:33 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -75,7 +75,7 @@ TComplexMatrix::~TComplexMatrix()
  * * @throw ios::failure when there is a problem
  */
 void TComplexMatrix::ReadDataFromHDF5File(THDF5_File& file,
-                                          const char* matrixName)
+                                          TMatrixName matrixName)
 {
   // check data type
   if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::FLOAT)
@@ -112,7 +112,7 @@ void TComplexMatrix::ReadDataFromHDF5File(THDF5_File& file,
  * @throw ios::failure an exception what the operation fails
  */
 void TComplexMatrix::WriteDataToHDF5File(THDF5_File& file,
-                                         const char* matrixName,
+                                         TMatrixName matrixName,
                                          const size_t compressionLevel)
 {
   // set dimensions and chunks
