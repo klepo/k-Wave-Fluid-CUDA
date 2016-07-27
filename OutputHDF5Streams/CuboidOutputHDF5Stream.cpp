@@ -233,7 +233,7 @@ void TCuboidOutputHDF5Stream::Sample()
         // Kernel to sample raw quantities inside one cuboid
         OutputStreamsCUDAKernels::SampleCuboid<NONE>
                                               (deviceBuffer + cuboidInBufferStart,
-                                               sourceMatrix.GetRawDeviceData(),
+                                               sourceMatrix.GetDeviceData(),
                                                topLeftCorner,
                                                bottomRightCorner,
                                                dimSizes,
@@ -244,7 +244,7 @@ void TCuboidOutputHDF5Stream::Sample()
       {
         OutputStreamsCUDAKernels::SampleCuboid<RMS>
                                               (deviceBuffer + cuboidInBufferStart,
-                                               sourceMatrix.GetRawDeviceData(),
+                                               sourceMatrix.GetDeviceData(),
                                                topLeftCorner,
                                                bottomRightCorner,
                                                dimSizes,
@@ -255,7 +255,7 @@ void TCuboidOutputHDF5Stream::Sample()
       {
         OutputStreamsCUDAKernels::SampleCuboid<MAX>
                                               (deviceBuffer + cuboidInBufferStart,
-                                               sourceMatrix.GetRawDeviceData(),
+                                               sourceMatrix.GetDeviceData(),
                                                topLeftCorner,
                                                bottomRightCorner,
                                                dimSizes,
@@ -266,7 +266,7 @@ void TCuboidOutputHDF5Stream::Sample()
       {
         OutputStreamsCUDAKernels::SampleCuboid<MIN>
                                               (deviceBuffer + cuboidInBufferStart,
-                                               sourceMatrix.GetRawDeviceData(),
+                                               sourceMatrix.GetDeviceData(),
                                                topLeftCorner,
                                                bottomRightCorner,
                                                dimSizes,

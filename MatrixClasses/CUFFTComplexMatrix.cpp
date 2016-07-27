@@ -516,7 +516,7 @@ void TCUFFTComplexMatrix::Compute_FFT_3D_R2C(TRealMatrix& inMatrix)
 {
   //Compute forward cuFFT (if the plan does not exist, it also returns error)
   cufftResult_t cufftError = cufftExecR2C(cufftPlan_3D_R2C,
-                                          static_cast<cufftReal*>(inMatrix.GetRawDeviceData()),
+                                          static_cast<cufftReal*>(inMatrix.GetDeviceData()),
                                           reinterpret_cast<cufftComplex*>(deviceMatrixData));
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_3D_R2C");
@@ -536,7 +536,7 @@ void TCUFFTComplexMatrix::Compute_FFT_3D_C2R(TRealMatrix& outMatrix)
   //Compute forward cuFFT (if the plan does not exist, it also returns error)
   cufftResult_t cufftError = cufftExecC2R(cufftPlan_3D_C2R,
                                           reinterpret_cast<cufftComplex*>(deviceMatrixData),
-                                          static_cast<cufftReal*>(outMatrix.GetRawDeviceData()));
+                                          static_cast<cufftReal*>(outMatrix.GetDeviceData()));
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_3D_RCR");
 }// end of Compute_FFT_3D_C2R
@@ -552,7 +552,7 @@ void TCUFFTComplexMatrix::Compute_FFT_1DX_R2C(TRealMatrix& inMatrix)
 {
   //Compute forward cuFFT (if the plan does not exist, it also returns error)
   cufftResult_t cufftError = cufftExecR2C(cufftPlan_1DX_R2C,
-                                          static_cast<cufftReal*>(inMatrix.GetRawDeviceData()),
+                                          static_cast<cufftReal*>(inMatrix.GetDeviceData()),
                                           reinterpret_cast<cufftComplex*>(deviceMatrixData));
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_1DX_R2C");
@@ -575,7 +575,7 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_R2C(TRealMatrix& inMatrix)
                 inMatrix.GetDimensionSizes().nz);
 
   SolverCUDAKernels::TrasposeReal3DMatrixXY(deviceMatrixData,
-                                            inMatrix.GetRawDeviceData(),
+                                            inMatrix.GetDeviceData(),
                                             dimSizes);
 
   // Compute forward cuFFT (if the plan does not exist, it also returns error).
@@ -604,7 +604,7 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_R2C(TRealMatrix& inMatrix)
                 inMatrix.GetDimensionSizes().nz);
 
   SolverCUDAKernels::TrasposeReal3DMatrixXZ(deviceMatrixData,
-                                            inMatrix.GetRawDeviceData(),
+                                            inMatrix.GetDeviceData(),
                                             dimSizes);
 
   // Compute forward cuFFT (if the plan does not exist, it also returns error).
@@ -629,7 +629,7 @@ void TCUFFTComplexMatrix::Compute_FFT_1DX_C2R(TRealMatrix& outMatrix)
   //Compute inverse cuFFT (if the plan does not exist, it also returns error)
   cufftResult_t cufftError = cufftExecC2R(cufftPlan_1DX_C2R,
                                           reinterpret_cast<cufftComplex*>(deviceMatrixData),
-                                          static_cast<cufftReal*> (outMatrix.GetRawDeviceData()));
+                                          static_cast<cufftReal*> (outMatrix.GetDeviceData()));
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_1DX_C2R");
 }// end of Compute_FFT_1DX_C2R
@@ -660,7 +660,7 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_C2R(TRealMatrix& outMatrix)
                 outMatrix.GetDimensionSizes().nx,
                 outMatrix.GetDimensionSizes().nz);
 
-  SolverCUDAKernels::TrasposeReal3DMatrixXY(outMatrix.GetRawDeviceData(),
+  SolverCUDAKernels::TrasposeReal3DMatrixXY(outMatrix.GetDeviceData(),
                                             deviceMatrixData,
                                             dimSizes);
 }// end of Compute_FFT_1DY_C2R
@@ -691,8 +691,8 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_C2R(TRealMatrix& outMatrix)
                 outMatrix.GetDimensionSizes().ny,
                 outMatrix.GetDimensionSizes().nx);
 
-  SolverCUDAKernels::TrasposeReal3DMatrixXZ(outMatrix.GetRawDeviceData(),
-                                            GetRawDeviceData(),
+  SolverCUDAKernels::TrasposeReal3DMatrixXZ(outMatrix.GetDeviceData(),
+                                            GetDeviceData(),
                                             DimSizes);
 }// end of Compute_FFT_1DZ_C2R
 //--------------------------------------------------------------------------------------------------

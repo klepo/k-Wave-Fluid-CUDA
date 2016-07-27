@@ -80,25 +80,25 @@ class TBaseFloatMatrix : public TBaseMatrix
 
 
     /// Get raw CPU data out of the class (for direct CPU kernel access).
-    virtual float* GetRawData()
+    virtual float* GetData()
     {
       return matrixData;
     }
 
     /// Get raw CPU data out of the class (for direct CPU kernel access).
-    virtual const float* GetRawData() const
+    virtual const float* GetData() const
     {
       return matrixData;
     }
 
     /// Get raw GPU data out of the class (for direct GPU kernel access).
-    virtual float* GetRawDeviceData()
+    virtual float* GetDeviceData()
     {
       return deviceMatrixData;
     }
 
     /// Get raw GPU data out of the class (for direct GPU kernel access).
-    virtual const float* GetRawDeviceData() const
+    virtual const float* GetDeviceData() const
     {
       return deviceMatrixData;
     }

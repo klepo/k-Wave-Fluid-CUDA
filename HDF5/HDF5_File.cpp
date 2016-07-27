@@ -12,7 +12,6 @@
  * @date        27 July     2012, 14:14 (created) \n
  *              20 July     2016, 16:57 (revised)
  *
- *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
  * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.

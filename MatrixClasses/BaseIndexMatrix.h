@@ -77,25 +77,25 @@ class TBaseIndexMatrix : public TBaseMatrix
     virtual void ZeroMatrix();
 
     /// Get raw data out of the class (for direct CPU kernel access).
-    virtual size_t* GetRawData()
+    virtual size_t* GetData()
     {
       return matrixData;
     }
 
     /// Get raw data out of the class (for direct CPU kernel access).
-    virtual const size_t* GetRawData() const
+    virtual const size_t* GetData() const
     {
       return matrixData;
     }
 
     /// Get raw GPU data out of the class (for direct GPU kernel access).
-    virtual size_t* GetRawDeviceData()
+    virtual size_t* GetDeviceData()
     {
       return deviceMatrixData;
     }
 
     /// Get raw GPU data out of the class (for direct GPU kernel access).
-    virtual const size_t* GetRawDeviceData() const
+    virtual const size_t* GetDeviceData() const
     {
       return deviceMatrixData;
     }

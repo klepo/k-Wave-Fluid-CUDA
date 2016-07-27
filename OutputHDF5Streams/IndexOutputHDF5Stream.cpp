@@ -54,7 +54,7 @@
  * @param [in] datasetName  - The dataset's name (index based sensor data stored in a single dataset)
  * @param [in] sourceMatrix - The source matrix (only real matrices are supported)
  * @param [in] sensorMask   - Index based sensor mask
- * @param [in] reducteOp    - Reduce operator
+ * @param [in] reduceOp     - Reduce operator
  */
 TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File&           file,
                                                TMatrixName           datasetName,
@@ -192,8 +192,8 @@ void TIndexOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleIndex<NONE>
                                            (deviceBuffer,
-                                            sourceMatrix.GetRawDeviceData(),
-                                            sensorMask.GetRawDeviceData(),
+                                            sourceMatrix.GetDeviceData(),
+                                            sensorMask.GetDeviceData(),
                                             sensorMask.GetElementCount());
 
       // Record an event when the data has been copied over.
@@ -206,8 +206,8 @@ void TIndexOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleIndex<RMS>
                                            (deviceBuffer,
-                                            sourceMatrix.GetRawDeviceData(),
-                                            sensorMask.GetRawDeviceData(),
+                                            sourceMatrix.GetDeviceData(),
+                                            sensorMask.GetDeviceData(),
                                             sensorMask.GetElementCount());
 
       break;
@@ -217,8 +217,8 @@ void TIndexOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleIndex<MAX>
                                            (deviceBuffer,
-                                            sourceMatrix.GetRawDeviceData(),
-                                            sensorMask.GetRawDeviceData(),
+                                            sourceMatrix.GetDeviceData(),
+                                            sensorMask.GetDeviceData(),
                                             sensorMask.GetElementCount());
       break;
     }// case MAX
@@ -227,8 +227,8 @@ void TIndexOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleIndex<MIN>
                                            (deviceBuffer,
-                                            sourceMatrix.GetRawDeviceData(),
-                                            sensorMask.GetRawDeviceData(),
+                                            sourceMatrix.GetDeviceData(),
+                                            sensorMask.GetDeviceData(),
                                             sensorMask.GetElementCount());
       break;
     } //case MIN

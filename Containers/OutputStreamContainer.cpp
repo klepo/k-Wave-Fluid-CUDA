@@ -390,7 +390,7 @@ TBaseOutputHDF5Stream* TOutputStreamContainer::CreateNewOutputStream(TMatrixCont
                                        fileDatasetName,
                                        matrixContainer.GetMatrix<TRealMatrix>(sampledMatrixIdx),
                                        matrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_index),
-                                       reductionOp)
+                                       reduceOp)
             );
   }
   else
@@ -399,7 +399,7 @@ TBaseOutputHDF5Stream* TOutputStreamContainer::CreateNewOutputStream(TMatrixCont
                                         fileDatasetName,
                                         matrixContainer.GetMatrix<TRealMatrix>(sampledMatrixIdx),
                                         matrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_corners),
-                                        reductionOp)
+                                        reduceOp)
             );
   }
 }// end of CreateNewOutputStream

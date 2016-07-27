@@ -45,11 +45,10 @@
 
 /**
  * Constructor - links the HDF5 dataset and SourceMatrix
- * @param [in] file          - HDF5 file to write the output to
- * @param [in] datasetName   - The name of the HDF5 group containing datasets for particular cuboids
- * @param [in] sourceMatrix  - Source matrix to be sampled
- * @param [in] reduceOp   - Reduce operator
- * @param [in] bufferToReuse - If there is a memory space to be reused, provide a pointer
+ * @param [in] file         - HDF5 file to write the output to
+ * @param [in] datasetName  - The name of the HDF5 group containing datasets for particular cuboids
+ * @param [in] sourceMatrix - Source matrix to be sampled
+ * @param [in] reduceOp     - Reduce operator
  */
 TWholeDomainOutputHDF5Stream::TWholeDomainOutputHDF5Stream(THDF5_File&           file,
                                                            TMatrixName           datasetName,
@@ -174,7 +173,7 @@ void TWholeDomainOutputHDF5Stream::Sample()
                                   TDimensionSizes(0,0,0,0), // position in the SourceMatrix
                                   cuboidSize,
                                   sourceMatrix.GetDimensionSizes(),
-                                  sourceMatrix.GetRawData());
+                                  sourceMatrix.GetData());
 
       sampledTimeStep++;   // Move forward in time
 
@@ -185,7 +184,7 @@ void TWholeDomainOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleAll<RMS>
                                          (deviceBuffer,
-                                          sourceMatrix.GetRawDeviceData(),
+                                          sourceMatrix.GetDeviceData(),
                                           sourceMatrix.GetElementCount());
       break;
     }// case RMS
@@ -194,7 +193,7 @@ void TWholeDomainOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleAll<MAX>
                                          (deviceBuffer,
-                                          sourceMatrix.GetRawDeviceData(),
+                                          sourceMatrix.GetDeviceData(),
                                           sourceMatrix.GetElementCount());
       break;
     }//case MAX
@@ -203,7 +202,7 @@ void TWholeDomainOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleAll<MIN>
                                          (deviceBuffer,
-                                          sourceMatrix.GetRawDeviceData(),
+                                          sourceMatrix.GetDeviceData(),
                                           sourceMatrix.GetElementCount());
       break;
     } //case MIN
