@@ -486,8 +486,6 @@ Name                            Size           Data type       Domain Type      
 #include <Utils/MatrixNames.h>
 
 
-using namespace std;
-
 // Class with File header
 class THDF5_FileHeader;
 
@@ -532,12 +530,12 @@ class THDF5_File
 
     //----------------------- Basic file operations --------------------------//
     /// Create a file.
-    void Create(const char*  fileName,
-                unsigned int flags = H5F_ACC_TRUNC);
+    void Create(const std::string& fileName,
+                unsigned int  flags = H5F_ACC_TRUNC);
 
     /// Open a file.
-    void Open(const char*  fileName,
-              unsigned int flags  = H5F_ACC_RDONLY);
+    void Open(const std::string& fileName,
+              unsigned int  flags  = H5F_ACC_RDONLY);
     /**
      * @brief   Is the file opened?
      * @details Is the file opened?
@@ -551,27 +549,18 @@ class THDF5_File
      * @param [in] fileName
      * @return true if the file exists.
      */
-    static bool IsHDF5(const char* fileName)
-    {
-      #ifdef __linux__
-        return (access(fileName, F_OK) == 0);
-      #endif
-
-      #ifdef _WIN64
-         return (_access_s(fileName, 0) == 0 );
-      #endif
-    };
+    static bool IsHDF5(const std::string& fileName);
 
     /// Close file.
     void Close();
 
     //----------------------------------- Group manipulators -------------------------------------//
     /// Create a HDF5 group at a specified place in the file tree.
-    hid_t CreateGroup(const hid_t parentGroup,
-                      TMatrixName groupName);
+    hid_t CreateGroup(const hid_t  parentGroup,
+                      TMatrixName& groupName);
     /// Open a HDF5 group at a specified place in the file tree.
-    hid_t OpenGroup(const hid_t parentGroup,
-                    TMatrixName groupName);
+    hid_t OpenGroup(const hid_t  parentGroup,
+                    TMatrixName& groupName);
     /// Close group.
     void CloseGroup(const hid_t group);
 
@@ -586,18 +575,18 @@ class THDF5_File
     //---------------------------------- Dataset manipulators -------------------------------------//
     /// Open the HDF5 dataset at a specified place in the file tree.
     hid_t OpenDataset(const hid_t parentGroup,
-                      TMatrixName datasetName);
+                      TMatrixName& datasetName);
 
     /// Create a float HDF5 dataset at a specified place in the file tree (3D/4D).
     hid_t CreateFloatDataset(const hid_t            parentGroup,
-                             TMatrixName            datasetName,
+                             TMatrixName&           datasetName,
                              const TDimensionSizes& dimensionSizes,
                              const TDimensionSizes& chunkSizes,
                              const size_t           compressionLevel);
 
     /// Create an index HDF5 dataset at a specified place in the file tree (3D only).
     hid_t CreateIndexDataset(const hid_t            parentGroup,
-                             TMatrixName            datasetName,
+                             TMatrixName&           datasetName,
                              const TDimensionSizes& dimensionSizes,
                              const TDimensionSizes& chunkSizes,
                              const size_t           compressionLevel);
@@ -635,98 +624,98 @@ class THDF5_File
                                     const float*           matrixData);
 
     /// Write the scalar value under a specified group, float value.
-    void WriteScalarValue(const hid_t parentGroup,
-                          TMatrixName datasetName,
-                          const float value);
+    void WriteScalarValue(const hid_t  parentGroup,
+                          TMatrixName& datasetName,
+                          const float  value);
     /// Write the scalar value under a specified group, index value.
     void WriteScalarValue(const hid_t  parentGroup,
-                          TMatrixName  datasetName,
+                          TMatrixName& datasetName,
                           const size_t value);
 
     /// Read the scalar value under a specified group, float value.
-    void ReadScalarValue(const hid_t parentGroup,
-                         TMatrixName datasetName,
-                         float&      value);
+    void ReadScalarValue(const hid_t  parentGroup,
+                         TMatrixName& datasetName,
+                         float&       value);
     /// Read the scalar value under a specified group, index value.
-    void ReadScalarValue(const hid_t parentGroup,
-                         TMatrixName datasetName,
-                         size_t&     value);
+    void ReadScalarValue(const hid_t  parentGroup,
+                         TMatrixName& datasetName,
+                         size_t&      value);
 
     /// Read data from the dataset under a specified group, float dataset.
     void ReadCompleteDataset(const hid_t            parentGroup,
-                             TMatrixName            datasetName,
+                             TMatrixName&           datasetName,
                              const TDimensionSizes& dimensionSizes,
                              float*                 data);
     /// Read data from the dataset under a specified group, index dataset.
     void ReadCompleteDataset(const hid_t            parentGroup,
-                             TMatrixName            datasetName,
+                             TMatrixName&           datasetName,
                              const TDimensionSizes& dimensionSizes,
                              size_t*                data);
 
     //---------------------------- Attributes Read/Write operations ------------------------------//
 
     /// Get dimension sizes of the dataset  under a specified group.
-    TDimensionSizes GetDatasetDimensionSizes(const hid_t parentGroup,
-                                             TMatrixName datasetName);
+    TDimensionSizes GetDatasetDimensionSizes(const hid_t  parentGroup,
+                                             TMatrixName& datasetName);
 
     /// Get number of dimensions of the dataset  under a specified group.
-    size_t GetDatasetNumberOfDimensions(const hid_t parentGroup,
-                                        TMatrixName datasetName);
+    size_t GetDatasetNumberOfDimensions(const hid_t  parentGroup,
+                                        TMatrixName& datasetName);
 
     /// Get dataset element count under a specified group.
-    size_t GetDatasetElementCount(const hid_t parentGroup,
-                                  TMatrixName datasetName);
+    size_t GetDatasetElementCount(const hid_t  parentGroup,
+                                  TMatrixName& datasetName);
 
 
     /// Write matrix data type into the dataset under a specified group.
     void WriteMatrixDataType (const hid_t                parentGroup,
-                              TMatrixName                datasetName,
+                              TMatrixName&               datasetName,
                               const TMatrixDataType& matrixDataType);
     /// Write matrix domain type into the dataset under the root group.
     void WriteMatrixDomainType(const hid_t                  parentGroup,
-                               TMatrixName                  datasetName,
+                               TMatrixName&                 datasetName,
                                const TMatrixDomainType& matrixDomainType);
 
     /// Read matrix data type from the dataset.
-    THDF5_File::TMatrixDataType   ReadMatrixDataType(const hid_t parentGroup,
-                                                     TMatrixName datasetName);
+    THDF5_File::TMatrixDataType   ReadMatrixDataType(const hid_t  parentGroup,
+                                                     TMatrixName& datasetName);
     /// Read matrix domain type from the dataset under a specified group.
-    THDF5_File::TMatrixDomainType ReadMatrixDomainType(const hid_t parentGroup,
-                                                       TMatrixName datasetName);
+    THDF5_File::TMatrixDomainType ReadMatrixDomainType(const hid_t  parentGroup,
+                                                       TMatrixName& datasetName);
 
 
     /// Write string attribute into the dataset under the root group.
-    void   WriteStringAttribute(const hid_t   parentGroup,
-                                TMatrixName   datasetName,
-                                const char*   attributeName,
-                                const string& value);
+    void   WriteStringAttribute(const hid_t        parentGroup,
+                                TMatrixName&       datasetName,
+                                TMatrixName&       attributeName,
+                                const std::string& value);
     /// Read string attribute from the dataset under the root group.
-    string ReadStringAttribute(const hid_t parentGroup,
-                               TMatrixName datasetName,
-                               const char* attributeName);
+    std::string ReadStringAttribute(const hid_t  parentGroup,
+                                    TMatrixName& datasetName,
+                                    TMatrixName& attributeName);
 
    protected:
 
     /// Copy constructor is not allowed for public.
     THDF5_File(const THDF5_File& src);
     /// Operator = is not allowed for public.
-    THDF5_File& operator = (const THDF5_File& src);
+    THDF5_File& operator= (const THDF5_File& src);
 
   private:
     /// String representation of the Domain type in the HDF5 file.
-    static const char* matrixDomainTypeName;
+    static const std::string matrixDomainTypeName;
     /// String representation of the Data type in the HDF5 file.
-    static const char* matrixDataTypeName;
+    static const std::string matrixDataTypeName;
 
     /// String representation of different domain types.
-    static const string matrixDomainTypeNames[];
+    static const std::string matrixDomainTypeNames[];
     /// String representation of different data types.
-    static const string matrixDataTypeNames[];
+    static const std::string matrixDataTypeNames[];
 
     /// HDF file handle.
     hid_t  file;
     /// File name.
-    string fileName;
+    std::string fileName;
 }; // THDF5_File
 //--------------------------------------------------------------------------------------------------
 
@@ -816,7 +805,7 @@ class THDF5_FileHeader
      * @details Set code name to the header.
      * @param [in] codeName - code version
      */
-    void SetCodeName(const string& codeName)
+    void SetCodeName(const std::string& codeName)
     {
       headerValues[CREATED_BY] = codeName;
     };
@@ -829,7 +818,7 @@ class THDF5_FileHeader
      * @details Get string version of current Major version.
      * @return  Current major version
      */
-    static string GetCurrentHDF5_MajorVersion()
+    static std::string GetCurrentHDF5_MajorVersion()
     {
       return hdf5_MajorFileVersionsNames[0];
     };
@@ -839,7 +828,7 @@ class THDF5_FileHeader
      * @details Get string version of current Minor version.
      * @return  Current minor version
      */
-    static string GetCurrentHDF5_MinorVersion()
+    static std::string GetCurrentHDF5_MinorVersion()
     {
       return hdf5_MinorFileVersionsNames[1];
     };
@@ -916,16 +905,16 @@ private:
   void PopulateHeaderFileMap();
 
   /// map for the header values.
-  map<TFileHeaderItems, string> headerValues;
+  std::map<TFileHeaderItems, std::string> headerValues;
   /// map for the header names.
-  map<TFileHeaderItems, string> headerNames;
+  std::map<TFileHeaderItems, std::string> headerNames;
 
   ///String representation of different file types.
-  static const string hdf5_FileTypesNames[];
+  static const std::string hdf5_FileTypesNames[];
   /// String representations of Major file versions.
-  static const string hdf5_MajorFileVersionsNames[];
+  static const std::string hdf5_MajorFileVersionsNames[];
   /// String representations of Major file versions.
-  static const string hdf5_MinorFileVersionsNames[];
+  static const std::string hdf5_MinorFileVersionsNames[];
 
 };// THDF5_FileHeader
 //--------------------------------------------------------------------------------------------------

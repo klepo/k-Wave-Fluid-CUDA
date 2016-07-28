@@ -171,7 +171,7 @@ class TMatrixContainer
   private:
 
     /// Datatype for the map associating the matrix ID enum and matrix record.
-    typedef map<TMatrixIdx, TMatrixRecord> TMatrixRecordContainer;
+    typedef std::map<TMatrixIdx, TMatrixRecord> TMatrixRecordContainer;
 
     /// map holding the container
     TMatrixRecordContainer matrixContainer;
@@ -184,7 +184,7 @@ class TMatrixContainer
 
     /// Print error and throw an exception.
     void CreateErrorAndThrowException(const char*   messageFormat,
-                                      const string& matrixName,
+                                      TMatrixName& matrixName,
                                       const char*   file,
                                       const int     line);
 

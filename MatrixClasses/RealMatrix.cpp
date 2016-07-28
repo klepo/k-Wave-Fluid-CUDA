@@ -73,22 +73,22 @@ TRealMatrix::~TRealMatrix()
  *
  * @throw ios::failure if error occurred.
  */
-void TRealMatrix::ReadDataFromHDF5File(THDF5_File& file,
-                                       TMatrixName matrixName)
+void TRealMatrix::ReadDataFromHDF5File(THDF5_File&  file,
+                                       TMatrixName& matrixName)
 {
   // test matrix datatype
   if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::FLOAT)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_FLOAT, matrixName);
-    throw ios::failure(errMsg);
+    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_FLOAT, matrixName.c_str());
+    throw std::ios::failure(errMsg);
   }
   // read matrix domain type
   if (file.ReadMatrixDomainType(file.GetRootGroup(), matrixName) != THDF5_File::REAL)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_REAL, matrixName);
-    throw ios::failure(errMsg);
+    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_REAL, matrixName.c_str());
+    throw std::ios::failure(errMsg);
   }
 
   // Read matrix
@@ -106,7 +106,7 @@ void TRealMatrix::ReadDataFromHDF5File(THDF5_File& file,
  * @throw ios::failure if an error occurred.
  */
 void TRealMatrix::WriteDataToHDF5File(THDF5_File&  file,
-                                      TMatrixName  matrixName,
+                                      TMatrixName& matrixName,
                                       const size_t compressionLevel)
 {
   TDimensionSizes chunks = dimensionSizes;

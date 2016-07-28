@@ -51,7 +51,7 @@
  * @param [in] reduceOp     - Reduce operator
  */
 TWholeDomainOutputHDF5Stream::TWholeDomainOutputHDF5Stream(THDF5_File&           file,
-                                                           TMatrixName           datasetName,
+                                                           TMatrixName&          datasetName,
                                                            TRealMatrix&          sourceMatrix,
                                                            const TReduceOperator reduceOp)
         : TBaseOutputHDF5Stream(file, datasetName, sourceMatrix, reduceOp),

@@ -354,7 +354,7 @@ inline void CheckErrors(const cudaError_t errorCode,
     snprintf(errMsg,
              512,
              ERR_FMT_GPU_ERROR,
-             cudaGetErrorString(errorCode), routineName,fileName, lineNumber);
+             cudaGetErrorString(errorCode), routineName, fileName, lineNumber);
 
     // Throw exception
      throw std::runtime_error(errMsg);

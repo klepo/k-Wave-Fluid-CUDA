@@ -41,7 +41,7 @@
  * @brief   Datatype for matrix names.
  * @details Datatype for matrix names.
  */
-typedef const char * const TMatrixName;
+typedef const std::string TMatrixName;
 
 /// Nt variable name
 TMatrixName  Nt_NAME            = "Nt";

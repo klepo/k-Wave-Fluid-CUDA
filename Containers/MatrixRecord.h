@@ -64,14 +64,14 @@ struct TMatrixRecord
   /// Copy constructor.
   TMatrixRecord(const TMatrixRecord& src);
   /// operator =.
-  TMatrixRecord& operator = (const TMatrixRecord& src);
+  TMatrixRecord& operator= (const TMatrixRecord& src);
 
   /// Set all values of the record.
   void Set(const TMatrixDataType  matrixDataType,
            const TDimensionSizes  dimensionSizes,
            const bool             loadData,
            const bool             checkpoint,
-           const string           MatrixName);
+           const std::string&     matrixName);
 
   /// Pointer to the matrix object.
   TBaseMatrix*    matrixPtr;
@@ -84,7 +84,7 @@ struct TMatrixRecord
   /// Is the matrix necessary to be preserver when checkpoint is enabled?
   bool            checkpoint;
   /// Matrix name in the HDF5 file.
-  string          matrixName;
+  std::string     matrixName;
 };// end of TMatrixRecord
 //------------------------------------------------------------------------------
 

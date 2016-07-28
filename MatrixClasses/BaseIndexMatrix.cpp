@@ -118,7 +118,7 @@ void TBaseIndexMatrix::AllocateMemory()
 
   if (!matrixData)
   {
-    throw bad_alloc();
+    throw std::bad_alloc();
   }
 
   // Register Host memory (pin in memory)
@@ -127,7 +127,7 @@ void TBaseIndexMatrix::AllocateMemory()
   checkCudaErrors(cudaMalloc<size_t>(&deviceMatrixData, sizeInBytes));
   if (!deviceMatrixData)
   {
-    throw bad_alloc();
+    throw std::bad_alloc();
   }
 }// end of AllocateMemory
 //--------------------------------------------------------------------------------------------------

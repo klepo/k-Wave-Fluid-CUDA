@@ -35,7 +35,6 @@
 #include <MatrixClasses/BaseMatrix.h>
 #include <Utils/DimensionSizes.h>
 
-using namespace std;
 
 /**
  * @class TBaseFloatMatrix

@@ -52,11 +52,11 @@ class TIndexMatrix : public TBaseIndexMatrix
     virtual ~TIndexMatrix();
 
     /// Read data from the HDF5 file.
-    virtual void ReadDataFromHDF5File(THDF5_File& file,
-                                      TMatrixName matrixName);
+    virtual void ReadDataFromHDF5File(THDF5_File&  file,
+                                      TMatrixName& matrixName);
     /// Write data into the HDF5 file.
     virtual void WriteDataToHDF5File(THDF5_File&  file,
-                                     TMatrixName  matrixName,
+                                     TMatrixName& matrixName,
                                      const size_t compressionLevel);
 
     /**

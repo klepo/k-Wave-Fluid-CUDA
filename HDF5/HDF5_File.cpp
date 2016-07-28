@@ -49,13 +49,16 @@
 #include <Parameters/Parameters.h>
 #include <Logger/ErrorMessages.h>
 
+using std::ios;
+using std::string;
+
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------ CONSTANTS -------------------------------------------//
 //------------------------------------------------------------------------------------------------//
 
 
-const char* THDF5_File::matrixDomainTypeName    = "domain_type";
-const char* THDF5_File::matrixDataTypeName      = "data_type";
+const string THDF5_File::matrixDomainTypeName    = "domain_type";
+const string THDF5_File::matrixDataTypeName      = "data_type";
 
 const string THDF5_File::matrixDomainTypeNames[] = {"real","complex"};
 const string THDF5_File::matrixDataTypeNames[]   = {"float","long"};
@@ -88,26 +91,26 @@ THDF5_File::THDF5_File() :
  * @param [in] flags    - Flags for the HDF5 runtime
  * @throw ios:failure if error happened.
  */
-void THDF5_File::Create(const char*  fileName,
-                        unsigned int flags)
+void THDF5_File::Create(const string& fileName,
+                        unsigned int  flags)
 {
   // file is opened
   if (IsOpen())
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_RECREATE_FILE, fileName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_RECREATE_FILE, fileName.c_str());
     throw ios::failure(errMsg);
   }
 
   // Create a new file using default properties.
   this->fileName = fileName;
 
-  file = H5Fcreate(fileName, flags, H5P_DEFAULT, H5P_DEFAULT);
+  file = H5Fcreate(fileName.c_str(), flags, H5P_DEFAULT, H5P_DEFAULT);
 
   if (file < 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_CREATE_FILE, fileName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_CREATE_FILE, fileName.c_str());
     throw ios::failure(errMsg);
   }
 }// end of Create
@@ -122,34 +125,53 @@ void THDF5_File::Create(const char*  fileName,
  * @throw ios:failure if error happened.
  *
  */
-void THDF5_File::Open(const char * fileName,
-                      unsigned int flags)
+void THDF5_File::Open(const string& fileName,
+                      unsigned int  flags)
 {
+  const char *cFileName = fileName.c_str();
+
   if (IsOpen())
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_REOPEN_FILE, fileName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_REOPEN_FILE, cFileName);
     throw ios::failure(errMsg);
   };
 
   this->fileName = fileName;
 
-  if (H5Fis_hdf5(fileName) == 0)
+  if (H5Fis_hdf5(cFileName) == 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_NOT_HDF5_FILE, fileName);
+    snprintf(errMsg, 256, ERR_FMT_NOT_HDF5_FILE, cFileName);
     throw ios::failure(errMsg);
   }
 
-  file = H5Fopen(fileName, flags, H5P_DEFAULT);
+  file = H5Fopen(cFileName, flags, H5P_DEFAULT);
 
   if (file < 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_FILE_NOT_OPEN, fileName);
+    snprintf(errMsg, 256, ERR_FMT_FILE_NOT_OPEN, cFileName);
     throw ios::failure(errMsg);
   }
 }// end of Open
+//--------------------------------------------------------------------------------------------------
+
+/**
+ * Is a HDF5 file (can I access it)
+ * @param [in] fileName - Filename
+ * @return true if I can access the file
+ */
+bool THDF5_File::IsHDF5(const string& fileName)
+{
+  #ifdef __linux__
+    return (access(fileName.c_str(), F_OK) == 0);
+  #endif
+
+  #ifdef _WIN64
+     return (_access_s(fileName.c_str(), 0) == 0 );
+  #endif
+}// end of IsHDF5
 //--------------------------------------------------------------------------------------------------
 
 /**
@@ -192,15 +214,15 @@ THDF5_File::~THDF5_File()
  * @return A handle to the new group
  * @throw ios::failure
  */
-hid_t THDF5_File::CreateGroup(const hid_t parentGroup,
-                              TMatrixName groupName)
+hid_t THDF5_File::CreateGroup(const hid_t  parentGroup,
+                              TMatrixName& groupName)
 {
-  hid_t group = H5Gcreate(parentGroup, groupName, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+  hid_t group = H5Gcreate(parentGroup, groupName.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
   if (group == H5I_INVALID_HID)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_CREATE_GROUP, groupName, fileName.c_str());
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_CREATE_GROUP, groupName.c_str(), fileName.c_str());
     throw ios::failure(errMsg);
   }
 
@@ -216,15 +238,15 @@ hid_t THDF5_File::CreateGroup(const hid_t parentGroup,
  * @return A handle to the group
  * @throw ios::failure
  */
-hid_t THDF5_File::OpenGroup(const hid_t parentGroup,
-                            TMatrixName groupName)
+hid_t THDF5_File::OpenGroup(const hid_t  parentGroup,
+                            TMatrixName& groupName)
 {
-  hid_t group = H5Gopen(parentGroup, groupName, H5P_DEFAULT);
+  hid_t group = H5Gopen(parentGroup, groupName.c_str(), H5P_DEFAULT);
 
   if (group == H5I_INVALID_HID)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_OPEN_GROUP, groupName, fileName.c_str());
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_OPEN_GROUP, groupName.c_str(), fileName.c_str());
     throw ios::failure(errMsg);
   }
 
@@ -252,16 +274,16 @@ void THDF5_File::CloseGroup(const hid_t group)
  * @return A handle to open dataset
  * @throw ios::failure
  */
-hid_t THDF5_File::OpenDataset(const hid_t parentGroup,
-                              TMatrixName datasetName)
+hid_t THDF5_File::OpenDataset(const hid_t  parentGroup,
+                              TMatrixName& datasetName)
 {
   // Open dataset
-  hid_t dataset = H5Dopen(parentGroup, datasetName, H5P_DEFAULT);
+  hid_t dataset = H5Dopen(parentGroup, datasetName.c_str(), H5P_DEFAULT);
 
   if (dataset == H5I_INVALID_HID)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_OPEN_DATASET, fileName.c_str(), datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_OPEN_DATASET, fileName.c_str(), datasetName.c_str());
     throw ios::failure(errMsg);
   }
 
@@ -281,7 +303,7 @@ hid_t THDF5_File::OpenDataset(const hid_t parentGroup,
  * @throw ios::failure
  */
 hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
-                                     TMatrixName            datasetName,
+                                     TMatrixName&           datasetName,
                                      const TDimensionSizes& dimensionSizes,
                                      const TDimensionSizes& chunkSizes,
                                      const size_t           compressionLevel)
@@ -328,7 +350,7 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
   if (status < 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_OPEN_DATASET, fileName.c_str(), datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_OPEN_DATASET, fileName.c_str(), datasetName.c_str());
     throw ios::failure(errMsg);
   }
 
@@ -338,13 +360,13 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
   {
     char errMsg[256];
     snprintf(errMsg, 256, ERR_FMT_CANNOT_SET_COMPRESSION,
-             fileName.c_str(), datasetName, compressionLevel);
+             fileName.c_str(), datasetName.c_str(), compressionLevel);
     throw ios::failure(errMsg);
   }
 
   // create dataset
   hid_t dataset = H5Dcreate(parentGroup,
-                            datasetName,
+                            datasetName.c_str(),
                             H5T_NATIVE_FLOAT,
                             dataspace,
                             H5P_DEFAULT,
@@ -354,7 +376,7 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
   if (dataset == H5I_INVALID_HID)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_OPEN_DATASET, fileName.c_str(), datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_OPEN_DATASET, fileName.c_str(), datasetName.c_str());
     throw ios::failure(errMsg);
   }
 
@@ -377,7 +399,7 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
  * @throw ios::failure
  */
 hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
-                                     TMatrixName            datasetName,
+                                     TMatrixName&           datasetName,
                                      const TDimensionSizes& dimensionSizes,
                                      const TDimensionSizes& chunkSizes,
                                      const size_t           compressionLevel)
@@ -399,7 +421,7 @@ hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
   if (status < 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_OPEN_DATASET, fileName.c_str(), datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_OPEN_DATASET, fileName.c_str(), datasetName.c_str());
     throw ios::failure(errMsg);
   }
 
@@ -409,13 +431,13 @@ hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
   {
     char errMsg[256];
     snprintf(errMsg, 256, ERR_FMT_CANNOT_SET_COMPRESSION,
-             fileName.c_str(), datasetName, compressionLevel);
+             fileName.c_str(), datasetName.c_str(), compressionLevel);
     throw ios::failure(errMsg);
   }
 
   // create dataset
   hid_t dataset = H5Dcreate(parentGroup,
-                            datasetName,
+                            datasetName.c_str(),
                             H5T_STD_U64LE,
                             dataspace,
                             H5P_DEFAULT,
@@ -425,7 +447,7 @@ hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
   if (dataset == H5I_INVALID_HID)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_OPEN_DATASET, fileName.c_str(), datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_OPEN_DATASET, fileName.c_str(), datasetName.c_str());
     throw ios::failure(errMsg);
   }
 
@@ -752,27 +774,28 @@ void THDF5_File::WriteDataByMaskToHyperSlab(const hid_t            dataset,
  * @param [in] value       - data to be written
  * @throw ios::failure
  */
-void THDF5_File::WriteScalarValue(const hid_t parentGroup,
-                                  TMatrixName datasetName,
-                                  const float value)
+void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
+                                  TMatrixName& datasetName,
+                                  const float  value)
 {
+
   const int rank = 3;
   const hsize_t dims[] = {1, 1, 1};
 
-  hid_t dataset = H5I_INVALID_HID;
+  hid_t dataset   = H5I_INVALID_HID;
   hid_t dataspace = H5I_INVALID_HID;
   herr_t status;
 
-
-  if (H5LTfind_dataset(parentGroup, datasetName) == 1)
+  const char* cDatasetName = datasetName.c_str();
+  if (H5LTfind_dataset(parentGroup, cDatasetName) == 1)
   { // dataset already exists (from previous simulation leg) open it
-    dataset = OpenDataset(parentGroup,datasetName);
+    dataset = OpenDataset(parentGroup,cDatasetName);
   }
   else
   { // dataset does not exist yet -> create it
     dataspace = H5Screate_simple(rank, dims, NULL);
     dataset = H5Dcreate(parentGroup,
-                        datasetName,
+                        cDatasetName,
                         H5T_NATIVE_FLOAT,
                         dataspace,
                         H5P_DEFAULT,
@@ -784,7 +807,7 @@ void THDF5_File::WriteScalarValue(const hid_t parentGroup,
   if (dataset == H5I_INVALID_HID)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_WRITE_DATASET, datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_WRITE_DATASET, cDatasetName);
     throw ios::failure(errMsg);
   }
 
@@ -792,7 +815,7 @@ void THDF5_File::WriteScalarValue(const hid_t parentGroup,
   if (status < 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_WRITE_DATASET, datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_WRITE_DATASET, cDatasetName);
     throw ios::failure(errMsg);
   }
 
@@ -811,7 +834,7 @@ void THDF5_File::WriteScalarValue(const hid_t parentGroup,
  * @throw ios::failure
  */
 void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
-                                  TMatrixName  datasetName,
+                                  TMatrixName& datasetName,
                                   const size_t value)
 {
   const int rank = 3;
@@ -821,16 +844,16 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
   hid_t  dataspace = H5I_INVALID_HID;
   herr_t status;
 
-
-  if (H5LTfind_dataset(parentGroup, datasetName) == 1)
+  const char* cDatasetName = datasetName.c_str();
+  if (H5LTfind_dataset(parentGroup, cDatasetName) == 1)
   { // dataset already exists (from previous leg) open it
-    dataset = OpenDataset(parentGroup, datasetName);
+    dataset = OpenDataset(parentGroup, cDatasetName);
   }
   else
   { // dataset does not exist yet -> create it
     dataspace = H5Screate_simple(rank, dims, NULL);
     dataset = H5Dcreate(parentGroup,
-                        datasetName,
+                        cDatasetName,
                         H5T_STD_U64LE,
                         dataspace,
                         H5P_DEFAULT,
@@ -842,7 +865,7 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
   if (dataset == H5I_INVALID_HID)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_WRITE_DATASET, datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_WRITE_DATASET, cDatasetName);
     throw ios::failure(errMsg);
   }
 
@@ -850,7 +873,7 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
   if (status < 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_WRITE_DATASET, datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_WRITE_DATASET, cDatasetName);
     throw ios::failure(errMsg);
   }
 
@@ -866,9 +889,9 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
  * @param [in]  datasetName - HDF5 dataset name
  * @param [out] value       - Data to be read
  */
-void THDF5_File::ReadScalarValue(const hid_t parentGroup,
-                                 TMatrixName datasetName,
-                                 float&      value)
+void THDF5_File::ReadScalarValue(const hid_t  parentGroup,
+                                 TMatrixName& datasetName,
+                                 float&       value)
 {
   ReadCompleteDataset(parentGroup, datasetName, TDimensionSizes(1,1,1), &value);
 } // end of ReadScalarValue
@@ -881,9 +904,9 @@ void THDF5_File::ReadScalarValue(const hid_t parentGroup,
  * @param [in]  datasetName - HDF5 dataset name
  * @param [out] value       - Data to be read
  */
-void THDF5_File::ReadScalarValue(const hid_t parentGroup,
-                                 TMatrixName datasetName,
-                                 size_t&     value)
+void THDF5_File::ReadScalarValue(const hid_t  parentGroup,
+                                 TMatrixName& datasetName,
+                                 size_t&      value)
 {
   ReadCompleteDataset(parentGroup, datasetName, TDimensionSizes(1,1,1), &value);
 }// end of ReadScalarValue
@@ -899,25 +922,26 @@ void THDF5_File::ReadScalarValue(const hid_t parentGroup,
  * @throw ios::failure
  */
 void THDF5_File::ReadCompleteDataset (const hid_t            parentGroup,
-                                      TMatrixName            datasetName,
+                                      TMatrixName&           datasetName,
                                       const TDimensionSizes& dimensionSizes,
                                       float*                 data)
 {
-    // Check Dimensions sizes
+  const char* cDatasetName = datasetName.c_str();
+  // Check Dimensions sizes
   if (GetDatasetDimensionSizes(parentGroup, datasetName).GetElementCount() !=
       dimensionSizes.GetElementCount())
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_BAD_DIMENSION_SIZES, datasetName);
+    snprintf(errMsg, 256, ERR_FMT_BAD_DIMENSION_SIZES, cDatasetName);
     throw ios::failure(errMsg);
   }
 
   // read dataset
-  herr_t status = H5LTread_dataset_float(parentGroup, datasetName, data);
+  herr_t status = H5LTread_dataset_float(parentGroup, cDatasetName, data);
   if (status < 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_READ_DATASET, datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_READ_DATASET, cDatasetName);
     throw ios::failure(errMsg);
   }
 }// end of ReadDataset (float)
@@ -934,24 +958,25 @@ void THDF5_File::ReadCompleteDataset (const hid_t            parentGroup,
  * @throw ios::failure
  */
 void THDF5_File::ReadCompleteDataset(const hid_t            parentGroup,
-                                     TMatrixName            datasetName,
+                                     TMatrixName&           datasetName,
                                      const TDimensionSizes& dimensionSizes,
                                      size_t*                data)
 {
+  const char* cDatasetName = datasetName.c_str();
   if (GetDatasetDimensionSizes(parentGroup, datasetName).GetElementCount() !=
       dimensionSizes.GetElementCount())
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_BAD_DIMENSION_SIZES, datasetName);
+    snprintf(errMsg, 256, ERR_FMT_BAD_DIMENSION_SIZES, cDatasetName);
     throw ios::failure(errMsg);
   }
 
   // read dataset
-  herr_t status = H5LTread_dataset(parentGroup, datasetName, H5T_STD_U64LE, data);
+  herr_t status = H5LTread_dataset(parentGroup, cDatasetName, H5T_STD_U64LE, data);
   if (status < 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_READ_DATASET, datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_READ_DATASET, cDatasetName);
     throw ios::failure(errMsg);
   }
 }// end of ReadCompleteDataset
@@ -967,17 +992,17 @@ void THDF5_File::ReadCompleteDataset(const hid_t            parentGroup,
  * @throw ios::failure
  */
 TDimensionSizes THDF5_File::GetDatasetDimensionSizes(const hid_t parentGroup,
-                                                     TMatrixName datasetName)
+                                                     TMatrixName& datasetName)
 {
   const size_t ndims = GetDatasetNumberOfDimensions(parentGroup, datasetName);
 
   hsize_t dims[4] = {0, 0, 0, 0};
 
-  herr_t status = H5LTget_dataset_info(parentGroup, datasetName, dims, NULL, NULL);
+  herr_t status = H5LTget_dataset_info(parentGroup, datasetName.c_str(), dims, NULL, NULL);
   if (status < 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_READ_DATASET, datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_READ_DATASET, datasetName.c_str());
     throw ios::failure(errMsg);
   }
 
@@ -1000,16 +1025,16 @@ TDimensionSizes THDF5_File::GetDatasetDimensionSizes(const hid_t parentGroup,
  * @return Number of dimensions
  * @throw ios::failure
  */
-size_t THDF5_File::GetDatasetNumberOfDimensions(const hid_t parentGroup,
-                                                TMatrixName datasetName)
+size_t THDF5_File::GetDatasetNumberOfDimensions(const hid_t  parentGroup,
+                                                TMatrixName& datasetName)
 {
   int dims = 0;
 
-  herr_t status = H5LTget_dataset_ndims(parentGroup, datasetName, &dims);
+  herr_t status = H5LTget_dataset_ndims(parentGroup, datasetName.c_str(), &dims);
   if (status < 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_READ_DATASET, datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_READ_DATASET, datasetName.c_str());
     throw ios::failure(errMsg);
   }
 
@@ -1026,16 +1051,16 @@ size_t THDF5_File::GetDatasetNumberOfDimensions(const hid_t parentGroup,
  * @return Number of elements
  * @throw ios::failure
  */
-size_t THDF5_File::GetDatasetElementCount(const hid_t parentGroup,
-                                          TMatrixName datasetName)
+size_t THDF5_File::GetDatasetElementCount(const hid_t  parentGroup,
+                                          TMatrixName& datasetName)
 {
   hsize_t dims[3] = {0, 0, 0};
 
-  herr_t status = H5LTget_dataset_info(parentGroup, datasetName, dims, NULL, NULL);
+  herr_t status = H5LTget_dataset_info(parentGroup, datasetName.c_str(), dims, NULL, NULL);
   if (status < 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_READ_DATASET, datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_READ_DATASET, datasetName.c_str());
     throw ios::failure(errMsg);
   }
 
@@ -1052,7 +1077,7 @@ size_t THDF5_File::GetDatasetElementCount(const hid_t parentGroup,
  * @param [in] matrixDataType - Matrix data type in the file
  */
 void THDF5_File::WriteMatrixDataType(const hid_t            parentGroup,
-                                     TMatrixName            datasetName,
+                                     TMatrixName&           datasetName,
                                      const TMatrixDataType& matrixDataType)
 {
   WriteStringAttribute(parentGroup,
@@ -1071,7 +1096,7 @@ void THDF5_File::WriteMatrixDataType(const hid_t            parentGroup,
  * @param [in] matrixDomainType - Matrix domain type
  */
 void THDF5_File::WriteMatrixDomainType(const hid_t              parentGroup,
-                                       TMatrixName              datasetName,
+                                       TMatrixName&             datasetName,
                                        const TMatrixDomainType& matrixDomainType)
 {
   WriteStringAttribute(parentGroup,
@@ -1091,7 +1116,7 @@ void THDF5_File::WriteMatrixDomainType(const hid_t              parentGroup,
  * @throw ios::failure
  */
 THDF5_File::TMatrixDataType THDF5_File::ReadMatrixDataType(const hid_t parentGroup,
-                                                           TMatrixName datasetName)
+                                                           TMatrixName& datasetName)
 {
   string paramValue = ReadStringAttribute(parentGroup, datasetName, matrixDataTypeName);
 
@@ -1105,8 +1130,8 @@ THDF5_File::TMatrixDataType THDF5_File::ReadMatrixDataType(const hid_t parentGro
   }
 
   char errMsg[256];
-  snprintf(errMsg, 256, ERR_FMT_BAD_ATTRIBUTE_VALUE, datasetName,
-           matrixDataTypeName, paramValue.c_str());
+  snprintf(errMsg, 256, ERR_FMT_BAD_ATTRIBUTE_VALUE, datasetName.c_str(),
+           matrixDataTypeName.c_str(), paramValue.c_str());
   throw ios::failure(errMsg);
 
   // this will never be executed (just to prevent warning)
@@ -1123,8 +1148,8 @@ THDF5_File::TMatrixDataType THDF5_File::ReadMatrixDataType(const hid_t parentGro
  * @return Matrix domain type
  * @throw ios::failure
  */
-THDF5_File::TMatrixDomainType THDF5_File::ReadMatrixDomainType(const hid_t parentGroup,
-                                                               TMatrixName datasetName)
+THDF5_File::TMatrixDomainType THDF5_File::ReadMatrixDomainType(const hid_t  parentGroup,
+                                                               TMatrixName& datasetName)
 {
   string paramValue = ReadStringAttribute(parentGroup, datasetName, matrixDomainTypeName);
 
@@ -1138,8 +1163,8 @@ THDF5_File::TMatrixDomainType THDF5_File::ReadMatrixDomainType(const hid_t paren
   }
 
   char errMsg[256];
-  snprintf(errMsg, 256, ERR_FMT_BAD_ATTRIBUTE_VALUE, datasetName,
-           matrixDomainTypeName, paramValue.c_str());
+  snprintf(errMsg, 256, ERR_FMT_BAD_ATTRIBUTE_VALUE, datasetName.c_str(),
+           matrixDomainTypeName.c_str(), paramValue.c_str());
   throw ios::failure(errMsg);
 
   // This line will never be executed (just to prevent warning)
@@ -1158,18 +1183,18 @@ THDF5_File::TMatrixDomainType THDF5_File::ReadMatrixDomainType(const hid_t paren
  * @throw ios::failure
  */
 inline void THDF5_File::WriteStringAttribute(const hid_t   parentGroup,
-                                             TMatrixName   datasetName,
-                                             const char*   attributeName,
+                                             TMatrixName&  datasetName,
+                                             TMatrixName&  attributeName,
                                              const string& value)
 {
   herr_t status = H5LTset_attribute_string(parentGroup,
-                                           datasetName,
-                                           attributeName,
+                                           datasetName.c_str(),
+                                           attributeName.c_str(),
                                            value.c_str());
   if (status < 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_WRITE_ATTRIBUTE, attributeName, datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_WRITE_ATTRIBUTE, attributeName.c_str(), datasetName.c_str());
     throw ios::failure(errMsg);
   }
 }// end of WriteIntAttribute
@@ -1185,24 +1210,24 @@ inline void THDF5_File::WriteStringAttribute(const hid_t   parentGroup,
  * @return Attribute value
  * @throw ios::failure
  */
-inline string THDF5_File::ReadStringAttribute(const hid_t parentGroup,
-                                              TMatrixName datasetName,
-                                              const char* attributeName)
+inline string THDF5_File::ReadStringAttribute(const hid_t  parentGroup,
+                                              TMatrixName& datasetName,
+                                              TMatrixName& attributeName)
 {
   char value[256] = "";
   herr_t status = H5LTget_attribute_string(parentGroup,
-                                           datasetName,
-                                           attributeName,
+                                           datasetName.c_str(),
+                                           attributeName.c_str(),
                                            value);
 
   if (status < 0)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_CANNOT_READ_ATTRIBUTE, attributeName, datasetName);
+    snprintf(errMsg, 256, ERR_FMT_CANNOT_READ_ATTRIBUTE, attributeName.c_str(), datasetName.c_str());
     throw ios::failure(errMsg);
   }
 
-  return value;
+  return string(value);
 }// end of ReadIntAttribute
 //--------------------------------------------------------------------------------------------------
 
@@ -1364,38 +1389,26 @@ void THDF5_FileHeader::ReadHeaderFromOutputFile(THDF5_File& outputFile)
  * and type.
  * @param [in, out] checkpointFile - Checkpoint file handle
  */
-void THDF5_FileHeader::ReadHeaderFromCheckpointFile(THDF5_File & checkpointFile)
+void THDF5_FileHeader::ReadHeaderFromCheckpointFile(THDF5_File& checkpointFile)
 {
   // Get file root handle
   hid_t rootGroup = checkpointFile.GetRootGroup();
   // read file type
   headerValues[FILE_TYPE] =
-          checkpointFile.ReadStringAttribute(rootGroup,
-                                             "/",
-                                             headerNames[FILE_TYPE].c_str());
+          checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[FILE_TYPE]);
 
   if (GetFileType() == CHECKPOINT)
   {
     headerValues[CREATED_BY]
-            = checkpointFile.ReadStringAttribute(rootGroup,
-                                                 "/",
-                                                 headerNames[CREATED_BY].c_str());
+            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[CREATED_BY]);
     headerValues[CREATION_DATA]
-            = checkpointFile.ReadStringAttribute(rootGroup,
-                                                 "/",
-                                                 headerNames[CREATION_DATA].c_str());
+            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[CREATION_DATA]);
     headerValues[FILE_DESCRIPTION]
-            = checkpointFile.ReadStringAttribute(rootGroup,
-                                                 "/",
-                                                 headerNames[FILE_DESCRIPTION].c_str());
+            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[FILE_DESCRIPTION]);
     headerValues[MAJOR_VERSION]
-            = checkpointFile.ReadStringAttribute(rootGroup,
-                                                 "/",
-                                                 headerNames[MAJOR_VERSION].c_str());
+            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[MAJOR_VERSION]);
     headerValues[MINOR_VERSION]
-            = checkpointFile.ReadStringAttribute(rootGroup,
-                                                 "/",
-                                                 headerNames[MINOR_VERSION].c_str());
+            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[MINOR_VERSION]);
   }
   else
   {
@@ -1416,10 +1429,7 @@ void THDF5_FileHeader::WriteHeaderToOutputFile(THDF5_File& outputFile)
 
   for (const auto& it : headerNames)
   {
-    outputFile.WriteStringAttribute(rootGroup,
-                                    "/",
-                                    it.second.c_str(),
-                                    headerValues[it.first]);
+    outputFile.WriteStringAttribute(rootGroup, "/", it.second, headerValues[it.first]);
   }
 }// end of WriteHeaderToOutputFile
 //--------------------------------------------------------------------------------------------------

@@ -67,8 +67,8 @@ class TBaseMatrix
      * @param [in] file       - Handle to the HDF5 file
      * @param [in] matrixName - HDF5 dataset name to read from
      */
-    virtual void ReadDataFromHDF5File(THDF5_File& file,
-                                      TMatrixName matrixName) = 0;
+    virtual void ReadDataFromHDF5File(THDF5_File&  file,
+                                      TMatrixName& matrixName) = 0;
 
     /**
      * @brief   Write data into the HDF5 file.
@@ -78,7 +78,7 @@ class TBaseMatrix
      * @param [in] compressionLevel - Compression level for the HDF5 dataset
      */
     virtual void WriteDataToHDF5File(THDF5_File&  file,
-                                     TMatrixName  matrixName,
+                                     TMatrixName& matrixName,
                                      const size_t compressionLevel) = 0;
 
     /// Copy data from CPU -> GPU (Host -> Device).

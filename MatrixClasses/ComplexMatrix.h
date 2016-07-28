@@ -83,11 +83,11 @@ class TComplexMatrix : public TBaseFloatMatrix
 
     /// Load data from the HDF5_File.
     virtual void ReadDataFromHDF5File(THDF5_File& file,
-                                      TMatrixName matrixName);
+                                      TMatrixName& matrixName);
 
     /// Write data into the HDF5_File
     virtual void WriteDataToHDF5File(THDF5_File&  file,
-                                     TMatrixName  matrixName,
+                                     TMatrixName& matrixName,
                                      const size_t compressionLevel);
 
 

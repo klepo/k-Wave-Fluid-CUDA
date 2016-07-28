@@ -65,12 +65,12 @@ class TBaseOutputHDF5Stream
 
     /// Constructor.
     TBaseOutputHDF5Stream(THDF5_File&           file,
-                          TMatrixName           rootObjectName,
+                          TMatrixName&          rootObjectName,
                           const TRealMatrix&    sourceMatrix,
                           const TReduceOperator reduceOp);
 
     /// Destructor
-    virtual ~TBaseOutputHDF5Stream();
+    virtual ~TBaseOutputHDF5Stream() {};
 
     /// Create a HDF5 stream and allocate data for it.
     virtual void Create() = 0;
@@ -115,7 +115,7 @@ class TBaseOutputHDF5Stream
     THDF5_File& file;
 
     /// Dataset name.
-    char* rootObjectName;
+    std::string rootObjectName;
 
     /// Source matrix to be sampled.
     const TRealMatrix& sourceMatrix;

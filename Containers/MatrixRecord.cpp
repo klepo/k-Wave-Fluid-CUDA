@@ -105,7 +105,7 @@ void TMatrixRecord::Set(const TMatrixDataType matrixDataType,
                         const TDimensionSizes dimensionSizes,
                         const bool            loadData,
                         const bool            checkpoint,
-                        const string          matrixName)
+                        const std::string&    matrixName)
 {
   this->matrixPtr        = nullptr;
   this->dataType         = matrixDataType;

@@ -59,6 +59,7 @@
 #include <KSpaceSolver/SolverCUDAKernels.cuh>
 #include <Containers/MatrixContainer.h>
 
+using std::string;
 
 
 //------------------------------------------------------------------------------------------------//
@@ -163,7 +164,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
 
   // The simulation does not use check pointing or this is the first turn
   bool recoverFromCheckpoint = (parameters.IsCheckpointEnabled() &&
-                                THDF5_File::IsHDF5(parameters.GetCheckpointFileName().c_str()));
+                                THDF5_File::IsHDF5(parameters.GetCheckpointFileName()));
 
 
   if (recoverFromCheckpoint)
@@ -173,7 +174,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
     TLogger::Flush(TLogger::FULL);
 
     // Open checkpoint file
-    checkpointFile.Open(parameters.GetCheckpointFileName().c_str());
+    checkpointFile.Open(parameters.GetCheckpointFileName());
 
     // Check the checkpoint file
     CheckCheckpointFile();
@@ -194,7 +195,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
     TLogger::Log(TLogger::FULL, OUT_FMT_READING_OUTPUT_FILE);
     TLogger::Flush(TLogger::FULL);
 
-    outputFile.Open(parameters.GetOutputFileName().c_str(), H5F_ACC_RDWR);
+    outputFile.Open(parameters.GetOutputFileName(), H5F_ACC_RDWR);
 
     //Read file header of the output file
     parameters.GetFileHeader().ReadHeaderFromOutputFile(outputFile);
@@ -213,7 +214,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
     TLogger::Log(TLogger::FULL, OUT_FMT_CREATING_OUTPUT_FILE);
     TLogger::Flush(TLogger::FULL);
 
-    outputFile.Create(parameters.GetOutputFileName().c_str());
+    outputFile.Create(parameters.GetOutputFileName());
     TLogger::Log(TLogger::FULL, OUT_FMT_DONE);
 
     // Create the steams, link them with the sampled matrices
@@ -267,7 +268,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
 
     TLogger::Log(TLogger::BASIC, OUT_FMT_DONE);
   }
-  catch (const exception& e)
+  catch (const std::exception& e)
   {
     TLogger::Log(TLogger::BASIC, OUT_FMT_FAILED);
     TLogger::Log(TLogger::BASIC, OUT_FMT_LAST_SEPARATOR);
@@ -305,7 +306,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
 
     TLogger::Log(TLogger::BASIC,OUT_FMT_SIMULATOIN_END_SEPARATOR);
   }
-  catch (const exception& e)
+  catch (const std::exception& e)
   {
     TLogger::Log(TLogger::BASIC,
                  OUT_FMT_SIMULATION_FINAL_SEPARATOR,
@@ -356,7 +357,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
       TLogger::Log(TLogger::BASIC, OUT_FMT_DONE);
     }
   }
-  catch (const exception &e)
+  catch (const std::exception &e)
   {
     TLogger::Log(TLogger::BASIC, OUT_FMT_FAILED);
     TLogger::Log(TLogger::BASIC, OUT_FMT_LAST_SEPARATOR);
@@ -373,7 +374,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
 
     TLogger::Log(TLogger::BASIC, OUT_FMT_ELAPSED_TIME, postProcessingTime.GetElapsedTime());
     }
-  catch (const exception &e)
+  catch (const std::exception &e)
   {
     TLogger::Log(TLogger::BASIC, OUT_FMT_LAST_SEPARATOR);
     TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),ERR_FMT_PATH_DELIMITERS, 9).c_str());
@@ -993,7 +994,7 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   TLogger::Flush(TLogger::FULL);
 
   // Create the new file (overwrite the old one)
-  checkpointFile.Create(parameters.GetCheckpointFileName().c_str());
+  checkpointFile.Create(parameters.GetCheckpointFileName());
 
   //-------------------------------------- Store Matrices ----------------------------------------//
 
@@ -2002,7 +2003,7 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
              256,
              ERR_FMT_BAD_OUTPUT_FILE_FORMAT,
              parameters.GetOutputFileName().c_str());
-    throw ios::failure(errMsg);
+    throw std::ios::failure(errMsg);
   }
 
   // test file major version
@@ -2014,7 +2015,7 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
              ERR_FMT_BAD_MAJOR_File_Version,
              parameters.GetCheckpointFileName().c_str(),
              fileHeader.GetCurrentHDF5_MajorVersion().c_str());
-    throw ios::failure(errMsg);
+    throw std::ios::failure(errMsg);
   }
 
   // test file minor version
@@ -2026,7 +2027,7 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
              ERR_FMT_BAD_MINOR_FILE_VERSION,
              parameters.GetCheckpointFileName().c_str(),
              fileHeader.GetCurrentHDF5_MinorVersion().c_str());
-    throw ios::failure(errMsg);
+    throw std::ios::failure(errMsg);
   }
 
   // Check dimension sizes
@@ -2048,7 +2049,7 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
              parameters.GetFullDimensionSizes().ny,
              parameters.GetFullDimensionSizes().nz);
 
-   throw ios::failure(errMsg);
+   throw std::ios::failure(errMsg);
  }
 }// end of CheckOutputFile
 //--------------------------------------------------------------------------------------------------
@@ -2076,7 +2077,7 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
              256,
              ERR_FMT_BAD_CHECKPOINT_FILE_FORMAT,
              parameters.GetCheckpointFileName().c_str());
-    throw ios::failure(errMsg);
+    throw std::ios::failure(errMsg);
   }
 
   // test file major version
@@ -2088,7 +2089,7 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
              ERR_FMT_BAD_MAJOR_File_Version,
              parameters.GetCheckpointFileName().c_str(),
              fileHeader.GetCurrentHDF5_MajorVersion().c_str());
-    throw ios::failure(errMsg);
+    throw std::ios::failure(errMsg);
   }
 
   // test file minor version
@@ -2100,7 +2101,7 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
              ERR_FMT_BAD_MINOR_FILE_VERSION,
              parameters.GetCheckpointFileName().c_str(),
              fileHeader.GetCurrentHDF5_MinorVersion().c_str());
-    throw ios::failure(errMsg);
+    throw std::ios::failure(errMsg);
   }
 
   // Check dimension sizes
@@ -2122,7 +2123,7 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
              parameters.GetFullDimensionSizes().ny,
              parameters.GetFullDimensionSizes().nz);
 
-   throw ios::failure(errMsg);
+   throw std::ios::failure(errMsg);
  }
 }// end of CheckCheckpointFile
 //--------------------------------------------------------------------------------------------------

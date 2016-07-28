@@ -80,21 +80,21 @@ TIndexMatrix::~TIndexMatrix()
  *
  * @throw ios:failure if error occurs.
  */
-void TIndexMatrix::ReadDataFromHDF5File(THDF5_File& file,
-                                        TMatrixName matrixName)
+void TIndexMatrix::ReadDataFromHDF5File(THDF5_File&  file,
+                                        TMatrixName& matrixName)
 {
   if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::LONG)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_INDEX, matrixName);
-    throw ios::failure(errMsg);
+    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_INDEX, matrixName.c_str());
+    throw std::ios::failure(errMsg);
   }
 
   if (file.ReadMatrixDomainType(file.GetRootGroup(),matrixName) != THDF5_File::REAL)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_REAL,matrixName);
-    throw ios::failure(errMsg);
+    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_REAL,matrixName.c_str());
+    throw std::ios::failure(errMsg);
   }
 
   file.ReadCompleteDataset(file.GetRootGroup(), matrixName, dimensionSizes, matrixData);
@@ -111,7 +111,7 @@ void TIndexMatrix::ReadDataFromHDF5File(THDF5_File& file,
  * @throw ios:failure if error occurs.
  */
 void TIndexMatrix::WriteDataToHDF5File(THDF5_File&  file,
-                                       TMatrixName  matrixName,
+                                       TMatrixName&  matrixName,
                                        const size_t compressionLevel)
 {
   // set chunks - may be necessary for long index based sensor masks

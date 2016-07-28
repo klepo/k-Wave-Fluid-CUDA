@@ -36,6 +36,8 @@
 #include <Parameters/Parameters.h>
 #include <Logger/ErrorMessages.h>
 
+using std::string;
+
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------ CONSTANTS -------------------------------------------//
 //------------------------------------------------------------------------------------------------//
@@ -57,7 +59,7 @@
 
  */
 TCuboidOutputHDF5Stream::TCuboidOutputHDF5Stream(THDF5_File&           file,
-                                                 TMatrixName           groupName,
+                                                 TMatrixName&          groupName,
                                                  const TRealMatrix&    sourceMatrix,
                                                  const TIndexMatrix&   sensorMask,
                                                  const TReduceOperator reduceOp)

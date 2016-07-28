@@ -139,18 +139,18 @@ class TOutputStreamContainer
 
    private:
     /// Create a new output stream
-    TBaseOutputHDF5Stream* CreateNewOutputStream(TMatrixContainer& matrixContainer,
-                                                 const TMatrixIdx  sampledMatrixIdx,
-                                                 const TMatrixName fileDatasetName,
+    TBaseOutputHDF5Stream* CreateNewOutputStream(TMatrixContainer&  matrixContainer,
+                                                 const TMatrixIdx   sampledMatrixIdx,
+                                                 const TMatrixName& fileDatasetName,
                                                  const TBaseOutputHDF5Stream::TReduceOperator reduceOp);
 
     /// Copy constructor not allowed for public.
     TOutputStreamContainer(const TOutputStreamContainer&);
     /// Operator = not allowed for public.
-    TOutputStreamContainer & operator = (TOutputStreamContainer&);
+    TOutputStreamContainer & operator= (TOutputStreamContainer&);
 
     /// Output stream map.
-    typedef map<TOutputStreamIdx, TBaseOutputHDF5Stream* > TOutputStreamMap;
+    typedef std::map<TOutputStreamIdx, TBaseOutputHDF5Stream*> TOutputStreamMap;
 
     /// Map with output streams.
     TOutputStreamMap outputStreamContainer;

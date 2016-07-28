@@ -81,7 +81,7 @@ class TKSpaceFirstOrder3DSolver
     size_t GetDeviceMemoryUsageInMB();
 
     /// Get code name - release code version.
-    const string GetCodeName() const;
+    const std::string GetCodeName() const;
 
     /// Print the code name and license.
     void PrintFullNameCodeAndLicense() const;

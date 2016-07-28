@@ -52,7 +52,7 @@ class TCuboidOutputHDF5Stream : public TBaseOutputHDF5Stream
 
     /// Constructor.
     TCuboidOutputHDF5Stream(THDF5_File&           file,
-                            TMatrixName           groupName,
+                            TMatrixName&          groupName,
                             const TRealMatrix&    sourceMatrix,
                             const TIndexMatrix&   sensorMask,
                             const TReduceOperator reduceOp);

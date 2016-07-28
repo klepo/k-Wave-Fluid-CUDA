@@ -46,6 +46,8 @@
 #include <Logger/Logger.h>
 
 
+using std::ios;
+
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------ CONSTANTS -------------------------------------------//
 //------------------------------------------------------------------------------------------------//
@@ -219,7 +221,7 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
   if (!inputFile.IsOpen())
   {
     // Open file -- exceptions handled in main
-    inputFile.Open(commandLineParameters.GetInputFileName().c_str());
+    inputFile.Open(commandLineParameters.GetInputFileName());
   }
 
   fileHeader.ReadHeaderFromInputFile(inputFile);
@@ -530,10 +532,10 @@ void TParameters::SaveScalarsToFile(THDF5_File& outputFile)
  * Get GitHash of the code
  * @return githash
  */
-string TParameters::GetGitHash() const
+std::string TParameters::GetGitHash() const
 {
 #if (defined (__KWAVE_GIT_HASH__))
-  return string(__KWAVE_GIT_HASH__);
+  return std::string(__KWAVE_GIT_HASH__);
 #else
   return "";
 #endif

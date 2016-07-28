@@ -172,7 +172,7 @@ HDF5_DIR=/usr/local/hdf5-1.8.9 \endverbatim
  *
  *
  *
- * @section Parameters 3 Command Line Parameters 
+ * @section Parameters 3 Command Line Parameters
  * The CUDA/C++ code requires two mandatory parameters and accepts a few optional parameters and
  * flags.
  *
@@ -703,7 +703,8 @@ These are only defined if (p_source_flag == 1)
 #include <KSpaceSolver/KSpaceFirstOrder3DSolver.h>
 #include <Logger/Logger.h>
 
-using namespace std;
+
+using std::string;
 
 /**
  * The main function of the kspaceFirstOrder3D-CUDA
@@ -739,7 +740,7 @@ int main(int argc, char** argv)
       return EXIT_SUCCESS;
     }
   }
-  catch (const exception &e)
+  catch (const std::exception &e)
   {
      TLogger::Log(TLogger::BASIC, OUT_FMT_FAILED);
     // must be repeated in case the GPU we want to printout the code version
@@ -791,7 +792,7 @@ int main(int argc, char** argv)
   {
     KSpaceSolver.LoadInputData();
   }
-  catch (const ios::failure& e)
+  catch (const std::ios::failure& e)
   {
     TLogger::Log(TLogger::BASIC, OUT_FMT_FAILED);
     TLogger::Log(TLogger::BASIC, OUT_FMT_LAST_SEPARATOR);
@@ -799,7 +800,7 @@ int main(int argc, char** argv)
                                                        ERR_FMT_PATH_DELIMITERS,
                                                        9).c_str());
   }
-  catch (const exception& e)
+  catch (const std::exception& e)
   {
     TLogger::Log(TLogger::BASIC, OUT_FMT_FAILED);
     TLogger::Log(TLogger::BASIC, OUT_FMT_LAST_SEPARATOR);

@@ -57,7 +57,7 @@
  * @param [in] reduceOp     - Reduce operator
  */
 TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File&           file,
-                                               TMatrixName           datasetName,
+                                               TMatrixName&          datasetName,
                                                const TRealMatrix&    sourceMatrix,
                                                const TIndexMatrix&   sensorMask,
                                                const TReduceOperator reduceOp)

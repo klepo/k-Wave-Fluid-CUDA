@@ -409,7 +409,7 @@ void TMatrixContainer::LoadDataFromInputFile(THDF5_File& inputFile)
   {
     if (it.second.loadData)
     {
-      it.second.matrixPtr->ReadDataFromHDF5File(inputFile, it.second.matrixName.c_str());
+      it.second.matrixPtr->ReadDataFromHDF5File(inputFile, it.second.matrixName);
     }
   }
 }// end of LoadDataFromInputFile
@@ -425,7 +425,7 @@ void TMatrixContainer::LoadDataFromCheckpointFile(THDF5_File& checkpointFile)
   {
     if (it.second.checkpoint)
     {
-      it.second.matrixPtr->ReadDataFromHDF5File(checkpointFile,it.second.matrixName.c_str());
+      it.second.matrixPtr->ReadDataFromHDF5File(checkpointFile,it.second.matrixName);
     }
   }
 }// end of LoadDataFromCheckpointFile
@@ -445,7 +445,7 @@ void TMatrixContainer::StoreDataIntoCheckpointFile(THDF5_File& checkpointFile)
       it.second.matrixPtr->CopyFromDevice();
       // store data to the checkpoint file
       it.second.matrixPtr->WriteDataToHDF5File(checkpointFile,
-                                               it.second.matrixName.c_str(),
+                                               it.second.matrixName,
                                                TParameters::GetInstance().GetCompressionLevel());
     }
   }
@@ -509,10 +509,10 @@ void TMatrixContainer::CopyMatricesFromDevice()
  * @param [in] file          - File of error
  * @param [in] line          - Line of error
  */
-void TMatrixContainer::CreateErrorAndThrowException(const char*   messageFormat,
-                                                    const string& matrixName,
-                                                    const char*   file,
-                                                    const int     line)
+void TMatrixContainer::CreateErrorAndThrowException(const char*  messageFormat,
+                                                    TMatrixName& matrixName,
+                                                    const char*  file,
+                                                    const int    line)
 {
   char errorMessage[256];
   snprintf(errorMessage, 256, messageFormat, matrixName.c_str(), file, line);

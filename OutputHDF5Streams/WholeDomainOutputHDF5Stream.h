@@ -46,7 +46,7 @@ class TWholeDomainOutputHDF5Stream : public TBaseOutputHDF5Stream
   public:
     /// Constructor.
     TWholeDomainOutputHDF5Stream(THDF5_File&           file,
-                                 TMatrixName           datasetName,
+                                 TMatrixName&          datasetName,
                                  TRealMatrix&          sourceMatrix,
                                  const TReduceOperator reduceOp);
 

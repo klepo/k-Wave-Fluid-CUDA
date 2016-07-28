@@ -199,8 +199,6 @@
 #include <cstdlib>
 #include <string>
 
-using std::string;
-
 /**
  * @class TCommandLineParameters
  * @brief The class to parse and store command line parameters.
@@ -216,11 +214,11 @@ class TCommandLineParameters
     virtual ~TCommandLineParameters() {};
 
     /// Get input file name.
-    string GetInputFileName()           const {return inputFileName;};
+    const std::string& GetInputFileName()      const {return inputFileName;};
     /// Get output file name.
-    string GetOutputFileName()          const {return outputFileName;};
+    const std::string& GetOutputFileName()     const {return outputFileName;};
     /// Get Checkpoint file name.
-    string GetCheckpointFileName()      const {return checkpointFileName;};
+    const std::string& GetCheckpointFileName() const {return checkpointFileName;};
 
     /// Get GPU device ID specified by the user (not necessary the one the code runs on).
     int GetCUDADeviceIdx()              const {return cudaDeviceIdx;};
@@ -300,11 +298,11 @@ class TCommandLineParameters
 
   private:
     /// Input file name.
-    string inputFileName;
+    std::string inputFileName;
     /// Output file name.
-    string outputFileName;
+    std::string outputFileName;
     /// Checkpoint file name.
-    string checkpointFileName;
+    std::string checkpointFileName;
 
     /// Number of CPU threads value.
     size_t numberOfThreads;

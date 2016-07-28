@@ -375,9 +375,9 @@ void TOutputStreamContainer::FreeStreams()
  * @return New output stream with defined links
  *
  */
-TBaseOutputHDF5Stream* TOutputStreamContainer::CreateNewOutputStream(TMatrixContainer& matrixContainer,
-                                                                     const TMatrixIdx  sampledMatrixIdx,
-                                                                     const TMatrixName fileDatasetName,
+TBaseOutputHDF5Stream* TOutputStreamContainer::CreateNewOutputStream(TMatrixContainer&  matrixContainer,
+                                                                     const TMatrixIdx   sampledMatrixIdx,
+                                                                     const TMatrixName& fileDatasetName,
                                                                      const TBaseOutputHDF5Stream::TReduceOperator reduceOp)
 {
   TParameters& params = TParameters::GetInstance();

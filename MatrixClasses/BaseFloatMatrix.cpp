@@ -141,7 +141,7 @@ void TBaseFloatMatrix::AllocateMemory()
   matrixData = static_cast<float*> (_mm_malloc(sizeInBytes, DATA_ALIGNMENT));
   if (!matrixData)
   {
-    throw bad_alloc();
+    throw std::bad_alloc();
   }
 
   // Register Host memory (pin in memory)
@@ -151,7 +151,7 @@ void TBaseFloatMatrix::AllocateMemory()
   checkCudaErrors(cudaMalloc<float>(&deviceMatrixData, sizeInBytes));
   if (!deviceMatrixData)
   {
-    throw bad_alloc();
+    throw std::bad_alloc();
   }
   // This has to be done for simulations based on input sources
   ZeroMatrix();

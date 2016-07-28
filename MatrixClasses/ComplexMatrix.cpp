@@ -75,22 +75,22 @@ TComplexMatrix::~TComplexMatrix()
  * * @throw ios::failure when there is a problem
  */
 void TComplexMatrix::ReadDataFromHDF5File(THDF5_File& file,
-                                          TMatrixName matrixName)
+                                          TMatrixName& matrixName)
 {
   // check data type
   if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::FLOAT)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_FLOAT, matrixName);
-    throw ios::failure(errMsg);
+    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_FLOAT, matrixName.c_str());
+    throw std::ios::failure(errMsg);
   }
 
   // check domain type
   if (file.ReadMatrixDomainType(file.GetRootGroup(), matrixName) != THDF5_File::COMPLEX)
   {
     char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_COMPLEX, matrixName);
-    throw ios::failure(errMsg);
+    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_COMPLEX, matrixName.c_str());
+    throw std::ios::failure(errMsg);
   }
 
   // Initialise dimensions
@@ -111,8 +111,8 @@ void TComplexMatrix::ReadDataFromHDF5File(THDF5_File& file,
  *
  * @throw ios::failure an exception what the operation fails
  */
-void TComplexMatrix::WriteDataToHDF5File(THDF5_File& file,
-                                         TMatrixName matrixName,
+void TComplexMatrix::WriteDataToHDF5File(THDF5_File&  file,
+                                         TMatrixName& matrixName,
                                          const size_t compressionLevel)
 {
   // set dimensions and chunks

@@ -61,28 +61,18 @@
  * @param [in] reduceOp       - Reduce operator
  */
 TBaseOutputHDF5Stream::TBaseOutputHDF5Stream(THDF5_File&           file,
-                                             TMatrixName           rootObjectName,
+                                             TMatrixName&          rootObjectName,
                                              const TRealMatrix&    sourceMatrix,
                                              const TReduceOperator reduceOp)
             : file(file),
-              rootObjectName(),
+              rootObjectName(rootObjectName),
               sourceMatrix(sourceMatrix),
               reduceOp(reduceOp)
 {
-  // copy the dataset name (just for sure)
-  this->rootObjectName = new char[strlen(rootObjectName)];
-  strcpy(this->rootObjectName, rootObjectName);
+
  }// end of TBaseOutputHDF5Stream
 //--------------------------------------------------------------------------------------------------
 
-/**
- * Destructor.
- */
-TBaseOutputHDF5Stream::~TBaseOutputHDF5Stream()
-{
-  delete[] rootObjectName;
-}// end of ~TBaseOutputHDF5Stream
-//--------------------------------------------------------------------------------------------------
 
 /**
  * Apply post-processing on the buffer (Done on the GPU side as well).
@@ -138,7 +128,7 @@ void TBaseOutputHDF5Stream::AllocateMemory()
 
   if (!hostBuffer)
   {
-    throw bad_alloc();
+    throw std::bad_alloc();
   }
 
   // memory allocation done on core 0 - GPU is pinned to the first sockets

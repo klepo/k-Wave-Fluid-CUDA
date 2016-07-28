@@ -89,7 +89,6 @@ class TLogger
                                       const std::string& delimiters,
                                       const int          indentation = 0,
                                       const int          lineSize    = 65);
-
   private:
     /// Default constructor is not allowed, static class
     TLogger();

@@ -207,11 +207,11 @@ class TParameters
     float&  Get_rho0_sgz_scalar()                {return rho0_sgz_scalar; };
 
     /// Get input file name.
-    string GetInputFileName()      const {return commandLineParameters.GetInputFileName();};
+    std::string GetInputFileName()      const {return commandLineParameters.GetInputFileName();};
     /// Get output file name.
-    string GetOutputFileName()     const {return commandLineParameters.GetOutputFileName();};
+    std::string GetOutputFileName()     const {return commandLineParameters.GetOutputFileName();};
     /// Get checkpoint filename.
-    string GetCheckpointFileName() const {return commandLineParameters.GetCheckpointFileName();};
+    std::string GetCheckpointFileName() const {return commandLineParameters.GetCheckpointFileName();};
 
     /// Get compression level.
     size_t GetCompressionLevel()   const {return commandLineParameters.GetCompressionLevel();};
@@ -266,7 +266,7 @@ class TParameters
     bool IsCopySensorMask()            const {return commandLineParameters.IsCopySensorMask();};
 
     /// Get Git hash of the code
-    string GetGitHash()  const;
+    std::string GetGitHash()  const;
 
   protected:
     /// Constructor.
