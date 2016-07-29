@@ -1,5 +1,6 @@
 /**
  * @file        MatrixRecord.h
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -48,10 +49,10 @@
 struct TMatrixRecord
 {
   /**
-   * @enum TMatrixDataType
+   * @enum TMatrixType
    * @brief All possible types of the matrix.
    */
-  enum TMatrixDataType
+  enum TMatrixType
   {
     REAL, COMPLEX, INDEX, CUFFT
   };
@@ -67,7 +68,7 @@ struct TMatrixRecord
   TMatrixRecord& operator= (const TMatrixRecord& src);
 
   /// Set all values of the record.
-  void Set(const TMatrixDataType  matrixDataType,
+  void Set(const TMatrixType      matrixType,
            const TDimensionSizes  dimensionSizes,
            const bool             loadData,
            const bool             checkpoint,
@@ -76,7 +77,7 @@ struct TMatrixRecord
   /// Pointer to the matrix object.
   TBaseMatrix*    matrixPtr;
   /// Matrix data type.
-  TMatrixDataType dataType;
+  TMatrixType     matrixType;
   /// Matrix dimension sizes.
   TDimensionSizes dimensionSizes;
   /// Is the matrix content loaded from the HDF5 file?

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              26 July      2016, 13:22 (revised)
+ *              29 July      2016, 16:55 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -37,7 +37,7 @@
 #include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
 #include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
-#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
 #include <Parameters/Parameters.h>
 
 
@@ -191,7 +191,10 @@ void TBaseOutputHDF5Stream::AllocateMemory()
   else
   {
     // Allocate memory on the GPU side
-    checkCudaErrors(cudaMalloc<float>(&deviceBuffer, bufferSize * sizeof (float)));
+    if ((cudaMalloc<float>(&deviceBuffer, bufferSize * sizeof (float))!= cudaSuccess) || (!deviceBuffer))
+    {
+      throw std::bad_alloc();
+    }
     // if doing aggregation copy initialised arrays on GPU
     CopyDataToDevice();
   }

@@ -34,7 +34,7 @@
 #include <KSpaceSolver/SolverCUDAKernels.cuh>
 #include <Parameters/CUDADeviceConstants.cuh>
 
-#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
 #include <Utils/CUDAUtils.cuh>
 
 //------------------------------------------------------------------------------------------------//

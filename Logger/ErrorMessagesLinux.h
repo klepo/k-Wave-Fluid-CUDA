@@ -38,7 +38,7 @@
  * @brief   Datatype for error messages.
  * @details Datatype for error messages.
  */
-typedef const char * const TErrorMessage;
+typedef const std::string TErrorMessage;
 
 /// Error message header
 TErrorMessage ERR_FMT_HEAD =

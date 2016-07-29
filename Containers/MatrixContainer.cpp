@@ -1,5 +1,6 @@
 /**
  * @file        MatrixContainer.cpp
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -8,8 +9,9 @@
  * @brief       The implementation file containing the matrix container.
  *
  * @version     kspaceFirstOrder3D 3.4
+ *
  * @date        02 December  2014, 16:17 (created) \n
- *              25 July      2016, 11:06 (revised)
+ *              29 July      2016, 16:38 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -33,6 +35,8 @@
 
 #include <Parameters/Parameters.h>
 #include <Logger/ErrorMessages.h>
+
+#include "Logger/Logger.h"
 
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------ CONSTANTS -------------------------------------------//
@@ -73,12 +77,11 @@ void TMatrixContainer::CreateMatrices()
   {
     if (it.second.matrixPtr != nullptr)
     { // the data is already allocated
-      CreateErrorAndThrowException(ERR_FMT_RELOCATION_ERROR,
-                                   it.second.matrixName,
-                                   __FILE__,  __LINE__);
+      throw std::invalid_argument(TLogger::FormatMessage(ERR_FMT_RELOCATION_ERROR,
+                                                         it.second.matrixName.c_str()));
     }
 
-    switch (it.second.dataType)
+    switch (it.second.matrixType)
     {
       case TMatrixRecord::REAL:
       {
@@ -106,9 +109,8 @@ void TMatrixContainer::CreateMatrices()
 
       default: // unknown matrix type
       {
-        CreateErrorAndThrowException(ERR_FMT_BAD_MATRIX_DISTRIBUTION_TYPE,
-                                     it.second.matrixName,
-                                     __FILE__, __LINE__);
+        throw std::invalid_argument(TLogger::FormatMessage(ERR_FMT_BAD_MATRIX_DISTRIBUTION_TYPE,
+                                                           it.second.matrixName.c_str()));
         break;
       }
     }// switch
@@ -499,23 +501,3 @@ void TMatrixContainer::CopyMatricesFromDevice()
 //------------------------------------------------------------------------------------------------//
 //--------------------------------------- Private methods ----------------------------------------//
 //------------------------------------------------------------------------------------------------//
-
-/*
- * Print error and and throw an exception.
- * @throw invalid_argument
- *
- * @param [in] messageFormat - Format of error
- * @param [in] matrixName    - HDF5 dataset name
- * @param [in] file          - File of error
- * @param [in] line          - Line of error
- */
-void TMatrixContainer::CreateErrorAndThrowException(const char*  messageFormat,
-                                                    TMatrixName& matrixName,
-                                                    const char*  file,
-                                                    const int    line)
-{
-  char errorMessage[256];
-  snprintf(errorMessage, 256, messageFormat, matrixName.c_str(), file, line);
-  throw std::invalid_argument(errorMessage);
-}// CreateErrorAndThrowException
-//--------------------------------------------------------------------------------------------------

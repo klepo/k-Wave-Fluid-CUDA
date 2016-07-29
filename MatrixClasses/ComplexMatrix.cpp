@@ -1,6 +1,6 @@
-
 /**
  * @file        ComplexMatrix.cpp
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2011, 14:02 (created) \n
- *              26 July     2016, 12:33 (revised)
+ *              29 July     2016, 16:53 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -32,7 +32,7 @@
 #include <iostream>
 
 #include <MatrixClasses/ComplexMatrix.h>
-#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
 
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------ CONSTANTS -------------------------------------------//
@@ -74,23 +74,19 @@ TComplexMatrix::~TComplexMatrix()
  *
  * * @throw ios::failure when there is a problem
  */
-void TComplexMatrix::ReadDataFromHDF5File(THDF5_File& file,
+void TComplexMatrix::ReadDataFromHDF5File(THDF5_File&  file,
                                           TMatrixName& matrixName)
 {
   // check data type
   if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::FLOAT)
   {
-    char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_FLOAT, matrixName.c_str());
-    throw std::ios::failure(errMsg);
+    throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_FLOAT, matrixName.c_str()));
   }
 
   // check domain type
   if (file.ReadMatrixDomainType(file.GetRootGroup(), matrixName) != THDF5_File::COMPLEX)
   {
-    char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_COMPLEX, matrixName.c_str());
-    throw std::ios::failure(errMsg);
+    throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_COMPLEX, matrixName.c_str()));
   }
 
   // Initialise dimensions
@@ -98,7 +94,7 @@ void TComplexMatrix::ReadDataFromHDF5File(THDF5_File& file,
   complexDims.nx = 2 * complexDims.nx;
 
   // Read data from the file
-  file.ReadCompleteDataset(file.GetRootGroup(), matrixName, complexDims, matrixData);
+  file.ReadCompleteDataset(file.GetRootGroup(), matrixName, complexDims, hostData);
 }// end of LoadDataFromMatlabFile
 //--------------------------------------------------------------------------------------------------
 
@@ -129,7 +125,7 @@ void TComplexMatrix::WriteDataToHDF5File(THDF5_File&  file,
                                           chunks,
                                           compressionLevel);
  // Write write the matrix at once.
-  file.WriteHyperSlab(dataset, TDimensionSizes(0, 0, 0), dimensionSizes, matrixData);
+  file.WriteHyperSlab(dataset, TDimensionSizes(0, 0, 0), dimensionSizes, hostData);
   file.CloseDataset(dataset);
 
  // Write data and domain type

@@ -1,5 +1,6 @@
 /**
  * @file        CUFFTComplexMatrix.cpp
+ *
  * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -11,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2011, 13:10 (created) \n
- *              21 July      2016, 15:55 (revised)
+ *              29 July      2016, 16:52 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -40,6 +41,8 @@
 #include <MatrixClasses/RealMatrix.h>
 #include <Logger/ErrorMessages.h>
 #include <KSpaceSolver/SolverCUDAKernels.cuh>
+
+#include "Logger/Logger.h"
 
 
 //------------------------------------------------------------------------------------------------//
@@ -517,7 +520,7 @@ void TCUFFTComplexMatrix::Compute_FFT_3D_R2C(TRealMatrix& inMatrix)
   //Compute forward cuFFT (if the plan does not exist, it also returns error)
   cufftResult_t cufftError = cufftExecR2C(cufftPlan_3D_R2C,
                                           static_cast<cufftReal*>(inMatrix.GetDeviceData()),
-                                          reinterpret_cast<cufftComplex*>(deviceMatrixData));
+                                          reinterpret_cast<cufftComplex*>(deviceData));
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_3D_R2C");
 }// end of Compute_FFT_3D_R2C
@@ -535,7 +538,7 @@ void TCUFFTComplexMatrix::Compute_FFT_3D_C2R(TRealMatrix& outMatrix)
 {
   //Compute forward cuFFT (if the plan does not exist, it also returns error)
   cufftResult_t cufftError = cufftExecC2R(cufftPlan_3D_C2R,
-                                          reinterpret_cast<cufftComplex*>(deviceMatrixData),
+                                          reinterpret_cast<cufftComplex*>(deviceData),
                                           static_cast<cufftReal*>(outMatrix.GetDeviceData()));
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_3D_RCR");
@@ -553,7 +556,7 @@ void TCUFFTComplexMatrix::Compute_FFT_1DX_R2C(TRealMatrix& inMatrix)
   //Compute forward cuFFT (if the plan does not exist, it also returns error)
   cufftResult_t cufftError = cufftExecR2C(cufftPlan_1DX_R2C,
                                           static_cast<cufftReal*>(inMatrix.GetDeviceData()),
-                                          reinterpret_cast<cufftComplex*>(deviceMatrixData));
+                                          reinterpret_cast<cufftComplex*>(deviceData));
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_1DX_R2C");
 }// end of Compute_FFT_1DX_R2C
@@ -574,7 +577,7 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_R2C(TRealMatrix& inMatrix)
                 inMatrix.GetDimensionSizes().ny,
                 inMatrix.GetDimensionSizes().nz);
 
-  SolverCUDAKernels::TrasposeReal3DMatrixXY(deviceMatrixData,
+  SolverCUDAKernels::TrasposeReal3DMatrixXY(deviceData,
                                             inMatrix.GetDeviceData(),
                                             dimSizes);
 
@@ -582,8 +585,8 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_R2C(TRealMatrix& inMatrix)
   // the FFT is calculated in-place (may be a bit slower than out-of-place, however
   // it does not request additional transfers and memory).
   cufftResult_t cufftError = cufftExecR2C(cufftPlan_1DY_R2C,
-                                          static_cast<cufftReal*>(deviceMatrixData),
-                                          reinterpret_cast<cufftComplex*>(deviceMatrixData));
+                                          static_cast<cufftReal*>(deviceData),
+                                          reinterpret_cast<cufftComplex*>(deviceData));
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_1DY_R2C");
 }// end of Compute_FFT_1DY_R2C
@@ -603,7 +606,7 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_R2C(TRealMatrix& inMatrix)
                 inMatrix.GetDimensionSizes().ny,
                 inMatrix.GetDimensionSizes().nz);
 
-  SolverCUDAKernels::TrasposeReal3DMatrixXZ(deviceMatrixData,
+  SolverCUDAKernels::TrasposeReal3DMatrixXZ(deviceData,
                                             inMatrix.GetDeviceData(),
                                             dimSizes);
 
@@ -611,8 +614,8 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_R2C(TRealMatrix& inMatrix)
   // the FFT is calculated in-place (may be a bit slower than out-of-place, however
   // it does not request additional transfers and memory).
   cufftResult_t cufftError = cufftExecR2C(cufftPlan_1DZ_R2C,
-                                          static_cast<cufftReal*>(deviceMatrixData),
-                                          reinterpret_cast<cufftComplex*>(deviceMatrixData));
+                                          static_cast<cufftReal*>(deviceData),
+                                          reinterpret_cast<cufftComplex*>(deviceData));
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_1DZ_R2C");
 }// end of Compute_FFT_1DZ_R2C
@@ -628,7 +631,7 @@ void TCUFFTComplexMatrix::Compute_FFT_1DX_C2R(TRealMatrix& outMatrix)
 {
   //Compute inverse cuFFT (if the plan does not exist, it also returns error)
   cufftResult_t cufftError = cufftExecC2R(cufftPlan_1DX_C2R,
-                                          reinterpret_cast<cufftComplex*>(deviceMatrixData),
+                                          reinterpret_cast<cufftComplex*>(deviceData),
                                           static_cast<cufftReal*> (outMatrix.GetDeviceData()));
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_1DX_C2R");
@@ -650,8 +653,8 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_C2R(TRealMatrix& outMatrix)
   // the FFT is calculated in-place (may be a bit slower than out-of-place, however
   // it does not request additional transfers and memory).
   cufftResult_t cufftError = cufftExecC2R(cufftPlan_1DY_C2R,
-                                          reinterpret_cast<cufftComplex*>(deviceMatrixData),
-                                          static_cast<cufftReal*>(deviceMatrixData));
+                                          reinterpret_cast<cufftComplex*>(deviceData),
+                                          static_cast<cufftReal*>(deviceData));
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_1DY_C2R");
 
@@ -661,7 +664,7 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_C2R(TRealMatrix& outMatrix)
                 outMatrix.GetDimensionSizes().nz);
 
   SolverCUDAKernels::TrasposeReal3DMatrixXY(outMatrix.GetDeviceData(),
-                                            deviceMatrixData,
+                                            deviceData,
                                             dimSizes);
 }// end of Compute_FFT_1DY_C2R
 //--------------------------------------------------------------------------------------------------
@@ -681,8 +684,8 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_C2R(TRealMatrix& outMatrix)
   // the FFT is calculated in-place (may be a bit slower than out-of-place, however
   // it does not request additional transfers and memory).
   cufftResult_t cufftError = cufftExecC2R(cufftPlan_1DZ_C2R,
-                                          reinterpret_cast<cufftComplex*>(deviceMatrixData),
-                                          static_cast<cufftReal*>(deviceMatrixData));
+                                          reinterpret_cast<cufftComplex*>(deviceData),
+                                          static_cast<cufftReal*>(deviceData));
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_1DZ_C2R");
 
@@ -714,18 +717,17 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_C2R(TRealMatrix& outMatrix)
  * @param [in] transformTypeName - CUDA transform type name
  * @throw runtime error if error occurs
  */
-void TCUFFTComplexMatrix::ThrowCUFFTException(const cufftResult cufftError,
-                                              const char*       transformTypeName)
+void TCUFFTComplexMatrix::ThrowCUFFTException(const cufftResult  cufftError,
+                                              const std::string& transformTypeName)
 {
-  char errMsg[256];
-
+  std::string errMsg;
   if (cuFFTErrorMessages.find(cufftError) != cuFFTErrorMessages.end())
   {
-    snprintf(errMsg, 256, cuFFTErrorMessages[cufftError], transformTypeName);
+    errMsg = TLogger::FormatMessage(cuFFTErrorMessages[cufftError], transformTypeName.c_str());
   }
   else // unknown error
   {
-    snprintf(errMsg, 256, ERR_FMT_CUFFT_UNKNOWN_ERROR, transformTypeName);
+    errMsg = TLogger::FormatMessage(ERR_FMT_CUFFT_UNKNOWN_ERROR, transformTypeName.c_str());
   }
 
   // Throw exception

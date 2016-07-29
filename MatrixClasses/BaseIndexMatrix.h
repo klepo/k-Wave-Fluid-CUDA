@@ -1,5 +1,6 @@
 /**
  * @file        BaseIndexMatrix.h
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -11,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 14:17 (created) \n
- *              22 July     2016, 13:49 (revised)
+ *              29 July     2016, 16:51 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -76,27 +77,27 @@ class TBaseIndexMatrix : public TBaseMatrix
     virtual void ZeroMatrix();
 
     /// Get raw data out of the class (for direct CPU kernel access).
-    virtual size_t* GetData()
+    virtual size_t* GetHostData()
     {
-      return matrixData;
+      return hostData;
     }
 
     /// Get raw data out of the class (for direct CPU kernel access).
-    virtual const size_t* GetData() const
+    virtual const size_t* GetHostData() const
     {
-      return matrixData;
+      return hostData;
     }
 
     /// Get raw GPU data out of the class (for direct GPU kernel access).
     virtual size_t* GetDeviceData()
     {
-      return deviceMatrixData;
+      return deviceData;
     }
 
     /// Get raw GPU data out of the class (for direct GPU kernel access).
     virtual const size_t* GetDeviceData() const
     {
-      return deviceMatrixData;
+      return deviceData;
     }
 
     /// Copy data from CPU -> GPU (Host -> Device).
@@ -131,9 +132,9 @@ class TBaseIndexMatrix : public TBaseMatrix
     size_t slabSize;
 
     /// Raw CPU matrix data.
-    size_t* matrixData;
+    size_t* hostData;
     /// Raw GPU matrix data.
-    size_t* deviceMatrixData;
+    size_t* deviceData;
 
   private:
 

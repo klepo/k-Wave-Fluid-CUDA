@@ -1,5 +1,6 @@
 /**
  * @file        BaseFloatMatrix.cpp
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -11,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 12:13 (created) \n
- *              21 July      2016, 14:55 (revised)
+ *              29 July      2016, 16:50 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -38,7 +39,7 @@
 
 #include <MatrixClasses/BaseFloatMatrix.h>
 #include <Utils/DimensionSizes.h>
-#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
 
 
 using std::string;
@@ -61,8 +62,8 @@ TBaseFloatMatrix::TBaseFloatMatrix(): TBaseMatrix(),
                                       dimensionSizes(),
                                       dataRowSize(0),
                                       dataSlabSize(0),
-                                      matrixData(nullptr),
-                                      deviceMatrixData(nullptr)
+                                      hostData(nullptr),
+                                      deviceData(nullptr)
 {
 
 }// end of TBaseFloatMatrix
@@ -77,7 +78,7 @@ void TBaseFloatMatrix::ZeroMatrix()
   #pragma omp parallel for schedule (static)
   for (size_t i = 0; i < nAllocatedElements; i++)
   {
-    matrixData[i] = 0.0f;
+    hostData[i] = 0.0f;
   }
 }// end of ZeroMatrix
 //--------------------------------------------------------------------------------------------------
@@ -92,7 +93,7 @@ void TBaseFloatMatrix::ScalarDividedBy(const float scalar)
   #pragma omp parallel for schedule (static)
   for (size_t i = 0; i < nAllocatedElements; i++)
   {
-    matrixData[i] = scalar / matrixData[i];
+    hostData[i] = scalar / hostData[i];
   }
 }// end of ScalarDividedBy
 //-------------------------------------------------------------------------------------------------
@@ -103,8 +104,8 @@ void TBaseFloatMatrix::ScalarDividedBy(const float scalar)
  */
 void TBaseFloatMatrix::CopyToDevice()
 {
-  checkCudaErrors(cudaMemcpy(deviceMatrixData,
-                             matrixData,
+  checkCudaErrors(cudaMemcpy(deviceData,
+                             hostData,
                              nAllocatedElements * sizeof(float),
                              cudaMemcpyHostToDevice));
 }// end of CopyToDevice
@@ -116,8 +117,8 @@ void TBaseFloatMatrix::CopyToDevice()
  */
 void TBaseFloatMatrix::CopyFromDevice()
 {
-  checkCudaErrors(cudaMemcpy(matrixData,
-                             deviceMatrixData,
+  checkCudaErrors(cudaMemcpy(hostData,
+                             deviceData,
                              nAllocatedElements * sizeof(float),
                              cudaMemcpyDeviceToHost));
 }// end of CopyFromDevice
@@ -138,18 +139,17 @@ void TBaseFloatMatrix::AllocateMemory()
   size_t sizeInBytes = nAllocatedElements * sizeof(float);
 
   // Allocate CPU memory
-  matrixData = static_cast<float*> (_mm_malloc(sizeInBytes, DATA_ALIGNMENT));
-  if (!matrixData)
+  hostData = static_cast<float*> (_mm_malloc(sizeInBytes, DATA_ALIGNMENT));
+  if (!hostData)
   {
     throw std::bad_alloc();
   }
 
   // Register Host memory (pin in memory)
-  checkCudaErrors(cudaHostRegister(matrixData, sizeInBytes, cudaHostRegisterPortable));
+  checkCudaErrors(cudaHostRegister(hostData, sizeInBytes, cudaHostRegisterPortable));
 
   // Allocate memory on the GPU
-  checkCudaErrors(cudaMalloc<float>(&deviceMatrixData, sizeInBytes));
-  if (!deviceMatrixData)
+  if ((cudaMalloc<float>(&deviceData, sizeInBytes) != cudaSuccess) || (!deviceData))
   {
     throw std::bad_alloc();
   }
@@ -165,19 +165,19 @@ void TBaseFloatMatrix::AllocateMemory()
 void TBaseFloatMatrix::FreeMemory()
 {
   // Free CPU memory
-  if (matrixData)
+  if (hostData)
   {
-    cudaHostUnregister(matrixData);
-    _mm_free(matrixData);
+    cudaHostUnregister(hostData);
+    _mm_free(hostData);
   }
-  matrixData = nullptr;
+  hostData = nullptr;
 
   // Free GPU memory
-  if (deviceMatrixData)
+  if (deviceData)
   {
-    checkCudaErrors(cudaFree(deviceMatrixData));
+    checkCudaErrors(cudaFree(deviceData));
   }
-  deviceMatrixData = nullptr;
+  deviceData = nullptr;
 }//end of FreeMemory
 //--------------------------------------------------------------------------------------------------
 

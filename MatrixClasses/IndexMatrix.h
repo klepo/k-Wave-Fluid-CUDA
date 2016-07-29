@@ -1,6 +1,7 @@
 /**
  * @file        IndexMatrix.h
- * @author      Jiri Jaros & Beau Johnston \n
+ *
+ * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
  *              jarosjir@fit.vutbr.cz
@@ -10,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              26 July     2016, 12:32 (revised)
+ *              29 July     2016, 16:54 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -67,7 +68,7 @@ class TIndexMatrix : public TBaseIndexMatrix
      */
     inline size_t& operator[](const size_t& index)
     {
-      return matrixData[index];
+      return hostData[index];
     };
 
     /**
@@ -78,7 +79,7 @@ class TIndexMatrix : public TBaseIndexMatrix
      */
     inline const size_t& operator[](const size_t& index) const
     {
-      return matrixData[index];
+      return hostData[index];
     };
 
     /// Get the top left corner of the index-th cuboid.

@@ -1,5 +1,6 @@
 /**
  * @file        RealMatrix.h
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -9,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2011, 10:30 (created) \n
- *              26 July      2016, 12:31 (revised)
+ *              29 July      2016, 16:54 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -68,7 +69,7 @@ class TRealMatrix : public TBaseFloatMatrix
      */
     inline float& operator[](const size_t& index)
     {
-      return matrixData[index];
+      return hostData[index];
     };
 
     /**
@@ -79,7 +80,7 @@ class TRealMatrix : public TBaseFloatMatrix
      */
     inline const float& operator[](const size_t& index) const
     {
-      return matrixData[index];
+      return hostData[index];
     };
 
     /// Default constructor is not allowed for public.

@@ -1,5 +1,6 @@
 /**
  * @file        RealMatrix.cpp
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -10,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 10:30 (created) \n
- *              26 July      2016, 12:31 (revised)
+ *              29 July      2016, 16:54 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -34,7 +35,7 @@
 #include <MatrixClasses/RealMatrix.h>
 #include <MatrixClasses/ComplexMatrix.h>
 
-#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
 
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------ CONSTANTS -------------------------------------------//
@@ -79,20 +80,16 @@ void TRealMatrix::ReadDataFromHDF5File(THDF5_File&  file,
   // test matrix datatype
   if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::FLOAT)
   {
-    char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_FLOAT, matrixName.c_str());
-    throw std::ios::failure(errMsg);
+    throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_FLOAT, matrixName.c_str()));
   }
   // read matrix domain type
   if (file.ReadMatrixDomainType(file.GetRootGroup(), matrixName) != THDF5_File::REAL)
   {
-    char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_REAL, matrixName.c_str());
-    throw std::ios::failure(errMsg);
+    throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_REAL, matrixName.c_str()));
   }
 
   // Read matrix
-  file.ReadCompleteDataset(file.GetRootGroup(), matrixName, dimensionSizes, matrixData);
+  file.ReadCompleteDataset(file.GetRootGroup(), matrixName, dimensionSizes, hostData);
 }// end of LoadDataFromMatlabFile
 //--------------------------------------------------------------------------------------------------
 
@@ -136,7 +133,7 @@ void TRealMatrix::WriteDataToHDF5File(THDF5_File&  file,
                                           chunks,
                                           compressionLevel);
 
-  file.WriteHyperSlab(dataset, TDimensionSizes(0, 0, 0), dimensionSizes, matrixData);
+  file.WriteHyperSlab(dataset, TDimensionSizes(0, 0, 0), dimensionSizes, hostData);
 
   file.CloseDataset(dataset);
 

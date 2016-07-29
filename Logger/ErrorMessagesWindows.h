@@ -1,5 +1,6 @@
 /**
  * @file        ErrorMessagesWindows.h
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -10,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 July     2016, 12:27 (created) \n
- *              21 July     2016, 13:08 (revised)
+ *              29 July     2016, 16:43 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -36,17 +37,11 @@
 //----------------------------- Error handling routines ----------------------//
 
 /**
-* A visual studio 2013 fix - even after 14 years MS hasn't been able to conform C99 standard
-*/
-#define snprintf(buf,len, format,...) _snprintf_s(buf, len,len, format, __VA_ARGS__)
-
-
-/**
  * @typedef TErrorMessage
  * @brief   Datatype for error messages.
  * @details Datatype for error messages.
  */
-typedef const char * const TErrorMessage;
+typedef const std::string TErrorMessage;
 
 /// Error message header
 TErrorMessage ERR_FMT_HEAD =

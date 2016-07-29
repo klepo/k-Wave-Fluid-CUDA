@@ -703,6 +703,8 @@ These are only defined if (p_source_flag == 1)
 #include <KSpaceSolver/KSpaceFirstOrder3DSolver.h>
 #include <Logger/Logger.h>
 
+#include <cstdio>
+#include <iostream>
 
 using std::string;
 

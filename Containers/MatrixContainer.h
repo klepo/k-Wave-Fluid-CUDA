@@ -1,5 +1,6 @@
 /**
  * @file        MatrixContainer.h
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -9,8 +10,9 @@
  *              matrix record class.
  *
  * @version     kspaceFirstOrder3D 3.4
+ *
  * @date        02 December  2014, 16:17 (created) \n
- *              19 July      2016, 14:06 (revised)
+ *              29 July      2016, 16:38 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -181,12 +183,6 @@ class TMatrixContainer
 
     /// Operator = is not allowed for public.
     TMatrixContainer & operator = (const TMatrixContainer& src);
-
-    /// Print error and throw an exception.
-    void CreateErrorAndThrowException(const char*   messageFormat,
-                                      TMatrixName& matrixName,
-                                      const char*   file,
-                                      const int     line);
 
 };// end of TMatrixContainer
 //--------------------------------------------------------------------------------------------------

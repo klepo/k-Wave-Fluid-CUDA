@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 14:17 (created) \n
- *              22 July     2016, 13:49 (revised)
+ *              29 July     2016, 16:51 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -33,7 +33,7 @@
 
 #include <MatrixClasses/BaseIndexMatrix.h>
 #include <Utils/DimensionSizes.h>
-#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
 
 
 //------------------------------------------------------------------------------------------------//
@@ -54,8 +54,8 @@ TBaseIndexMatrix::TBaseIndexMatrix() : TBaseMatrix(),
                                        dimensionSizes(),
                                        rowSize(0),
                                        slabSize(0),
-                                       matrixData(nullptr),
-                                       deviceMatrixData(nullptr)
+                                       hostData(nullptr),
+                                       deviceData(nullptr)
 {
 
 }// end of TBaseIndexMatrix
@@ -69,7 +69,7 @@ void TBaseIndexMatrix::ZeroMatrix()
   #pragma omp parallel for schedule (static)
   for (size_t i = 0; i < nAllocatedElements; i++)
   {
-    matrixData[i] = size_t(0);
+    hostData[i] = size_t(0);
   }
 }// end of ZeroMatrix
 //--------------------------------------------------------------------------------------------------
@@ -79,8 +79,8 @@ void TBaseIndexMatrix::ZeroMatrix()
  */
 void TBaseIndexMatrix::CopyToDevice()
 {
-  checkCudaErrors(cudaMemcpy(deviceMatrixData,
-                             matrixData,
+  checkCudaErrors(cudaMemcpy(deviceData,
+                             hostData,
                              nAllocatedElements * sizeof(size_t),
                              cudaMemcpyHostToDevice));
 
@@ -92,8 +92,8 @@ void TBaseIndexMatrix::CopyToDevice()
  */
 void TBaseIndexMatrix::CopyFromDevice()
 {
-  checkCudaErrors(cudaMemcpy(matrixData,
-                             deviceMatrixData,
+  checkCudaErrors(cudaMemcpy(hostData,
+                             deviceData,
                              nAllocatedElements * sizeof(size_t),
                              cudaMemcpyDeviceToHost));
 }// end of CopyFromDevice
@@ -114,18 +114,17 @@ void TBaseIndexMatrix::AllocateMemory()
   //size of memory to allocate
   size_t sizeInBytes = nAllocatedElements * sizeof(size_t);
 
-  matrixData = static_cast<size_t*>(_mm_malloc(sizeInBytes, DATA_ALIGNMENT));
+  hostData = static_cast<size_t*>(_mm_malloc(sizeInBytes, DATA_ALIGNMENT));
 
-  if (!matrixData)
+  if (!hostData)
   {
     throw std::bad_alloc();
   }
 
   // Register Host memory (pin in memory)
-  checkCudaErrors(cudaHostRegister(matrixData, sizeInBytes, cudaHostRegisterPortable));
+  checkCudaErrors(cudaHostRegister(hostData, sizeInBytes, cudaHostRegisterPortable));
 
-  checkCudaErrors(cudaMalloc<size_t>(&deviceMatrixData, sizeInBytes));
-  if (!deviceMatrixData)
+  if ((cudaMalloc<size_t>(&deviceData, sizeInBytes) != cudaSuccess) || (!deviceData))
   {
     throw std::bad_alloc();
   }
@@ -137,19 +136,19 @@ void TBaseIndexMatrix::AllocateMemory()
  */
 void TBaseIndexMatrix::FreeMemory()
 {
-  if (matrixData)
+  if (hostData)
   {
-    cudaHostUnregister(matrixData);
-    _mm_free(matrixData);
+    cudaHostUnregister(hostData);
+    _mm_free(hostData);
   }
-  matrixData = nullptr;
+  hostData = nullptr;
 
   // Free GPU memory
-  if (deviceMatrixData)
+  if (deviceData)
   {
-    checkCudaErrors(cudaFree(deviceMatrixData));
+    checkCudaErrors(cudaFree(deviceData));
   }
-  deviceMatrixData = nullptr;
+  deviceData = nullptr;
 }// end of FreeMemory
 //--------------------------------------------------------------------------------------------------
 

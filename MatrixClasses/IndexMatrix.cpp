@@ -1,17 +1,17 @@
 /**
  * @file        IndexMatrix.cpp
+ *
  * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
  *              jarosjir@fit.vutbr.cz
  *
- * @brief       The implementation file containing the class for 64b integer
- *              matrices.
+ * @brief       The implementation file containing the class for 64b integer matrices.
  *
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              22 July     2016, 13:49 (revised)
+ *              29 July     2016, 16:53 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -32,7 +32,7 @@
 #include <iostream>
 
 #include <MatrixClasses/IndexMatrix.h>
-#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
 
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------ CONSTANTS -------------------------------------------//
@@ -85,19 +85,15 @@ void TIndexMatrix::ReadDataFromHDF5File(THDF5_File&  file,
 {
   if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::LONG)
   {
-    char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_INDEX, matrixName.c_str());
-    throw std::ios::failure(errMsg);
+    throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_INDEX, matrixName.c_str()));
   }
 
   if (file.ReadMatrixDomainType(file.GetRootGroup(),matrixName) != THDF5_File::REAL)
   {
-    char errMsg[256];
-    snprintf(errMsg, 256, ERR_FMT_MATRIX_NOT_REAL,matrixName.c_str());
-    throw std::ios::failure(errMsg);
+    throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_REAL,matrixName.c_str()));
   }
 
-  file.ReadCompleteDataset(file.GetRootGroup(), matrixName, dimensionSizes, matrixData);
+  file.ReadCompleteDataset(file.GetRootGroup(), matrixName, dimensionSizes, hostData);
 }// end of LoadDataFromMatlabFile
 //--------------------------------------------------------------------------------------------------
 
@@ -143,7 +139,7 @@ void TIndexMatrix::WriteDataToHDF5File(THDF5_File&  file,
                                           chunks,
                                           compressionLevel);
 
-  file.WriteHyperSlab(dataset, TDimensionSizes(0, 0, 0), dimensionSizes, matrixData);
+  file.WriteHyperSlab(dataset, TDimensionSizes(0, 0, 0), dimensionSizes, hostData);
 
   file.CloseDataset(dataset);
 
@@ -163,9 +159,9 @@ void TIndexMatrix::WriteDataToHDF5File(THDF5_File&  file,
  */
 TDimensionSizes TIndexMatrix::GetTopLeftCorner(const size_t& index) const
 {
-  size_t x =  matrixData[6 * index    ];
-  size_t y =  matrixData[6 * index + 1];
-  size_t z =  matrixData[6 * index + 2];
+  size_t x =  hostData[6 * index    ];
+  size_t y =  hostData[6 * index + 1];
+  size_t z =  hostData[6 * index + 2];
 
   return TDimensionSizes(x, y, z);
 }// end of GetTopLeftCorner
@@ -180,9 +176,9 @@ TDimensionSizes TIndexMatrix::GetTopLeftCorner(const size_t& index) const
 */
 TDimensionSizes TIndexMatrix::GetBottomRightCorner(const size_t& index) const
 {
-  size_t x =  matrixData[6 * index + 3];
-  size_t y =  matrixData[6 * index + 4];
-  size_t z =  matrixData[6 * index + 5];
+  size_t x =  hostData[6 * index + 3];
+  size_t y =  hostData[6 * index + 4];
+  size_t z =  hostData[6 * index + 5];
 
   return TDimensionSizes(x, y, z);
 }// end of GetBottomRightCorner
@@ -197,7 +193,7 @@ void TIndexMatrix::RecomputeIndicesToCPP()
   #pragma omp parallel for if (nElements > 1e5)
   for (size_t i = 0; i < nElements; i++)
   {
-    matrixData[i]--;
+    hostData[i]--;
   }
 }// end of RecomputeIndices
 //--------------------------------------------------------------------------------------------------
@@ -210,7 +206,7 @@ void TIndexMatrix::RecomputeIndicesToMatlab()
   #pragma omp parallel for if (nElements > 1e5)
   for (size_t i = 0; i < nElements; i++)
   {
-    matrixData[i]++;
+    hostData[i]++;
   }
 }// end of RecomputeIndicesToMatlab
 //--------------------------------------------------------------------------------------------------

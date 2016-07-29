@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August   2014, 11:15 (created)
- *              26 July     2016, 14:05 (revised)
+ *              29 July     2016, 16:56 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -173,7 +173,7 @@ void TWholeDomainOutputHDF5Stream::Sample()
                                   TDimensionSizes(0,0,0,0), // position in the SourceMatrix
                                   cuboidSize,
                                   sourceMatrix.GetDimensionSizes(),
-                                  sourceMatrix.GetData());
+                                  sourceMatrix.GetHostData());
 
       sampledTimeStep++;   // Move forward in time
 

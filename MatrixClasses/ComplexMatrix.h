@@ -1,5 +1,6 @@
 /**
  * @file        ComplexMatrix.h
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -10,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2011, 14:02 (created) \n
- *              21 July     2016, 15:55 (revised)
+ *              29 July     2016, 16:53 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -67,7 +68,7 @@ class TComplexMatrix : public TBaseFloatMatrix
      */
     inline TFloatComplex& operator[](const size_t& index)
     {
-      return reinterpret_cast<TFloatComplex*>(matrixData)[index];
+      return reinterpret_cast<TFloatComplex*>(hostData)[index];
     };
 
     /**
@@ -78,7 +79,7 @@ class TComplexMatrix : public TBaseFloatMatrix
      */
     inline const TFloatComplex& operator[](const size_t& index) const
     {
-      return reinterpret_cast<TFloatComplex*> (matrixData)[index];
+      return reinterpret_cast<TFloatComplex*> (hostData)[index];
     };
 
     /// Load data from the HDF5_File.

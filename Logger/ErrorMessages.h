@@ -1,5 +1,6 @@
 /**
  * @file        ErrorMessages.h
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -12,7 +13,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August   2011, 12:34 (created) \n
- *              21 July     2016, 11:27 (revised)
+ *              29 July     2016, 16:42 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -147,7 +148,7 @@ TErrorMessage  ERR_FMT_BAD_MATRIX_DISTRIBUTION_TYPE =
 
 /// Matrix container error message
 TErrorMessage  ERR_FMT_RELOCATION_ERROR =
-        "Error: Matrix [%s] is being reallocated. [File, line] : [%s,%d].";
+        "Error: Matrix [%s] is being reallocated in matrix container.";
 
 
 //---------------------------------- Command line Parameters  ------------------------------------//
@@ -320,54 +321,6 @@ TErrorMessage ERR_FMT_GPU_NOT_SUPPORTED
         /// CUDAParameters error message
 TErrorMessage ERR_FMT_GPU_ERROR
         = "GPU error: %s routine name: %s in file %s, line %d.";
-
-
-//------------------------------------------------------------------------------------------------//
-//------------------------------------ Routines --------------------------------------------------//
-//------------------------------------------------------------------------------------------------//
-
-/**
- *@brief  Checks CUDA errors, create an error message and throw an exception.
- *@details Checks CUDA errors, create an error message and throw an exception. The template
- * parameter should be set to true for the whole code when debugging  kernel related errors.
- * Setting it to true for production run will cause IO sampling and storing not to be overlapped.
- *
- * @param [in] errorCode   - Error produced by a cuda routine
- * @param [in] routineName - Function where the error happened
- * @param [in] fileName    - File where the error happened
- * @param [in] lineNumber  - Line where the error happened
- */
-template <bool forceSynchronisation = false>
-inline void CheckErrors(const cudaError_t errorCode,
-                        const char*       routineName,
-                        const char*       fileName,
-                        const int         lineNumber)
-{
-  if (forceSynchronisation)
-  {
-    cudaDeviceSynchronize();
-  }
-
-  if (errorCode != cudaSuccess)
-  {
-    char errMsg[512];
-    snprintf(errMsg,
-             512,
-             ERR_FMT_GPU_ERROR,
-             cudaGetErrorString(errorCode), routineName, fileName, lineNumber);
-
-    // Throw exception
-     throw std::runtime_error(errMsg);
-  }
-}// end of cudaCheckErrors
-//--------------------------------------------------------------------------------------------------
-
-/**
- * @brief Macro checking cuda errors and printing the file name and line. Inspired by CUDA common
- *        checking routines.
- */
-#define checkCudaErrors(val) CheckErrors ( (val), #val, __FILE__, __LINE__ )
-
 
 
 #endif	/* ERROR_MESSAGES_H */

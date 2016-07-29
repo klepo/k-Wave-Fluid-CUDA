@@ -1,5 +1,6 @@
 /**
  * @file        CUDAParameters.cpp
+ * 
  * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -10,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 November 2015, 16:49 (created) \n
- *              25 July     2016, 13:17 (revised)
+ *              29 July     2016, 16:57 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -36,7 +37,7 @@
 #include <Parameters/CUDADeviceConstants.cuh>
 #include <Parameters/Parameters.h>
 
-#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
 
 #include <KSpaceSolver/SolverCUDAKernels.cuh>
 
@@ -145,10 +146,9 @@ void TCUDAParameters::SelectDevice(const int deviceIdx)
     // not busy, input parameter not out of bounds
     if ((this->deviceIdx > nDevices - 1) || (this->deviceIdx < 0))
     {
-      char errMsg[256];
-      snprintf(errMsg, 256, ERR_FMT_BAD_DEVICE_IDX, this->deviceIdx, nDevices-1);
-      // Throw exception
-      throw std::runtime_error(errMsg);
+      throw std::runtime_error(TLogger::FormatMessage(ERR_FMT_BAD_DEVICE_IDX,
+                                                      this->deviceIdx,
+                                                      nDevices-1));
      }
 
     // set the device and copy it's properties
@@ -163,9 +163,7 @@ void TCUDAParameters::SelectDevice(const int deviceIdx)
     {
       lastError = cudaDeviceReset();
 
-      char ErrorMessage[256];
-      snprintf(ErrorMessage, 256, ERR_FMT_DEVICE_IS_BUSY, this->deviceIdx);
-      throw std::runtime_error(ErrorMessage);
+      throw std::runtime_error(TLogger::FormatMessage(ERR_FMT_DEVICE_IS_BUSY, this->deviceIdx));
     }
   }
 
@@ -186,9 +184,7 @@ void TCUDAParameters::SelectDevice(const int deviceIdx)
   // Check the GPU version
   if (!CheckCUDACodeVersion())
   {
-    char errMsg[256];
-    snprintf(errMsg,256, ERR_FMT_GPU_NOT_SUPPORTED, this->deviceIdx);
-    throw std::runtime_error(errMsg);
+    throw std::runtime_error(TLogger::FormatMessage(ERR_FMT_GPU_NOT_SUPPORTED, this->deviceIdx));
   }
 }// end of SelectCUDADevice
 //--------------------------------------------------------------------------------------------------
@@ -340,13 +336,9 @@ void TCUDAParameters::CheckCUDAVersion()
 
   if (cudaDriverVersion < cudaRuntimeVersion)
   {
-    char ErrMsg[256];
-    snprintf(ErrMsg,
-             256,
-             ERR_FMT_INSUFFICIENT_CUDA_DRIVER,
-             cudaRuntimeVersion / 1000, (cudaRuntimeVersion % 100) / 10,
-             cudaDriverVersion  / 1000, (cudaDriverVersion  % 100) / 10);
-    throw std::runtime_error(ErrMsg);
+    throw std::runtime_error(TLogger::FormatMessage(ERR_FMT_INSUFFICIENT_CUDA_DRIVER,
+                                       cudaRuntimeVersion / 1000, (cudaRuntimeVersion % 100) / 10,
+                                       cudaDriverVersion  / 1000, (cudaDriverVersion  % 100) / 10));
   }
 }// end of CheckCUDAVersion
 //--------------------------------------------------------------------------------------------------

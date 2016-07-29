@@ -1,5 +1,6 @@
 /**
  * @file        Parameters.cpp
+ *
  * @author      Jiri Jaros   \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -10,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2012, 13:39 (created) \n
- *              25 July      2016, 15:08 (revised)
+ *              29 July      2016, 16:58 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -47,6 +48,7 @@
 
 
 using std::ios;
+using std::string;
 
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------ CONSTANTS -------------------------------------------//
@@ -129,13 +131,9 @@ void TParameters::Init(int argc, char** argv)
   if ((nt <= commandLineParameters.GetStartTimeIndex()) ||
       (0 > commandLineParameters.GetStartTimeIndex()))
   {
-     char errMsg[256];
-     snprintf(errMsg,
-              256,
-              ERR_FMT_ILLEGAL_START_TIME_VALUE,
-              1l,
-              nt);
-    throw std::invalid_argument(errMsg);
+    throw std::invalid_argument(TLogger::FormatMessage(ERR_FMT_ILLEGAL_START_TIME_VALUE,
+                                                       1l,
+                                                        nt));
   }
 
   TLogger::Log(TLogger::BASIC, OUT_FMT_DONE);
@@ -178,19 +176,14 @@ void TParameters::PrintSimulatoinSetup()
   TLogger::Log(TLogger::BASIC,  OUT_FMT_SIMULATION_DETAIL_TITLE);
 
 
-  char domainsSizeText[48];
-  snprintf(domainsSizeText, 48, OUT_FMT_DOMAIN_SIZE_FORMAT,
-          GetFullDimensionSizes().nx,
-          GetFullDimensionSizes().ny,
-          GetFullDimensionSizes().nz );
+  const string domainsSizes = TLogger::FormatMessage(OUT_FMT_DOMAIN_SIZE_FORMAT,
+                                                     GetFullDimensionSizes().nx,
+                                                     GetFullDimensionSizes().ny,
+                                                     GetFullDimensionSizes().nz);
   // Print simulation size
-  TLogger::Log(TLogger::BASIC,
-               OUT_FMT_DOMAIN_SIZE,
-               domainsSizeText);
+  TLogger::Log(TLogger::BASIC, OUT_FMT_DOMAIN_SIZE, domainsSizes.c_str());
 
-  TLogger::Log(TLogger::BASIC,
-               OUT_FMT_SIMULATION_LENGTH,
-               Get_nt());
+  TLogger::Log(TLogger::BASIC, OUT_FMT_SIMULATION_LENGTH, Get_nt());
 
   // Print all command line parameters
   commandLineParameters.PrintComandlineParamers();
@@ -229,35 +222,23 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
   // check file type
   if (fileHeader.GetFileType() != THDF5_FileHeader::INPUT)
   {
-    char errMsg[256] = "";
-    snprintf(errMsg,
-             256,
-             ERR_FMT_BAD_INPUT_FILE_FORMAT,
-             GetInputFileName().c_str());
-    throw ios::failure(errMsg);
+    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_INPUT_FILE_FORMAT,
+                                              GetInputFileName().c_str()));
   }
 
   // check version
   if (!fileHeader.CheckMajorFileVersion())
   {
-    char errMsg[256] = "";
-    snprintf(errMsg,
-             256,
-             ERR_FMT_BAD_MAJOR_File_Version,
-             GetInputFileName().c_str(),
-             fileHeader.GetCurrentHDF5_MajorVersion().c_str());
-    throw ios::failure(errMsg);
+    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_MAJOR_File_Version,
+                                              GetInputFileName().c_str(),
+                                              fileHeader.GetCurrentHDF5_MajorVersion().c_str()));
   }
 
   if (!fileHeader.CheckMinorFileVersion())
   {
-    char errMsg[256] = "";
-    snprintf(errMsg,
-             256,
-             ERR_FMT_BAD_MINOR_FILE_VERSION,
-             GetInputFileName().c_str(),
-             fileHeader.GetCurrentHDF5_MinorVersion().c_str());
-    throw ios::failure(errMsg);
+    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_MINOR_FILE_VERSION,
+                                              GetInputFileName().c_str(),
+                                              fileHeader.GetCurrentHDF5_MinorVersion().c_str()));
   }
 
   const hid_t rootGroup = inputFile.GetRootGroup();
@@ -532,10 +513,10 @@ void TParameters::SaveScalarsToFile(THDF5_File& outputFile)
  * Get GitHash of the code
  * @return githash
  */
-std::string TParameters::GetGitHash() const
+string TParameters::GetGitHash() const
 {
 #if (defined (__KWAVE_GIT_HASH__))
-  return std::string(__KWAVE_GIT_HASH__);
+  return string(__KWAVE_GIT_HASH__);
 #else
   return "";
 #endif

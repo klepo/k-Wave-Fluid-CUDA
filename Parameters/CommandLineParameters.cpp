@@ -1,5 +1,6 @@
 /**
  * @file        CommandLineParameters.cpp
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -10,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August   2012, 11:25 (created) \n
- *              18 July     2016, 13:56 (revised)
+ *              29 July     2016, 16:57 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -265,9 +266,9 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
   // all optional arguments are in fact requested. This was chosen to prevent
   // getopt error messages and provide custom error handling.
   #ifdef _OPENMP
-    const char * shortOpts = "i:o:r:c:t:g:puhs:";
+    const char* shortOpts = "i:o:r:c:t:g:puhs:";
   #else
-    const char * shortOpts = "i:o:r:c:g:puhs:";
+    const char* shortOpts = "i:o:r:c:g:puhs:";
   #endif
 
   const struct option longOpts[] =

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              27 July     2016, 10:37 (revised)
+ *              29 July     2016, 16:41 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -60,6 +60,7 @@
 #include <Containers/MatrixContainer.h>
 
 using std::string;
+using std::ios;
 
 
 //------------------------------------------------------------------------------------------------//
@@ -282,18 +283,18 @@ void TKSpaceFirstOrder3DSolver::Compute()
   TLogger::Log(TLogger::BASIC, OUT_FMT_CURRENT_HOST_MEMORY,   GetHostMemoryUsageInMB());
   TLogger::Log(TLogger::BASIC, OUT_FMT_CURRENT_DEVICE_MEMORY, GetDeviceMemoryUsageInMB());
 
-  char GridDimensions[19];
-  snprintf(GridDimensions, 19, OUT_FMT_CUDA_GRID_SHAPE_FORMAT,
-           cudaParameters.GetSolverGridSize1D(),
-           cudaParameters.GetSolverBlockSize1D());
 
-  TLogger::Log(TLogger::FULL, OUT_FMT_CUDA_SOLVER_GRID_SHAPE, GridDimensions);
+  const string blockDims = TLogger::FormatMessage(OUT_FMT_CUDA_GRID_SHAPE_FORMAT,
+                                                  cudaParameters.GetSolverGridSize1D(),
+                                                  cudaParameters.GetSolverBlockSize1D());
 
-  snprintf(GridDimensions, 18, OUT_FMT_CUDA_GRID_SHAPE_FORMAT,
-           cudaParameters.GetSamplerGridSize1D(),
-           cudaParameters.GetSamplerBlockSize1D());
+  TLogger::Log(TLogger::FULL, OUT_FMT_CUDA_SOLVER_GRID_SHAPE, blockDims.c_str());
 
-  TLogger::Log(TLogger::FULL, OUT_FMT_CUDA_SAMPLER_GRID_SHAPE, GridDimensions);
+  const string gridDims = TLogger::FormatMessage(OUT_FMT_CUDA_GRID_SHAPE_FORMAT,
+                                                 cudaParameters.GetSamplerGridSize1D(),
+                                                 cudaParameters.GetSamplerBlockSize1D());
+
+  TLogger::Log(TLogger::FULL, OUT_FMT_CUDA_SAMPLER_GRID_SHAPE, gridDims.c_str());
 
   // Main loop
   try
@@ -308,9 +309,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
   }
   catch (const std::exception& e)
   {
-    TLogger::Log(TLogger::BASIC,
-                 OUT_FMT_SIMULATION_FINAL_SEPARATOR,
-                 GridDimensions);
+    TLogger::Log(TLogger::BASIC, OUT_FMT_SIMULATION_FINAL_SEPARATOR);
     TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),ERR_FMT_PATH_DELIMITERS, 9).c_str());
   }
 
@@ -342,8 +341,8 @@ void TKSpaceFirstOrder3DSolver::Compute()
     else
     { // Finish
 
-      TLogger::Log(TLogger::BASIC,  OUT_FMT_ELAPSED_TIME, simulationTime.GetElapsedTime());
-      TLogger::Log(TLogger::BASIC,OUT_FMT_SEPARATOR);
+      TLogger::Log(TLogger::BASIC, OUT_FMT_ELAPSED_TIME, simulationTime.GetElapsedTime());
+      TLogger::Log(TLogger::BASIC, OUT_FMT_SEPARATOR);
       TLogger::Log(TLogger::BASIC, OUT_FMT_POST_PROCESSING);
       TLogger::Flush(TLogger::BASIC);
 
@@ -532,7 +531,7 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense() const
                  OUT_FMT_CUDA_DEVICE_NAME,
                  cudaParameters.GetDeviceName().c_str(),
                  paddingLength,
-                 OUT_FMT_CUDA_DEVICE_NAME_PADDING);
+                 OUT_FMT_CUDA_DEVICE_NAME_PADDING.c_str());
 
     TLogger::Log(TLogger::BASIC,
                  OUT_FMT_CUDA_CAPABILITY,
@@ -1430,7 +1429,7 @@ void TKSpaceFirstOrder3DSolver::GenerateKappa()
     const size_t ny = parameters.GetReducedDimensionSizes().ny;
     const size_t nz = parameters.GetReducedDimensionSizes().nz;
 
-    float* kappa = Get_kappa().GetData();
+    float* kappa = Get_kappa().GetHostData();
 
     #pragma omp for schedule (static)
     for (size_t z = 0; z < nz; z++)
@@ -1489,9 +1488,9 @@ void TKSpaceFirstOrder3DSolver::GenerateKappaAndNablas()
     const size_t nyComplex  = parameters.GetReducedDimensionSizes().ny;
     const size_t nzComplex  = parameters.GetReducedDimensionSizes().nz;
 
-    float* kappa            = Get_kappa().GetData();
-    float* absorb_nabla1    = Get_absorb_nabla1().GetData();
-    float* absorb_nabla2    = Get_absorb_nabla2().GetData();
+    float* kappa            = Get_kappa().GetHostData();
+    float* absorb_nabla1    = Get_absorb_nabla1().GetHostData();
+    float* absorb_nabla2    = Get_absorb_nabla2().GetHostData();
     const float alpha_power = parameters.Get_alpha_power();
 
     #pragma omp for schedule (static)
@@ -1562,8 +1561,8 @@ void TKSpaceFirstOrder3DSolver::GenerateTauAndEta()
       const size_t ny  = parameters.GetFullDimensionSizes().ny;
       const size_t nz  = parameters.GetFullDimensionSizes().nz;
 
-      float* absorb_tau = Get_absorb_tau().GetData();
-      float* absorb_eta = Get_absorb_eta().GetData();
+      float* absorb_tau = Get_absorb_tau().GetHostData();
+      float* absorb_eta = Get_absorb_eta().GetHostData();
 
       float* alpha_coeff;
       size_t alpha_shift;
@@ -1575,7 +1574,7 @@ void TKSpaceFirstOrder3DSolver::GenerateTauAndEta()
       }
       else
       {
-        alpha_coeff = Get_temp_1_real_3D().GetData();
+        alpha_coeff = Get_temp_1_real_3D().GetHostData();
         alpha_shift = 1;
       }
 
@@ -1588,7 +1587,7 @@ void TKSpaceFirstOrder3DSolver::GenerateTauAndEta()
       }
       else
       {
-        c0 = Get_c2().GetData();
+        c0 = Get_c2().GetHostData();
         c0_shift = 1;
       }
 
@@ -1631,15 +1630,15 @@ void TKSpaceFirstOrder3DSolver::GenerateInitialDenisty()
 {
   #pragma omp parallel
   {
-    float* dt_rho0_sgx   = Get_dt_rho0_sgx().GetData();
-    float* dt_rho0_sgy   = Get_dt_rho0_sgy().GetData();
-    float* dt_rho0_sgz   = Get_dt_rho0_sgz().GetData();
+    float* dt_rho0_sgx   = Get_dt_rho0_sgx().GetHostData();
+    float* dt_rho0_sgy   = Get_dt_rho0_sgy().GetHostData();
+    float* dt_rho0_sgz   = Get_dt_rho0_sgz().GetHostData();
 
     const float dt = parameters.Get_dt();
 
-    const float* duxdxn_sgx = Get_dxudxn_sgx().GetData();
-    const float* duydyn_sgy = Get_dyudyn_sgy().GetData();
-    const float* duzdzn_sgz = Get_dzudzn_sgz().GetData();
+    const float* duxdxn_sgx = Get_dxudxn_sgx().GetHostData();
+    const float* duydyn_sgy = Get_dyudyn_sgy().GetHostData();
+    const float* duzdzn_sgz = Get_dzudzn_sgz().GetHostData();
 
     const size_t nz = Get_dt_rho0_sgx().GetDimensionSizes().nz;
     const size_t ny = Get_dt_rho0_sgx().GetDimensionSizes().ny;
@@ -1708,7 +1707,7 @@ void TKSpaceFirstOrder3DSolver::Compute_c2()
   }
   else
   { // matrix
-    float* c2 =  Get_c2().GetData();
+    float* c2 =  Get_c2().GetHostData();
 
     #pragma omp parallel for schedule (static)
     for (size_t i=0; i < Get_c2().GetElementCount(); i++)
@@ -1998,36 +1997,24 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
   // test file type
   if (fileHeader.GetFileType() != THDF5_FileHeader::OUTPUT)
   {
-    char errMsg[256] = "";
-    snprintf(errMsg,
-             256,
-             ERR_FMT_BAD_OUTPUT_FILE_FORMAT,
-             parameters.GetOutputFileName().c_str());
-    throw std::ios::failure(errMsg);
+    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_OUTPUT_FILE_FORMAT,
+                                              parameters.GetOutputFileName().c_str()));
   }
 
   // test file major version
   if (!fileHeader.CheckMajorFileVersion())
   {
-    char errMsg[256] = "";
-    snprintf(errMsg,
-             256,
-             ERR_FMT_BAD_MAJOR_File_Version,
-             parameters.GetCheckpointFileName().c_str(),
-             fileHeader.GetCurrentHDF5_MajorVersion().c_str());
-    throw std::ios::failure(errMsg);
+    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_MAJOR_File_Version,
+                                              parameters.GetCheckpointFileName().c_str(),
+                                              fileHeader.GetCurrentHDF5_MajorVersion().c_str()));
   }
 
   // test file minor version
   if (!fileHeader.CheckMinorFileVersion())
   {
-    char errMsg[256] = "";
-    snprintf(errMsg,
-             256,
-             ERR_FMT_BAD_MINOR_FILE_VERSION,
-             parameters.GetCheckpointFileName().c_str(),
-             fileHeader.GetCurrentHDF5_MinorVersion().c_str());
-    throw std::ios::failure(errMsg);
+    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_MINOR_FILE_VERSION,
+                                              parameters.GetCheckpointFileName().c_str(),
+                                              fileHeader.GetCurrentHDF5_MinorVersion().c_str()));
   }
 
   // Check dimension sizes
@@ -2038,18 +2025,13 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
 
  if (parameters.GetFullDimensionSizes() != outputDimSizes)
  {
-    char errMsg[256] = "";
-    snprintf(errMsg,
-             256,
-             ERR_FMT_OUTPUT_DIMENSIONS_NOT_MATCH,
-             outputDimSizes.nx,
-             outputDimSizes.ny,
-             outputDimSizes.nz,
-             parameters.GetFullDimensionSizes().nx,
-             parameters.GetFullDimensionSizes().ny,
-             parameters.GetFullDimensionSizes().nz);
-
-   throw std::ios::failure(errMsg);
+   throw ios::failure(TLogger::FormatMessage(ERR_FMT_OUTPUT_DIMENSIONS_NOT_MATCH,
+                                             outputDimSizes.nx,
+                                             outputDimSizes.ny,
+                                             outputDimSizes.nz,
+                                             parameters.GetFullDimensionSizes().nx,
+                                             parameters.GetFullDimensionSizes().ny,
+                                             parameters.GetFullDimensionSizes().nz));
  }
 }// end of CheckOutputFile
 //--------------------------------------------------------------------------------------------------
@@ -2072,36 +2054,24 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
   // test file type
   if (fileHeader.GetFileType() != THDF5_FileHeader::CHECKPOINT)
   {
-    char errMsg[256] = "";
-    snprintf(errMsg,
-             256,
-             ERR_FMT_BAD_CHECKPOINT_FILE_FORMAT,
-             parameters.GetCheckpointFileName().c_str());
-    throw std::ios::failure(errMsg);
+    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_CHECKPOINT_FILE_FORMAT,
+                                              parameters.GetCheckpointFileName().c_str()));
   }
 
   // test file major version
   if (!fileHeader.CheckMajorFileVersion())
   {
-    char errMsg[256] = "";
-    snprintf(errMsg,
-             256,
-             ERR_FMT_BAD_MAJOR_File_Version,
-             parameters.GetCheckpointFileName().c_str(),
-             fileHeader.GetCurrentHDF5_MajorVersion().c_str());
-    throw std::ios::failure(errMsg);
+    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_MAJOR_File_Version,
+                                              parameters.GetCheckpointFileName().c_str(),
+                                              fileHeader.GetCurrentHDF5_MajorVersion().c_str()));
   }
 
   // test file minor version
   if (!fileHeader.CheckMinorFileVersion())
   {
-    char errMsg[256] = "";
-    snprintf(errMsg,
-             256,
-             ERR_FMT_BAD_MINOR_FILE_VERSION,
-             parameters.GetCheckpointFileName().c_str(),
-             fileHeader.GetCurrentHDF5_MinorVersion().c_str());
-    throw std::ios::failure(errMsg);
+    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_MINOR_FILE_VERSION,
+                                              parameters.GetCheckpointFileName().c_str(),
+                                              fileHeader.GetCurrentHDF5_MinorVersion().c_str()));
   }
 
   // Check dimension sizes
@@ -2112,18 +2082,13 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
 
  if (parameters.GetFullDimensionSizes() != checkpointDimSizes)
  {
-    char errMsg[256] = "";
-    snprintf(errMsg,
-             256,
-             ERR_FMT_CHECKPOINT_DIMENSIONS_NOT_MATCH,
-             checkpointDimSizes.nx,
-             checkpointDimSizes.ny,
-             checkpointDimSizes.nz,
-             parameters.GetFullDimensionSizes().nx,
-             parameters.GetFullDimensionSizes().ny,
-             parameters.GetFullDimensionSizes().nz);
-
-   throw std::ios::failure(errMsg);
+   throw ios::failure(TLogger::FormatMessage(ERR_FMT_CHECKPOINT_DIMENSIONS_NOT_MATCH,
+                                             checkpointDimSizes.nx,
+                                             checkpointDimSizes.ny,
+                                             checkpointDimSizes.nz,
+                                             parameters.GetFullDimensionSizes().nx,
+                                             parameters.GetFullDimensionSizes().ny,
+                                             parameters.GetFullDimensionSizes().nz));
  }
 }// end of CheckCheckpointFile
 //--------------------------------------------------------------------------------------------------

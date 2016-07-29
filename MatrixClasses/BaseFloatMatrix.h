@@ -1,5 +1,6 @@
 /**
  * @file        BaseFloatMatrix.h
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -11,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 12:13 (created) \n
- *              21 July      2016, 14:55 (revised)
+ *              29 July      2016, 16:50 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -79,27 +80,27 @@ class TBaseFloatMatrix : public TBaseMatrix
 
 
     /// Get raw CPU data out of the class (for direct CPU kernel access).
-    virtual float* GetData()
+    virtual float* GetHostData()
     {
-      return matrixData;
+      return hostData;
     }
 
     /// Get raw CPU data out of the class (for direct CPU kernel access).
-    virtual const float* GetData() const
+    virtual const float* GetHostData() const
     {
-      return matrixData;
+      return hostData;
     }
 
     /// Get raw GPU data out of the class (for direct GPU kernel access).
     virtual float* GetDeviceData()
     {
-      return deviceMatrixData;
+      return deviceData;
     }
 
     /// Get raw GPU data out of the class (for direct GPU kernel access).
     virtual const float* GetDeviceData() const
     {
-      return deviceMatrixData;
+      return deviceData;
     }
 
     /// Copy data from CPU -> GPU (Host -> Device).
@@ -134,9 +135,9 @@ class TBaseFloatMatrix : public TBaseMatrix
     size_t dataSlabSize;
 
     /// Raw CPU matrix data.
-    float* matrixData;
+    float* hostData;
     /// Raw GPU matrix data.
-    float* deviceMatrixData;
+    float* deviceData;
 
   private:
 

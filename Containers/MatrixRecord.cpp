@@ -1,5 +1,6 @@
 /**
  * @file        MatrixRecord.cpp
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -29,14 +30,14 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-//----------------------------------------------------------------------------//
-//--------------------------- CONSTANTS --------------------------------------//
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//-------------------------------------- CONSTANTS -----------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 
-//----------------------------------------------------------------------------//
-//--------------------------- Public methods ---------------------------------//
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//--------------------------------------- Public methods -----------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 #include <Containers/MatrixRecord.h>
 
@@ -45,11 +46,11 @@
  */
 TMatrixRecord::TMatrixRecord() :
         matrixPtr(nullptr),
-        dataType(REAL),
+        matrixType(REAL),
         dimensionSizes(),
         loadData(false),
         checkpoint(false),
-        matrixName("")
+        matrixName()
 {
 
 }// end of constructor
@@ -61,7 +62,7 @@ TMatrixRecord::TMatrixRecord() :
  */
 TMatrixRecord::TMatrixRecord(const TMatrixRecord& src) :
         matrixPtr(src.matrixPtr),
-        dataType(src.dataType),
+        matrixType(src.matrixType),
         dimensionSizes(src.dimensionSizes),
         loadData(src.loadData),
         checkpoint(src.checkpoint),
@@ -77,12 +78,12 @@ TMatrixRecord::TMatrixRecord(const TMatrixRecord& src) :
  * @param [in] src - Source object
  * @return A filled object
  */
-TMatrixRecord& TMatrixRecord::operator = (const TMatrixRecord& src)
+TMatrixRecord& TMatrixRecord::operator= (const TMatrixRecord& src)
 {
   if (this != &src)
   {
     matrixPtr       = src.matrixPtr;
-    dataType        = src.dataType;
+    matrixType       = src.matrixType;
     dimensionSizes  = src.dimensionSizes;
     loadData        = src.loadData;
     checkpoint      = src.checkpoint;
@@ -95,20 +96,20 @@ TMatrixRecord& TMatrixRecord::operator = (const TMatrixRecord& src)
 
 /**
  * Set all values for the record.
- * @param [in] matrixDataType - Matrix data type
+ * @param [in] matrixType     - Matrix data type
  * @param [in] dimensionSizes - Dimension sizes
  * @param [in] loadData       - Load data from file?
  * @param [in] checkpoint     - Checkpoint this matrix?
  * @param [in] matrixName     - HDF5 matrix name
  */
-void TMatrixRecord::Set(const TMatrixDataType matrixDataType,
+void TMatrixRecord::Set(const TMatrixType     matrixType,
                         const TDimensionSizes dimensionSizes,
                         const bool            loadData,
                         const bool            checkpoint,
                         const std::string&    matrixName)
 {
   this->matrixPtr        = nullptr;
-  this->dataType         = matrixDataType;
+  this->matrixType       = matrixType;
   this->dimensionSizes   = dimensionSizes;
   this->loadData         = loadData;
   this->checkpoint       = checkpoint;
