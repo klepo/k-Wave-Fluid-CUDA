@@ -8,12 +8,11 @@
 # * 
 # * @Tool        kspaceFirstOrder3D 3.4
 # * @Created     02 December  2014, 12:32 
-# * @LastModif   14 July      2016, 16:49
+# * @LastModif   02 August    2016, 15:49
 #
 # * @License: 
 # * This file is part of the C++ extension of the k-Wave Toolbox
-# * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros, Beau Johnston
-# * and Bradley Treeby
+# * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby
 # * 
 # * This file is part of the k-Wave. k-Wave is free software: you can redistribute it 
 # * and/or modify it under the terms of the GNU Lesser General Public License as 
@@ -35,7 +34,9 @@
 #	The newer compiler, the more advanced instruction set can be used	#
 #	We recomend compilation with g++ 4.8/4.9 or icpc 14/15                  #
 #                                                                               #
-#       The code also requires CUDA 6.5                                         #
+#       The code also requires CUDA 7.5, but can work with CUDA 7.0 and 6.5     #
+#       With older CUDA versons, it is necessary to remove unknown              #
+#       architectures.                                                          #
 #                                                                               #
 #	The code requires compilator suporitng C++-11 standard!			#
 #	The code uses GNU compiler and STATIC linking by default		#
@@ -47,11 +48,10 @@
 #		- CUDA : download from                                          #
 #                           "https://developer.nvidia.com/downloads             #
 #		- HDF5 : download from http://www.hdfgroup.org/HDF5/ 		#
-#			run configure script with these parameters:	        #		
+#			run configure script with these parameters:	        #
 #			--enable-hl --enable-static --enable-shared     	#
 #									      	#
 #	This makefile enables static and dynamic compilation using 		#
-#									      	#
 #									      	#
 #################################################################################
 
@@ -62,27 +62,17 @@
 
 
 # static lining is deafult
-LINKING = STATIC
-#LINKING = DYNAMIC
+#LINKING = STATIC
+LINKING = DYNAMIC
 
 #Set up paths: find HDF5
-#HDF5_DIR=/usr/local/hdf5-1.8.10-serial-icc
 HDF5_DIR=/usr/local/hdf5-serial
 CUDA_DIR=/usr/local/cuda
-
-# Select CPU architecture (what instruction set to be used). 
-# The libraries such as FFTW, HDF5 and MKL are to be compiled under the same architecture
-# e.g. if you want to use AVX in K-Wave, compile FFTW with --enable-avx
-CPU_ARCH = native
-#CPU_ARCH = SSE3
-#CPU_ARCH = SSE4
-#CPU_ARCH = AVX
-#CPU_ARCH = AVX2
     
-#Get GIT hash (only if you biuld form Gitlab repository)
+#Get GIT hash (only if you build form Gitlab repository)
 KWAVE_GIT_HASH=$(shell git rev-parse HEAD)
 #Otherwise, use the last official build hash
-#KWAVE_GIT_HASH=7e82d0f5aff0ce420721fc2e2280067df4eda2ad
+#KWAVE_GIT_HASH=4af06ccde5ca9ee6da12939f54a3a86d7cacdb8e
 #################################################################################
 
 
@@ -92,7 +82,7 @@ CXX = nvcc
 
 # Set compiler flags and header files directories
 CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math -march=native" \
-           -O3 -std=c++11  -I$(HDF5_DIR)/include  -I.  -ccbin=g++-4.8 --restrict \
+           -O3 -std=c++11  -I$(HDF5_DIR)/include  -I.  --restrict \
 	   -D__KWAVE_GIT_HASH__=\"$(KWAVE_GIT_HASH)\"  \
 	   --generate-code arch=compute_20,code=sm_20	\
 	   --generate-code arch=compute_20,code=sm_21	\
@@ -108,19 +98,21 @@ CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math -march=
   
 LDFLAGS  =  -Xcompiler="-fopenmp" \
 	    -Xlinker="-rpath,$(HDF5_DIR)/lib:$(CUDA_DIR)/lib64" -std=c++11  -L$(HDF5_DIR)/lib  -L$(CUDA_DIR)/lib64 
-#LIBS     = -lhdf5 -lhdf5_hl -lz -lcufft 
-#LIBS	  = $(HDF5_DIR)/lib/libhdf5_hl.a 	\
-#            $(HDF5_DIR)/lib/libhdf5.a		\
-#            -lz -lcufft
 
-LIBS	  = $(HDF5_DIR)/lib/libhdf5_hl.a 	\
-            $(HDF5_DIR)/lib/libhdf5.a		\
-            $(CUDA_DIR)/lib64/libcufft_static.a \
-            $(CUDA_DIR)/lib64/libculibos.a \
-            $(CUDA_DIR)/lib64/libculibos.a \
-            $(CUDA_DIR)/lib64/libcudart_static.a \
-	    -lz -ldl
+ifeq ($(LINKING),STATIC)
 
+	LIBS  = $(HDF5_DIR)/lib/libhdf5_hl.a 	\
+            	$(HDF5_DIR)/lib/libhdf5.a		\
+	        $(CUDA_DIR)/lib64/libcufft_static.a \
+	        $(CUDA_DIR)/lib64/libculibos.a \
+	        $(CUDA_DIR)/lib64/libculibos.a \
+        	$(CUDA_DIR)/lib64/libcudart_static.a \
+	        -lz -ldl
+endif
+
+ifeq ($(LINKING),DYNAMIC)
+	LIBS     = -lhdf5 -lhdf5_hl -lz -lcufft 
+endif
   
 
 ################################# Compile #####################################
