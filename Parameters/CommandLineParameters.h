@@ -1,6 +1,6 @@
 /**
  * @file        CommandLineParameters.h
- * 
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -47,19 +47,19 @@
  * time to save data while not having a large impact on the final file size. That's why we decided
  * to disable compression in default settings.
  *
- * The \c <tt>--benchmark</tt> parameter enables the total length of simulation (i.e., the number of
+ * The \c <tt>\--benchmark</tt> parameter enables the total length of simulation (i.e., the number of
  * time steps) to be overridden by setting a new number of time  steps to simulate. This is
  * particularly useful for performance evaluation and benchmarking. As the code performance is
  * relatively stable, 50-100 time steps is  usually enough to predict the simulation duration.
  * This parameter can also be used to quickly check the simulation is set up correctly.
  *
- * The \c <tt>--verbose</tt> parameter enables to select between three levels of verbosity. For
+ * The \c <tt>\--verbose</tt> parameter enables to select between three levels of verbosity. For
  * routine simulations, the verbose level of 0 (the default one) is usually sufficient. For more
  * information about the simulation, checking the parameters of the simulation, code version,
  * GPU used, file paths, and debugging running scripts, verbose levels 1 and 2 may be very useful.
  *
- * The \c -h and \c --help parameters print all the parameters of the C++ code. The
- * <tt> --version </tt>parameter reports detail information about the code useful for  debugging and
+ * The \c -h and <tt>\--help</tt> parameters print all the parameters of the C++ code. The
+ * <tt>\--version </tt>parameter reports detail information about the code useful for  debugging and
  * bug reports. It prints out the internal version, the build date and time, the git hash allowing
  * us to track the version of the source code, the operating system, the compiler name and version
  * and the instruction set used.
@@ -69,8 +69,8 @@
  * must fit within a given time span (e.g. 24 hours). The second motivation is a level of
  * fault-tolerance, where you can back up the state of the simulation after a predefined period.
  * To enable checkpoint-restart, the user is asked to specify a file to store the actual state of
- * the simulation by  <tt>--checkpoint_file</tt> and the period in seconds after which the
- * simulation will be interrupted by <tt>--checkpoint_interval</tt>.  When running on a cluster,
+ * the simulation by  <tt>\--checkpoint_file</tt> and the period in seconds after which the
+ * simulation will be interrupted by <tt>\--checkpoint_interval</tt>.  When running on a cluster,
  * please allocate enough time for the checkpoint procedure  that can take a non-negligible amount
  * of time (7 matrices have to be stored in  the checkpoint file and all aggregated quantities are
  * flushed into the output file). Please note, that the checkpoint file name and path is not checked
@@ -87,20 +87,22 @@
  *
  *
  * The remaining flags specify the output quantities to be recorded during the  simulation and
- * stored on disk analogous to  the sensor.record input. If the \c -p or \c --p\_raw flags are set
- * (these are equivalent), a time series of  the acoustic pressure at the grid points specified by
- * the sensor mask is recorded. If the \c --p_rms, \c --p_max, \c --p_min flags are set, the root
- * mean square and/or maximum and/or minimum values of the pressure at the grid points specified by
- * the sensor mask are recorded. If the \c --p_final flag is set, the values for the entire acoustic
- * pressure field in the final time step of the simulation is stored (this will always include
- * the PML, regardless of  the setting for <tt> `PMLInside'</tt>).
- * The flags \c --p_max_all and \c --p_min_all allow to calculate the maximum and  minimum values
- * over the entire acoustic pressure field, regardless on the shape of the sensor mask. Flags to
- * record the acoustic particle velocity are defined in an analogous fashion. For proper calculation
- * of acoustic intensity, the particle velocity has to be shifted onto the same grid as the acoustic
- * pressure. This can be done by setting \c --u_non_staggered_raw flag, that first shifts the
- * particle velocity and then samples the grid points specified by the sensor mask. Since the
- * shift operation requires additional FFTs, the impact on the simulation time may be significant.
+ * stored on disk analogous to  the sensor.record input. If the \c -p or <tt>\--p\_raw</tt> flags
+ * are set (these are equivalent), a time series of  the acoustic pressure at the grid points
+ * specified by  the sensor mask is recorded. If the <tt>\--p_rms</tt>, <tt>\--p_max</tt>,
+ * <tt>\--p_min</tt> flags  are set, the root mean square and/or maximum and/or minimum values of
+ * the pressure at the grid points specified by  the sensor mask are recorded. If the
+ * <tt>\--p_final</tt> flag is set, the values for the entire acoustic pressure field in the final
+ * time step of the simulation is stored (this will always include the PML, regardless of  the
+ * setting for <tt> `PMLInside'</tt>).
+ * The flags <tt>\--p_max_all</tt> and <tt>\--p_min_all</tt> allow to calculate the maximum and
+ * minimum values over the entire acoustic pressure field, regardless on the shape of the sensor
+ * mask. Flags to record the acoustic particle velocity are defined in an analogous fashion. For
+ * proper calculation of acoustic intensity, the particle velocity has to be shifted onto the same
+ * grid as the acoustic  pressure. This can be done by setting <tt>\--u_non_staggered_raw</tt> flag,
+ * that first shifts the  particle velocity and then samples the grid points specified by the sensor
+ * mask. Since the  shift operation requires additional FFTs, the impact on the simulation time may
+ * be significant.
  *
  * Any combination of <tt>p</tt> and <tt>u</tt> flags is admissible. If no output flag is set,
  * a time-series for the acoustic pressure is recorded. If it is not necessary to collect the output
@@ -108,8 +110,9 @@
  * be specified using the -s parameter.  Note, the index for the first time step is 1 (this follows
  * the MATLAB indexing convention).
  *
- * The \c --copy_sensor_mask will copy the sensor from the input file to the output  one at the end
+ * The <tt>\--copy_sensor_mask</tt> will copy the sensor from the input file to the output  one at the end
  * of the simulation. This helps in post-processing and visualisation of the outputs.
+ *
  *
 \verbatim
 ┌───────────────────────────────────────────────────────────────┐
