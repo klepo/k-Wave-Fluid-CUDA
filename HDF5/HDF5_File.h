@@ -1,5 +1,6 @@
 /**
  * @file        HDF5_File.h
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -10,8 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              20 July     2016, 17:28 (revised)
- *
+ *              02 August   2016, 14:24 (revised)
  *
  *
  * @section HDF HDF5 File Structure
@@ -531,11 +531,11 @@ class THDF5_File
     //----------------------- Basic file operations --------------------------//
     /// Create a file.
     void Create(const std::string& fileName,
-                unsigned int  flags = H5F_ACC_TRUNC);
+                unsigned int       flags = H5F_ACC_TRUNC);
 
     /// Open a file.
     void Open(const std::string& fileName,
-              unsigned int  flags  = H5F_ACC_RDONLY);
+              unsigned int       flags  = H5F_ACC_RDONLY);
     /**
      * @brief   Is the file opened?
      * @details Is the file opened?
@@ -779,7 +779,6 @@ class THDF5_FileHeader
       VERSION_11      = 1,
       VERSION_UNKNOWN = 2
     };
-
 
     /// Constructor.
     THDF5_FileHeader();

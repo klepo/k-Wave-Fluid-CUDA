@@ -1,5 +1,6 @@
  /**
  * @file        OutputStreamContainer.cpp
+  *
  * @author      Jiri Jaros & Beau Johnston \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -8,6 +9,7 @@
  * @brief       The implementation file for the output stream container.
  *
  * @version     kspaceFirstOrder3D 3.4
+  *
  * @date        04 December  2014, 11:41 (created) \n
  *              19 July      2016, 17:28 (revised)
  *
@@ -34,6 +36,11 @@
 #include <OutputHDF5Streams/IndexOutputHDF5Stream.h>
 #include <OutputHDF5Streams/CuboidOutputHDF5Stream.h>
 #include <OutputHDF5Streams/WholeDomainOutputHDF5Stream.h>
+
+
+//------------------------------------------------------------------------------------------------//
+//-------------------------------------- Constants -----------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 
 //------------------------------------------------------------------------------------------------//

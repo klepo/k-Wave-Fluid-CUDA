@@ -1,5 +1,6 @@
 /**
  * @file        CUDAUtils.cuh
+ *
  * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -34,6 +35,9 @@
 
 #include <Parameters/CUDADeviceConstants.cuh>
 
+//------------------------------------------------------------------------------------------------//
+//------------------------------------------ Variables -------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 /**
  * This variable holds necessary simulation constants in the CUDA GPU memory. The variable is
  * defined in CUDADeviceConstants.cu
@@ -260,6 +264,5 @@ inline __device__ void operator+=(float2&     a,
   a.y += b;
 }// end of operator+=
 //--------------------------------------------------------------------------------------------------
-
 
 #endif /* CUDA_UTILS_CUH */

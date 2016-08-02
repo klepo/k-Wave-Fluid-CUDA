@@ -1,5 +1,6 @@
 /**
  * @file        OutputStreamContainer.h
+ *
  * @author      Jiri Jaros & Beau Johnston \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -10,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        04 December  2014, 11:00 (created)
- *              19 July      2016, 17:15 (revised)
+ *              02 August    2016, 17:15 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -107,7 +108,7 @@ class TOutputStreamContainer
      * @param [in] outputStreamIdx - id of the output stream
      * @return an element of the container
      */
-    TBaseOutputHDF5Stream& operator [] (const TOutputStreamIdx outputStreamIdx)
+    TBaseOutputHDF5Stream& operator[] (const TOutputStreamIdx outputStreamIdx)
     {
       return (* (outputStreamContainer[outputStreamIdx]));
     };
@@ -147,7 +148,7 @@ class TOutputStreamContainer
     /// Copy constructor not allowed for public.
     TOutputStreamContainer(const TOutputStreamContainer&);
     /// Operator = not allowed for public.
-    TOutputStreamContainer & operator= (TOutputStreamContainer&);
+    TOutputStreamContainer& operator= (TOutputStreamContainer&);
 
     /// Output stream map.
     typedef std::map<TOutputStreamIdx, TBaseOutputHDF5Stream*> TOutputStreamMap;

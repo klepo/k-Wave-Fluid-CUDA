@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              29 July      2016, 16:38 (revised)
+ *              02 August    2016, 14:17 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -39,7 +39,7 @@
 #include "Logger/Logger.h"
 
 //------------------------------------------------------------------------------------------------//
-//------------------------------------------ CONSTANTS -------------------------------------------//
+//------------------------------------------ Constants -------------------------------------------//
 //------------------------------------------------------------------------------------------------//
 
 
@@ -253,13 +253,13 @@ void TMatrixContainer::AddMatrices()
     if (params.Get_p_source_many() == 0)
     { // 1D case
       matrixContainer[p_source_input].Set(TMatrixRecord::REAL,
-                                          TDimensionSizes(1 ,1, params.Get_p_source_flag()),
+                                          TDimensionSizes(1, 1, params.Get_p_source_flag()),
                                           LOAD, NOCHECKPOINT, p_source_input_NAME);
     }
     else
     { // 2D case
       matrixContainer[p_source_input].Set(TMatrixRecord::REAL,
-                                          TDimensionSizes(1,params.Get_p_source_index_size(),params.Get_p_source_flag()),
+                                          TDimensionSizes(1, params.Get_p_source_index_size(),params.Get_p_source_flag()),
                                           LOAD, NOCHECKPOINT, p_source_input_NAME);
     }
 

@@ -1,5 +1,6 @@
 /**
  * @file        DimensionSizes.h
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n

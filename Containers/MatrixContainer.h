@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              29 July      2016, 16:38 (revised)
+ *              02 August    2016, 14:17 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -124,12 +124,12 @@ class TMatrixContainer
     };
 
     /**
-     * @brief   operator []
-     * @details operator []
+     * @brief   operator[]
+     * @details operator[]
      * @param [in]  matrixIdx - Matrix identifier
      * @return Matrix record
      */
-    inline TMatrixRecord& operator [] (const TMatrixIdx matrixIdx)
+    inline TMatrixRecord& operator[] (const TMatrixIdx matrixIdx)
     {
       return matrixContainer[matrixIdx];
     };

@@ -33,9 +33,6 @@
 #ifndef ERROR_MESSAGES_WINDOWS_H
 #define	ERROR_MESSAGES_WINDOWS_H
 
-
-//----------------------------- Error handling routines ----------------------//
-
 /**
  * @typedef TErrorMessage
  * @brief   Datatype for error messages.

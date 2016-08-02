@@ -51,7 +51,7 @@ using std::ios;
 using std::string;
 
 //------------------------------------------------------------------------------------------------//
-//------------------------------------------ CONSTANTS -------------------------------------------//
+//------------------------------------------ Constants -------------------------------------------//
 //------------------------------------------------------------------------------------------------//
 
 
@@ -541,7 +541,8 @@ TParameters::TParameters() :
         dx(0.0f), dy(0.0f), dz(0.0f),
         c_ref(0.0f), alpha_power(0.0f),
         fullDimensionSizes(0,0,0), reducedDimensionSizes(0,0,0),
-        sensor_mask_ind_size (0), u_source_index_size(0), p_source_index_size(0), transducer_source_input_size(0),
+        sensor_mask_ind_size (0), u_source_index_size(0), p_source_index_size(0),
+        transducer_source_input_size(0),
         ux_source_flag(0), uy_source_flag(0), uz_source_flag(0),
         p_source_flag(0), p0_source_flag(0), transducer_source_flag(0),
         u_source_many(0), u_source_mode(0), p_source_mode(0), p_source_many(0),
@@ -551,7 +552,8 @@ TParameters::TParameters() :
         c0_scalar_flag(false), c0_scalar(0.0f),
         absorb_eta_scalar(0.0f), absorb_tau_scalar (0.0f),
         BonA_scalar_flag(false), BonA_scalar (0.0f),
-        rho0_scalar_flag(false), rho0_scalar(0.0f), rho0_sgx_scalar(0.0f), rho0_sgy_scalar(0.0f), rho0_sgz_scalar(0.0f)
+        rho0_scalar_flag(false), rho0_scalar(0.0f),
+        rho0_sgx_scalar(0.0f), rho0_sgy_scalar(0.0f), rho0_sgz_scalar(0.0f)
 {
 
 }// end of TParameters()

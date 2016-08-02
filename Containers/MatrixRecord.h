@@ -87,7 +87,7 @@ struct TMatrixRecord
   /// Matrix name in the HDF5 file.
   std::string     matrixName;
 };// end of TMatrixRecord
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 #endif	/* MATRIX_RECORD_H */
 

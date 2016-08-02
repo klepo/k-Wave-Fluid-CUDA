@@ -1,5 +1,6 @@
 /**
  * @file        CUDADeviceConstants.cuh
+ * 
  * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n

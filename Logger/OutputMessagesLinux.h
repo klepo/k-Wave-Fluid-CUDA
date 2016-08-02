@@ -6,8 +6,7 @@
  *              Brno University of Technology \n
  *              jarosjir@fit.vutbr.cz
  *
- * @brief       The header file containing all messages going to the standard
- *              output, Linux version.
+ * @brief       The header file containing all messages going to the standard output, Linux version.
  *
  * @version     kspaceFirstOrder3D 3.4
  *

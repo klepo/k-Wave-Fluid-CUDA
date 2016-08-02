@@ -125,10 +125,6 @@ namespace SolverCUDAKernels
                            const TRealMatrix& dt_rho0_sgy,
                            const TRealMatrix& dt_rho0_sgz);
 
-
-
-
-
   /// Compute  acoustic velocity for initial pressure problem, if rho0_sgx is scalar, uniform grid.
   void Compute_p0_Velocity(TRealMatrix& ux_sgx,
                            TRealMatrix& uy_sgy,

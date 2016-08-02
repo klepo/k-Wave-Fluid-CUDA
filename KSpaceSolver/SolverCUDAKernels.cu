@@ -38,7 +38,7 @@
 #include <Utils/CUDAUtils.cuh>
 
 //------------------------------------------------------------------------------------------------//
-//------------------------------------------ CONSTANTS -------------------------------------------//
+//------------------------------------------ Constants -------------------------------------------//
 //------------------------------------------------------------------------------------------------//
 
 //------------------------------------------------------------------------------------------------//
@@ -535,8 +535,8 @@ __global__ void CUDAAddVelocitySource(float*        uxyz_sgxyz,
   {
     for (auto i = GetIndex(); i < cudaDeviceConstants.u_source_index_size; i += GetStride())
     {
-      uxyz_sgxyz[u_source_index[i]]  = (cudaDeviceConstants.u_source_many == 0) ?  u_source_input[index2D] :
-                                                                                   u_source_input[index2D + i];
+      uxyz_sgxyz[u_source_index[i]]  = (cudaDeviceConstants.u_source_many == 0) ? u_source_input[index2D] :
+                                                                                  u_source_input[index2D + i];
     }// for
   }// end of Dirichlet
 
@@ -544,8 +544,8 @@ __global__ void CUDAAddVelocitySource(float*        uxyz_sgxyz,
   {
     for (auto i  = GetIndex(); i < cudaDeviceConstants.u_source_index_size; i += GetStride())
     {
-      uxyz_sgxyz[u_source_index[i]] += (cudaDeviceConstants.u_source_many == 0) ?  u_source_input[index2D] :
-                                                                                   u_source_input[index2D + i];
+      uxyz_sgxyz[u_source_index[i]] += (cudaDeviceConstants.u_source_many == 0) ? u_source_input[index2D] :
+                                                                                  u_source_input[index2D + i];
     }
   }
 }// end of CUDAAddVelocitySource
