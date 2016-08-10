@@ -58,7 +58,7 @@ KWAVE_GIT_HASH=$(shell git rev-parse HEAD)
 CXX = nvcc
  
 # Set compiler flags and header files directories
-CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math -march=native -mtune=native" \
+CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math -march=native -mtune=native -I." \
            -O3 -std=c++11  -I$(HDF5_INC_DIR) -I.  --restrict \
 	   -D__KWAVE_GIT_HASH__=\"$(KWAVE_GIT_HASH)\" \
            --generate-code arch=compute_35,code=sm_35 \
