@@ -1,182 +1,159 @@
 /**
  * @file        BaseFloatMatrix.cpp
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
  *              jarosjir@fit.vutbr.cz
  *
- * @brief       The implementation file containing the base class for
- *              single precisions floating point numbers (floats).
+ * @brief       The implementation file containing the base class for single precisions floating
+ *              point numbers (floats).
  *
  * @version     kspaceFirstOrder3D 3.4
+ *
  * @date        11 July      2011, 12:13 (created) \n
- *              11 July      2016, 15:15 (revised)
+ *              10 August    2016, 11:54 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
- * and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation, either version
- * 3 of the License, or (at your option) any later version.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
+ * If not, see http://www.gnu.org/licenses/.
  */
 
 
-#include <string.h>
+#include <cstring>
 #include <immintrin.h>
-#include <assert.h>
-
-#include <cuda_runtime.h>
 
 #include <MatrixClasses/BaseFloatMatrix.h>
-
 #include <Utils/DimensionSizes.h>
-#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
 
 
 using std::string;
 
-//----------------------------------------------------------------------------//
-//                              Constants                                     //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//------------------------------------------ Constants -------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
-//----------------------------------------------------------------------------//
-//                              Definitions                                   //
-//----------------------------------------------------------------------------//
 
-//----------------------------------------------------------------------------//
-//                              Implementation                                //
-//                              public methods                                //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//--------------------------------------- Public methods -----------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 /**
- * Copy data from another matrix with same size.
- *
- * @param [in] src - source matrix
- *
+ * Default constructor
  */
-void TBaseFloatMatrix::CopyData(const TBaseFloatMatrix & src)
+TBaseFloatMatrix::TBaseFloatMatrix(): TBaseMatrix(),
+                                      nElements(0),
+                                      nAllocatedElements(0),
+                                      dimensionSizes(),
+                                      dataRowSize(0),
+                                      dataSlabSize(0),
+                                      hostData(nullptr),
+                                      deviceData(nullptr)
 {
-  memcpy(pMatrixData,
-         src.pMatrixData,
-         sizeof(float) * pTotalAllocatedElementCount);
-}//end of CopyDataSameSize
-//------------------------------------------------------------------------------
 
+}// end of TBaseFloatMatrix
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Zero all allocated elements in parallel. \n
  * Also work as the first touch strategy on NUMA machines.
- *
  */
 void TBaseFloatMatrix::ZeroMatrix()
 {
   #pragma omp parallel for schedule (static)
-  for (size_t i=0; i < pTotalAllocatedElementCount; i++)
+  for (size_t i = 0; i < nAllocatedElements; i++)
   {
-    pMatrixData[i] = 0.0f;
+    hostData[i] = 0.0f;
   }
 }// end of ZeroMatrix
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Divide a scalar by the elements of matrix.
- * @param [in] scalar - scalar to be divided
  *
+ * @param [in] scalar - Scalar to be divided by evey element of the array
  */
-void TBaseFloatMatrix::ScalarDividedBy(const float  scalar)
+void TBaseFloatMatrix::ScalarDividedBy(const float scalar)
 {
   #pragma omp parallel for schedule (static)
-  for (size_t i=0; i < pTotalAllocatedElementCount; i++)
+  for (size_t i = 0; i < nAllocatedElements; i++)
   {
-    pMatrixData[i] = scalar / pMatrixData[i];
+    hostData[i] = scalar / hostData[i];
   }
 }// end of ScalarDividedBy
-//------------------------------------------------------------------------------
-
-
+//-------------------------------------------------------------------------------------------------
 
 /**
- * Copy data from CPU (pmatrixData) to GPU (pdMatrixData).
+ * Copy data from CPU -> GPU (Host -> Device).
  * The transfer is synchronous (there is nothing to overlap with in the code)
  */
 void TBaseFloatMatrix::CopyToDevice()
 {
-  checkCudaErrors(cudaMemcpy(pdMatrixData,
-                             pMatrixData,
-                             pTotalAllocatedElementCount * sizeof(float),
+  checkCudaErrors(cudaMemcpy(deviceData,
+                             hostData,
+                             nAllocatedElements * sizeof(float),
                              cudaMemcpyHostToDevice));
 }// end of CopyToDevice
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
- * Copy data from GPU (pdMatrixData) to CPU (pmatrixData).
+ * Copy data from GPU -> CPU (Device -> Host).
  * The transfer is synchronous (there is nothing to overlap with in the code)
  */
 void TBaseFloatMatrix::CopyFromDevice()
 {
-  checkCudaErrors(cudaMemcpy(pMatrixData,
-                             pdMatrixData,
-                             pTotalAllocatedElementCount*sizeof(float),
+  checkCudaErrors(cudaMemcpy(hostData,
+                             deviceData,
+                             nAllocatedElements * sizeof(float),
                              cudaMemcpyDeviceToHost));
 }// end of CopyFromDevice
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
-//----------------------------------------------------------------------------//
-//                              Implementation                                //
-//                             protected methods                              //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//-------------------------------------- Protected methods ---------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 /**
  * Memory allocation based on the total number of elements. \n
- *
- * CPU memory is aligned by the DATA_ALIGNMENT and then registered as pinned and
- * zeroed.
- *
+ * CPU memory is aligned by the DATA_ALIGNMENT and then registered as pinned and zeroed.
  */
 void TBaseFloatMatrix::AllocateMemory()
 {
-  assert(pMatrixData == NULL);
-
-  //Size of memory to allocate
-  size_t SizeInBytes = pTotalAllocatedElementCount * sizeof(float);
+  // Size of memory to allocate
+  size_t sizeInBytes = nAllocatedElements * sizeof(float);
 
   // Allocate CPU memory
-  pMatrixData = static_cast<float *> (_mm_malloc(SizeInBytes, DATA_ALIGNMENT));
-  if (!pMatrixData)
+  hostData = static_cast<float*> (_mm_malloc(sizeInBytes, DATA_ALIGNMENT));
+  if (!hostData)
   {
-    throw bad_alloc();
+    throw std::bad_alloc();
   }
 
   // Register Host memory (pin in memory)
-  checkCudaErrors(cudaHostRegister(pMatrixData,
-                                   SizeInBytes,
-                                   cudaHostRegisterPortable));
+  checkCudaErrors(cudaHostRegister(hostData, sizeInBytes, cudaHostRegisterPortable));
 
   // Allocate memory on the GPU
-  assert(pdMatrixData == NULL);
-
-  checkCudaErrors(cudaMalloc<float>(&pdMatrixData, SizeInBytes));
-
-  if (!pdMatrixData)
+  if ((cudaMalloc<float>(&deviceData, sizeInBytes) != cudaSuccess) || (!deviceData))
   {
-    throw bad_alloc();
+    throw std::bad_alloc();
   }
   // This has to be done for simulations based on input sources
   ZeroMatrix();
 }//end of AllocateMemory
-//----------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Free memory.
@@ -185,24 +162,23 @@ void TBaseFloatMatrix::AllocateMemory()
 void TBaseFloatMatrix::FreeMemory()
 {
   // Free CPU memory
-  if (pMatrixData)
+  if (hostData)
   {
-    cudaHostUnregister(pMatrixData);
-    _mm_free(pMatrixData);
+    cudaHostUnregister(hostData);
+    _mm_free(hostData);
   }
-  pMatrixData = NULL;
+  hostData = nullptr;
 
   // Free GPU memory
-  if (pdMatrixData)
+  if (deviceData)
   {
-    checkCudaErrors(cudaFree(pdMatrixData));
+    checkCudaErrors(cudaFree(deviceData));
   }
-  pdMatrixData = NULL;
+  deviceData = nullptr;
 }//end of FreeMemory
-//----------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------//
-//                            Implementation                                //
-//                            private methods                               //
-//--------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//--------------------------------------- Private methods ----------------------------------------//
+//------------------------------------------------------------------------------------------------//
 

@@ -1,5 +1,6 @@
 /**
  * @file        CUDADeviceConstants.cuh
+ * 
  * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -8,26 +9,24 @@
  * @brief       The header file for the class for storing constants residing in CUDA constant memory.
  *
  * @version     kspaceFirstOrder3D 3.4
+ *
  * @date        17 February 2016, 10:53 (created) \n
- *              18 April    2016, 14:45 (revised)
+ *              25 July     2016, 12:55 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
- * and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation, either version
- * 3 of the License, or (at your option) any later version.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
+ * If not, see http://www.gnu.org/licenses/.
  */
 
 
@@ -35,42 +34,44 @@
 #define CUDA_DEVICE_CONSTANTS_CUH
 
 /**
-  * @struct TCUDAConstants
-  * @brief  Structure for CUDA parameters to be placed in constant memory.
-  *       Only 32b values are used, since CUDA does not allow to allocate more
-  *      than 2^32 elements and dim3 datatype is based on unsigned int
-  *
- */
+  * @struct TCUDADeviceConstants
+  * @brief  Structure for CUDA parameters to be placed in constant memory. Only 32b values are used,
+  *         since CUDA does not allow to allocate more than 2^32 elements and dim3 datatype
+  *         is based on unsigned int.
+  */
 struct TCUDADeviceConstants
 {
+  /// Set constant memory
+  __host__ void SetUpCUDADeviceConstatns();
+
   /// size of X dimension.
-  unsigned int Nx;
+  unsigned int nx;
   /// size of Y dimension.
-  unsigned int Ny;
+  unsigned int ny;
   /// size of Z dimension.
-  unsigned int Nz;
+  unsigned int nz;
   /// total number of elements.
-  unsigned int TotalElementCount;
+  unsigned int nElements;
   /// 2D Slab size
-  unsigned int SlabSize;
+  unsigned int slabSize;
   /// size of complex X dimension.
-  unsigned int Complex_Nx;
+  unsigned int nxComplex;
   /// size of complex Y dimension.
-  unsigned int Complex_Ny;
+  unsigned int nyComplex;
   /// size of complex Z dimension.
-  unsigned int Complex_Nz;
+  unsigned int nzComplex;
   /// complex number of elements.
-  unsigned int ComplexTotalElementCount;
+  unsigned int nElementsComplex;
   /// complex slab size.
-  unsigned int ComplexSlabSize;
+  unsigned int slabSizeComplex;
   /// normalization constant for 3D FFT.
-  float  FFTDivider;
+  float  fftDivider;
   /// normalization constant for 1D FFT over X.
-  float  FFTDividerX;
+  float  fftDividerX;
   /// normalization constant for 1D FFT over Y.
-  float  FFTDividerY;
+  float  fftDividerY;
   /// normalization constant for 1D FFT over Z.
-  float  FFTDividerZ;
+  float  fftDividerZ;
 
   /// dt
   float dt;
@@ -78,7 +79,6 @@ struct TCUDADeviceConstants
   float dt2;
   /// c^2
   float c2;
-
 
   /// rho0 in homogeneous case
   float rho0_scalar;
@@ -95,9 +95,9 @@ struct TCUDADeviceConstants
   float BonA_scalar;
 
   /// Absorb_tau value for homogeneous case
-  float Absorb_tau_scalar;
+  float absorb_tau_scalar;
   /// Absorb_eta value for homogeneous case
-  float Absorb_eta_scalar;
+  float absorb_eta_scalar;
 
   ///  size of the u source index
   unsigned int u_source_index_size;
@@ -113,12 +113,8 @@ struct TCUDADeviceConstants
   /// p source many
   unsigned int p_source_many;
 
-  /// Set constant memory
-  __host__ void SetUpCUDADeviceConstatns();
 }; // end of TCUDAConstants
-
-
-
+//--------------------------------------------------------------------------------------------------
 
 #endif /* CUDA_DEVICE_CONSTANTS_CUH */
 

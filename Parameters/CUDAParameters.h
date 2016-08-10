@@ -1,5 +1,6 @@
 /**
  * @file        CUDAParameters.h
+ *
  * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -8,92 +9,87 @@
  * @brief       The header file for the class for setting CUDA kernel parameters.
  *
  * @version     kspaceFirstOrder3D 3.4
+ *
  * @date        12 November 2015, 16:49 (created) \n
- *              14 March    2016, 14:47 (revised)
+ *              25 July     2016, 13:17 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
- * and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation, either version
- * 3 of the License, or (at your option) any later version.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
+ * If not, see http://www.gnu.org/licenses/.
  */
 
 #ifndef CUDA_PARAMETERS_H
 #define CUDA_PARAMETERS_H
 
-#include <string>
-#include <iostream>
 #include <cuda_runtime.h>
 
 #include <Utils/DimensionSizes.h>
 
-
-// forward declaration
-//class TParameters;
 
 /**
  * @class   TCUDAParameters
  * @brief   Class responsible for CUDA runtime setup
  * @details Class responsible for selecting a CUDA device, block and grid dimensions,
  *          etc. \n
- *          The class can only by constructed from inside TPrameters and there
- *          mustn't be more than 1 instance in the code
- *
+ *          The class can only by constructed from inside TPrameters and there mustn't be more
+ *          than 1 instance in the code
  */
 class TCUDAParameters
 {
   public:
+    /// Only TParameters can create this class.
     friend class TParameters;
-    /// Destructor, no need to be virtual
+    /// Destructor.
     ~TCUDAParameters() {}
 
     /// Get Idx of the device being used
-    int GetDeviceIdx()                 const { return DeviceIdx;               }
+    int GetDeviceIdx()                 const { return deviceIdx;               }
     /// Get number of threads for 1D block used by kSpaceSolver.
-    int GetSolverBlockSize1D()         const { return SolverBlockSize1D;       }
+    int GetSolverBlockSize1D()         const { return solverBlockSize1D;       }
     /// Get number of block for 1D grid used by kSpaceSolver.
-    int GetSolverGridSize1D()          const { return SolverGridSize1D;        }
+    int GetSolverGridSize1D()          const { return solverGridSize1D;        }
 
+    /// Get block size for the transposition kernels.
+    dim3 GetSolverTransposeBlockSize() const { return solverTransposeBlockSize;}
+    /// Get grid size for the transposition kernels.
+    dim3 GetSolverTransposeGirdSize()  const { return solverTransposeGirdSize; }
 
-    /// Get block size for the transposition kernels
-    dim3 GetSolverTransposeBlockSize() const { return SolverTransposeBlockSize;}
-    /// Get grid size for the transposition kernels
-    dim3 GetSolverTransposeGirdSize()  const { return SolverTransposeGirdSize; }
-
-
-    /// Get number of threads for the 1D data sampling kernels
-    int GetSamplerBlockSize1D()        const { return SamplerBlockSize1D;      }
-    /// Get Number of blocks for the 1D data sampling kernels
-    int GetSamplerGridSize1D()         const { return SamplerGridSize1D;       }
+    /// Get number of threads for the 1D data sampling kernels.
+    int GetSamplerBlockSize1D()        const { return samplerBlockSize1D;      }
+    /// Get Number of blocks for the 1D data sampling kernels.
+    int GetSamplerGridSize1D()         const { return samplerGridSize1D;       }
 
     /// Get the name of the device used.
     std::string GetDeviceName()        const;
 
     /// Select cuda device for execution.
-    void SelectDevice(const int DeviceIdx = DefaultDeviceIdx);
-    /// Set kernel configurations based on the simulation parameters
+    void SelectDevice(const int DeviceIdx = DEFAULT_DEVICE_IDX);
+
+    /// Set kernel configurations based on the simulation parameters.
     void SetKernelConfiguration();
 
-    /// Upload useful simulation constants into device constant memory
-    void SetUpDeviceConstants();
+    /// Upload useful simulation constants into device constant memory.
+    void SetUpDeviceConstants() const;
 
     /// Return properties of currently used GPU
-    cudaDeviceProp GetDeviceProperties() const {return DeviceProperties;};
+    const cudaDeviceProp& GetDeviceProperties() const {return deviceProperties;};
+
+    /// Default Device Index - no default GPU
+    static const int DEFAULT_DEVICE_IDX = -1;
 
   protected:
-    /// Default constructor
+    /// Default constructor - only friend class can create an instance.
     TCUDAParameters();
 
     /// Copy constructor not allowed for public.
@@ -102,43 +98,40 @@ class TCUDAParameters
     /// operator = not allowed for public.
     TCUDAParameters& operator = (const TCUDAParameters& src);
 
-    /// Check whether the CUDA driver version installed is sufficient for the code
+    /// Check whether the CUDA driver version installed is sufficient for the code.
     void CheckCUDAVersion();
 
-    /// Check whether the code was compiled for a given SM model
+    /// Check whether the code was compiled for a given SM model.
     bool CheckCUDACodeVersion();
-
 
   private:
 
     /// Index of the device the code is being run on.
-    int  DeviceIdx;
+    int  deviceIdx;
 
     /// Number of threads for 1D block used by kSpaceSolver.
-    int  SolverBlockSize1D;
+    int  solverBlockSize1D;
     /// Number of block for 1D grid used by kSpaceSolver.
-    int  SolverGridSize1D;
+    int  solverGridSize1D;
 
     /// Block size for the transposition kernels
-    dim3 SolverTransposeBlockSize;
+    dim3 solverTransposeBlockSize;
     /// Grid size for the transposition kernels
-    dim3 SolverTransposeGirdSize;
-
+    dim3 solverTransposeGirdSize;
 
     /// Number of threads for the 1D data sampling kernels
-    int SamplerBlockSize1D;
+    int samplerBlockSize1D;
     /// Number of blocks for the 1D data sampling kernels
-    int SamplerGridSize1D;
+    int samplerGridSize1D;
 
     /// Device properties of the selected GPU.
-    cudaDeviceProp DeviceProperties;
+    cudaDeviceProp deviceProperties;
 
     /// Undefined block or grid size
-    static const int UndefinedSize = -1;
+    static const int UNDEFINDED_SIZE = -1;
 
-    /// Default Device Index - no default GPU
-    static const int DefaultDeviceIdx = -1;
-};
+};// end of TCUDAParameters
+//--------------------------------------------------------------------------------------------------
 
-#endif /* CUDAPARAMETERS_H */
+#endif /* CUDA_PARAMETERS_H */
 

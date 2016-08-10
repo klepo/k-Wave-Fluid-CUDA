@@ -1,5 +1,6 @@
 /**
  * @file        HDF5_File.h
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -8,53 +9,54 @@
  * @brief       The header file containing the HDF5 related classes.
  *
  * @version     kspaceFirstOrder3D 3.4
- * @date        27 July     2012, 14:14 (created) \n
- *              04 November 2014, 16:30 (revised)
  *
+ * @date        27 July     2012, 14:14 (created) \n
+ *              10 August   2016, 10:49 (revised)
  *
  *
  * @section HDF HDF5 File Structure
  *
- * The C++ code has been designed as a standalone application which is not dependent
- * on MATLAB libraries or a MEX interface. This is of particular importance when
- * using servers and supercomputers without MATLAB support. For this reason, simulation
- * data must be transferred between the C++ code and MATLAB using external input
- * and output files. These files are stored using the Hierarchical Data Format
- * HDF5 (http://www.hdfgroup.org/HDF5/). This is a data model, library, and file
- * format for storing and managing data. It supports a variety of datatypes, and
- * is designed for flexible and efficient I/O and for high volume and complex data.
- * The HDF5 technology suite includes tools and applications for managing,
- * manipulating, viewing, and analysing data in the HDF5 format.
+ * The CUDA/C++ code has been designed as a standalone application which is not dependent  on MATLAB
+ * libraries or a MEX interface. This is of particular importance when using servers and
+ * supercomputers without MATLAB support. For this reason, simulation data must be transferred
+ * between the CUDA/C++ code and MATLAB using external input and output files. These files are
+ * stored using the Hierarchical Data Format HDF5 (http://www.hdfgroup.org/HDF5/). This is a data
+ * model, library, and file format for storing and managing data. It supports a variety of
+ * datatypes, and is designed for flexible and efficient I/O and for high volume and complex data.
+ * The HDF5 technology suite includes tools and applications for managing, manipulating, viewing,
+ * and analysing data in the HDF5 format.
  *
  *
+ * Each HDF5 file is a container for storing a variety of scientific data and is composed of two
+ * primary types of objects: groups and datasets. An HDF5 group is a structure  containing zero or
+ * more HDF5 objects, together with supporting metadata. A HDF5 group can be seen as a disk folder.
+ * An HDF5 dataset is a multidimensional array of data elements, together with supporting metadata.
+ * A HDF5 dataset can be seen as a disk file. Any HDF5 group or dataset may also have an associated
+ * attribute list. An HDF5 attribute is a user-defined HDF5 structure that provides extra
+ * information about an HDF5 object. More information can be obtained from the HDF5 documentation
+ * (http://www.hdfgroup.org/HDF5/doc/index.html).
  *
- * Each HDF5 file is a container for storing a variety of scientific data and is composed
- * of two primary types of objects: groups and datasets. A HDF5 group is a structure
- * containing zero or more HDF5 objects, together with supporting metadata. A HDF5
- * group can be seen as a disk folder. A HDF5 dataset is a multidimensional array of
- * data elements, together with supporting metadata. A HDF5 dataset can be seen as a
- * disk file. Any HDF5 group or dataset may also have an associated attribute list. A
- * HDF5 attribute is a user-defined HDF5 structure that provides extra information about a
- * HDF5 object. More information can be obtained from the HDF5 documentation (http://www.hdfgroup.org/HDF5/doc/index.html).
  *
+ * kspaceFirstOrder3D-CUDA v1.1 introduces a new version of the HDF5 input and output file format.
+ * The code is happy to work with both versions (1.0 and 1.1), however when working with an input
+ * file of version 1.0, some features are not supported, namely the cuboid sensor mask, and
+ * u_non_staggered_raw. When running from within the actual MATLAB K-Wave Toolbox, the files will
+ * always be generated in version 1.1
  *
- * kspaceFirstOrder3D-CUDA v1.1 introduces a new version of the HDF5 input and
- * output file format. The code is happy to work with both versions (1.0 and 1.1), however when
- * working with an input file of version 1.0, some features are not supported,
- * namely the cuboid sensor mask, and u_non_staggered_raw.
- * When running from within the actual K-Wave Toolbox, the files will always be generated
- * in version 1.1
- *
- * The HDF5 input file for the C++ simulation code contains a file header with
- * brief description of the simulation stored in string attributes,
- * and the root group `/' which stores all the simulation properties in the form
- * of 3D datasets (a complete list of input datasets is given bellow).
- * The HDF5 checkpoint file contains the same file header as the input file and
- * the root group `/' with a few datasets keeping the actual simulation state
- * The HDF5 output file contains a file header with the simulation description
- * as well as performance statistics, such as the simulation time and memory
- * consumption, stored in string attributes.
- * The results of the simulation are stored in the root group `/' in the form of 3D datasets.
+ * The HDF5 input file for the CUDA/C++ simulation code contains a file header with brief
+ * description of the simulation stored in string attributes, and the root group `/' which stores
+ * all the simulation properties in the form of 3D datasets (a complete list of input datasets is
+ * given bellow).
+ * The HDF5 checkpoint file contains the same file header as the input file and the root group `/'
+ * with a few datasets keeping the actual simulation state.
+ * The HDF5 output file contains a file header with the simulation description as well as
+ * performance statistics, such as the simulation  time and memory consumption, stored in string
+ * attributes.
+
+ * The results of the simulation are stored in the root group `/' in the form of 3D datasets. If the
+ * linear sensor mask is used, all output quantities are stored as datasets in the root group. If
+ * the cuboid corners sensor mask is used, the sampled quantities form private groups containing
+ * datasets on per cuboid basis.
  *
  *
  * \verbatim
@@ -95,37 +97,35 @@ total_memory_in_use Total               Peak memory in use
  *
  *
  *
- * The input and checkpoint file stores all quantities as three dimensional datasets with
- * dimension sizes designed by <tt>(Nx, Ny, Nz)</tt>. In order to support scalars
- * and 1D and 2D arrays, the unused dimensions are set to 1.
- * For example, scalar variables are stored with a dimension size of <tt>(1,1,1)</tt>,
- * 1D vectors oriented in y-direction are stored with a dimension  size of <tt>(1, Ny, 1)</tt>,
- * and so on. If the dataset stores a complex variable, the real and imaginary parts
- * are stored in an interleaved layout and the lowest used dimension size is
- * doubled (i.e., Nx for a 3D matrix, Ny for a 1D vector oriented in the y-direction). The
- * datasets are physically stored in row-major order (in contrast to column-major order used
- * by MATLAB) using either the <tt>`H5T_IEEE_F32LE'</tt> data type for floating point datasets or
- * <tt>`H5T_STD_U64LE'</tt> for integer based datasets.
- * All the datasets are store under the root group.
+ * The input and checkpoint file stores all quantities as three dimensional datasets with dimension
+ * sizes designed by <tt>(Nx, Ny, Nz)</tt>. In order to support scalars and 1D and 2D arrays, the
+ * unused dimensions are set to 1. For example, scalar variables are stored with a dimension size of
+ * <tt>(1,1,1)</tt>, 1D vectors oriented in y-direction are stored with a dimension  size of
+ * <tt>(1, Ny, 1)</tt>,  and so on. If the dataset stores a complex variable, the real and imaginary
+ * parts are stored in an interleaved layout and the lowest used dimension size is doubled (i.e.,
+ * Nx for a 3D matrix, Ny for a 1D vector oriented in the y-direction). The datasets are physically
+ * stored in row-major order (in contrast to column-major order used by MATLAB) using either the
+ * <tt>`H5T_IEEE_F32LE'</tt> data type for floating point datasets or <tt>`H5T_STD_U64LE'</tt> for
+ * integer based datasets. All the datasets are store under the root group.
  *
  *
- * The output file of version 1.0 could only store recorded quantities as 3D datasets
- * under the root group. However, with version 1.1 and the new cuboid corner sensor
- * mask, the sampled quantities may be laid out as 4D quantities stored under specific
- * groups. The dimensions are always <tt>(Nx, Ny, Nz, Nt)</tt>, every sampled cuboid
- * is stored as a distinct dataset and the datasets are grouped under a group named
- * by the quantity stored. This makes the file clearly readable and easy to parse.
+ * The output file of version 1.0 could only store recorded quantities as 3D datasets  under the
+ * root group. However, with version 1.1 and the new cuboid corner sensor mask, the sampled
+ * quantities may be laid out as 4D quantities stored under specific groups. The dimensions are
+ * always <tt>(Nx, Ny, Nz, Nt)</tt>, every sampled cuboid is stored as a distinct dataset and the
+ * datasets are grouped under a group named by the quantity stored. This makes the file
+ * clearly readable and easy to parse.
  *
  *
- * In order to enable compression and more efficient data processing, big datasets
- * are not stored as monolithic blocks
- * but broken into chunks that may be compressed by the ZIP library  and stored
+ * In order to enable compression and more efficient data processing, big datasets are not stored as
+ * monolithic blocks but broken into chunks that may be compressed by the ZIP library  and stored
  * separately. The chunk size is defined as follows:
  *
  * \li <tt> (1M elements, 1, 1) </tt> in the case of 1D variables - index sensor mask (8MB blocks).
  * \li <tt> (Nx, Ny, 1)         </tt> in the case of 3D variables (one 2D slab).
  * \li <tt> (Nx, Ny, Nz, 1)     </tt> in the case of 4D variables (one time step).
- * \li <tt> (N_sensor_points, 1, 1) </tt> in the case of the output time series (one time step of the simulation).
+ * \li <tt> (N_sensor_points, 1, 1) </tt> in the case of the output time series (one time step of
+ *                                    the simulation).
  *
  *
  * All datasets have two attributes that specify the content of the dataset. The \c `data_type'
@@ -164,9 +164,6 @@ Name                            Size           Data type       Domain Type      
   dx                            (1, 1, 1)       float          real
   dy                            (1, 1, 1)       float          real
   dz                            (1, 1, 1)       float          real
-  x_shift_neg_r                 (Nx/2+1, 1, 1)  float          complex          File version 1.1
-  y_shift_neg_r                 (1, Ny/2+1, 1)  float          complex          File version 1.1
-  z_shift_neg_r                 (1, 1, Nz/2+1)  float          complex          File version 1.1
 --------------------------------------------------------------------------------------------------------------
   3 Medium Properties
 --------------------------------------------------------------------------------------------------------------
@@ -194,9 +191,9 @@ Name                            Size           Data type       Domain Type      
 --------------------------------------------------------------------------------------------------------------
   4. Sensor Variables
 --------------------------------------------------------------------------------------------------------------
-  sensor_mask_type              (1, 1, 1)       long           real             File version 1.1 (0 = index, 1 = corners)
-  sensor_mask_index             (Nsens, 1, 1)   long           real             File version 1.0 always, File version 1.1 if sensor_mask_type == 0
-  sensor_mask_corners           (Ncubes, 6, 1)  long           real             File version 1.1, if sensor_mask_type == 1
+  sensor_mask_type              (1, 1, 1)       long           real             file version 1.1 (0 = index, 1 = corners)
+  sensor_mask_index             (Nsens, 1, 1)   long           real             file version 1.0 always, File version 1.1 if sensor_mask_type == 0
+  sensor_mask_corners           (Ncubes, 6, 1)  long           real             file version 1.1, if sensor_mask_type == 1
 --------------------------------------------------------------------------------------------------------------
   5 Source Properties
 --------------------------------------------------------------------------------------------------------------
@@ -211,7 +208,7 @@ Name                            Size           Data type       Domain Type      
   uz_source_input               (1, Nt_src, 1)     float       real             u_source_many == 0
                                 (Nt_src, Nsrc, 1)  float       real             u_source_many == 1
 
-  5.2 Pressure Source Terms (defined if p_source_flag == 1))
+  5.2 Pressure Source Terms (defined if (p_source_flag == 1))
   p_source_mode                 (1, 1, 1)          long        real
   p_source_many                 (1, 1, 1)          long        real
   p_source_index                (Nsrc, 1, 1)       long        real
@@ -234,6 +231,9 @@ Name                            Size           Data type       Domain Type      
   ddy_k_shift_neg               (1, Ny, 1)        float        complex
   ddz_k_shift_pos               (1, 1, Nz)        float        complex
   ddz_k_shift_neg               (1, 1, Nz)        float        complex
+  x_shift_neg_r                 (Nx/2 + 1, 1, 1)  float        complex          file version 1.1
+  y_shift_neg_r                 (1, Ny/2 + 1, 1)  float        complex          file version 1.1
+  z_shift_neg_r                 (1, 1, Nz/2)      float        complex          file version 1.1
 --------------------------------------------------------------------------------------------------------------
   7. PML Variables
 --------------------------------------------------------------------------------------------------------------
@@ -267,7 +267,7 @@ Name                            Size           Data type       Domain Type      
   Nt                            (1, 1, 1)       long           real
   t_index                       (1, 1, 1)       long           real
 --------------------------------------------------------------------------------------------------------------
-  2. Simulation state
+  2. Simulation State
 --------------------------------------------------------------------------------------------------------------
   p                            (Nx, Ny, Nz)    float           real
   ux_sgx                       (Nx, Ny, Nz)    float           real
@@ -331,9 +331,9 @@ Name                            Size           Data type       Domain Type      
 --------------------------------------------------------------------------------------------------------------
   4. Sensor Variables (present if --copy_sensor_mask)
 --------------------------------------------------------------------------------------------------------------
-  sensor_mask_type              (1, 1, 1)       long           real             File version 1.1 and --copy_sensor_mask
-  sensor_mask_index             (Nsens, 1, 1)   long           real             File version 1.1 and if sensor_mask_type == 0
-  sensor_mask_corners           (Ncubes, 6, 1)  long           real             File version 1.1 and if sensor_mask_type == 1
+  sensor_mask_type              (1, 1, 1)       long           real             file version 1.1 and --copy_sensor_mask
+  sensor_mask_index             (Nsens, 1, 1)   long           real             file version 1.1 and if sensor_mask_type == 0
+  sensor_mask_corners           (Ncubes, 6, 1)  long           real             file version 1.1 and if sensor_mask_type == 1
 --------------------------------------------------------------------------------------------------------------
   5a. Simulation Results: if sensor_mask_type == 0 (index), or File version == 1.0
 --------------------------------------------------------------------------------------------------------------
@@ -378,7 +378,7 @@ Name                            Size           Data type       Domain Type      
   uy_final                      (Nx, Ny, Nz)       float       real             --u_final
   uz_final                      (Nx, Ny, Nz)       float       real             --u_final
 --------------------------------------------------------------------------------------------------------------
-  5b. Simulation Results: if sensor_mask_type == 1 (corners) and File version == 1.1
+  5b. Simulation Results: if sensor_mask_type == 1 (corners) and file version == 1.1
 --------------------------------------------------------------------------------------------------------------
   /p                            group of datasets, one per cuboid               -p or --p_raw
   /p/1                          (Cx, Cy, Cz, Nt-s) float       real               1st sampled cuboid
@@ -449,25 +449,21 @@ Name                            Size           Data type       Domain Type      
  *
  *
  *
- *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
- * and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation, either version
- * 3 of the License, or (at your option) any later version.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see http://www.gnu.org/licenses/.
-    */
+ * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
+ * If not, see http://www.gnu.org/licenses/.
+ */
 
 #ifndef THDF5_FILE_H
 #define	THDF5_FILE_H
@@ -475,7 +471,7 @@ Name                            Size           Data type       Domain Type      
 
 #include <hdf5.h>
 #include <hdf5_hl.h>
-#include <string>
+#include <cstring>
 #include <map>
 
 // Linux build
@@ -488,10 +484,8 @@ Name                            Size           Data type       Domain Type      
 #endif
 
 #include <Utils/DimensionSizes.h>
+#include <Utils/MatrixNames.h>
 
-
-
-using namespace std;
 
 // Class with File header
 class THDF5_FileHeader;
@@ -499,368 +493,366 @@ class THDF5_FileHeader;
 /**
  * @class THDF5_File
  * @brief Class wrapping the HDF5 routines.
- * @details This class is responsible for working with HDF5 files. It offers routines
- * to manage files (create, open, close) as well as creating, reading and modifying the
- * contents (groups and datasets).
- *
+ * @details This class is responsible for working with HDF5 files. It offers routines to manage
+ * files (create, open, close) as well as creating, reading and modifying the contents
+ * (groups and datasets).
  */
 class THDF5_File
 {
   public:
 
     /**
-     * @enum THDF5_MatrixDataType
-     * @brief HDF5 matrix data type (float or uint64).
+     * @enum    TMatrixDataType
+     * @brief   HDF5 matrix data type (float or uint64).
+     * @details HDF5 matrix data type (float or uint64).
      */
-    enum THDF5_MatrixDataType
+    enum TMatrixDataType
     {
-      hdf5_mdt_float = 0,
-      hdf5_mdt_long  = 1
+      FLOAT = 0,
+      LONG  = 1
     };
 
     /**
-     * @enum  THDF5_MatrixDomainType
-     * @brief HDF5 Matrix domain type (real or complex).
+     * @enum    TMatrixDomainType
+     * @brief   HDF5 Matrix domain type (real or complex).
+     * @details HDF5 Matrix domain type (real or complex).
      */
-    enum THDF5_MatrixDomainType
+    enum TMatrixDomainType
     {
-      hdf5_mdt_real  = 0,
-      hdf5_mdt_complex = 1
+      REAL    = 0,
+      COMPLEX = 1
     };
 
 
     /// Constructor of the class.
     THDF5_File();
+    /// Destructor.
+    virtual ~THDF5_File();
 
     //----------------------- Basic file operations --------------------------//
-    /// Create the file.
-    void Create(const char * FileName,
-                unsigned int Flags = H5F_ACC_TRUNC);
+    /// Create a file.
+    void Create(const std::string& fileName,
+                unsigned int       flags = H5F_ACC_TRUNC);
 
-    /// Open the file.
-    void Open (const char * FileName,
-               unsigned int Flags  = H5F_ACC_RDONLY);
+    /// Open a file.
+    void Open(const std::string& fileName,
+              unsigned int       flags  = H5F_ACC_RDONLY);
     /**
-     * @brief Is the file opened?
+     * @brief   Is the file opened?
      * @details Is the file opened?
-     * @return true if the file is opened
+     * @return  true if the file is opened.
      */
-    bool IsOpened() const {return HDF5_FileId != H5I_BADID;};
+    bool IsOpen() const {return file != H5I_BADID;};
 
     /**
-     * @brief Does the file exist? static method.
-     * @details Check if the file exist.
-     * @param [in] FileName
+     * @brief      Does the file exist?
+     * @details    Check if the file exist.
+     * @param [in] fileName
      * @return true if the file exists.
      */
-    static bool IsHDF5(const char * FileName)
-    {
-      #ifdef __linux__
-        return (access(FileName, F_OK) == 0);
-      #endif
+    static bool IsHDF5(const std::string& fileName);
 
-      #ifdef _WIN64
-         return (_access_s(FileName, 0) == 0 );
-      #endif
-    };
-
-        /// Close file.
+    /// Close file.
     void Close();
 
-    //----------------------- Group manipulators -----------------------------//
+    //----------------------------------- Group manipulators -------------------------------------//
     /// Create a HDF5 group at a specified place in the file tree.
-    hid_t CreateGroup(const hid_t ParentGroup,
-            const char * GroupName);
+    hid_t CreateGroup(const hid_t  parentGroup,
+                      TMatrixName& groupName);
     /// Open a HDF5 group at a specified place in the file tree.
-    hid_t OpenGroup  (const hid_t ParentGroup,
-            const char * GroupName);
+    hid_t OpenGroup(const hid_t  parentGroup,
+                    TMatrixName& groupName);
     /// Close group.
-    void CloseGroup(const hid_t Group);
+    void CloseGroup(const hid_t group);
 
     /**
-     * @brief Get handle to the root group.
+     * @brief   Get handle to the root group.
      * @details Get handle to the root group.
-     * @return  - handle to the root group
+     * @return  handle to the root group
      */
-    hid_t GetRootGroup() const  {return HDF5_FileId;};
+    hid_t GetRootGroup() const {return file;};
 
 
-    //---------------------- Dataset manipulators ----------------------------//
+    //---------------------------------- Dataset manipulators -------------------------------------//
     /// Open the HDF5 dataset at a specified place in the file tree.
-    hid_t OpenDataset(const hid_t  ParentGroup,
-                      const char * DatasetName);
+    hid_t OpenDataset(const hid_t parentGroup,
+                      TMatrixName& datasetName);
 
-    /// Create the HDF5 dataset at a specified place in the file tree (3D/4D).
-    hid_t CreateFloatDataset(const hid_t             ParentGroup,
-                             const char            * DatasetName,
-                             const TDimensionSizes & DimensionSizes,
-                             const TDimensionSizes & ChunkSizes,
-                             const size_t            CompressionLevel);
+    /// Create a float HDF5 dataset at a specified place in the file tree (3D/4D).
+    hid_t CreateFloatDataset(const hid_t            parentGroup,
+                             TMatrixName&           datasetName,
+                             const TDimensionSizes& dimensionSizes,
+                             const TDimensionSizes& chunkSizes,
+                             const size_t           compressionLevel);
 
-    /// Create the HDF5 dataset at a specified place in the file tree (3D only).
-    hid_t CreateIndexDataset(const hid_t             ParentGroup,
-                             const char            * DatasetName,
-                             const TDimensionSizes & DimensionSizes,
-                             const TDimensionSizes & ChunkSizes,
-                             const size_t            CompressionLevel);
+    /// Create an index HDF5 dataset at a specified place in the file tree (3D only).
+    hid_t CreateIndexDataset(const hid_t            parentGroup,
+                             TMatrixName&           datasetName,
+                             const TDimensionSizes& dimensionSizes,
+                             const TDimensionSizes& chunkSizes,
+                             const size_t           compressionLevel);
 
     /// Close the HDF5 dataset.
-    void  CloseDataset (const hid_t HDF5_Dataset_id);
+    void  CloseDataset (const hid_t dataset);
 
 
-    //------------------ Dataset Read/Write operations -----------------------//
+    //----------------------------- Dataset Read/Write operations --------------------------------//
     /// Write a hyper-slab into the dataset - float dataset.
-  void WriteHyperSlab(const hid_t             HDF5_Dataset_id,
-                      const TDimensionSizes & Position,
-                      const TDimensionSizes & Size,
-                      const float           * Data);
-  /// Write a hyper-slab into the dataset - long dataset.
-  void WriteHyperSlab(const hid_t             HDF5_Dataset_id,
-                      const TDimensionSizes & Position,
-                      const TDimensionSizes & Size,
-                      const size_t          * Data);
+    void WriteHyperSlab(const hid_t            dataset,
+                        const TDimensionSizes& position,
+                        const TDimensionSizes& size,
+                        const float*           data);
+    /// Write a hyper-slab into the dataset - long dataset.
+    void WriteHyperSlab(const hid_t            dataset,
+                        const TDimensionSizes& position,
+                        const TDimensionSizes& size,
+                        const size_t*          data);
 
-  /// Write a cuboid selected inside MatrixData into a Hyperslab.
-  void WriteCuboidToHyperSlab(const hid_t             HDF5_Dataset_id,
-                              const TDimensionSizes & HyperslabPosition,
-                              const TDimensionSizes & CuboidPosition,
-                              const TDimensionSizes & CuboidSize,
-                              const TDimensionSizes & MatrixDimensions,
-                              const float           * MatrixData);
+    /// Write a cuboid selected within the matrixData into a hyperslab.
+    void WriteCuboidToHyperSlab(const hid_t            dataset,
+                                const TDimensionSizes& hyperslabPosition,
+                                const TDimensionSizes& cuboidPosition,
+                                const TDimensionSizes& cuboidSize,
+                                const TDimensionSizes& matrixDimensions,
+                                const float*           mMatrixData);
 
-  /// Write sensor data selected by the sensor mask - Occasionally very slow, do not use!
-  void WriteSensorByMaskToHyperSlab(const hid_t             HDF5_Dataset_id,
-                                    const TDimensionSizes & HyperslabPosition,
-                                    const size_t            IndexSensorSize,
-                                    const size_t          * IndexSensorData,
-                                    const TDimensionSizes & MatrixDimensions,
-                                    const float           * MatrixData);
+    /// Write sensor data selected by the sensor mask - Occasionally very slow, do not use!
+    void WriteDataByMaskToHyperSlab(const hid_t            dataset,
+                                    const TDimensionSizes& hyperslabPosition,
+                                    const size_t           indexSensorSize,
+                                    const size_t*          indexSensorData,
+                                    const TDimensionSizes& matrixDimensions,
+                                    const float*           matrixData);
 
-  /// Write the scalar value under a specified group - float value.
-  void WriteScalarValue(const hid_t  ParentGroup,
-                        const char * DatasetName,
-                        const float  Value);
-  /// Write the scalar value under a specified group - long value.
-  void WriteScalarValue(const hid_t  ParentGroup,
-                        const char * DatasetName,
-                        const size_t Value);
+    /// Write the scalar value under a specified group, float value.
+    void WriteScalarValue(const hid_t  parentGroup,
+                          TMatrixName& datasetName,
+                          const float  value);
+    /// Write the scalar value under a specified group, index value.
+    void WriteScalarValue(const hid_t  parentGroup,
+                          TMatrixName& datasetName,
+                          const size_t value);
 
-  /// Read the scalar value under a specified group - float value.
-  void ReadScalarValue(const hid_t ParentGroup,
-                       const char * DatasetName,
-                       float      & Value);
-  /// Read the scalar value under a specified group - index value.
-  void ReadScalarValue(const hid_t ParentGroup,
-                       const char * DatasetName,
-                       size_t     & Value);
+    /// Read the scalar value under a specified group, float value.
+    void ReadScalarValue(const hid_t  parentGroup,
+                         TMatrixName& datasetName,
+                         float&       value);
+    /// Read the scalar value under a specified group, index value.
+    void ReadScalarValue(const hid_t  parentGroup,
+                         TMatrixName& datasetName,
+                         size_t&      value);
 
+    /// Read data from the dataset under a specified group, float dataset.
+    void ReadCompleteDataset(const hid_t            parentGroup,
+                             TMatrixName&           datasetName,
+                             const TDimensionSizes& dimensionSizes,
+                             float*                 data);
+    /// Read data from the dataset under a specified group, index dataset.
+    void ReadCompleteDataset(const hid_t            parentGroup,
+                             TMatrixName&           datasetName,
+                             const TDimensionSizes& dimensionSizes,
+                             size_t*                data);
 
-  /// Read data from the dataset under a specified group - float dataset.
-  void ReadCompleteDataset(const hid_t ParentGroup,
-                           const char * DatasetName,
-                           const TDimensionSizes & DimensionSizes,
-                           float * Data);
-  /// Read data from the dataset under a specified group - long dataset.
-  void ReadCompleteDataset(const hid_t ParentGroup,
-                           const char * DatasetName,
-                           const TDimensionSizes & DimensionSizes,
-                           size_t * Data);
+    //---------------------------- Attributes Read/Write operations ------------------------------//
 
+    /// Get dimension sizes of the dataset  under a specified group.
+    TDimensionSizes GetDatasetDimensionSizes(const hid_t  parentGroup,
+                                             TMatrixName& datasetName);
 
-  //------------------- Attributes Read/Write operations -------------------//
+    /// Get number of dimensions of the dataset  under a specified group.
+    size_t GetDatasetNumberOfDimensions(const hid_t  parentGroup,
+                                        TMatrixName& datasetName);
 
-  /// Get dimension sizes of the dataset  under a specified group.
-  TDimensionSizes GetDatasetDimensionSizes(const hid_t  ParentGroup,
-                                           const char * DatasetName);
-
-  /// Get number of dimensions of the dataset  under a specified group.
-  size_t GetDatasetNumberOfDimensions(const hid_t  ParentGroup,
-                                      const char * DatasetName);
-
-  /// Get dataset element count under a specified group.
-  size_t GetDatasetElementCount(const hid_t  ParentGroup,
-                                const char * DatasetName);
+    /// Get dataset element count under a specified group.
+    size_t GetDatasetElementCount(const hid_t  parentGroup,
+                                  TMatrixName& datasetName);
 
 
-  /// Write matrix data type into the dataset under a specified group.
-  void WriteMatrixDataType (const hid_t                  ParentGroup,
-                            const char                 * DatasetName,
-                            const THDF5_MatrixDataType & MatrixDataType);
-  /// Write matrix domain type into the dataset under the root group.
-  void WriteMatrixDomainType(const hid_t                    ParentGroup,
-                             const char                   * DatasetName,
-                             const THDF5_MatrixDomainType & MatrixDomainType);
+    /// Write matrix data type into the dataset under a specified group.
+    void WriteMatrixDataType (const hid_t                parentGroup,
+                              TMatrixName&               datasetName,
+                              const TMatrixDataType& matrixDataType);
+    /// Write matrix domain type into the dataset under the root group.
+    void WriteMatrixDomainType(const hid_t                  parentGroup,
+                               TMatrixName&                 datasetName,
+                               const TMatrixDomainType& matrixDomainType);
 
-  /// Read matrix data type from the dataset.
-  THDF5_File::THDF5_MatrixDataType   ReadMatrixDataType(const hid_t  ParentGroup,
-                                                        const char * DatasetName);
-  /// Read matrix domain type from the dataset under a specified group.
-  THDF5_File::THDF5_MatrixDomainType ReadMatrixDomainType(const hid_t  ParentGroup,
-                                                          const char * DatasetName);
-
-
-  /// Write string attribute into the dataset under the root group.
-  void   WriteStringAttribute(const hid_t    ParentGroup,
-                              const char   * DatasetName,
-                              const char   * AttributeName,
-                              const string & Value);
-  /// Read string attribute from the dataset under the root group.
-  string ReadStringAttribute(const hid_t  ParentGroup,
-                             const char * DatasetName,
-                             const char * AttributeName);
-
-  /// Destructor.
-  virtual ~THDF5_File();
-
- protected:
-
-  /// Copy constructor is not allowed for public.
-  THDF5_File(const THDF5_File& src);
-  /// Operator = is not allowed for public.
-  THDF5_File & operator = (const THDF5_File& src);
+    /// Read matrix data type from the dataset.
+    THDF5_File::TMatrixDataType   ReadMatrixDataType(const hid_t  parentGroup,
+                                                     TMatrixName& datasetName);
+    /// Read matrix domain type from the dataset under a specified group.
+    THDF5_File::TMatrixDomainType ReadMatrixDomainType(const hid_t  parentGroup,
+                                                       TMatrixName& datasetName);
 
 
-private:
-  /// String representation of the Domain type in the HDF5 file.
-  static const char * HDF5_MatrixDomainTypeName;
-  /// String representation of the Data type in the HDF5 file.
-  static const char * HDF5_MatrixDataTypeName;
+    /// Write string attribute into the dataset under the root group.
+    void   WriteStringAttribute(const hid_t        parentGroup,
+                                TMatrixName&       datasetName,
+                                TMatrixName&       attributeName,
+                                const std::string& value);
+    /// Read string attribute from the dataset under the root group.
+    std::string ReadStringAttribute(const hid_t  parentGroup,
+                                    TMatrixName& datasetName,
+                                    TMatrixName& attributeName);
 
-  /// String representation of different domain types.
-  static const string HDF5_MatrixDomainTypeNames[];
-  /// String representation of different data types.
-  static const string HDF5_MatrixDataTypeNames[];
+   protected:
 
-  /// HDF file handle.
-  hid_t  HDF5_FileId;
-  /// File name.
-  string FileName;
+    /// Copy constructor is not allowed for public.
+    THDF5_File(const THDF5_File& src);
+    /// Operator = is not allowed for public.
+    THDF5_File& operator= (const THDF5_File& src);
+
+  private:
+    /// String representation of the Domain type in the HDF5 file.
+    static const std::string matrixDomainTypeName;
+    /// String representation of the Data type in the HDF5 file.
+    static const std::string matrixDataTypeName;
+
+    /// String representation of different domain types.
+    static const std::string matrixDomainTypeNames[];
+    /// String representation of different data types.
+    static const std::string matrixDataTypeNames[];
+
+    /// HDF file handle.
+    hid_t  file;
+    /// File name.
+    std::string fileName;
 }; // THDF5_File
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 /**
  * @class THDF5_FileHeader
  * @brief Class for HDF5 header.
- * @details This class manages all information that can be stored in the input
- * output or checkpoint file.
+ * @details This class manages all information that can be stored in the input output or checkpoint
+ * file header.
  */
 class THDF5_FileHeader
 {
   public:
 
     /**
-     * @enum THDF5_FileHeaderItems
+     * @enum  TFileHeaderItems
      * @brief List of all header items.
+     * @details List of all header items.
+     * @todo  In the future we should add number of GPUs, peak GPU memory.
      */
-    enum THDF5_FileHeaderItems
+    enum TFileHeaderItems
     {
-      hdf5_fhi_created_by                   =  0,
-      hdf5_fhi_creation_date                =  1,
-      hdf5_fhi_file_description             =  2,
-      hdf5_fhi_major_version                =  3,
-      hdf5_fhi_minor_version                =  4,
-      hdf5_fhi_file_type                    =  5,
-      hdf5_fhi_host_name                    =  6,
-      hdf5_fhi_total_memory_consumption     =  7,
-      hdf5_fhi_peak_core_memory_consumption =  8,
-      hdf5_fhi_total_execution_time         =  9,
-      hdf5_fhi_data_load_time               = 10,
-      hdf5_fhi_preprocessing_time           = 11,
-      hdf5_fhi_simulation_time              = 12,
-      hdf5_fhi_postprocessing_time          = 13,
-      hdf5_fhi_number_of_cores              = 14
+      CREATED_BY                   =  0,
+      CREATION_DATA                =  1,
+      FILE_DESCRIPTION             =  2,
+      MAJOR_VERSION                =  3,
+      MINOR_VERSION                =  4,
+      FILE_TYPE                    =  5,
+      HOST_NAME                    =  6,
+      TOTAL_MEMORY_CONSUMPTION     =  7,
+      PEAK_CORE_MEMORY_CONSUMPTION =  8,
+      TOTAL_EXECUTION_TIME         =  9,
+      DATA_LOAD_TIME               = 10,
+      PREPROCESSING_TIME           = 11,
+      SIMULATION_TIME              = 12,
+      POST_PROCESSING_TIME         = 13,
+      NUMBER_OF_CORES              = 14
     };
 
     /**
-     * @enum  THDF5_FileType
-     * @brief HDF5 file type.
+     * @enum    TFileType
+     * @brief   HDF5 file type.
+     * @details HDF5 file type.
      */
-    enum THDF5_FileType
+    enum TFileType
     {
-      hdf5_ft_input      = 0,
-      hdf5_ft_output     = 1,
-      hdf5_ft_checkpoint = 2,
-      hdf5_ft_unknown    = 3
+      INPUT      = 0,
+      OUTPUT     = 1,
+      CHECKPOINT = 2,
+      UNKNOWN    = 3
     };
 
     /**
-     * @enum  THDF5_FileVersion
-     * @brief HDF5 file version.
+     * @enum    TFileVersion
+     * @brief   HDF5 file version.
+     * @details HDF5 file version.
      */
-    enum THDF5_FileVersion
+    enum TFileVersion
     {
-      hdf5_fv_10      = 0,
-      hdf5_fv_11      = 1,
-      hdf5_fv_unknown = 2
+      VERSION_10      = 0,
+      VERSION_11      = 1,
+      VERSION_UNKNOWN = 2
     };
-
 
     /// Constructor.
     THDF5_FileHeader();
     /// Copy constructor.
-    THDF5_FileHeader(const THDF5_FileHeader & other);
+    THDF5_FileHeader(const THDF5_FileHeader& src);
     /// Destructor.
     ~THDF5_FileHeader();
 
     /// Read header from the input file.
-    void ReadHeaderFromInputFile(THDF5_File & InputFile);
+    void ReadHeaderFromInputFile(THDF5_File& inputFile);
     /// Read Header from output file (necessary for checkpoint-restart).
-    void ReadHeaderFromOutputFile(THDF5_File & OutputFile);
+    void ReadHeaderFromOutputFile(THDF5_File& outputFile);
     /// Read Header from checkpoint file (necessary for checkpoint-restart).
-    void ReadHeaderFromCheckpointFile(THDF5_File & CheckpointFile);
+    void ReadHeaderFromCheckpointFile(THDF5_File& checkpointFile);
 
     /// Write header to the output file
-    void WriteHeaderToOutputFile(THDF5_File & OutputFile);
+    void WriteHeaderToOutputFile(THDF5_File& outputFile);
     /// Write header to the output file
-    void WriteHeaderToCheckpointFile(THDF5_File & CheckpointFile);
+    void WriteHeaderToCheckpointFile(THDF5_File& checkpointFile);
 
     /**
      * @brief Set code name.
      * @details Set code name to the header.
-     * @param [in] CodeName - code version
+     * @param [in] codeName - code version
      */
-    void SetCodeName(const string& CodeName)
+    void SetCodeName(const std::string& codeName)
     {
-      HDF5_FileHeaderValues[hdf5_fhi_created_by] = CodeName;
+      headerValues[CREATED_BY] = codeName;
     };
 
-    /// Set creation time
+    /// Set creation time.
     void SetActualCreationTime();
 
     /**
      * @brief   Get string version of current Major version.
      * @details Get string version of current Major version.
-     * @return  current version
+     * @return  Current major version
      */
-    static string GetCurrentHDF5_MajorVersion()
+    static std::string GetCurrentHDF5_MajorVersion()
     {
-      return HDF5_MajorFileVersionsNames[0];
+      return hdf5_MajorFileVersionsNames[0];
     };
 
     /**
      * @brief   Get string version of current Minor version.
      * @details Get string version of current Minor version.
-     * @return  current minor version
+     * @return  Current minor version
      */
-    static string GetCurrentHDF5_MinorVersion()
+    static std::string GetCurrentHDF5_MinorVersion()
     {
-      return HDF5_MinorFileVersionsNames[1];
+      return hdf5_MinorFileVersionsNames[1];
     };
 
-    /// Set major file version.
+    /**
+     * @brief  Set major file version.
+     * @details Set major file version.
+     */
     void SetMajorFileVersion()
     {
-      HDF5_FileHeaderValues[hdf5_fhi_major_version] = GetCurrentHDF5_MajorVersion();
+      headerValues[MAJOR_VERSION] = GetCurrentHDF5_MajorVersion();
     };
-    /// Set minor file version.
+
+    /**
+     * @brief   Set minor file version.
+     * @details  Set minor file version.
+     */
     void SetMinorFileVersion()
     {
-      HDF5_FileHeaderValues[hdf5_fhi_minor_version] = GetCurrentHDF5_MinorVersion();
+      headerValues[MINOR_VERSION] = GetCurrentHDF5_MinorVersion();
     };
 
     /// Set major file version in a string.
-    THDF5_FileVersion GetFileVersion();
+    TFileVersion GetFileVersion();
 
     /**
      * @brief   Check major file version.
@@ -869,8 +861,9 @@ class THDF5_FileHeader
      */
     bool CheckMajorFileVersion()
     {
-      return (HDF5_FileHeaderValues[hdf5_fhi_major_version] == GetCurrentHDF5_MajorVersion());
+      return (headerValues[MAJOR_VERSION] == GetCurrentHDF5_MajorVersion());
     };
+
     /**
      * @brief   Check minor file version.
      * @details Check minor file version.
@@ -878,32 +871,32 @@ class THDF5_FileHeader
      */
     bool CheckMinorFileVersion()
     {
-      return (HDF5_FileHeaderValues[hdf5_fhi_minor_version] <= GetCurrentHDF5_MinorVersion());
+      return (headerValues[MINOR_VERSION] <= GetCurrentHDF5_MinorVersion());
     };
 
 
     /// Get File type.
-    THDF5_FileHeader::THDF5_FileType GetFileType();
+    THDF5_FileHeader::TFileType GetFileType();
     /// Set file type.
-    void SetFileType(const THDF5_FileHeader::THDF5_FileType FileType);
+    void SetFileType(const THDF5_FileHeader::TFileType fileType);
 
     /// Set host name.
     void SetHostName();
     /// Set memory consumption.
-    void SetMemoryConsumption(const size_t TotalMemory);
+    void SetMemoryConsumption(const size_t totalMemory);
     /// Set execution times.
-    void SetExecutionTimes(const double TotalTime,
-                           const double LoadTime,
-                           const double PreProcessingTime,
-                           const double SimulationTime,
-                           const double PostprocessingTime);
+    void SetExecutionTimes(const double totalTime,
+                           const double loadTime,
+                           const double preProcessingTime,
+                           const double simulationTime,
+                           const double postprocessingTime);
 
   /// Get execution times stored in the output file header.
-  void GetExecutionTimes(double& TotalTime,
-                         double& LoadTime,
-                         double& PreProcessingTime,
-                         double& SimulationTime,
-                         double& PostprocessingTime);
+  void GetExecutionTimes(double& totalTime,
+                         double& loadTime,
+                         double& preProcessingTime,
+                         double& simulationTime,
+                         double& postprocessingTime);
   /// Set number of cores.
   void SetNumberOfCores();
 
@@ -912,18 +905,18 @@ private:
   void PopulateHeaderFileMap();
 
   /// map for the header values.
-  map<THDF5_FileHeaderItems, string> HDF5_FileHeaderValues;
+  std::map<TFileHeaderItems, std::string> headerValues;
   /// map for the header names.
-  map<THDF5_FileHeaderItems, string> HDF5_FileHeaderNames;
+  std::map<TFileHeaderItems, std::string> headerNames;
 
   ///String representation of different file types.
-  static const string HDF5_FileTypesNames[];
+  static const std::string hdf5_FileTypesNames[];
   /// String representations of Major file versions.
-  static const string HDF5_MajorFileVersionsNames[];
+  static const std::string hdf5_MajorFileVersionsNames[];
   /// String representations of Major file versions.
-  static const string HDF5_MinorFileVersionsNames[];
+  static const std::string hdf5_MinorFileVersionsNames[];
 
 };// THDF5_FileHeader
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 #endif	/* THDF5_FILE_H */

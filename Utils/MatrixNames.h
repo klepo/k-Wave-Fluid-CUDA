@@ -1,346 +1,340 @@
 /**
  * @file        MatrixNames.h
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
  *              jarosjir@fit.vutbr.cz
  *
- * @brief       The header file storing names of all variables.
+ * @brief       The header file storing names of all variables/matrices/output streams used in the
+ *              simulation
  *
  * @version     kspaceFirstOrder3D 3.4
+ *
  * @date        14 September 2012, 17:28 (created) \n
- *              17 June      2015, 12:27 (revised)
+ *              25 July      2016, 10:02 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
- * and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation, either version
- * 3 of the License, or (at your option) any later version.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
+ * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef MATRIXNAMES_H
-#define	MATRIXNAMES_H
+#ifndef MATRIX_NAMES_H
+#define	MATRIX_NAMES_H
 
-//----------------------------------------------------------------------------//
-//                              Constants                                     //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//------------------------------------------ Constants -------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+
+/**
+ * @typedef TMatrixName
+ * @brief   Datatype for matrix names.
+ * @details Datatype for matrix names.
+ */
+typedef const std::string TMatrixName;
 
 /// Nt variable name
-const char * const  Nt_Name                     = "Nt";
+TMatrixName  Nt_NAME            = "Nt";
 /// t_index name
-const char * const  t_index_Name                = "t_index";
+TMatrixName  t_index_NAME       = "t_index";
 /// dt variable name
-const char * const  dt_Name                     = "dt";
+TMatrixName  dt_NAME            = "dt";
 /// dx variable name
-const char * const  dx_Name                     = "dx";
+TMatrixName  dx_NAME            = "dx";
 /// dy variable name
-const char * const  dy_Name                     = "dy";
+TMatrixName  dy_NAME            = "dy";
 /// dz variable name
-const char * const  dz_Name                     = "dz";
+TMatrixName  dz_NAME            = "dz";
 
 /// c_ref variable name
-const char * const  c_ref_Name                  = "c_ref";
+TMatrixName  c_ref_NAME         = "c_ref";
 /// c0 variable name
-const char * const  c0_Name                     = "c0";
+TMatrixName  c0_NAME            = "c0";
 
 /// alpha_power variable name
-const char * const  alpha_power_Name            = "alpha_power";
+TMatrixName  alpha_power_NAME   = "alpha_power";
 /// alpha_coeff variable name
-const char * const  alpha_coeff_Name            = "alpha_coeff";
+TMatrixName  alpha_coeff_NAME   = "alpha_coeff";
 
 /// Nx variable name
-const char * const  Nx_Name                     = "Nx";
+TMatrixName  Nx_NAME            = "Nx";
 /// Ny variable name
-const char * const  Ny_Name                     = "Ny";
+TMatrixName  Ny_NAME            = "Ny";
 /// Nz variable name
-const char * const  Nz_Name                     = "Nz";
+TMatrixName  Nz_NAME            = "Nz";
 
 /// x_shift_neg_r variable name
-const char * const x_shift_neg_r_Name           = "x_shift_neg_r";
+TMatrixName x_shift_neg_r_NAME  = "x_shift_neg_r";
 /// y_shift_neg_r variable name
-const char * const y_shift_neg_r_Name           = "y_shift_neg_r";
+TMatrixName y_shift_neg_r_NAME  = "y_shift_neg_r";
 /// z_shift_neg_r variable name
-const char * const z_shift_neg_r_Name           = "z_shift_neg_r";
+TMatrixName z_shift_neg_r_NAME  = "z_shift_neg_r";
 
 /// ux_shifted variable name
-const char * const ux_shifted_Name             = "ux_shifted";
+TMatrixName ux_shifted_NAME     = "ux_shifted";
 /// uy_shifted variable name
-const char * const uy_shifted_Name             = "uy_shifted";
+TMatrixName uy_shifted_NAME     = "uy_shifted";
 /// uz_shifted variable name
-const char * const uz_shifted_Name             = "uz_shifted";
+TMatrixName uz_shifted_NAME     = "uz_shifted";
 
 /// pml_x_size variable name
-const char * const  pml_x_size_Name             = "pml_x_size";
+TMatrixName  pml_x_size_NAME    = "pml_x_size";
 /// pml_y_size variable name
-const char * const  pml_y_size_Name             = "pml_z_size";
+TMatrixName  pml_y_size_NAME    = "pml_z_size";
 /// pml_z_size variable name
-const char * const  pml_z_size_Name             = "pml_y_size";
+TMatrixName  pml_z_size_NAME    = "pml_y_size";
 
 /// pml_x_sgx variable name
-const char * const  pml_x_sgx_Name             = "pml_x_sgx";
+TMatrixName  pml_x_sgx_NAME     = "pml_x_sgx";
 /// pml_y_sgy variable name
-const char * const  pml_y_sgy_Name             = "pml_y_sgy";
+TMatrixName  pml_y_sgy_NAME     = "pml_y_sgy";
 /// pml_z_sgz variable name
-const char * const  pml_z_sgz_Name             = "pml_z_sgz";
+TMatrixName  pml_z_sgz_NAME     = "pml_z_sgz";
 
 /// pml_x variable name
-const char * const  pml_x_Name                 = "pml_x";
+TMatrixName  pml_x_NAME         = "pml_x";
 /// pml_y variable name
-const char * const  pml_y_Name                 = "pml_y";
+TMatrixName  pml_y_NAME         = "pml_y";
 /// pml_z variable name
-const char * const  pml_z_Name                 = "pml_z";
+TMatrixName  pml_z_NAME         = "pml_z";
 
 
 /// pml_x_alpha variable name
-const char * const  pml_x_alpha_Name           = "pml_x_alpha";
+TMatrixName  pml_x_alpha_NAME   = "pml_x_alpha";
 /// pml_y_alpha variable name
-const char * const  pml_y_alpha_Name           = "pml_y_alpha";
+TMatrixName  pml_y_alpha_NAME   = "pml_y_alpha";
 /// pml_z_alpha variable name
-const char * const  pml_z_alpha_Name           = "pml_z_alpha";
+TMatrixName  pml_z_alpha_NAME   = "pml_z_alpha";
 
 /// ux_source_flag variable name
-const char * const ux_source_flag_Name         = "ux_source_flag";
+TMatrixName ux_source_flag_NAME = "ux_source_flag";
 /// uy_source_flag variable name
-const char * const uy_source_flag_Name         = "uy_source_flag";
+TMatrixName uy_source_flag_NAME = "uy_source_flag";
 /// uz_source_flag variable name
-const char * const uz_source_flag_Name         = "uz_source_flag";
+TMatrixName uz_source_flag_NAME = "uz_source_flag";
 
 /// u_source_many variable name
-const char * const u_source_many_Name          = "u_source_many";
+TMatrixName u_source_many_NAME  = "u_source_many";
 /// p_source_many variable name
-const char * const p_source_many_Name          = "p_source_many";
+TMatrixName p_source_many_NAME  = "p_source_many";
 
 /// p_source_flag variable name
-const char * const p_source_flag_Name          = "p_source_flag";
+TMatrixName p_source_flag_NAME  = "p_source_flag";
 /// p0_source_flag variable name
-const char * const p0_source_flag_Name         = "p0_source_flag";
+TMatrixName p0_source_flag_NAME = "p0_source_flag";
 
 /// u_source_mode variable name
-const char * const u_source_mode_Name          = "u_source_mode";
+TMatrixName u_source_mode_NAME  = "u_source_mode";
 /// p_source_mode variable name
-const char * const p_source_mode_Name          = "p_source_mode";
+TMatrixName p_source_mode_NAME  = "p_source_mode";
 
 /// p_source_input variable name
-const char * const p_source_input_Name         = "p_source_input";
+TMatrixName p_source_input_NAME = "p_source_input";
 /// p_source_index variable name
-const char * const p_source_index_Name         = "p_source_index";
+TMatrixName p_source_index_NAME = "p_source_index";
 
 /// u_source_index variable name
-const char * const u_source_index_Name         = "u_source_index";
+TMatrixName u_source_index_NAME  = "u_source_index";
 /// ux_source_input variable name
-const char * const ux_source_input_Name        = "ux_source_input";
+TMatrixName ux_source_input_NAME = "ux_source_input";
 /// uy_source_input variable name
-const char * const uy_source_input_Name        = "uy_source_input";
+TMatrixName uy_source_input_NAME = "uy_source_input";
 /// uz_source_input variable name
-const char * const uz_source_input_Name        = "uz_source_input";
+TMatrixName uz_source_input_NAME = "uz_source_input";
 
 /// nonuniform_grid_flag variable name
-const char * const nonuniform_grid_flag_Name   = "nonuniform_grid_flag";
+TMatrixName nonuniform_grid_flag_NAME    = "nonuniform_grid_flag";
 /// absorbing_flag variable name
-const char * const absorbing_flag_Name         = "absorbing_flag";
+TMatrixName absorbing_flag_NAME          = "absorbing_flag";
 /// nonlinear_flag variable name
-const char * const nonlinear_flag_Name         = "nonlinear_flag";
+TMatrixName nonlinear_flag_NAME          = "nonlinear_flag";
 
 /// transducer_source_flag variable name
-const char * const transducer_source_flag_Name = "transducer_source_flag";
+TMatrixName transducer_source_flag_NAME  = "transducer_source_flag";
 /// sensor_mask_index variable name
-const char * const sensor_mask_index_Name      = "sensor_mask_index";
+TMatrixName sensor_mask_index_NAME       = "sensor_mask_index";
 /// sensor_mask_type variable name
-const char * const sensor_mask_type_Name       = "sensor_mask_type";
+TMatrixName sensor_mask_type_NAME        = "sensor_mask_type";
 /// sensor_mask_corners variable name
-const char * const sensor_mask_corners_Name    = "sensor_mask_corners";
+TMatrixName sensor_mask_corners_NAME     = "sensor_mask_corners";
 
 /// transducer_source_input variable name
-const char * const transducer_source_input_Name= "transducer_source_input";
+TMatrixName transducer_source_input_NAME = "transducer_source_input";
 
 /// p0_source_input variable name
-const char * const p0_source_input_Name = "p0_source_input";
+TMatrixName p0_source_input_NAME = "p0_source_input";
 /// delay_mask variable name
-const char * const delay_mask_Name      = "delay_mask";
+TMatrixName delay_mask_NAME      = "delay_mask";
 
 
 /// kappa_r variable name
-const char * const  kappa_r_Name        = "kappa_r";
+TMatrixName  kappa_r_NAME        = "kappa_r";
 /// BonA variable name
-const char * const  BonA_Name           = "BonA";
+TMatrixName  BonA_NAME           = "BonA";
 /// p variable name
-const char * const  p_Name              = "p";
+TMatrixName  p_NAME              = "p";
 /// rhox variable name
-const char * const  rhox_Name           = "rhox";
+TMatrixName  rhox_NAME           = "rhox";
 /// rhoy variable name
-const char * const  rhoy_Name           = "rhoy";
+TMatrixName  rhoy_NAME           = "rhoy";
 /// rhoz variable name
-const char * const  rhoz_Name           = "rhoz";
+TMatrixName  rhoz_NAME           = "rhoz";
 
 /// ux variable name
-const char * const  ux_Name             = "ux";
+TMatrixName  ux_NAME             = "ux";
 /// uy variable name
-const char * const  uy_Name             = "uy";
+TMatrixName  uy_NAME             = "uy";
 /// uz variable name
-const char * const  uz_Name             = "uz";
+TMatrixName  uz_NAME             = "uz";
 
 /// ux_sgx variable name
-const char * const  ux_sgx_Name         = "ux_sgx";
+TMatrixName  ux_sgx_NAME         = "ux_sgx";
 /// uy_sgy variable name
-const char * const  uy_sgy_Name         = "uy_sgy";
+TMatrixName  uy_sgy_NAME         = "uy_sgy";
 /// uz_sgz variable name
-const char * const  uz_sgz_Name         = "uz_sgz";
+TMatrixName  uz_sgz_NAME         = "uz_sgz";
 
 /// ux_non_staggered variable name
-const char * const  ux_non_staggered_Name = "ux_non_staggered";
+TMatrixName  ux_non_staggered_NAME = "ux_non_staggered";
 /// uy_non_staggered variable name
-const char * const  uy_non_staggered_Name = "uy_non_staggered";
+TMatrixName  uy_non_staggered_NAME = "uy_non_staggered";
 /// uz_non_staggered variable name
-const char * const  uz_non_staggered_Name = "uz_non_staggered";
+TMatrixName  uz_non_staggered_NAME = "uz_non_staggered";
 
 /// duxdx variable name
-const char * const  duxdx_Name          = "duxdx";
+TMatrixName  duxdx_NAME          = "duxdx";
 /// duydy variable name
-const char * const  duydy_Name          = "duydy";
+TMatrixName  duydy_NAME          = "duydy";
 /// duzdz variable name
-const char * const  duzdz_Name          = "duzdz";
+TMatrixName  duzdz_NAME          = "duzdz";
 
 /// dxudxn variable name
-const char * const  dxudxn_Name         = "dxudxn";
+TMatrixName  dxudxn_NAME         = "dxudxn";
 /// dyudyn variable name
-const char * const  dyudyn_Name         = "dyudyn";
+TMatrixName  dyudyn_NAME         = "dyudyn";
 /// dzudzn variable name
-const char * const  dzudzn_Name         = "dzudzn";
+TMatrixName  dzudzn_NAME         = "dzudzn";
 
 /// dxudxn_sgx variable name
-const char * const  dxudxn_sgx_Name     = "dxudxn_sgx";
+TMatrixName  dxudxn_sgx_NAME     = "dxudxn_sgx";
 /// dyudyn_sgy variable name
-const char * const  dyudyn_sgy_Name     = "dyudyn_sgy";
+TMatrixName  dyudyn_sgy_NAME     = "dyudyn_sgy";
 /// dzudzn_sgz variable name
-const char * const  dzudzn_sgz_Name     = "dzudzn_sgz";
+TMatrixName  dzudzn_sgz_NAME     = "dzudzn_sgz";
 
 /// ddx_k_shift_pos_r variable name
-const char * const  ddx_k_shift_pos_r_Name = "ddx_k_shift_pos_r";
+TMatrixName  ddx_k_shift_pos_r_NAME = "ddx_k_shift_pos_r";
 /// ddy_k_shift_pos variable name
-const char * const  ddy_k_shift_pos_Name   = "ddy_k_shift_pos";
+TMatrixName  ddy_k_shift_pos_NAME   = "ddy_k_shift_pos";
 /// ddz_k_shift_pos variable name
-const char * const  ddz_k_shift_pos_Name   = "ddz_k_shift_pos";
+TMatrixName  ddz_k_shift_pos_NAME   = "ddz_k_shift_pos";
 
 /// ddx_k_shift_neg_r variable name
-const char * const  ddx_k_shift_neg_r_Name = "ddx_k_shift_neg_r";
+TMatrixName  ddx_k_shift_neg_r_NAME = "ddx_k_shift_neg_r";
 /// ddy_k_shift_neg variable name
-const char * const  ddy_k_shift_neg_Name   = "ddy_k_shift_neg";
+TMatrixName  ddy_k_shift_neg_NAME   = "ddy_k_shift_neg";
 /// ddz_k_shift_neg variable name
-const char * const  ddz_k_shift_neg_Name   = "ddz_k_shift_neg";
+TMatrixName  ddz_k_shift_neg_NAME   = "ddz_k_shift_neg";
 
 /// rho0 variable name
-const char * const  rho0_Name           = "rho0";
+TMatrixName  rho0_NAME            = "rho0";
 /// rho0_sgx variable name
-const char * const  rho0_sgx_Name       = "rho0_sgx";
+TMatrixName  rho0_sgx_NAME        = "rho0_sgx";
 /// rho0_sgy variable name
-const char * const  rho0_sgy_Name       = "rho0_sgy";
+TMatrixName  rho0_sgy_NAME        = "rho0_sgy";
 /// rho0_sgz variable name
-const char * const  rho0_sgz_Name       = "rho0_sgz";
+TMatrixName  rho0_sgz_NAME        = "rho0_sgz";
 
 /// absorb_tau variable name
-const char * const  absorb_tau_Name     = "absorb_tau";
+TMatrixName  absorb_tau_NAME      = "absorb_tau";
 /// absorb_eta variable name
-const char * const  absorb_eta_Name     = "absorb_eta";
+TMatrixName  absorb_eta_NAME      = "absorb_eta";
 /// absorb_nabla1_r variable name
-const char * const  absorb_nabla1_r_Name= "absorb_nabla1_r";
+TMatrixName  absorb_nabla1_r_NAME = "absorb_nabla1_r";
 /// absorb_nabla2_r variable name
-const char * const  absorb_nabla2_r_Name= "absorb_nabla2_r";
+TMatrixName  absorb_nabla2_r_NAME = "absorb_nabla2_r";
 
 /// p_rms variable name
-const char * const  p_rms_Name  = "p_rms";
+TMatrixName  p_rms_NAME     = "p_rms";
 /// p_max variable name
-const char * const  p_max_Name  = "p_max";
+TMatrixName  p_max_NAME     = "p_max";
 /// p_min variable name
-const char * const  p_min_Name  = "p_min";
+TMatrixName  p_min_NAME     = "p_min";
 /// p_max_all variable name
-const char * const  p_max_all_Name  = "p_max_all";
+TMatrixName  p_max_all_NAME = "p_max_all";
 /// p_min_all variable name
-const char * const  p_min_all_Name  = "p_min_all";
+TMatrixName  p_min_all_NAME = "p_min_all";
 /// p_final variable name
-const char * const  p_final_Name= "p_final";
+TMatrixName  p_final_NAME   = "p_final";
 
 /// ux_rms variable name
-const char * const  ux_rms_Name = "ux_rms";
+TMatrixName  ux_rms_NAME = "ux_rms";
 /// uy_rms variable name
-const char * const  uy_rms_Name = "uy_rms";
+TMatrixName  uy_rms_NAME = "uy_rms";
 /// uz_rms variable name
-const char * const  uz_rms_Name = "uz_rms";
+TMatrixName  uz_rms_NAME = "uz_rms";
 
 /// ux_max variable name
-const char * const  ux_max_Name = "ux_max";
+TMatrixName  ux_max_NAME = "ux_max";
 /// uy_max variable name
-const char * const  uy_max_Name = "uy_max";
+TMatrixName  uy_max_NAME = "uy_max";
 /// uz_max variable name
-const char * const  uz_max_Name = "uz_max";
+TMatrixName  uz_max_NAME = "uz_max";
 /// ux_min variable name
-const char * const  ux_min_Name = "ux_min";
+TMatrixName  ux_min_NAME = "ux_min";
 /// uy_min variable name
-const char * const  uy_min_Name = "uy_min";
+TMatrixName  uy_min_NAME = "uy_min";
 /// uz_min variable name
-const char * const  uz_min_Name = "uz_min";
+TMatrixName  uz_min_NAME = "uz_min";
 
 /// ux_max_all variable name
-const char * const  ux_max_all_Name = "ux_max_all";
+TMatrixName  ux_max_all_NAME = "ux_max_all";
 /// uy_max_all variable name
-const char * const  uy_max_all_Name = "uy_max_all";
+TMatrixName  uy_max_all_NAME = "uy_max_all";
 /// uz_max_all variable name
-const char * const  uz_max_all_Name = "uz_max_all";
+TMatrixName  uz_max_all_NAME = "uz_max_all";
 /// ux_min_all variable name
-const char * const  ux_min_all_Name = "ux_min_all";
+TMatrixName  ux_min_all_NAME = "ux_min_all";
 /// uy_min_all variable name
-const char * const  uy_min_all_Name = "uy_min_all";
+TMatrixName  uy_min_all_NAME = "uy_min_all";
 /// uz_min_all variable name
-const char * const  uz_min_all_Name = "uz_min_all";
+TMatrixName  uz_min_all_NAME = "uz_min_all";
 
 /// ux_final variable name
-const char * const  ux_final_Name = "ux_final";
+TMatrixName  ux_final_NAME = "ux_final";
 /// uy_final variable name
-const char * const  uy_final_Name = "uy_final";
+TMatrixName  uy_final_NAME = "uy_final";
 /// uz_final variable name
-const char * const  uz_final_Name = "uz_final";
+TMatrixName  uz_final_NAME = "uz_final";
 
-/// Ix_avg variable name
-const char * const  Ix_avg_Name = "Ix_avg";
-/// Iy_avg variable name
-const char * const  Iy_avg_Name = "Iy_avg";
-/// Iz_avg variable name
-const char * const  Iz_avg_Name = "Iz_avg";
-
-/// Ix_max variable name
-const char * const  Ix_max_Name = "Ix_max";
-/// Iy_max variable name
-const char * const  Iy_max_Name = "Iy_max";
-/// Iz_max variable name
-const char * const  Iz_max_Name = "Iz_max";
 
 /// Temp_1_RS3D variable name
-const char * const Temp_1_RS3D_Name = "Temp_1_RS3D";
+TMatrixName temp_1_real_3D_NAME = "Temp_1_RS3D";
 /// Temp_2_RS3D variable name
-const char * const Temp_2_RS3D_Name = "Temp_2_RS3D";
+TMatrixName temp_2_real_3D_NAME = "Temp_2_RS3D";
 /// Temp_3_RS3D variable name
-const char * const Temp_3_RS3D_Name = "Temp_3_RS3D";
+TMatrixName temp_3_real_3D_NAME = "Temp_3_RS3D";
 
 
 /// CUFFT_shift_temp variable name
-const char * const CUFFT_shift_temp_Name = "CUFFT_shift_temp";
+TMatrixName cufft_shift_temp_NAME = "CUFFT_shift_temp";
 /// CUFFT_X_temp variable name
-const char * const CUFFT_X_temp_Name     = "CUFFT_X_temp";
+TMatrixName cufft_X_temp_NAME     = "CUFFT_X_temp";
 /// CUFFT_Y_temp variable name
-const char * const CUFFT_Y_temp_Name     = "CUFFT_Y_temp";
+TMatrixName cufft_Y_temp_NAME     = "CUFFT_Y_temp";
 /// CUFFT_Z_temp variable name
-const char * const CUFFT_Z_temp_Name     = "CUFFT_Z_temp";
+TMatrixName cufft_z_temp_NAME     = "CUFFT_Z_temp";
 
-#endif	/* MATRIXNAMES_H */
+#endif	/* MATRIX_NAMES_H */
 

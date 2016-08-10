@@ -1,35 +1,33 @@
 /**
  * @file        WholeDomainOutputHDF5Stream.cpp
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
  *              jarosjir@fit.vutbr.cz
  *
- * @brief       The implementation file of the class saving RealMatrix data
- *              into the output HDF5 file.
+ * @brief       The implementation file of the class saving RealMatrix data into the output
+ *              HDF5 file, e.g. p_max_all.
  *
  * @version     kspaceFirstOrder3D 3.4
- * @date        28 August   2014, 11:15 (created)
- *              24 March    2016, 17:11 (revised)
  *
+ * @date        28 August   2014, 11:15 (created)
+ *              29 July     2016, 16:56 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
- * and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation, either version
- * 3 of the License, or (at your option) any later version.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
+ * If not, see http://www.gnu.org/licenses/.
  */
 
 #include <OutputHDF5Streams/WholeDomainOutputHDF5Stream.h>
@@ -37,45 +35,37 @@
 
 #include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
-using namespace std;
+//------------------------------------------------------------------------------------------------//
+//------------------------------------------ Constants -------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
-//--------------------------------------------------------------------------//
-//                              Constants                                   //
-//--------------------------------------------------------------------------//
-
-//--------------------------------------------------------------------------//
-//                              Definitions                                 //
-//--------------------------------------------------------------------------//
-
-//--------------------------------------------------------------------------//
-//                              Implementation                              //
-//                              public methods                              //
-//--------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//--------------------------------------- Public methods -----------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 /**
  * Constructor - links the HDF5 dataset and SourceMatrix
- * @param HDF5_File        - HDF5 file to write the output to
- * @param HDF5_DatasetName - The name of the HDF5 group. This group contains datasets for particular cuboids
- * @param SourceMatrix     - Source matrix to be sampled
- * @param ReductionOp      - Reduction operator
- * @param BufferToReuse    - If there is a memory space to be reused, provide a pointer
+ * @param [in] file         - HDF5 file to write the output to
+ * @param [in] datasetName  - The name of the HDF5 group containing datasets for particular cuboids
+ * @param [in] sourceMatrix - Source matrix to be sampled
+ * @param [in] reduceOp     - Reduce operator
  */
-TWholeDomainOutputHDF5Stream::TWholeDomainOutputHDF5Stream(THDF5_File&              HDF5_File,
-                                                           const char*              HDF5_DatasetName,
-                                                           TRealMatrix&             SourceMatrix,
-                                                           const TReductionOperator ReductionOp)
-        : TBaseOutputHDF5Stream(HDF5_File, HDF5_DatasetName, SourceMatrix, ReductionOp),
-          HDF5_DatasetId(H5I_BADID),
-          SampledTimeStep(0)
+TWholeDomainOutputHDF5Stream::TWholeDomainOutputHDF5Stream(THDF5_File&           file,
+                                                           TMatrixName&          datasetName,
+                                                           TRealMatrix&          sourceMatrix,
+                                                           const TReduceOperator reduceOp)
+        : TBaseOutputHDF5Stream(file, datasetName, sourceMatrix, reduceOp),
+          dataset(H5I_BADID),
+          sampledTimeStep(0)
 {
 
 }// end of TWholeDomainOutputHDF5Stream
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 /**
- * Destructor
- * if the file is still opened, it applies the post processing and flush the data.
+ * Destructor.
+ * If the file is still opened, it applies the post processing and flush the data.
  * Then, the object memory is freed and the object destroyed.
  */
 TWholeDomainOutputHDF5Stream::~TWholeDomainOutputHDF5Stream()
@@ -84,7 +74,7 @@ TWholeDomainOutputHDF5Stream::~TWholeDomainOutputHDF5Stream()
   // free memory
   FreeMemory();
 }// end of Destructor
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 
@@ -93,30 +83,28 @@ TWholeDomainOutputHDF5Stream::~TWholeDomainOutputHDF5Stream()
  */
 void TWholeDomainOutputHDF5Stream::Create()
 {
-  TDimensionSizes ChunkSize(SourceMatrix.GetDimensionSizes().X, SourceMatrix.GetDimensionSizes().Y, 1);
+  TDimensionSizes chunkSize(sourceMatrix.GetDimensionSizes().nx,
+                            sourceMatrix.GetDimensionSizes().ny,
+                            1);
 
   // Create a dataset under the root group
-  HDF5_DatasetId = HDF5_File.CreateFloatDataset(HDF5_File.GetRootGroup(),
-                                                HDF5_RootObjectName,
-                                                SourceMatrix.GetDimensionSizes(),
-                                                ChunkSize,
-                                                TParameters::GetInstance()->GetCompressionLevel());
+  dataset = file.CreateFloatDataset(file.GetRootGroup(),
+                                    rootObjectName,
+                                    sourceMatrix.GetDimensionSizes(),
+                                    chunkSize,
+                                    TParameters::GetInstance().GetCompressionLevel());
 
   // Write dataset parameters
-  HDF5_File.WriteMatrixDomainType(HDF5_File.GetRootGroup(),
-                                  HDF5_RootObjectName,
-                                  THDF5_File::hdf5_mdt_real);
-  HDF5_File.WriteMatrixDataType  (HDF5_File.GetRootGroup(),
-                                  HDF5_RootObjectName,
-                                  THDF5_File::hdf5_mdt_float);
+  file.WriteMatrixDomainType(file.GetRootGroup(), rootObjectName, THDF5_File::REAL);
+  file.WriteMatrixDataType  (file.GetRootGroup(), rootObjectName, THDF5_File::FLOAT);
 
   // Set buffer size
-  BufferSize = SourceMatrix.GetTotalElementCount();
+  bufferSize = sourceMatrix.GetElementCount();
 
   // Allocate memory
   AllocateMemory();
 }//end of Create
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 /**
@@ -124,103 +112,103 @@ void TWholeDomainOutputHDF5Stream::Create()
  */
 void TWholeDomainOutputHDF5Stream::Reopen()
 {
-  TParameters* Params = TParameters::GetInstance();
+  const TParameters& params = TParameters::GetInstance();
 
   // Set buffer size
-  BufferSize = SourceMatrix.GetTotalElementCount();
+  bufferSize = sourceMatrix.GetElementCount();
 
   // Allocate memory
   AllocateMemory();
 
   // Open the dataset under the root group
-  HDF5_DatasetId = HDF5_File.OpenDataset(HDF5_File.GetRootGroup(),
-                                         HDF5_RootObjectName);
+  dataset = file.OpenDataset(file.GetRootGroup(), rootObjectName);
 
-  SampledTimeStep = 0;
-  if (ReductionOp == roNONE)
+  sampledTimeStep = 0;
+  if (reduceOp == NONE)
   { // seek in the dataset
-    SampledTimeStep = (Params->Get_t_index() < Params->GetStartTimeIndex()) ?
-                        0 : (Params->Get_t_index() - Params->GetStartTimeIndex());
+    sampledTimeStep = (params.Get_t_index() < params.GetStartTimeIndex()) ?
+                       0 : (params.Get_t_index() - params.GetStartTimeIndex());
   }
   else
   { // reload data
-    // Read data from disk only if there were anything stored there (t_index > start_index) (one step ahead)
-    if (TParameters::GetInstance()->Get_t_index() > TParameters::GetInstance()->GetStartTimeIndex())
+    // Read data from disk only if there were anything stored there (t_index > start_index)
+    //(one step ahead)
+    if (params.Get_t_index() > params.GetStartTimeIndex())
     {
-      HDF5_File.ReadCompleteDataset(HDF5_File.GetRootGroup(),
-                                    HDF5_RootObjectName,
-                                    SourceMatrix.GetDimensionSizes(),
-                                    HostStoreBuffer);
+      file.ReadCompleteDataset(file.GetRootGroup(),
+                                    rootObjectName,
+                                    sourceMatrix.GetDimensionSizes(),
+                                    hostBuffer);
       // Send data to device
       CopyDataToDevice();
     }
   }
 }// end of Reopen
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 /**
- * Sample all grid points, line them up in the buffer an flush to the disk unless
- * a reduction operator is applied
+ * Sample all grid points, line them up in the buffer an flush to the disk unless a reduce operator
+ * is applied
  */
 void TWholeDomainOutputHDF5Stream::Sample()
 {
-  switch (ReductionOp)
+  switch (reduceOp)
   {
-    case roNONE :
+    case NONE :
     {
       // Copy all data from GPU to CPU (no need to use a kernel)
       // this violates the const prerequisite, however this routine is still NOT used in the code
-      const_cast<TRealMatrix&> (SourceMatrix).CopyFromDevice();
+      const_cast<TRealMatrix&> (sourceMatrix).CopyFromDevice();
 
       // We use here direct HDF5 offload using MEMSPACE - seems to be faster for bigger datasets
-      const TDimensionSizes DatasetPosition(0,0,0,SampledTimeStep); //4D position in the dataset
+      const TDimensionSizes datasetPosition(0, 0, 0, sampledTimeStep); //4D position in the dataset
 
-      TDimensionSizes CuboidSize(SourceMatrix.GetDimensionSizes());// Size of the cuboid
-      CuboidSize.T = 1;
+      TDimensionSizes cuboidSize(sourceMatrix.GetDimensionSizes());// Size of the cuboid
+      cuboidSize.nt = 1;
 
       // iterate over all cuboid to be sampled
-      HDF5_File.WriteCuboidToHyperSlab(HDF5_DatasetId,
-                                       DatasetPosition,
-                                       TDimensionSizes(0,0,0,0), // position in the SourceMatrix
-                                       CuboidSize,
-                                       SourceMatrix.GetDimensionSizes(),
-                                       SourceMatrix.GetRawData());
+      file.WriteCuboidToHyperSlab(dataset,
+                                  datasetPosition,
+                                  TDimensionSizes(0,0,0,0), // position in the SourceMatrix
+                                  cuboidSize,
+                                  sourceMatrix.GetDimensionSizes(),
+                                  sourceMatrix.GetHostData());
 
-      SampledTimeStep++;   // Move forward in time
+      sampledTimeStep++;   // Move forward in time
 
       break;
-    }// case roNONE
+    }// case NONE
 
-    case roRMS  :
+    case RMS  :
     {
-      OutputStreamsCUDAKernels::SampleAll<roRMS>
-                                         (DeviceStoreBuffer,
-                                          SourceMatrix.GetRawDeviceData(),
-                                          SourceMatrix.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleAll<RMS>
+                                         (deviceBuffer,
+                                          sourceMatrix.GetDeviceData(),
+                                          sourceMatrix.GetElementCount());
       break;
-    }// case roRMS
+    }// case RMS
 
-    case roMAX  :
+    case MAX  :
     {
-      OutputStreamsCUDAKernels::SampleAll<roMAX>
-                                         (DeviceStoreBuffer,
-                                          SourceMatrix.GetRawDeviceData(),
-                                          SourceMatrix.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleAll<MAX>
+                                         (deviceBuffer,
+                                          sourceMatrix.GetDeviceData(),
+                                          sourceMatrix.GetElementCount());
       break;
-    }//case roMAX
+    }//case MAX
 
-    case roMIN  :
+    case MIN  :
     {
-      OutputStreamsCUDAKernels::SampleAll<roMIN>
-                                         (DeviceStoreBuffer,
-                                          SourceMatrix.GetRawDeviceData(),
-                                          SourceMatrix.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleAll<MIN>
+                                         (deviceBuffer,
+                                          sourceMatrix.GetDeviceData(),
+                                          sourceMatrix.GetElementCount());
       break;
-    } //case roMIN
+    } //case MIN
   }// switch
 }// end of Sample
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 /**
@@ -231,9 +219,9 @@ void TWholeDomainOutputHDF5Stream::PostProcess()
   // run inherited method
   TBaseOutputHDF5Stream::PostProcess();
 
-  // When no reduction operator is applied, the data is flushed after every time step
+  // When no reduce operator is applied, the data is flushed after every time step
   // which means it has been done before
-  if (ReductionOp != roNONE)
+  if (reduceOp != NONE)
   {
     // Copy data from GPU matrix
     CopyDataFromDevice();
@@ -241,7 +229,7 @@ void TWholeDomainOutputHDF5Stream::PostProcess()
     FlushBufferToFile();
   }
 }// end of PostProcessing
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Checkpoint the stream.
@@ -252,9 +240,9 @@ void TWholeDomainOutputHDF5Stream::Checkpoint()
     CopyDataFromDevice();
 
   // raw data has already been flushed, others has to be flushed here
-  if (ReductionOp != roNONE) FlushBufferToFile();
+  if (reduceOp != NONE) FlushBufferToFile();
 }// end of Checkpoint
-//------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
 
 /**
  * Close stream (apply post-processing if necessary, flush data and close).
@@ -262,20 +250,19 @@ void TWholeDomainOutputHDF5Stream::Checkpoint()
 void TWholeDomainOutputHDF5Stream::Close()
 {
   // the dataset is still opened
-  if (HDF5_DatasetId != H5I_BADID)
+  if (dataset != H5I_BADID)
   {
-    HDF5_File.CloseDataset(HDF5_DatasetId);
+    file.CloseDataset(dataset);
   }
 
-  HDF5_DatasetId = H5I_BADID;
+  dataset = H5I_BADID;
 }// end of Close
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
-//----------------------------------------------------------------------------//
-//                TWholeDomainOutputHDF5Stream implementation                 //
-//                            protected methods                               //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//-------------------------------------- Protected methods ---------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 
 /**
@@ -283,22 +270,22 @@ void TWholeDomainOutputHDF5Stream::Close()
  */
 void TWholeDomainOutputHDF5Stream::FlushBufferToFile()
 {
-  TDimensionSizes Size = SourceMatrix.GetDimensionSizes();
-  TDimensionSizes Position(0,0,0);
+  TDimensionSizes size = sourceMatrix.GetDimensionSizes();
+  TDimensionSizes position(0,0,0);
 
-  // Not used for roNONE now!
-  if (ReductionOp == roNONE)
+  // Not used for NONE now!
+  if (reduceOp == NONE)
   {
-      Position.T = SampledTimeStep;
-      Size.T = SampledTimeStep;
+      position.nt = sampledTimeStep;
+      size.nt = sampledTimeStep;
   }
 
-  HDF5_File.WriteHyperSlab(HDF5_DatasetId,
-                           Position,
-                           Size,
-                           HostStoreBuffer);
-  SampledTimeStep++;
+  file.WriteHyperSlab(dataset, position, size, hostBuffer);
+  sampledTimeStep++;
 }// end of FlushToFile
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------------------------//
+//--------------------------------------- Private methods ----------------------------------------//
+//------------------------------------------------------------------------------------------------//
 

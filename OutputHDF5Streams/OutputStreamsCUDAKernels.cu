@@ -1,40 +1,35 @@
 /**
  * @file        OutputStreamsCUDAKernels.cu
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
  *              jarosjir@fit.vutbr.cz
  *
- *
- * @brief       The implementation file a list of cuda kernels used for data
- *              sampling (output streams)
+ * @brief       The implementation file of cuda kernels used for data sampling (output streams).
  *
  * @version     kspaceFirstOrder3D 3.4
+ *
  * @date        27 January   2015, 17:21 (created) \n
- *              20 April     2016, 10:40 (revised)
+ *              10 August    2016, 12:03 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
- * and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation, either version
- * 3 of the License, or (at your option) any later version.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
+ * If not, see http://www.gnu.org/licenses/.
  */
 
 
-#include <string>
-#include <stdexcept>
 #include <cuda.h>
 #include <cuda_runtime.h>
 
@@ -42,395 +37,389 @@
 #include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
 #include <Parameters/Parameters.h>
-#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
 #include <Utils/CUDAUtils.cuh>
 
-using namespace std;
-
-//----------------------------------------------------------------------------//
-//                                Constants                                   //
-//----------------------------------------------------------------------------//
 
 
-//----------------------------------------------------------------------------//
-//----------------------------- Global routines ------------------------------//
-//----------------------------------------------------------------------------//
+
+//------------------------------------------------------------------------------------------------//
+//------------------------------------------ Constants -------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+
+//------------------------------------------------------------------------------------------------//
+//-------------------------------------- Global routines -----------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 /**
- * Get Sampler CUDA Block size
+ * Get Sampler CUDA Block size.
+ *
  * @return CUDA block size
  */
 int GetSamplerBlockSize()
 {
-  return TParameters::GetInstance()->CUDAParameters.GetSamplerBlockSize1D();
+  return TParameters::GetInstance().GetCudaParameters().GetSamplerBlockSize1D();
 }// end of GetSamplerBlockSize
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 /**
- * Get sampler CUDA grid size
+ * Get sampler CUDA grid size.
+ *
  * @return CUDA grid size
  */
 int GetSamplerGridSize()
 {
-  return TParameters::GetInstance()->CUDAParameters.GetSamplerGridSize1D();
+  return TParameters::GetInstance().GetCudaParameters().GetSamplerGridSize1D();
 }// end of GetSamplerGridSize
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
-
-//----------------------------------------------------------------------------//
-//--------------------------- Index based sampling ---------------------------//
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//------------------------------------ Index mask sampling ---------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 
 /**
  * CUDA kernel to sample data based on index sensor mask. The operator is given by
- * the template parameter
- * @param [out] SamplingBuffer  - buffer to sample data in
- * @param [in] SourceData       - source matrix
- * @param [in] SensorData       - sensor mask
- * @param [in] NumberOfSamples  - number of sampled points
+ * the template parameter.
+ *
+ * @param [out] samplingBuffer  - Buffer to sample data in
+ * @param [in]  sourceData      - Source matrix
+ * @param [in]  sensorData      - Sensor mask
+ * @param [in]  nSamples        - Number of sampled points
  */
-template <TBaseOutputHDF5Stream::TReductionOperator ReductionOp>
-__global__ void CUDASampleIndex(float*        SamplingBuffer,
-                                const float*  SourceData,
-                                const size_t* SensorData,
-                                const size_t  NumberOfSamples)
+template <TBaseOutputHDF5Stream::TReduceOperator reduceOp>
+__global__ void CUDASampleIndex(float*        samplingBuffer,
+                                const float*  sourceData,
+                                const size_t* sensorData,
+                                const size_t  nSamples)
 {
-  for (auto i = GetIndex(); i < NumberOfSamples; i += GetStride())
+  for (auto i = GetIndex(); i < nSamples; i += GetStride())
   {
-    switch (ReductionOp)
+    switch (reduceOp)
     {
-      case TBaseOutputHDF5Stream::TReductionOperator::roNONE:
+      case TBaseOutputHDF5Stream::TReduceOperator::NONE:
       {
-        SamplingBuffer[i] = SourceData[SensorData[i]];
+        samplingBuffer[i] = sourceData[sensorData[i]];
         break;
       }
-      case TBaseOutputHDF5Stream::TReductionOperator::roRMS:
+      case TBaseOutputHDF5Stream::TReduceOperator::RMS:
       {
-        SamplingBuffer[i] += (SourceData[SensorData[i]] * SourceData[SensorData[i]]);
+        samplingBuffer[i] += (sourceData[sensorData[i]] * sourceData[sensorData[i]]);
         break;
       }
-      case TBaseOutputHDF5Stream::TReductionOperator::roMAX:
+      case TBaseOutputHDF5Stream::TReduceOperator::MAX:
       {
-        SamplingBuffer[i] = max(SamplingBuffer[i], SourceData[SensorData[i]]);
+        samplingBuffer[i] = max(samplingBuffer[i], sourceData[sensorData[i]]);
         break;
       }
-      case TBaseOutputHDF5Stream::TReductionOperator::roMIN:
+      case TBaseOutputHDF5Stream::TReduceOperator::MIN:
       {
-        SamplingBuffer[i] = min(SamplingBuffer[i], SourceData[SensorData[i]]);
+        samplingBuffer[i] = min(samplingBuffer[i], sourceData[sensorData[i]]);
         break;
       }
     }// switch
   } // for
-}// end of CUDASampleRawIndex
-//------------------------------------------------------------------------------
+}// end of CUDASampleIndex
+//--------------------------------------------------------------------------------------------------
 
 /**
- * Sample the source matrix using the index sensor mask and store data in buffer
- * @param [out] SamplingBuffer   - buffer to sample data in
- * @param [in] SourceData        - source matrix
- * @param [in] SensorData        - sensor mask
- * @param [in] NumberOfSamples   - number of sampled points
- * @param [in] ReductionOperator - number of sampled points
+ * Sample the source matrix using the index sensor mask and store data in buffer.
+ *
+ * @param [out] samplingBuffer   - Buffer to sample data in
+ * @param [in] sourceData        - Source matrix
+ * @param [in] sensorData        - Sensor mask
+ * @param [in] nSamples          - Number of sampled points
  */
-template<TBaseOutputHDF5Stream::TReductionOperator ReductionOp>
-void OutputStreamsCUDAKernels::SampleIndex(float*        SamplingBuffer,
-                                           const float * SourceData,
-                                           const size_t* SensorData,
-                                           const size_t  NumberOfSamples)
+template<TBaseOutputHDF5Stream::TReduceOperator reduceOp>
+void OutputStreamsCUDAKernels::SampleIndex(float*        samplingBuffer,
+                                           const float*  sourceData,
+                                           const size_t* sensorData,
+                                           const size_t  nSamples)
 {
-  CUDASampleIndex<ReductionOp>
+  CUDASampleIndex<reduceOp>
                  <<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
-                 (SamplingBuffer,
-                  SourceData,
-                  SensorData,
-                  NumberOfSamples);
+                 (samplingBuffer,
+                  sourceData,
+                  sensorData,
+                  nSamples);
 
   // check for errors
   checkCudaErrors(cudaGetLastError());
-}// end of SampleRawIndex
-//------------------------------------------------------------------------------
+}// end of SampleIndex
+//--------------------------------------------------------------------------------------------------
 
-//------------------------ Explicit instances of SampleIndex -----------------//
+//------------------------------ Explicit instances of SampleIndex -------------------------------//
 template
-void OutputStreamsCUDAKernels::SampleIndex<TBaseOutputHDF5Stream::TReductionOperator::roNONE>
-                                          (float*        SamplingBuffer,
-                                           const float*  SourceData,
-                                           const size_t* SensorData,
-                                           const size_t  NumberOfSamples);
-
-template
-void OutputStreamsCUDAKernels::SampleIndex<TBaseOutputHDF5Stream::TReductionOperator::roRMS>
-                                          (float*        SamplingBuffer,
-                                           const float*  SourceData,
-                                           const size_t* SensorData,
-                                           const size_t  NumberOfSamples);
+void OutputStreamsCUDAKernels::SampleIndex<TBaseOutputHDF5Stream::TReduceOperator::NONE>
+                                          (float*        samplingBuffer,
+                                           const float*  sourceData,
+                                           const size_t* sensorData,
+                                           const size_t  nSamples);
 
 template
-void OutputStreamsCUDAKernels::SampleIndex<TBaseOutputHDF5Stream::TReductionOperator::roMAX>
-                                          (float*        SamplingBuffer,
-                                           const float*  SourceData,
-                                           const size_t* SensorData,
-                                           const size_t  NumberOfSamples);
+void OutputStreamsCUDAKernels::SampleIndex<TBaseOutputHDF5Stream::TReduceOperator::RMS>
+                                          (float*        samplingBuffer,
+                                           const float*  sourceData,
+                                           const size_t* sensorData,
+                                           const size_t  nSamples);
 
 template
-void OutputStreamsCUDAKernels::SampleIndex<TBaseOutputHDF5Stream::TReductionOperator::roMIN>
-                                          (float*        SamplingBuffer,
-                                           const float*  SourceData,
-                                           const size_t* SensorData,
-                                           const size_t  NumberOfSamples);
+void OutputStreamsCUDAKernels::SampleIndex<TBaseOutputHDF5Stream::TReduceOperator::MAX>
+                                          (float*        samplingBuffer,
+                                           const float*  sourceData,
+                                           const size_t* sensorData,
+                                           const size_t  nSamples);
+
+template
+void OutputStreamsCUDAKernels::SampleIndex<TBaseOutputHDF5Stream::TReduceOperator::MIN>
+                                          (float*        samplingBuffer,
+                                           const float*  sourceData,
+                                           const size_t* sensorData,
+                                           const size_t  nSamples);
 
 
-//----------------------------------------------------------------------------//
-//-------------------------- Cuboid based sampling ---------------------------//
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//----------------------------------- Cuboid mask sampling ---------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 /**
- * Get 3D coordinates in the cuboid
- * @param [in] Index             - 1D index
- * @param [in] TopLeftCorner     - Top left corner
- * @param [in] BottomRightCorner - Bottom right corner
- * @param [in] DimensionSizes    - DimensionSizes of the matrix being sampled
- * @return 3D coordinates within the cuboid
+ * Transform 3D coordinates within the cuboid into 1D coordinates within the matrix being sampled.
+ *
+ * @param [in] cuboidIdx         - Cuboid index
+ * @param [in] topLeftCorner     - Top left corner
+ * @param [in] bottomRightCorner - Bottom right corner
+ * @param [in] matrixSize        - Size of the matrix being sampled
+ * @return 1D index into the matrix being sampled
  */
-inline __device__ size_t TransformCoordinates(const size_t Index,
-                                              const dim3 & TopLeftCorner,
-                                              const dim3 & BottomRightCorner,
-                                              const dim3 & DimensionSizes)
+inline __device__ size_t TransformCoordinates(const size_t cuboidIdx,
+                                              const dim3&  topLeftCorner,
+                                              const dim3&  bottomRightCorner,
+                                              const dim3&  matrixSize)
 {
-  dim3 LocalPosition;
+  dim3 localPosition;
   // calculate the cuboid size
-  dim3 CuboidSize(BottomRightCorner.x - TopLeftCorner.x + 1,
-                  BottomRightCorner.y - TopLeftCorner.y + 1,
-                  BottomRightCorner.z - TopLeftCorner.z + 1);
+  dim3 cuboidSize(bottomRightCorner.x - topLeftCorner.x + 1,
+                  bottomRightCorner.y - topLeftCorner.y + 1,
+                  bottomRightCorner.z - topLeftCorner.z + 1);
 
   // find coordinates within the cuboid
-  size_t XY_Size = CuboidSize.x * CuboidSize.y;
-  LocalPosition.z =  Index / XY_Size;
-  LocalPosition.y = (Index % XY_Size) / CuboidSize.x;
-  LocalPosition.x = (Index % XY_Size) % CuboidSize.x;
+  size_t slabSize = cuboidSize.x * cuboidSize.y;
+  localPosition.z =  cuboidIdx / slabSize;
+  localPosition.y = (cuboidIdx % slabSize) / cuboidSize.x;
+  localPosition.x = (cuboidIdx % slabSize) % cuboidSize.x;
 
   // transform the coordinates to the global dimensions
-  dim3 GlobalPosition(LocalPosition);
-  GlobalPosition.z += TopLeftCorner.z;
-  GlobalPosition.y += TopLeftCorner.y;
-  GlobalPosition.x += TopLeftCorner.x;
+  dim3 globalPosition(localPosition);
+  globalPosition.z += topLeftCorner.z;
+  globalPosition.y += topLeftCorner.y;
+  globalPosition.x += topLeftCorner.x;
 
   // calculate 1D index
-  return (GlobalPosition.z * DimensionSizes.x * DimensionSizes.y +
-          GlobalPosition.y * DimensionSizes.x +
-          GlobalPosition.x);
+  return (globalPosition.z * matrixSize.x * matrixSize.y +
+          globalPosition.y * matrixSize.x +
+          globalPosition.x);
 }// end of TransformCoordinates
-//------------------------------------------------------------------------------
-
-
-
+//--------------------------------------------------------------------------------------------------
 
 /**
- * CUDA kernel to sample data inside one cuboid, operation is selected by
- * a template parameter.
- * @param [out] SamplingBuffer    - buffer to sample data in
- * @param [in]  SourceData        - source matrix
- * @param [in]  TopLeftCorner     - top left corner of the cuboid
- * @param [in]  BottomRightCorner - bottom right corner of the cuboid
- * @param [in]  DimensionSizes    - dimension sizes of the matrix being sampled
- * @param [in]  NumberOfSamples   - number of grid points inside the cuboid
+ * CUDA kernel to sample data inside one cuboid, operation is selected by a template parameter.
+
+ * @param [out] samplingBuffer    - Buffer to sample data in
+ * @param [in]  sourceData        - Source matrix
+ * @param [in]  topLeftCorner     - Top left corner of the cuboid
+ * @param [in]  bottomRightCorner - Bottom right corner of the cuboid
+ * @param [in]  matrixSize        - Dimension sizes of the matrix being sampled
+ * @param [in]  nSamples          - Number of grid points inside the cuboid
  */
-template <TBaseOutputHDF5Stream::TReductionOperator ReductionOp>
-__global__ void CUDASampleCuboid(float*       SamplingBuffer,
-                                 const float* SourceData,
-                                 const dim3   TopLeftCorner,
-                                 const dim3   BottomRightCorner,
-                                 const dim3   DimensionSizes,
-                                 const size_t NumberOfSamples)
+template <TBaseOutputHDF5Stream::TReduceOperator reduceOp>
+__global__ void CUDASampleCuboid(float*       samplingBuffer,
+                                 const float* sourceData,
+                                 const dim3   topLeftCorner,
+                                 const dim3   bottomRightCorner,
+                                 const dim3   matrixSize,
+                                 const size_t nSamples)
 {
   // iterate over all grid points
-  for (auto i = GetIndex(); i < NumberOfSamples; i += GetStride())
+  for (auto i = GetIndex(); i < nSamples; i += GetStride())
   {
-    auto Position = TransformCoordinates(i,
-                                         TopLeftCorner,
-                                         BottomRightCorner,
-                                         DimensionSizes);
-    switch (ReductionOp)
+    auto Position = TransformCoordinates(i, topLeftCorner, bottomRightCorner, matrixSize);
+    switch (reduceOp)
     {
-      case TBaseOutputHDF5Stream::TReductionOperator::roNONE:
+      case TBaseOutputHDF5Stream::TReduceOperator::NONE:
       {
-        SamplingBuffer[i] = SourceData[Position];
+        samplingBuffer[i] = sourceData[Position];
         break;
       }
-      case TBaseOutputHDF5Stream::TReductionOperator::roRMS:
+      case TBaseOutputHDF5Stream::TReduceOperator::RMS:
       {
-        SamplingBuffer[i] += (SourceData[Position] * SourceData[Position]);
+        samplingBuffer[i] += (sourceData[Position] * sourceData[Position]);
         break;
       }
-      case TBaseOutputHDF5Stream::TReductionOperator::roMAX:
+      case TBaseOutputHDF5Stream::TReduceOperator::MAX:
       {
-        SamplingBuffer[i] = max(SamplingBuffer[i], SourceData[Position]);
+        samplingBuffer[i] = max(samplingBuffer[i], sourceData[Position]);
         break;
       }
-      case TBaseOutputHDF5Stream::TReductionOperator::roMIN:
+      case TBaseOutputHDF5Stream::TReduceOperator::MIN:
       {
-        SamplingBuffer[i] = min(SamplingBuffer[i], SourceData[Position]);
+        samplingBuffer[i] = min(samplingBuffer[i], sourceData[Position]);
         break;
       }
     }// switch
   } // for
-}// end of CUDASampleRawCuboid
-//------------------------------------------------------------------------------
+}// end of CUDASampleCuboid
+//-------------------------------------------------------------------------------------------------
 
 
 /**
- * CUDA kernel to sample data inside one cuboid and store it to buffer. The operation
- * is given in the template paramerter
+ * Sample data inside one cuboid and store it to buffer. The operation is given in the template
+ * parameter.
  *
- * @param [out] SamplingBuffer    - buffer to sample data in
- * @param [in]  SourceData        - source matrix
- * @param [in]  TopLeftCorner     - top left corner of the cuboid
- * @param [in]  BottomRightCorner - bottom right corner of the cuboid
- * @param [in]  NumberOfSamples   - number of grid points inside the cuboid
+ * @param [out] samplingBuffer    - Buffer to sample data in
+ * @param [in]  sourceData        - Source matrix
+ * @param [in]  topLeftCorner     - Top left corner of the cuboid
+ * @param [in]  bottomRightCorner - Bottom right corner of the cuboid
+ * @param [in]  matrixSize        - Size of the matrix being sampled
+ * @param [in]  nSamples          - Number of grid points inside the cuboid
  */
-template<TBaseOutputHDF5Stream::TReductionOperator ReductionOp>
-void OutputStreamsCUDAKernels::SampleCuboid(float*       SamplingBuffer,
-                                            const float* SourceData,
-                                            const dim3   TopLeftCorner,
-                                            const dim3   BottomRightCorner,
-                                            const dim3   DimensionSizes,
-                                            const size_t NumberOfSamples)
+template<TBaseOutputHDF5Stream::TReduceOperator reduceOp>
+void OutputStreamsCUDAKernels::SampleCuboid(float*       samplingBuffer,
+                                            const float* sourceData,
+                                            const dim3   topLeftCorner,
+                                            const dim3   bottomRightCorner,
+                                            const dim3   matrixSize,
+                                            const size_t nSamples)
 {
-  CUDASampleCuboid<ReductionOp>
+  CUDASampleCuboid<reduceOp>
                   <<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
-                  (SamplingBuffer,
-                   SourceData,
-                   TopLeftCorner,
-                   BottomRightCorner,
-                   DimensionSizes,
-                   NumberOfSamples);
+                  (samplingBuffer,
+                   sourceData,
+                   topLeftCorner,
+                   bottomRightCorner,
+                   matrixSize,
+                   nSamples);
   // check for errors
   checkCudaErrors(cudaGetLastError());
-}// end of SampleRawCuboid
-//------------------------------------------------------------------------------
+}// end of SampleCuboid
+//--------------------------------------------------------------------------------------------------
 
 
-//------------------------ Explicit instances of SampleCuboid ----------------//
+//----------------------------- Explicit instances of SampleCuboid -------------------------------//
 template
-void OutputStreamsCUDAKernels::SampleCuboid<TBaseOutputHDF5Stream::TReductionOperator::roNONE>
-                                           (float  * SamplingBuffer,
-                                            const float  * SourceData,
-                                            const dim3     TopLeftCorner,
-                                            const dim3     BottomRightCorner,
-                                            const dim3     DimensionSizes,
-                                            const size_t   NumberOfSamples);
-
+void OutputStreamsCUDAKernels::SampleCuboid<TBaseOutputHDF5Stream::TReduceOperator::NONE>
+                                           (float*       samplingBuffer,
+                                            const float*  sourceData,
+                                            const dim3    topLeftCorner,
+                                            const dim3    bottomRightCorner,
+                                            const dim3    matrixSize,
+                                            const size_t  nSamples);
 template
-void OutputStreamsCUDAKernels::SampleCuboid<TBaseOutputHDF5Stream::TReductionOperator::roRMS>
-                                           (float  * SamplingBuffer,
-                                            const float  * SourceData,
-                                            const dim3     TopLeftCorner,
-                                            const dim3     BottomRightCorner,
-                                            const dim3     DimensionSizes,
-                                            const size_t   NumberOfSamples);
+void OutputStreamsCUDAKernels::SampleCuboid<TBaseOutputHDF5Stream::TReduceOperator::RMS>
+                                           (float*       samplingBuffer,
+                                            const float* sourceData,
+                                            const dim3   topLeftCorner,
+                                            const dim3   bottomRightCorner,
+                                            const dim3   matrixSize,
+                                            const size_t nSamples);
 template
-void OutputStreamsCUDAKernels::SampleCuboid<TBaseOutputHDF5Stream::TReductionOperator::roMAX>
-                                           (float  * SamplingBuffer,
-                                            const float  * SourceData,
-                                            const dim3     TopLeftCorner,
-                                            const dim3     BottomRightCorner,
-                                            const dim3     DimensionSizes,
-                                            const size_t   NumberOfSamples);
+void OutputStreamsCUDAKernels::SampleCuboid<TBaseOutputHDF5Stream::TReduceOperator::MAX>
+                                           (float*       samplingBuffer,
+                                            const float* sourceData,
+                                            const dim3   topLeftCorner,
+                                            const dim3   bottomRightCorner,
+                                            const dim3   matrixSize,
+                                            const size_t nSamples);
 template
-void OutputStreamsCUDAKernels::SampleCuboid<TBaseOutputHDF5Stream::TReductionOperator::roMIN>
-                                           (float  * SamplingBuffer,
-                                            const float  * SourceData,
-                                            const dim3     TopLeftCorner,
-                                            const dim3     BottomRightCorner,
-                                            const dim3     DimensionSizes,
-                                            const size_t   NumberOfSamples);
+void OutputStreamsCUDAKernels::SampleCuboid<TBaseOutputHDF5Stream::TReduceOperator::MIN>
+                                           (float*       samplingBuffer,
+                                            const float* sourceData,
+                                            const dim3   topLeftCorner,
+                                            const dim3   bottomRightCorner,
+                                            const dim3   matrixSize,
+                                            const size_t nSamples);
 
-//----------------------------------------------------------------------------//
-//---------------------- Whole domain based sampling -------------------------//
-//----------------------------------------------------------------------------//
-
-
+//------------------------------------------------------------------------------------------------//
+//--------------------------------- Whole domain based sampling ----------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 /**
- * CUDA kernel to sample and aggregate the source matrix on the whole domain
- * and apply max operator
- * @param [in,out] SamplingBuffer - buffer to sample data in
- * @param [in] SourceData         - source matrix
- * @param [in] NumberOfSamples    - number of sampled points
+ * CUDA kernel to sample and aggregate the source matrix on the whole domain and apply a reduce
+ * operator.
+ *
+ * @param [in,out] samplingBuffer - Buffer to sample data in
+ * @param [in]     sourceData     - Source matrix
+ * @param [in]     nSamples       - Number of sampled points
  */
-template <TBaseOutputHDF5Stream::TReductionOperator ReductionOp>
-__global__ void CUDASampleAll(      float  * SamplingBuffer,
-                                 const float  * SourceData,
-                                 const size_t   NumberOfSamples)
+template <TBaseOutputHDF5Stream::TReduceOperator reduceOp>
+__global__ void CUDASampleAll(float*       samplingBuffer,
+                              const float* sourceData,
+                              const size_t nSamples)
 {
-  for (size_t i = GetIndex(); i < NumberOfSamples; i += GetStride())
+  for (size_t i = GetIndex(); i < nSamples; i += GetStride())
   {
-    switch (ReductionOp)
+    switch (reduceOp)
     {
-      case TBaseOutputHDF5Stream::TReductionOperator::roRMS:
+      case TBaseOutputHDF5Stream::TReduceOperator::RMS:
       {
-        SamplingBuffer[i] += (SourceData[i] * SourceData[i]);
+        samplingBuffer[i] += (sourceData[i] * sourceData[i]);
         break;
       }
-      case TBaseOutputHDF5Stream::TReductionOperator::roMAX:
+      case TBaseOutputHDF5Stream::TReduceOperator::MAX:
       {
-        SamplingBuffer[i] = max(SamplingBuffer[i], SourceData[i]);
+        samplingBuffer[i] = max(samplingBuffer[i], sourceData[i]);
         break;
       }
-      case TBaseOutputHDF5Stream::TReductionOperator::roMIN:
+      case TBaseOutputHDF5Stream::TReduceOperator::MIN:
       {
-        SamplingBuffer[i] = min(SamplingBuffer[i], SourceData[i]);
+        samplingBuffer[i] = min(samplingBuffer[i], sourceData[i]);
         break;
       }
     }
   }
-}// end of CUDASampleMaxAll
-//------------------------------------------------------------------------------
+}// end of CUDASampleAll
+//--------------------------------------------------------------------------------------------------
 
 
 /**
- * Sample and the whole domain and apply a defined operator
+ * Sample and the whole domain and apply a defined operator.
  *
- * @param [in,out] SamplingBuffer - buffer to sample data in
- * @param [in] SourceData         - source matrix
- * @param [in] NumberOfSamples    - number of sampled points
+ * @param [in,out] samplingBuffer - Buffer to sample data in
+ * @param [in]     sourceData     - Source matrix
+ * @param [in]     nSamples       - Number of sampled points
  */
-template<TBaseOutputHDF5Stream::TReductionOperator ReductionOp>
-void OutputStreamsCUDAKernels::SampleAll(float*       SamplingBuffer,
-                                         const float* SourceData,
-                                         const size_t NumberOfSamples)
+template<TBaseOutputHDF5Stream::TReduceOperator reduceOp>
+void OutputStreamsCUDAKernels::SampleAll(float*       samplingBuffer,
+                                         const float* sourceData,
+                                         const size_t nSamples)
 {
-  CUDASampleAll<ReductionOp>
+  CUDASampleAll<reduceOp>
                <<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
-               (SamplingBuffer,
-                SourceData,
-                NumberOfSamples);
+               (samplingBuffer,
+                sourceData,
+                nSamples);
   // check for errors
   checkCudaErrors(cudaGetLastError());
 }// end of SampleMaxAll
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
-//------------------------ Explicit instances of SampleAll -------------------//
+//------------------------------ Explicit instances of SampleAll ---------------------------------//
 template
-void OutputStreamsCUDAKernels::SampleAll<TBaseOutputHDF5Stream::TReductionOperator::roRMS>
-                                        (float*       SamplingBuffer,
-                                         const float* SourceData,
-                                         const size_t NumberOfSamples);
-
+void OutputStreamsCUDAKernels::SampleAll<TBaseOutputHDF5Stream::TReduceOperator::RMS>
+                                        (float*       samplingBuffer,
+                                         const float* sourceData,
+                                         const size_t nSamples);
 template
-void OutputStreamsCUDAKernels::SampleAll<TBaseOutputHDF5Stream::TReductionOperator::roMAX>
-                                        (float*       SamplingBuffer,
-                                         const float* SourceData,
-                                         const size_t NumberOfSamples);
-
+void OutputStreamsCUDAKernels::SampleAll<TBaseOutputHDF5Stream::TReduceOperator::MAX>
+                                        (float*       samplingBuffer,
+                                         const float* sourceData,
+                                         const size_t nSamples);
 template
-void OutputStreamsCUDAKernels::SampleAll<TBaseOutputHDF5Stream::TReductionOperator::roMIN>
-                                        (float*       SamplingBuffer,
-                                         const float* SourceData,
-                                         const size_t NumberOfSamples);
+void OutputStreamsCUDAKernels::SampleAll<TBaseOutputHDF5Stream::TReduceOperator::MIN>
+                                        (float*       samplingBuffer,
+                                         const float* sourceData,
+                                         const size_t nSamples);
 
 
 //----------------------------------------------------------------------------//
@@ -440,37 +429,37 @@ void OutputStreamsCUDAKernels::SampleAll<TBaseOutputHDF5Stream::TReductionOperat
 
 /**
  * CUDA kernel to apply post-processing for RMS
- * @param [in, out] SamplingBuffer  - buffer to apply post-processing on
- * @param [in]      NumberOfSamples - number of ellements
+ * @param [in, out] samplingBuffer - Buffer to apply post-processing on
+ * @param [in]      scalingCoeff   - Scaling coeficinet for RMS
+ * @param [in]      nSamples       - Number of elements
  */
-__global__ void CUDAPostProcessingRMS(      float * SamplingBuffer,
-                                      const float   ScalingCoeff,
-                                      const size_t  NumberOfSamples)
+__global__ void CUDAPostProcessingRMS(float*       samplingBuffer,
+                                      const float  scalingCoeff,
+                                      const size_t nSamples)
 {
-  for (size_t i = GetIndex(); i < NumberOfSamples; i += GetStride())
+  for (size_t i = GetIndex(); i < nSamples; i += GetStride())
   {
-    SamplingBuffer[i] = sqrt(SamplingBuffer[i] * ScalingCoeff);
+    samplingBuffer[i] = sqrt(samplingBuffer[i] * scalingCoeff);
   }
 }// end of CUDAPostProcessingRMS
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 /**
- * Calculate post-processing for RMS
- * @param [in, out] SamplingBuffer  - buffer to apply post-processing on
- * @param [in]      ScalingCoeff    - Scaling coefficent
- * @param [in]      NumberOfSamples - number of elements
+ * Calculate post-processing for RMS.
+ *
+ * @param [in, out] samplingBuffer - Buffer to apply post-processing on
+ * @param [in]      scalingCoeff   - Scaling coefficent
+ * @param [in]      nSamples       - Number of elements
  */
-void OutputStreamsCUDAKernels::PostProcessingRMS(float*       SamplingBuffer,
-                                                 const float  ScalingCoeff,
-                                                 const size_t NumberOfSamples)
+void OutputStreamsCUDAKernels::PostProcessingRMS(float*       samplingBuffer,
+                                                 const float  scalingCoeff,
+                                                 const size_t nSamples)
 {
   CUDAPostProcessingRMS<<<GetSamplerGridSize(),GetSamplerBlockSize()>>>
-                       (SamplingBuffer,
-                        ScalingCoeff,
-                        NumberOfSamples);
+                       (samplingBuffer, scalingCoeff, nSamples);
 
   // check for errors
   checkCudaErrors(cudaGetLastError());
 }// end of PostProcessingRMS
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------

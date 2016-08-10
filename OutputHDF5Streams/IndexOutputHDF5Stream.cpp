@@ -1,92 +1,76 @@
 /**
- * @file        CuboidOutputHDF5Stream.cpp
+ * @file        IndexOutputHDF5Stream.cpp
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
  *              jarosjir@fit.vutbr.cz
  *
- * @brief       The implementation file of the class saving data based on index
- *              senor mask into the output HDF5 file.
+ * @brief       The implementation file of the class saving data based on index senor mask into
+ *              the output HDF5 file.
  *
  * @version     kspaceFirstOrder3D 3.4
- * @date        29 August   2014, 10:10 (created)
- *              20 April    2016, 10:40 (revised)
  *
+ * @date        29 August   2014, 10:10 (created)
+ *              29 July     2016, 16:56 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2014 Jiri Jaros, Beau Johnston
- * and Bradley Treeby
+ * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can
- * redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation, either version
- * 3 of the License, or (at your option) any later version.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with k-Wave. If not, see http://www.gnu.org/licenses/.
+ * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
+ * If not, see http://www.gnu.org/licenses/.
  */
 
 #include <OutputHDF5Streams/IndexOutputHDF5Stream.h>
 #include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
 
 #include <Parameters/Parameters.h>
-#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
 
-using namespace std;
+//------------------------------------------------------------------------------------------------//
+//------------------------------------------ Constants -------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
-//--------------------------------------------------------------------------//
-//                              Constants                                   //
-//--------------------------------------------------------------------------//
-
-//--------------------------------------------------------------------------//
-//                              Definitions                                 //
-//--------------------------------------------------------------------------//
-
-//----------------------------------------------------------------------------//
-//--------------------------------- Macros -----------------------------------//
-//----------------------------------------------------------------------------//
-
-//--------------------------------------------------------------------------//
-//                              Implementation                              //
-//                              public methods                              //
-//--------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//--------------------------------------- Public methods -----------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 
 /**
- * Constructor - links the HDF5 dataset, source (sampled matrix), Sensor mask
- * and the reduction operator together. The constructor DOES NOT allocate memory
- * because the size of the sensor mask is not known at the time the instance of
- * the class is being created.
+ * Constructor - links the HDF5 dataset, source (sampled matrix), sensor mask and the reduce
+ * operator together. The constructor DOES NOT allocate memory because the size of the sensor mask
+ * is not known at the time the instance of  the class is being created.
  *
- * @param [in] HDF5_File       - Handle to the HDF5 (output) file
- * @param [in] HDF5_ObjectName - The dataset's name (index based sensor data
- *                                is store in a single dataset)
- * @param [in] SourceMatrix    - The source matrix (only real matrices are
- *                               supported)
- * @param [in] SensorMask      - Index based sensor mask
- * @param [in] ReductionOp     - Reduction operator
+ * @param [in] file         - Handle to the HDF5 (output) file
+ * @param [in] datasetName  - The dataset's name (index based sensor data stored in a single dataset)
+ * @param [in] sourceMatrix - The source matrix (only real matrices are supported)
+ * @param [in] sensorMask   - Index based sensor mask
+ * @param [in] reduceOp     - Reduce operator
  */
-TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File&              HDF5_File,
-                                               const char*              HDF5_ObjectName,
-                                               const TRealMatrix&       SourceMatrix,
-                                               const TIndexMatrix&      SensorMask,
-                                               const TReductionOperator ReductionOp)
-        : TBaseOutputHDF5Stream(HDF5_File, HDF5_ObjectName, SourceMatrix, ReductionOp),
-          SensorMask(SensorMask),
-          HDF5_DatasetId(H5I_BADID),
-          SampledTimeStep(0),
-          EventSamplingFinished()
+TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File&           file,
+                                               TMatrixName&          datasetName,
+                                               const TRealMatrix&    sourceMatrix,
+                                               const TIndexMatrix&   sensorMask,
+                                               const TReduceOperator reduceOp)
+        : TBaseOutputHDF5Stream(file, datasetName, sourceMatrix, reduceOp),
+          sensorMask(sensorMask),
+          dataset(H5I_BADID),
+          sampledTimeStep(0),
+          eventSamplingFinished()
 {
   // Create event for sampling
-  checkCudaErrors(cudaEventCreate(&EventSamplingFinished));
+  checkCudaErrors(cudaEventCreate(&eventSamplingFinished));
 }// end of TIndexOutputHDF5Stream
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Destructor.
@@ -96,13 +80,13 @@ TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File&              HDF5_Fil
 TIndexOutputHDF5Stream::~TIndexOutputHDF5Stream()
 {
   // Destroy sampling event
-  checkCudaErrors(cudaEventDestroy(EventSamplingFinished));
+  checkCudaErrors(cudaEventDestroy(eventSamplingFinished));
 
   Close();
   // free memory
   FreeMemory();
 }// end of Destructor
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Create a HDF5 stream, create a dataset, and allocate data for it.
@@ -110,48 +94,44 @@ TIndexOutputHDF5Stream::~TIndexOutputHDF5Stream()
 void TIndexOutputHDF5Stream::Create()
 {
 
-  size_t NumberOfSampledElementsPerStep = SensorMask.GetTotalElementCount();
+  size_t nSampledElementsPerStep = sensorMask.GetElementCount();
 
-  TParameters* Params = TParameters::GetInstance();
+  const TParameters& params = TParameters::GetInstance();
 
   // Derive dataset dimension sizes
-  TDimensionSizes DatasetSize(NumberOfSampledElementsPerStep,
-          (ReductionOp == roNONE) ?  Params->Get_Nt() - Params->GetStartTimeIndex() : 1,
-          1);
+  TDimensionSizes datasetSize(nSampledElementsPerStep,
+                              (reduceOp == NONE) ?  params.Get_nt() - params.GetStartTimeIndex() : 1,
+                              1);
 
   // Set HDF5 chunk size
-  TDimensionSizes ChunkSize(NumberOfSampledElementsPerStep, 1, 1);
+  TDimensionSizes chunkSize(nSampledElementsPerStep, 1, 1);
   // for chunks bigger than 32 MB
-  if (NumberOfSampledElementsPerStep > (ChunkSize_4MB * 8))
+  if (nSampledElementsPerStep > (CHUNK_SIZE_4MB * 8))
   {
-      ChunkSize.X = ChunkSize_4MB; // set chunk size to MB
+      chunkSize.nx = CHUNK_SIZE_4MB; // set chunk size to MB
   }
 
   // Create a dataset under the root group
-  HDF5_DatasetId = HDF5_File.CreateFloatDataset(HDF5_File.GetRootGroup(),
-                                                HDF5_RootObjectName,
-                                                DatasetSize,
-                                                ChunkSize,
-                                                Params->GetCompressionLevel());
+  dataset = file.CreateFloatDataset(file.GetRootGroup(),
+                                    rootObjectName,
+                                    datasetSize,
+                                    chunkSize,
+                                    params.GetCompressionLevel());
 
     // Write dataset parameters
-  HDF5_File.WriteMatrixDomainType(HDF5_File.GetRootGroup(),
-                                  HDF5_RootObjectName,
-                                  THDF5_File::hdf5_mdt_real);
-  HDF5_File.WriteMatrixDataType  (HDF5_File.GetRootGroup(),
-                                  HDF5_RootObjectName,
-                                  THDF5_File::hdf5_mdt_float);
+  file.WriteMatrixDomainType(file.GetRootGroup(), rootObjectName, THDF5_File::REAL);
+  file.WriteMatrixDataType  (file.GetRootGroup(), rootObjectName, THDF5_File::FLOAT);
 
   // Sampled time step
-  SampledTimeStep = 0;
+  sampledTimeStep = 0;
 
   // Set buffer size
-  BufferSize = NumberOfSampledElementsPerStep;
+  bufferSize = nSampledElementsPerStep;
 
   // Allocate memory
   AllocateMemory();
 }// end of Create
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Reopen the output stream after restart.
@@ -160,102 +140,101 @@ void TIndexOutputHDF5Stream::Create()
 void TIndexOutputHDF5Stream::Reopen()
 {
   // Get parameters
-  TParameters* Params = TParameters::GetInstance();
+  const TParameters& params = TParameters::GetInstance();
 
   // Set buffer size
-  BufferSize = SensorMask.GetTotalElementCount();
+  bufferSize = sensorMask.GetElementCount();
 
   // Allocate memory
    AllocateMemory();
 
   // Reopen the dataset
-  HDF5_DatasetId = HDF5_File.OpenDataset(HDF5_File.GetRootGroup(),
-                                         HDF5_RootObjectName);
+  dataset = file.OpenDataset(file.GetRootGroup(), rootObjectName);
 
 
-  if (ReductionOp == roNONE)
+  if (reduceOp == NONE)
   { // raw time series - just seek to the right place in the dataset
-    SampledTimeStep = (Params->Get_t_index() < Params->GetStartTimeIndex()) ?
-                        0 : (Params->Get_t_index() - Params->GetStartTimeIndex());
+    sampledTimeStep = (params.Get_t_index() < params.GetStartTimeIndex()) ?
+                        0 : (params.Get_t_index() - params.GetStartTimeIndex());
 
   }
   else
   { // aggregated quantities - reload data
-    SampledTimeStep = 0;
+    sampledTimeStep = 0;
 
     // Read data from disk only if there were anything stored there (t_index >= start_index)
-    if (TParameters::GetInstance()->Get_t_index() > TParameters::GetInstance()->GetStartTimeIndex())
+    if (TParameters::GetInstance().Get_t_index() > TParameters::GetInstance().GetStartTimeIndex())
     {
       // Since there is only a single timestep in the dataset, I can read the whole dataset
-      HDF5_File.ReadCompleteDataset(HDF5_File.GetRootGroup(),
-                                    HDF5_RootObjectName,
-                                    TDimensionSizes(BufferSize, 1, 1),
-                                    HostStoreBuffer);
+      file.ReadCompleteDataset(file.GetRootGroup(),
+                               rootObjectName,
+                               TDimensionSizes(bufferSize, 1, 1),
+                               hostBuffer);
 
       // Send data to device
       CopyDataToDevice();
     }
   }
 }// end of Reopen
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 /**
- * Sample grid points, line them up in the buffer, if necessary a  reduction
- * operator is applied.
+ * Sample grid points, line them up in the buffer, if necessary a reduce operator is applied.
+ *
  * @warning data is not flushed, there is no sync.
  */
 void TIndexOutputHDF5Stream::Sample()
 {
-  switch (ReductionOp)
+  switch (reduceOp)
   {
-    case roNONE :
+    case NONE :
     {
-      OutputStreamsCUDAKernels::SampleIndex<roNONE>
-                                           (DeviceStoreBuffer,
-                                            SourceMatrix.GetRawDeviceData(),
-                                            SensorMask.GetRawDeviceData(),
-                                            SensorMask.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleIndex<NONE>
+                                           (deviceBuffer,
+                                            sourceMatrix.GetDeviceData(),
+                                            sensorMask.GetDeviceData(),
+                                            sensorMask.GetElementCount());
 
       // Record an event when the data has been copied over.
-      checkCudaErrors(cudaEventRecord(EventSamplingFinished));
+      checkCudaErrors(cudaEventRecord(eventSamplingFinished));
 
       break;
-    }// case roNONE
+    }// case NONE
 
-    case roRMS :
+    case RMS :
     {
-      OutputStreamsCUDAKernels::SampleIndex<roRMS>
-                                           (DeviceStoreBuffer,
-                                            SourceMatrix.GetRawDeviceData(),
-                                            SensorMask.GetRawDeviceData(),
-                                            SensorMask.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleIndex<RMS>
+                                           (deviceBuffer,
+                                            sourceMatrix.GetDeviceData(),
+                                            sensorMask.GetDeviceData(),
+                                            sensorMask.GetElementCount());
 
       break;
-    }// case roRMS
+    }// case RMS
 
-    case roMAX :
+    case MAX :
     {
-      OutputStreamsCUDAKernels::SampleIndex<roMAX>
-                                           (DeviceStoreBuffer,
-                                            SourceMatrix.GetRawDeviceData(),
-                                            SensorMask.GetRawDeviceData(),
-                                            SensorMask.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleIndex<MAX>
+                                           (deviceBuffer,
+                                            sourceMatrix.GetDeviceData(),
+                                            sensorMask.GetDeviceData(),
+                                            sensorMask.GetElementCount());
       break;
-    }// case roMAX
+    }// case MAX
 
-    case roMIN :
+    case MIN :
     {
-      OutputStreamsCUDAKernels::SampleIndex<roMIN>
-                                           (DeviceStoreBuffer,
-                                            SourceMatrix.GetRawDeviceData(),
-                                            SensorMask.GetRawDeviceData(),
-                                            SensorMask.GetTotalElementCount());
+      OutputStreamsCUDAKernels::SampleIndex<MIN>
+                                           (deviceBuffer,
+                                            sourceMatrix.GetDeviceData(),
+                                            sensorMask.GetDeviceData(),
+                                            sensorMask.GetElementCount());
       break;
-    } //case roMIN
+    } //case MIN
   }// switch
 }// end of Sample
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 /**
@@ -263,16 +242,16 @@ void TIndexOutputHDF5Stream::Sample()
  */
 void TIndexOutputHDF5Stream::FlushRaw()
 {
-  if (ReductionOp == roNONE)
+  if (reduceOp == NONE)
   {
     // make sure the data has been copied from the GPU
-    cudaEventSynchronize(EventSamplingFinished);
+    cudaEventSynchronize(eventSamplingFinished);
 
     // only raw time series are flushed down to the disk every time step
     FlushBufferToFile();
   }
 }// end of FlushRaw
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 
 /**
@@ -285,15 +264,15 @@ void TIndexOutputHDF5Stream::PostProcess()
 
   // When no reduction operator is applied, the data is flushed after every time step
   // which means it has been done before
-  if (ReductionOp != roNONE)
+  if (reduceOp != NONE)
   {
     // Copy data from GPU matrix
     CopyDataFromDevice();
-
+    // flush to disk
     FlushBufferToFile();
   }
 }// end of PostProcessing
-//------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
 
 
 /**
@@ -303,7 +282,7 @@ void TIndexOutputHDF5Stream::PostProcess()
 void TIndexOutputHDF5Stream::Checkpoint()
 {
   // raw data has already been flushed, others has to be flushed here
-  if (ReductionOp != roNONE)
+  if (reduceOp != NONE)
   {
     // copy data from the device
     CopyDataFromDevice();
@@ -311,7 +290,7 @@ void TIndexOutputHDF5Stream::Checkpoint()
     FlushBufferToFile();
   }
 }// end of Checkpoint
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Close stream (apply post-processing if necessary, flush data and close).
@@ -319,19 +298,18 @@ void TIndexOutputHDF5Stream::Checkpoint()
 void TIndexOutputHDF5Stream::Close()
 {
   // the dataset is still opened
-  if (HDF5_DatasetId != H5I_BADID)
+  if (dataset != H5I_BADID)
   {
-      HDF5_File.CloseDataset(HDF5_DatasetId);
+    file.CloseDataset(dataset);
   }
 
-  HDF5_DatasetId = H5I_BADID;
+  dataset = H5I_BADID;
 }// end of Close
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------//
-//                 TIndexOutputHDF5Stream implementation                      //
-//                            protected methods                               //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//-------------------------------------- Protected methods ---------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
 
 /**
@@ -339,21 +317,15 @@ void TIndexOutputHDF5Stream::Close()
  */
 void TIndexOutputHDF5Stream::FlushBufferToFile()
 {
-  HDF5_File.WriteHyperSlab(HDF5_DatasetId,
-                           TDimensionSizes(0,SampledTimeStep,0),
-                           TDimensionSizes(BufferSize,1,1),
-                           HostStoreBuffer);
-  SampledTimeStep++;
+  file.WriteHyperSlab(dataset,
+                      TDimensionSizes(0,sampledTimeStep,0),
+                      TDimensionSizes(bufferSize,1,1),
+                      hostBuffer);
+  sampledTimeStep++;
 }// end of FlushToFile
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------//
-//                              Implementation                              //
-//                             protected methods                            //
-//--------------------------------------------------------------------------//
-
-//--------------------------------------------------------------------------//
-//                              Implementation                              //
-//                              private methods                             //
-//--------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//--------------------------------------- Private methods ----------------------------------------//
+//------------------------------------------------------------------------------------------------//
 
