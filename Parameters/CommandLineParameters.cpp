@@ -367,6 +367,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         break;
       }
 
+  #ifdef _OPENMP
       case 't':
       {
         try
@@ -386,7 +387,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
         }
         break;
       }
-
+  #endif
       case 'g':
       {
         try
@@ -680,6 +681,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
             break;
           }
 
+        #ifdef _OPENMP
           case 't':
           {
             PrintUsage();
@@ -688,6 +690,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv)
                                                                errorLineIndentation).c_str());
             break;
           }
+        #endif
 
           case 'g':
           {
