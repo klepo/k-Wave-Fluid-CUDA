@@ -27,9 +27,13 @@
     </logicalFolder>
     <logicalFolder name="Logger" displayName="Logger" projectFiles="true">
       <itemPath>Logger/ErrorMessages.h</itemPath>
+      <itemPath>Logger/ErrorMessagesLinux.h</itemPath>
+      <itemPath>Logger/ErrorMessagesWindows.h</itemPath>
       <itemPath>Logger/Logger.cpp</itemPath>
       <itemPath>Logger/Logger.h</itemPath>
       <itemPath>Logger/OutputMessages.h</itemPath>
+      <itemPath>Logger/OutputMessagesLinux.h</itemPath>
+      <itemPath>Logger/OutputMessagesWindows.h</itemPath>
     </logicalFolder>
     <logicalFolder name="MatrixClasses"
                    displayName="MatrixClasses"
@@ -114,18 +118,26 @@
   <confs>
     <conf name="Debug" type="1">
       <toolsSet>
-        <compilerSet>CUDA|GNU</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
+        <cTool>
+          <warningLevel>2</warningLevel>
+        </cTool>
         <ccTool>
+          <developmentMode>6</developmentMode>
           <standard>8</standard>
+          <commandlineTool>nvcc</commandlineTool>
           <incDir>
             <pElem>./</pElem>
             <pElem>/usr/local/hdf5-serial/include</pElem>
           </incDir>
-          <commandLine>-Xcompiler="-g -Wall -fopenmp" -G -arch=compute_52 -code=sm_52 --device-c</commandLine>
+          <commandLine>-Xcompiler=" -g -Wall -fopenmp" -G -arch=compute_52 -code=sm_52 --device-c</commandLine>
+          <preprocessorList>
+            <Elem>__KWAVE_GIT_HASH__="dfdcf5addee5165255b82a4f1c03204c0be296f7"</Elem>
+          </preprocessorList>
         </ccTool>
         <linkerTool>
           <linkerAddLib>
@@ -179,11 +191,19 @@
       </item>
       <item path="Logger/ErrorMessages.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Logger/ErrorMessagesLinux.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Logger/ErrorMessagesWindows.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Logger/Logger.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Logger/Logger.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Logger/OutputMessages.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Logger/OutputMessagesLinux.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Logger/OutputMessagesWindows.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseFloatMatrix.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -296,7 +316,7 @@
     </conf>
     <conf name="Release" type="1">
       <toolsSet>
-        <compilerSet>CUDA|GNU</compilerSet>
+        <compilerSet>CUDA|Unknown</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -308,7 +328,10 @@
             <pElem>./</pElem>
             <pElem>/usr/local/hdf5-serial/include</pElem>
           </incDir>
-          <commandLine>-Xcompiler="-O3 -Wall -fopenmp -mavx " -arch=compute_52 -code=sm_52 --device-c</commandLine>
+          <commandLine>-Xcompiler="-O3 -Wall -fopenmp -mavx" -arch=compute_52 -code=sm_52 --device-c</commandLine>
+          <preprocessorList>
+            <Elem>__KWAVE_GIT_HASH__="dfdcf5addee5165255b82a4f1c03204c0be296f7"</Elem>
+          </preprocessorList>
         </ccTool>
         <linkerTool>
           <linkerAddLib>
@@ -360,11 +383,19 @@
       </item>
       <item path="Logger/ErrorMessages.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Logger/ErrorMessagesLinux.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Logger/ErrorMessagesWindows.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Logger/Logger.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Logger/Logger.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Logger/OutputMessages.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Logger/OutputMessagesLinux.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Logger/OutputMessagesWindows.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseFloatMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
