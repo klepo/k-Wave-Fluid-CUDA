@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 January   2015, 17:21 (created) \n
- *              29 July      2016, 16:56 (revised)
+ *              10 August    2016, 12:03 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,8 +30,6 @@
  */
 
 
-//#include <string>
-#include <stdexcept>
 #include <cuda.h>
 #include <cuda_runtime.h>
 

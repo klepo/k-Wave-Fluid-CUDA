@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2012, 13:39 (created) \n
- *              29 July      2016, 16:58 (revised)
+ *              10 August    2016, 12:57 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -35,15 +35,12 @@
 
 #include <iostream>
 #include <string>
-#include <sstream>
 #include <exception>
 #include <stdexcept>
 
 #include <Parameters/Parameters.h>
 #include <Parameters/CUDAParameters.h>
 #include <Utils/MatrixNames.h>
-#include <Logger/ErrorMessages.h>
-#include <Logger/OutputMessages.h>
 #include <Logger/Logger.h>
 
 
@@ -133,7 +130,7 @@ void TParameters::Init(int argc, char** argv)
   {
     throw std::invalid_argument(TLogger::FormatMessage(ERR_FMT_ILLEGAL_START_TIME_VALUE,
                                                        1l,
-                                                        nt));
+                                                       nt));
   }
 
   TLogger::Log(TLogger::BASIC, OUT_FMT_DONE);

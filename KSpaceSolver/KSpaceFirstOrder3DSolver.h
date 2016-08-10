@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              26 July     2016, 15:42 (revised)
+ *              10 August   2016, 15:42 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -33,8 +33,6 @@
 #ifndef TKSPACE_FIRST_ORDER_3D_SOLVER_H
 #define	TKSPACE_FIRST_ORDER_3D_SOLVER_H
 
-
-#include <iostream>
 
 #include <Parameters/Parameters.h>
 #include <MatrixClasses/RealMatrix.h>
@@ -210,7 +208,7 @@ protected:
     /// Reads the header of the output file and sets the cumulative elapsed time from the first log.
     void LoadElapsedTimeFromOutputFile(THDF5_File& o1utputFile);
 
-    //------------------------- Get matrices --------------------------------//
+    //-------------------------------------- Get matrices ----------------------------------------//
     /// Get the kappa matrix from the container.
     TRealMatrix& Get_kappa()
     {

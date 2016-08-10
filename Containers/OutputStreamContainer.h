@@ -156,6 +156,6 @@ class TOutputStreamContainer
     /// Map with output streams.
     TOutputStreamMap outputStreamContainer;
 }; // end of TOutputStreamContainer
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 #endif	/*  OUTPUT_STREAM_CONTAINER_H */

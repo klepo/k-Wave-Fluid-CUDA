@@ -1,6 +1,6 @@
 /**
  * @file        CUDAParameters.cpp
- * 
+ *
  * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 November 2015, 16:49 (created) \n
- *              29 July     2016, 16:57 (revised)
+ *              10 August   2016, 12:21 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,7 +30,6 @@
  */
 
 #include <stdexcept>
-#include <cstring>
 #include <cuda_runtime.h>
 
 #include <Parameters/CUDAParameters.h>

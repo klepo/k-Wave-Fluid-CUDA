@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 10:30 (created) \n
- *              29 July      2016, 16:54 (revised)
+ *              10 August    2016, 11:59 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -28,9 +28,6 @@
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
  * If not, see http://www.gnu.org/licenses/.
  */
-
-#include <iostream>
-#include <cstring>
 
 #include <MatrixClasses/RealMatrix.h>
 #include <MatrixClasses/ComplexMatrix.h>

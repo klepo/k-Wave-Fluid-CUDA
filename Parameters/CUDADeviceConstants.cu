@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        17 February 2016, 10:53 (created) \n
- *              29 July     2016, 16:57 (revised)
+ *              10 August   2016, 12:49 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,9 +29,6 @@
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
  * If not, see http://www.gnu.org/licenses/.
  */
-
-#include <string>
-#include <stdexcept>
 
 #include <Parameters/CUDADeviceConstants.cuh>
 #include <Logger/Logger.h>

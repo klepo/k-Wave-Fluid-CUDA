@@ -32,8 +32,6 @@
 #ifndef SOLVER_CUDA_KERNELS_CUH
 #define	SOLVER_CUDA_KERNELS_CUH
 
-//#include <iostream>
-
 #include <MatrixClasses/RealMatrix.h>
 #include <MatrixClasses/ComplexMatrix.h>
 #include <MatrixClasses/IndexMatrix.h>

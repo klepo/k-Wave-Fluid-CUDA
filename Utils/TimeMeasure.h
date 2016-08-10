@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        15 August   2012, 09:35 (created) \n
- *              25 July     2016, 10:34 (revised)
+ *              10 August   2016, 10:34 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -32,8 +32,6 @@
 
 #ifndef TIME_MEASURE_H
 #define	TIME_MEASURE_H
-
-#include <exception>
 
 #ifdef _OPENMP
   #include <omp.h>

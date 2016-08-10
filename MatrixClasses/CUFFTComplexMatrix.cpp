@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2011, 13:10 (created) \n
- *              29 July      2016, 16:52 (revised)
+ *              10 August    2016, 11:56 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -31,18 +31,14 @@
  */
 
 
-#include <iostream>
 #include <string>
 #include <stdexcept>
-
 #include <cufft.h>
 
 #include <MatrixClasses/CUFFTComplexMatrix.h>
 #include <MatrixClasses/RealMatrix.h>
-#include <Logger/ErrorMessages.h>
+#include <Logger/Logger.h>
 #include <KSpaceSolver/SolverCUDAKernels.cuh>
-
-#include "Logger/Logger.h"
 
 
 //------------------------------------------------------------------------------------------------//

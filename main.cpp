@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2012, 10:57 (created) \n
- *              02 August   2016, 13:50 (revised)
+ *              10 August   2016, 12:59 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -68,8 +68,9 @@
  * from http://software.intel.com/en-us/intel-composer-xe/. The Intel compiler is only free for
  * non-commercial use.
 
- * The CUDA library can be downloaded from https://developer.nvidia.com/cuda-downloads.
- * The supported versions are 6.5, 7.0 and 7.5. We hope the code will work also with newer versions.
+ * The CUDA library can be downloaded from https://developer.nvidia.com/cuda-toolkit-archive.
+ * The supported versions are 6.5, 7.0 and 7.5. We cannot guarantee the code can be compiled with
+ * later versions of CUDA.
  *
  * <b> 2.1 The HDF5 library installation procedure </b>
 
@@ -81,12 +82,20 @@
  * an installation folder by typing:
 \verbatim ./configure --enable-hl --prefix=folder_to_install \endverbatim
  * 3. Make the HDF library by typing:
-\verbatim make \endverbatim
+\verbatim make -j \endverbatim
  * 4. Install the HDF library by typing:
 \verbatim make install \endverbatim
  *
  *
- * <b> 2.2 Compiling the CUDA/C++ code </b>
+ * <b> 2.2 The CUDA installation procedure </b>
+ *
+ * 1. Download CUDA version 7.5 https://developer.nvidia.com/cuda-toolkit-archive
+ * 2. Follow the NVIDIA official installation guide for Windows and Linux
+ *    http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-microsoft-windows
+ *    and http://docs.nvidia.com/cuda/cuda-installation-guide-linux/.
+ *
+ *
+ * <b> 2.3 Compiling the CUDA/C++ code </b>
  *
  * When the libraries and the compiler have been installed, you are ready to compile the
  * <tt>kspaceFirstOrder3D-CUDA </tt> code. The Makefile only supports code compilation under CUDA/g++
@@ -109,7 +118,8 @@
  *
  * @section Parameters 3 Command Line Parameters
  * The CUDA/C++ code requires two mandatory parameters and accepts a few optional parameters and
- * flags.
+ * flags. Ill parameters, bad simulation files, and runtime errors such as out-of-memory problems,
+ * lead to an exception followed by an error message shown and execution termination.
  *
  * The mandatory parameters \c -i and \c -o specify the input and output file. The file names
  * respect the path conventions for particular operating system. If any of the files is not
@@ -140,8 +150,8 @@
  * time to save data while not having a large impact on the final file size. That's why we decided
  * to disable compression in default settings.
  *
- * The \c <tt>\--benchmark</tt> parameter enables the total length of simulation (i.e., the number of
- * time steps) to be overridden by setting a new number of time  steps to simulate. This is
+ * The \c <tt>\--benchmark</tt> parameter enables the total length of simulation (i.e., the number
+ * of time steps) to be overridden by setting a new number of time  steps to simulate. This is
  * particularly useful for performance evaluation and benchmarking. As the code performance is
  * relatively stable, 50-100 time steps is  usually enough to predict the simulation duration.
  * This parameter can also be used to quickly check the simulation is set up correctly.
@@ -168,15 +178,16 @@
  * of time (7 matrices have to be stored in  the checkpoint file and all aggregated quantities are
  * flushed into the output file). Please note, that the checkpoint file name and path is not checked
  * at the beginning of the simulation, but at the time the code starts checkpointing. Thus make sure
- * the file path was correctly specified (otherwise you'll find out after the first leg that the
- * simulation crashed). The rationale behind this is that to keep as high level of fault tolerance
- * as possible, the checkpoint file should be touched even when really necessary.
+ * the file path was correctly specified ((otherwise you will not find out the simulation crashed
+ * until the first leg of the simulation finishes)). The rationale behind this is that to keep as
+ * high level of fault tolerance as possible, the checkpoint file should be touched even when really
+ * necessary.
  *
  * When controlling a multi-leg simulation by a script loop, the parameters of the code remains the
  * same in all legs. The first leg of the simulation creates a checkpoint  file while the last one
  * deletes it. If the checkpoint file is not found the simulation starts from the beginning. In
  * order to find out how many steps have been finished, please open the output file and read
- * the variable <tt>t_index</tt> (e.g. by the h5dump command).
+ * the variable <tt>t_index</tt> and compare it with <tt>Nt</tt> (e.g. by the h5dump command).
  *
  *
  * The remaining flags specify the output quantities to be recorded during the  simulation and
@@ -203,8 +214,8 @@
  * be specified using the -s parameter.  Note, the index for the first time step is 1 (this follows
  * the MATLAB indexing convention).
  *
- * The <tt>\--copy_sensor_mask</tt> will copy the sensor from the input file to the output  one at the end
- * of the simulation. This helps in post-processing and visualisation of the outputs.
+ * The <tt>\--copy_sensor_mask</tt> will copy the sensor from the input file to the output  one at
+ *  the end  of the simulation. This helps in post-processing and visualisation of the outputs.
  *
 \verbatim
 ┌───────────────────────────────────────────────────────────────┐
@@ -311,8 +322,9 @@
  * given bellow).
  * The HDF5 checkpoint file contains the same file header as the input file and the root group `/'
  * with a few datasets keeping the actual simulation state.
- *  * The HDF5 output file contains a file header with the simulation description as well as
- * performance statistics, such as the simulation  time and memory consumption, stored in string attributes.
+ * The HDF5 output file contains a file header with the simulation description as well as
+ * performance statistics, such as the simulation  time and memory consumption, stored in string
+ * attributes.
 
  * The results of the simulation are stored in the root group `/' in the form of 3D datasets. If the
  * linear sensor mask is used, all output quantities are stored as datasets in the root group. If
@@ -425,9 +437,6 @@ Name                            Size           Data type       Domain Type      
   dx                            (1, 1, 1)       float          real
   dy                            (1, 1, 1)       float          real
   dz                            (1, 1, 1)       float          real
-  x_shift_neg_r                 (Nx/2+1, 1, 1)  float          complex          File version 1.1
-  y_shift_neg_r                 (1, Ny/2+1, 1)  float          complex          File version 1.1
-  z_shift_neg_r                 (1, 1, Nz/2+1)  float          complex          File version 1.1
 --------------------------------------------------------------------------------------------------------------
   3 Medium Properties
 --------------------------------------------------------------------------------------------------------------
@@ -455,9 +464,9 @@ Name                            Size           Data type       Domain Type      
 --------------------------------------------------------------------------------------------------------------
   4. Sensor Variables
 --------------------------------------------------------------------------------------------------------------
-  sensor_mask_type              (1, 1, 1)       long           real             File version 1.1 (0 = index, 1 = corners)
-  sensor_mask_index             (Nsens, 1, 1)   long           real             File version 1.0 always, File version 1.1 if sensor_mask_type == 0
-  sensor_mask_corners           (Ncubes, 6, 1)  long           real             File version 1.1, if sensor_mask_type == 1
+  sensor_mask_type              (1, 1, 1)       long           real             file version 1.1 (0 = index, 1 = corners)
+  sensor_mask_index             (Nsens, 1, 1)   long           real             file version 1.0 always, File version 1.1 if sensor_mask_type == 0
+  sensor_mask_corners           (Ncubes, 6, 1)  long           real             file version 1.1, if sensor_mask_type == 1
 --------------------------------------------------------------------------------------------------------------
   5 Source Properties
 --------------------------------------------------------------------------------------------------------------
@@ -472,7 +481,7 @@ Name                            Size           Data type       Domain Type      
   uz_source_input               (1, Nt_src, 1)     float       real             u_source_many == 0
                                 (Nt_src, Nsrc, 1)  float       real             u_source_many == 1
 
-  5.2 Pressure Source Terms (defined if p_source_flag == 1))
+  5.2 Pressure Source Terms (defined if (p_source_flag == 1))
   p_source_mode                 (1, 1, 1)          long        real
   p_source_many                 (1, 1, 1)          long        real
   p_source_index                (Nsrc, 1, 1)       long        real
@@ -495,6 +504,9 @@ Name                            Size           Data type       Domain Type      
   ddy_k_shift_neg               (1, Ny, 1)        float        complex
   ddz_k_shift_pos               (1, 1, Nz)        float        complex
   ddz_k_shift_neg               (1, 1, Nz)        float        complex
+  x_shift_neg_r                 (Nx/2 + 1, 1, 1)  float        complex          file version 1.1
+  y_shift_neg_r                 (1, Ny/2 + 1, 1)  float        complex          file version 1.1
+  z_shift_neg_r                 (1, 1, Nz/2)      float        complex          file version 1.1
 --------------------------------------------------------------------------------------------------------------
   7. PML Variables
 --------------------------------------------------------------------------------------------------------------
@@ -528,7 +540,7 @@ Name                            Size           Data type       Domain Type      
   Nt                            (1, 1, 1)       long           real
   t_index                       (1, 1, 1)       long           real
 --------------------------------------------------------------------------------------------------------------
-  2. Simulation state
+  2. Simulation State
 --------------------------------------------------------------------------------------------------------------
   p                            (Nx, Ny, Nz)    float           real
   ux_sgx                       (Nx, Ny, Nz)    float           real
@@ -592,9 +604,9 @@ Name                            Size           Data type       Domain Type      
 --------------------------------------------------------------------------------------------------------------
   4. Sensor Variables (present if --copy_sensor_mask)
 --------------------------------------------------------------------------------------------------------------
-  sensor_mask_type              (1, 1, 1)       long           real             File version 1.1 and --copy_sensor_mask
-  sensor_mask_index             (Nsens, 1, 1)   long           real             File version 1.1 and if sensor_mask_type == 0
-  sensor_mask_corners           (Ncubes, 6, 1)  long           real             File version 1.1 and if sensor_mask_type == 1
+  sensor_mask_type              (1, 1, 1)       long           real             file version 1.1 and --copy_sensor_mask
+  sensor_mask_index             (Nsens, 1, 1)   long           real             file version 1.1 and if sensor_mask_type == 0
+  sensor_mask_corners           (Ncubes, 6, 1)  long           real             file version 1.1 and if sensor_mask_type == 1
 --------------------------------------------------------------------------------------------------------------
   5a. Simulation Results: if sensor_mask_type == 0 (index), or File version == 1.0
 --------------------------------------------------------------------------------------------------------------
@@ -639,7 +651,7 @@ Name                            Size           Data type       Domain Type      
   uy_final                      (Nx, Ny, Nz)       float       real             --u_final
   uz_final                      (Nx, Ny, Nz)       float       real             --u_final
 --------------------------------------------------------------------------------------------------------------
-  5b. Simulation Results: if sensor_mask_type == 1 (corners) and File version == 1.1
+  5b. Simulation Results: if sensor_mask_type == 1 (corners) and file version == 1.1
 --------------------------------------------------------------------------------------------------------------
   /p                            group of datasets, one per cuboid               -p or --p_raw
   /p/1                          (Cx, Cy, Cz, Nt-s) float       real               1st sampled cuboid
@@ -711,8 +723,6 @@ Name                            Size           Data type       Domain Type      
  *
 */
 
-#include <cstdlib>
-#include <iostream>
 #include <exception>
 
 #ifdef _OPENMP
@@ -722,8 +732,6 @@ Name                            Size           Data type       Domain Type      
 #include <KSpaceSolver/KSpaceFirstOrder3DSolver.h>
 #include <Logger/Logger.h>
 
-#include <cstdio>
-#include <iostream>
 
 using std::string;
 
@@ -884,4 +892,4 @@ if (KSpaceSolver.GetCumulatedTotalTime() != KSpaceSolver.GetTotalTime())
 
   return EXIT_SUCCESS;
 }// end of main
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------

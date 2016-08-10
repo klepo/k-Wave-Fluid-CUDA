@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August   2012, 11:25 (created) \n
- *              29 July     2016, 16:57 (revised)
+ *              10 August   2016, 12:54 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -39,15 +39,13 @@
   #include <GetoptWin64/Getopt.h>
 #endif
 
-#include <cstring>
-#include <limits>
-#include <stdexcept>
-
 #ifdef _OPENMP
   #include <omp.h>
 #endif
 
-#include <Logger/ErrorMessages.h>
+
+#include <stdexcept>
+
 #include <Logger/Logger.h>
 #include <Parameters/CommandLineParameters.h>
 #include <HDF5/HDF5_File.h>

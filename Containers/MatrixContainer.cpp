@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              02 August    2016, 14:17 (revised)
+ *              10 August    2016, 10:35 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -32,11 +32,9 @@
 #include <stdexcept>
 
 #include <Containers/MatrixContainer.h>
-
 #include <Parameters/Parameters.h>
 #include <Logger/ErrorMessages.h>
-
-#include "Logger/Logger.h"
+#include <Logger/Logger.h>
 
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------ Constants -------------------------------------------//
@@ -338,8 +336,8 @@ void TMatrixContainer::AddMatrices()
     const size_t ny_2 = fullDims.ny / 2 + 1;
     const size_t nz_2 = fullDims.nz / 2 + 1;
 
-    size_t xCutSize = nx_2       * fullDims.ny * fullDims.nz;
-    size_t yCutSize = fullDims.nx * ny_2       * fullDims.nz;
+    size_t xCutSize = nx_2        * fullDims.ny * fullDims.nz;
+    size_t yCutSize = fullDims.nx * ny_2        * fullDims.nz;
     size_t zCutSize = fullDims.nx * fullDims.ny * nz_2;
 
     if ((xCutSize >= yCutSize) && (xCutSize >= zCutSize))

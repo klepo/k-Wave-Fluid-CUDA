@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              02 August    2016, 14:17 (revised)
+ *              10 August    2016, 10:42 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -33,7 +33,6 @@
 #ifndef MATRIX_CONTAINER_H
 #define	MATRIX_CONTAINER_H
 
-#include <cstring>
 #include <map>
 
 #include <MatrixClasses/BaseMatrix.h>
@@ -51,7 +50,7 @@
 
 /**
  * @enum TMatrixIdx
- * @brief Matrix identifers of all matrices in the k-space code, mames based on the Matlab notation.
+ * @brief Matrix identifers of all matrices in the k-space code, names based on the Matlab notation.
  */
 enum TMatrixIdx
 {

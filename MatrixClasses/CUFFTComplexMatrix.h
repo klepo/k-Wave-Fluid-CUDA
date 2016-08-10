@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2011, 13:10 (created) \n
- *              29 July      2016, 16:52 (revised)
+ *              10 August    2016, 10:57 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -34,8 +34,6 @@
 #define CUFFT_COMPLEX_MATRIX_H
 
 #include <map>
-
-#include <cuda_runtime.h>
 #include <cufft.h>
 
 #include <MatrixClasses/ComplexMatrix.h>

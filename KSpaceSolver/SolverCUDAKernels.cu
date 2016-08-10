@@ -1329,14 +1329,14 @@ void SolverCUDAKernels::ComputeDensityNonlinearHeterogeneous(TRealMatrix&       
  * @param [in]  duzdz   - Gradient of velocity z
  */
 __global__ void CUDAComputeDensityLinearHomogeneous(float*       rhox,
-                                                      float*       rhoy,
-                                                      float*       rhoz,
-                                                      const float* pml_x,
-                                                      const float* pml_y,
-                                                      const float* pml_z,
-                                                      const float* duxdx,
-                                                      const float* duydy,
-                                                      const float* duzdz)
+                                                    float*       rhoy,
+                                                    float*       rhoz,
+                                                    const float* pml_x,
+                                                    const float* pml_y,
+                                                    const float* pml_z,
+                                                    const float* duxdx,
+                                                    const float* duydy,
+                                                    const float* duzdz)
 {
   for (auto i = GetIndex(); i < cudaDeviceConstants.nElements; i += GetStride())
   {

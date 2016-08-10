@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              29 July     2016, 16:53 (revised)
+ *              10 August   2016, 11:58 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -28,8 +28,6 @@
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
  * If not, see http://www.gnu.org/licenses/.
  */
-
-#include <iostream>
 
 #include <MatrixClasses/IndexMatrix.h>
 #include <Logger/Logger.h>
@@ -107,7 +105,7 @@ void TIndexMatrix::ReadDataFromHDF5File(THDF5_File&  file,
  * @throw ios:failure if error occurs.
  */
 void TIndexMatrix::WriteDataToHDF5File(THDF5_File&  file,
-                                       TMatrixName&  matrixName,
+                                       TMatrixName& matrixName,
                                        const size_t compressionLevel)
 {
   // set chunks - may be necessary for long index based sensor masks

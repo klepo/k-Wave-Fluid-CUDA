@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 12:13 (created) \n
- *              29 July      2016, 16:50 (revised)
+ *              10 August    2016, 11:54 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -32,10 +32,7 @@
 
 
 #include <cstring>
-#include <cassert>
-
 #include <immintrin.h>
-#include <cuda_runtime.h>
 
 #include <MatrixClasses/BaseFloatMatrix.h>
 #include <Utils/DimensionSizes.h>

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        19 April    2016, 12:52 (created) \n
- *              29 July     2016, 16:44 (revised)
+ *              10 August   2016, 11:52 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,13 +30,10 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#include <cstdarg>
 #include <string>
 #include <sstream>
 
 #include <Logger/Logger.h>
-#include <Logger/OutputMessages.h>
-#include <Logger/ErrorMessages.h>
 
 using std::string;
 

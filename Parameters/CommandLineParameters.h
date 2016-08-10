@@ -11,12 +11,13 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August   2012, 11:25 (created) \n
- *              25 July     2016, 13:27 (revised)
+ *              10 August   2016, 13:27 (revised)
  *
  * @section Params Command Line Parameters
  *
  * The CUDA/C++ code requires two mandatory parameters and accepts a few optional parameters and
- * flags.
+ * flags. Ill parameters, bad simulation files, and runtime errors such as out-of-memory problems,
+ * lead to an exception followed by an error message shown and execution termination.
  *
  * The mandatory parameters \c -i and \c -o specify the input and output file. The file names
  * respect the path conventions for particular operating system. If any of the files is not
@@ -47,8 +48,8 @@
  * time to save data while not having a large impact on the final file size. That's why we decided
  * to disable compression in default settings.
  *
- * The \c <tt>\--benchmark</tt> parameter enables the total length of simulation (i.e., the number of
- * time steps) to be overridden by setting a new number of time  steps to simulate. This is
+ * The \c <tt>\--benchmark</tt> parameter enables the total length of simulation (i.e., the number
+ * of time steps) to be overridden by setting a new number of time  steps to simulate. This is
  * particularly useful for performance evaluation and benchmarking. As the code performance is
  * relatively stable, 50-100 time steps is  usually enough to predict the simulation duration.
  * This parameter can also be used to quickly check the simulation is set up correctly.
@@ -75,15 +76,16 @@
  * of time (7 matrices have to be stored in  the checkpoint file and all aggregated quantities are
  * flushed into the output file). Please note, that the checkpoint file name and path is not checked
  * at the beginning of the simulation, but at the time the code starts checkpointing. Thus make sure
- * the file path was correctly specified (otherwise you'll find out after the first leg that the
- * simulation crashed). The rationale behind this is that to keep as high level of fault tolerance
- * as possible, the checkpoint file should be touched even when really necessary.
+ * the file path was correctly specified ((otherwise you will not find out the simulation crashed
+ * until the first leg of the simulation finishes)). The rationale behind this is that to keep as
+ * high level of fault tolerance as possible, the checkpoint file should be touched even when really
+ * necessary.
  *
  * When controlling a multi-leg simulation by a script loop, the parameters of the code remains the
  * same in all legs. The first leg of the simulation creates a checkpoint  file while the last one
  * deletes it. If the checkpoint file is not found the simulation starts from the beginning. In
  * order to find out how many steps have been finished, please open the output file and read
- * the variable <tt>t_index</tt> (e.g. by the h5dump command).
+ * the variable <tt>t_index</tt> and compare it with <tt>Nt</tt> (e.g. by the h5dump command).
  *
  *
  * The remaining flags specify the output quantities to be recorded during the  simulation and

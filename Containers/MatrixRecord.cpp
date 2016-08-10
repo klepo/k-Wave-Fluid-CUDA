@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December 2014, 15:44 (created) \n
- *              19 July     2016, 16:43 (revised)
+ *              10 August   2016, 16:43 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -31,7 +31,7 @@
  */
 
 //------------------------------------------------------------------------------------------------//
-//-------------------------------------- Constants -----------------------------------------------//
+//------------------------------------------ Constants -------------------------------------------//
 //------------------------------------------------------------------------------------------------//
 
 
@@ -83,7 +83,7 @@ TMatrixRecord& TMatrixRecord::operator= (const TMatrixRecord& src)
   if (this != &src)
   {
     matrixPtr       = src.matrixPtr;
-    matrixType       = src.matrixType;
+    matrixType      = src.matrixType;
     dimensionSizes  = src.dimensionSizes;
     loadData        = src.loadData;
     checkpoint      = src.checkpoint;
@@ -106,7 +106,7 @@ void TMatrixRecord::Set(const TMatrixType     matrixType,
                         const TDimensionSizes dimensionSizes,
                         const bool            loadData,
                         const bool            checkpoint,
-                        const std::string&    matrixName)
+                        TMatrixName&          matrixName)
 {
   this->matrixPtr        = nullptr;
   this->matrixType       = matrixType;

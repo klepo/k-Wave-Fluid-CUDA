@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              29 July     2016, 16:40 (revised)
+ *              10 August   2016, 10:49 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,7 +50,7 @@
 #include <Parameters/Parameters.h>
 #include <Logger/ErrorMessages.h>
 
-#include "Logger/Logger.h"
+#include <Logger/Logger.h>
 
 using std::ios;
 using std::string;
@@ -1409,7 +1409,8 @@ void THDF5_FileHeader::WriteHeaderToCheckpointFile(THDF5_File& checkpointFile)
                                       headerNames [FILE_DESCRIPTION].c_str(),
                                       headerValues[FILE_DESCRIPTION].c_str());
 
-  checkpointFile.WriteStringAttribute(rootGroup,                                      "/",
+  checkpointFile.WriteStringAttribute(rootGroup,
+                                      "/",
                                       headerNames [MAJOR_VERSION].c_str(),
                                       headerValues[MAJOR_VERSION].c_str());
 

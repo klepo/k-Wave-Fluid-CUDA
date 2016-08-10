@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              02 August   2016, 14:24 (revised)
+ *              10 August   2016, 10:49 (revised)
  *
  *
  * @section HDF HDF5 File Structure
@@ -49,8 +49,9 @@
  * given bellow).
  * The HDF5 checkpoint file contains the same file header as the input file and the root group `/'
  * with a few datasets keeping the actual simulation state.
- *  * The HDF5 output file contains a file header with the simulation description as well as
- * performance statistics, such as the simulation  time and memory consumption, stored in string attributes.
+ * The HDF5 output file contains a file header with the simulation description as well as
+ * performance statistics, such as the simulation  time and memory consumption, stored in string
+ * attributes.
 
  * The results of the simulation are stored in the root group `/' in the form of 3D datasets. If the
  * linear sensor mask is used, all output quantities are stored as datasets in the root group. If
@@ -163,9 +164,6 @@ Name                            Size           Data type       Domain Type      
   dx                            (1, 1, 1)       float          real
   dy                            (1, 1, 1)       float          real
   dz                            (1, 1, 1)       float          real
-  x_shift_neg_r                 (Nx/2+1, 1, 1)  float          complex          File version 1.1
-  y_shift_neg_r                 (1, Ny/2+1, 1)  float          complex          File version 1.1
-  z_shift_neg_r                 (1, 1, Nz/2+1)  float          complex          File version 1.1
 --------------------------------------------------------------------------------------------------------------
   3 Medium Properties
 --------------------------------------------------------------------------------------------------------------
@@ -193,9 +191,9 @@ Name                            Size           Data type       Domain Type      
 --------------------------------------------------------------------------------------------------------------
   4. Sensor Variables
 --------------------------------------------------------------------------------------------------------------
-  sensor_mask_type              (1, 1, 1)       long           real             File version 1.1 (0 = index, 1 = corners)
-  sensor_mask_index             (Nsens, 1, 1)   long           real             File version 1.0 always, File version 1.1 if sensor_mask_type == 0
-  sensor_mask_corners           (Ncubes, 6, 1)  long           real             File version 1.1, if sensor_mask_type == 1
+  sensor_mask_type              (1, 1, 1)       long           real             file version 1.1 (0 = index, 1 = corners)
+  sensor_mask_index             (Nsens, 1, 1)   long           real             file version 1.0 always, File version 1.1 if sensor_mask_type == 0
+  sensor_mask_corners           (Ncubes, 6, 1)  long           real             file version 1.1, if sensor_mask_type == 1
 --------------------------------------------------------------------------------------------------------------
   5 Source Properties
 --------------------------------------------------------------------------------------------------------------
@@ -210,7 +208,7 @@ Name                            Size           Data type       Domain Type      
   uz_source_input               (1, Nt_src, 1)     float       real             u_source_many == 0
                                 (Nt_src, Nsrc, 1)  float       real             u_source_many == 1
 
-  5.2 Pressure Source Terms (defined if p_source_flag == 1))
+  5.2 Pressure Source Terms (defined if (p_source_flag == 1))
   p_source_mode                 (1, 1, 1)          long        real
   p_source_many                 (1, 1, 1)          long        real
   p_source_index                (Nsrc, 1, 1)       long        real
@@ -233,6 +231,9 @@ Name                            Size           Data type       Domain Type      
   ddy_k_shift_neg               (1, Ny, 1)        float        complex
   ddz_k_shift_pos               (1, 1, Nz)        float        complex
   ddz_k_shift_neg               (1, 1, Nz)        float        complex
+  x_shift_neg_r                 (Nx/2 + 1, 1, 1)  float        complex          file version 1.1
+  y_shift_neg_r                 (1, Ny/2 + 1, 1)  float        complex          file version 1.1
+  z_shift_neg_r                 (1, 1, Nz/2)      float        complex          file version 1.1
 --------------------------------------------------------------------------------------------------------------
   7. PML Variables
 --------------------------------------------------------------------------------------------------------------
@@ -266,7 +267,7 @@ Name                            Size           Data type       Domain Type      
   Nt                            (1, 1, 1)       long           real
   t_index                       (1, 1, 1)       long           real
 --------------------------------------------------------------------------------------------------------------
-  2. Simulation state
+  2. Simulation State
 --------------------------------------------------------------------------------------------------------------
   p                            (Nx, Ny, Nz)    float           real
   ux_sgx                       (Nx, Ny, Nz)    float           real
@@ -330,9 +331,9 @@ Name                            Size           Data type       Domain Type      
 --------------------------------------------------------------------------------------------------------------
   4. Sensor Variables (present if --copy_sensor_mask)
 --------------------------------------------------------------------------------------------------------------
-  sensor_mask_type              (1, 1, 1)       long           real             File version 1.1 and --copy_sensor_mask
-  sensor_mask_index             (Nsens, 1, 1)   long           real             File version 1.1 and if sensor_mask_type == 0
-  sensor_mask_corners           (Ncubes, 6, 1)  long           real             File version 1.1 and if sensor_mask_type == 1
+  sensor_mask_type              (1, 1, 1)       long           real             file version 1.1 and --copy_sensor_mask
+  sensor_mask_index             (Nsens, 1, 1)   long           real             file version 1.1 and if sensor_mask_type == 0
+  sensor_mask_corners           (Ncubes, 6, 1)  long           real             file version 1.1 and if sensor_mask_type == 1
 --------------------------------------------------------------------------------------------------------------
   5a. Simulation Results: if sensor_mask_type == 0 (index), or File version == 1.0
 --------------------------------------------------------------------------------------------------------------
@@ -377,7 +378,7 @@ Name                            Size           Data type       Domain Type      
   uy_final                      (Nx, Ny, Nz)       float       real             --u_final
   uz_final                      (Nx, Ny, Nz)       float       real             --u_final
 --------------------------------------------------------------------------------------------------------------
-  5b. Simulation Results: if sensor_mask_type == 1 (corners) and File version == 1.1
+  5b. Simulation Results: if sensor_mask_type == 1 (corners) and file version == 1.1
 --------------------------------------------------------------------------------------------------------------
   /p                            group of datasets, one per cuboid               -p or --p_raw
   /p/1                          (Cx, Cy, Cz, Nt-s) float       real               1st sampled cuboid
