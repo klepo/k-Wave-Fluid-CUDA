@@ -278,7 +278,7 @@ TOutputMessage OUT_FMT_BUILD_NO_DATE_TIME
         = "├───────────────────────────────────────────────────────────────┤\n"
           "│                       Build information                       │\n"
           "├───────────────────────────────────────────────────────────────┤\n"
-          "│ Build Number:     kspaceFirstOrder3D v3.4                     │\n"
+          "│ Build number:     kspaceFirstOrder3D v3.4                     │\n"
           "│ Build date:       %*.*s                                 │\n"
           "│ Build time:       %*.*s                                    │\n";
 
@@ -327,13 +327,13 @@ TOutputMessage OUT_FMT_SSE2
 
 /// Print version output message
 TOutputMessage OUT_FMT_CUDA_RUNTIME_NA
-        = "│ CUDA Runtime:     N/A                                         │\n";
+        = "│ CUDA runtime:     N/A                                         │\n";
 /// Print version output message
 TOutputMessage OUT_FMT_CUDA_RUNTIME
-        = "│ CUDA Runtime:     %d.%d                                         │\n";
+        = "│ CUDA runtime:     %d.%d                                         │\n";
 /// Print version output message
 TOutputMessage OUT_FMT_CUDA_DRIVER
-        = "│ CUDA Driver:      %d.%d                                         │\n";
+        = "│ CUDA driver:      %d.%d                                         │\n";
 
 /// Print version output message
 TOutputMessage OUT_FMT_CUDA_DEVICE_INFO_NA

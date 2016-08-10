@@ -58,7 +58,7 @@
  * There are variety of different C++ compilers that can be used to compile the source codes.
  * We recommend using the GNU C++ compiler (gcc/g++) version 4.8/4.9, the Intel C++ compiler
  * version 15.0, or Visual Studio 2013. The version of the compiler  is limited by the CUDA
- * architecture version. The code was tested with CUDA 6.5, 7.0 and 7.5.
+ * architecture version. The code was tested with CUDA 7.0 and 7.5.
  * The codes can be compiled on 64-bit Linux and Windows. 32-bit systems are not supported due to
  * the the memory requirements even for small simulations.
  *
@@ -69,7 +69,7 @@
  * non-commercial use.
 
  * The CUDA library can be downloaded from https://developer.nvidia.com/cuda-toolkit-archive.
- * The supported versions are 6.5, 7.0 and 7.5. We cannot guarantee the code can be compiled with
+ * The supported versions are 7.0 and 7.5. We cannot guarantee the code can be compiled with
  * later versions of CUDA.
  *
  * <b> 2.1 The HDF5 library installation procedure </b>
