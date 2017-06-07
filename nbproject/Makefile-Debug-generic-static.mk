@@ -64,8 +64,8 @@ OBJECTFILES= \
 CFLAGS=-m64
 
 # CC Compiler Flags
-CCFLAGS=-m64 -Xcompiler=" -g3 -gdwarf-2  -Wall -fopenmp" -G --device-c
-CXXFLAGS=-m64 -Xcompiler=" -g3 -gdwarf-2  -Wall -fopenmp" -G --device-c
+CCFLAGS=-m64 -Xcompiler=" -g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 --device-c -lineinfo -Xptxas -v
+CXXFLAGS=-m64 -Xcompiler=" -g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 --device-c -lineinfo -Xptxas -v
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -96,7 +96,7 @@ ${CND_DISTDIR}/${CND_CONF}/k-wave-fluid-cuda: ${EBROOTCUDA}/lib64/libcudart_stat
 
 ${CND_DISTDIR}/${CND_CONF}/k-wave-fluid-cuda: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}
-	nvcc -o ${CND_DISTDIR}/${CND_CONF}/k-wave-fluid-cuda ${OBJECTFILES} ${LDLIBSOPTIONS} -Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp" -G
+	nvcc -o ${CND_DISTDIR}/${CND_CONF}/k-wave-fluid-cuda ${OBJECTFILES} ${LDLIBSOPTIONS} -Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp" -G -lineinfo
 
 ${OBJECTDIR}/Containers/MatrixContainer.o: Containers/MatrixContainer.cpp
 	${MKDIR} -p ${OBJECTDIR}/Containers
