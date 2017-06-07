@@ -24,14 +24,14 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=k-wave-fluid-cuda
+PROJECTNAME=k-Wave-Fluid-CUDA
 
 # Active Configuration
-DEFAULTCONF=Debug
+DEFAULTCONF=Debug-pcjaros-static
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Debug Release 
+ALLCONFS=Debug-pcjaros-static Debug-pcjaros-dynamic Debug-generic-static Debug-generic-dynamic Release-pcjaros-static Release-pcjaros-dynamic Release-generic-static Release-generic-dynamic 
 
 
 # build
