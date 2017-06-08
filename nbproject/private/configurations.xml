@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="97">
+<configurationDescriptor version="100">
   <projectmakefile>Makefile</projectmakefile>
   <confs>
-    <conf name="Debug" type="1">
+    <conf name="Debug-pcjaros-static" type="1">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
         <platform>2</platform>
@@ -24,21 +24,48 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i /tmp/CUDA/input.h5  -o /tmp/CUDA/delme.h5 -g 0</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i /tmp/CUDA/input2.h5  -o /tmp/CUDA/delme.h5 </runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i /tmp/CUDA/input2.h5  -o /tmp/CUDA/delme.h5</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i /tmp/CUDA/input.h5  -o /tmp/CUDA/delme.h5 -g 1</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i /tmp/CUDA/input.h5  -o /tmp/CUDA/delme.h5 --checkpoint_file /tmp/CUDA/check.h5</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i /tmp/CUDA/input.h5  -o /tmp/CUDA/XX/delme.h5 </runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i /tmp/CUDA/input.h5  -o /tmp/CUDA/delme.h5</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i /tmp/CUDA/input.h5  -o /tmp/CUDA/delme.h5 --verbose 2</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i  /home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Data/input_data_128_128_128_het_index.h -o /home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Data/delme.h5 --verbose 2 
-
-
-</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i Data/input_data_128_128_128_het_index.h5 -o Data/delme.h5 --verbose 2</runcommandpicklistitem>
+          <runcommandpicklistitem>&lt;Different Values></runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ -i Data/input_data_128_128_128_het_index.h5 \ -o Data/delme.h5  \ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ -s 50 \ --copy_sensor_mask \ --benchmark 100 --verbose 2 \ --checkpoint_file Data/check.h5 \ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \ 
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ 
+-s 50 \ 
+--copy_sensor_mask \ 
+--benchmark 100 
+--verbose 2 \ 
+--checkpoint_file Data/check.h5 \ 
+--checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \  -i Data/input_data_128_128_128_het_index.h5 \  -o Data/delme.h5  \  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  -s 50 \  --copy_sensor_mask \  --benchmark 100  --verbose 2 \  --checkpoint_file Data/check.h5 \  --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \  
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  
+-s 50 \ 
+ --copy_sensor_mask \  
+--benchmark 100 
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+ -i Data/input_data_128_128_128_het_index.h5 \ 
+ -o Data/delme.h5  \  
+ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \  
+ -s 50 \ 
+ --copy_sensor_mask \  
+ --benchmark 100 \
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \   -i Data/input_data_128_128_128_het_index.h5 \   -o Data/delme.h5  \    -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \    -s 50 \   --copy_sensor_mask \    --benchmark 100 \  --verbose 2 \   --checkpoint_file Data/check.h5 \   --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  </runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i Data/input_data_128_128_128_het_index.h5 -o Data/delme.h5 --verbose 2</runcommand>
+        <runcommand>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
@@ -47,7 +74,223 @@
         </environment>
       </runprofile>
     </conf>
-    <conf name="Release" type="1">
+    <conf name="Debug-pcjaros-dynamic" type="1">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i Data/input_data_128_128_128_het_index.h5 -o Data/delme.h5 --verbose 2</runcommandpicklistitem>
+          <runcommandpicklistitem>&lt;Different Values></runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ -i Data/input_data_128_128_128_het_index.h5 \ -o Data/delme.h5  \ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ -s 50 \ --copy_sensor_mask \ --benchmark 100 --verbose 2 \ --checkpoint_file Data/check.h5 \ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \ 
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ 
+-s 50 \ 
+--copy_sensor_mask \ 
+--benchmark 100 
+--verbose 2 \ 
+--checkpoint_file Data/check.h5 \ 
+--checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \  -i Data/input_data_128_128_128_het_index.h5 \  -o Data/delme.h5  \  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  -s 50 \  --copy_sensor_mask \  --benchmark 100  --verbose 2 \  --checkpoint_file Data/check.h5 \  --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \  
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  
+-s 50 \ 
+ --copy_sensor_mask \  
+--benchmark 100 
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+ -i Data/input_data_128_128_128_het_index.h5 \ 
+ -o Data/delme.h5  \  
+ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \  
+ -s 50 \ 
+ --copy_sensor_mask \  
+ --benchmark 100 \
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \   -i Data/input_data_128_128_128_het_index.h5 \   -o Data/delme.h5  \    -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \    -s 50 \   --copy_sensor_mask \    --benchmark 100 \  --verbose 2 \   --checkpoint_file Data/check.h5 \   --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  </runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommand>
+        <rundir></rundir>
+        <buildfirst>true</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+    <conf name="Debug-generic-static" type="1">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i Data/input_data_128_128_128_het_index.h5 -o Data/delme.h5 --verbose 2</runcommandpicklistitem>
+          <runcommandpicklistitem>&lt;Different Values></runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ -i Data/input_data_128_128_128_het_index.h5 \ -o Data/delme.h5  \ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ -s 50 \ --copy_sensor_mask \ --benchmark 100 --verbose 2 \ --checkpoint_file Data/check.h5 \ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \ 
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ 
+-s 50 \ 
+--copy_sensor_mask \ 
+--benchmark 100 
+--verbose 2 \ 
+--checkpoint_file Data/check.h5 \ 
+--checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \  -i Data/input_data_128_128_128_het_index.h5 \  -o Data/delme.h5  \  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  -s 50 \  --copy_sensor_mask \  --benchmark 100  --verbose 2 \  --checkpoint_file Data/check.h5 \  --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \  
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  
+-s 50 \ 
+ --copy_sensor_mask \  
+--benchmark 100 
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+ -i Data/input_data_128_128_128_het_index.h5 \ 
+ -o Data/delme.h5  \  
+ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \  
+ -s 50 \ 
+ --copy_sensor_mask \  
+ --benchmark 100 \
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \   -i Data/input_data_128_128_128_het_index.h5 \   -o Data/delme.h5  \    -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \    -s 50 \   --copy_sensor_mask \    --benchmark 100 \  --verbose 2 \   --checkpoint_file Data/check.h5 \   --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  </runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommand>
+        <rundir></rundir>
+        <buildfirst>true</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+    <conf name="Debug-generic-dynamic" type="1">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  ./k-wave-fluid-cuda -i Data/input_data_128_128_128_het_index.h5 -o Data/delme.h5 --verbose 2</runcommandpicklistitem>
+          <runcommandpicklistitem>&lt;Different Values></runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ -i Data/input_data_128_128_128_het_index.h5 \ -o Data/delme.h5  \ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ -s 50 \ --copy_sensor_mask \ --benchmark 100 --verbose 2 \ --checkpoint_file Data/check.h5 \ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \ 
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ 
+-s 50 \ 
+--copy_sensor_mask \ 
+--benchmark 100 
+--verbose 2 \ 
+--checkpoint_file Data/check.h5 \ 
+--checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \  -i Data/input_data_128_128_128_het_index.h5 \  -o Data/delme.h5  \  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  -s 50 \  --copy_sensor_mask \  --benchmark 100  --verbose 2 \  --checkpoint_file Data/check.h5 \  --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \  
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  
+-s 50 \ 
+ --copy_sensor_mask \  
+--benchmark 100 
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+ -i Data/input_data_128_128_128_het_index.h5 \ 
+ -o Data/delme.h5  \  
+ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \  
+ -s 50 \ 
+ --copy_sensor_mask \  
+ --benchmark 100 \
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \   -i Data/input_data_128_128_128_het_index.h5 \   -o Data/delme.h5  \    -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \    -s 50 \   --copy_sensor_mask \    --benchmark 100 \  --verbose 2 \   --checkpoint_file Data/check.h5 \   --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  </runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommand>
+        <rundir></rundir>
+        <buildfirst>true</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+    <conf name="Release-pcjaros-static" type="1">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
         <platform>2</platform>
@@ -70,96 +313,6 @@
       <runprofile version="9">
         <runcommandpicklist>
           <runcommandpicklistitem>"${OUTPUT_PATH}" \
--i /home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Data/input_data_128_128_128_het_index.h5 \
--o /home/jarosjir/TMP/CUDA/delme.h5  \
--p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
--u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \
--s 50 \
---copy_sensor_mask \
---benchmark 10000 --verbose 0 \
---checkpoint_file /home/jarosjir/TMP/CUDA/check.h5 \
---checkpoint_interval 5</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" \
--i /home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Data/input_data_128_128_128_het_index.h5 \
--o /home/jarosjir/TMP/CUDA/delme.h5  \
--p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
--u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \
--s 50 \
---copy_sensor_mask \
---benchmark 10000 --verbose 2 \
---checkpoint_file /home/jarosjir/TMP/CUDA/check.h5 \
---checkpoint_interval 5</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" \
--i /home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Data/input_data_128_128_128_het_index.h5 \
--o /home/jarosjir/TMP/CUDA/delme.h5  \
--p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
--u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \
--s 50 \
---copy_sensor_mask \
---benchmark 10000 --verbose 0 \
---checkpoint_file /home/jarosjir/TMP/CUDA/check.h5 \
---checkpoint_interval 20</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" \
--i /home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Data/input_data_128_128_128_het_index.h5 \
--o /home/jarosjir/TMP/CUDA/delme.h5  \
--p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
--u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \
--s 50 \
---copy_sensor_mask \
---benchmark 10000 --verbose 1 \
---checkpoint_file /home/jarosjir/TMP/CUDA/check.h5 \
---checkpoint_interval 20</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" \
--i /home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Data/input_data_128_128_128_het_index.h5 \
--o /home/jarosjir/TMP/CUDA/delme.h5  \
--p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
--u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \
--s 50 \
---copy_sensor_mask \
---benchmark 10000 --verbose 2 \
---checkpoint_file /home/jarosjir/TMP/CUDA/check.h5 \
---checkpoint_interval 20</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" \
--i /home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Data/input_data_128_128_128_het_index.h5 \
--o /home/jarosjir/TMP/CUDA/delme.h5  \
--p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
--u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \
--s 50 \
---copy_sensor_mask \
---benchmark 100 --verbose 1 \
---checkpoint_file /home/jarosjir/TMP/CUDA/check.h5 \
---checkpoint_interval 20</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" \
--i /home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Data/input_data_128_128_128_het_index.h5 \
--o /home/jarosjir/TMP/CUDA/delme.h5  \
--p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
--u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \
--s 50 \
---copy_sensor_mask \
---benchmark 100 --verbose 0 \
---checkpoint_file /home/jarosjir/TMP/CUDA/check.h5 \
---checkpoint_interval 20</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" \
--i /home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda-X/Data/input_data_128_128_128_het_index.h5 \
--o /home/jarosjir/TMP/CUDA/delme.h5  \
--p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
--u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \
--s 50 \
---copy_sensor_mask \
---benchmark 100 --verbose 2 \
---checkpoint_file /home/jarosjir/TMP/CUDA/check.h5 \
---checkpoint_interval 20</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" \
--i /home/jarosjir/Sources/K-Wave++/k-wave-fluid-cuda/Data/input_data_128_128_128_het_index.h5 \
--o /home/jarosjir/TMP/CUDA/delme.h5  \
--p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
--u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \
--s 50 \
---copy_sensor_mask \
---benchmark 100 --verbose 2 \
---checkpoint_file /home/jarosjir/TMP/CUDA/check.h5 \
---checkpoint_interval 20</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" \
 -i Data/input_data_128_128_128_het_index.h5 \
 -o Data/delme.h5  \
 -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
@@ -167,10 +320,152 @@
 -s 50 \
 --copy_sensor_mask \
 --benchmark 100 --verbose 2 \
---checkpoint_file /home/jarosjir/TMP/CUDA/check.h5 \
+--checkpoint_file Data/check.h5 \
 --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>&lt;Different Values></runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ -i Data/input_data_128_128_128_het_index.h5 \ -o Data/delme.h5  \ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ -s 50 \ --copy_sensor_mask \ --benchmark 100 --verbose 2 \ --checkpoint_file Data/check.h5 \ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \ 
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ 
+-s 50 \ 
+--copy_sensor_mask \ 
+--benchmark 100 
+--verbose 2 \ 
+--checkpoint_file Data/check.h5 \ 
+--checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \  -i Data/input_data_128_128_128_het_index.h5 \  -o Data/delme.h5  \  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  -s 50 \  --copy_sensor_mask \  --benchmark 100  --verbose 2 \  --checkpoint_file Data/check.h5 \  --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \  
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  
+-s 50 \ 
+ --copy_sensor_mask \  
+--benchmark 100 
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+ -i Data/input_data_128_128_128_het_index.h5 \ 
+ -o Data/delme.h5  \  
+ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \  
+ -s 50 \ 
+ --copy_sensor_mask \  
+ --benchmark 100 \
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \   -i Data/input_data_128_128_128_het_index.h5 \   -o Data/delme.h5  \    -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \    -s 50 \   --copy_sensor_mask \    --benchmark 100 \  --verbose 2 \   --checkpoint_file Data/check.h5 \   --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  </runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}" \
+        <runcommand>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommand>
+        <rundir></rundir>
+        <buildfirst>true</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+    <conf name="Release-pcjaros-dynamic" type="1">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>&lt;Different Values></runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ -i Data/input_data_128_128_128_het_index.h5 \ -o Data/delme.h5  \ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ -s 50 \ --copy_sensor_mask \ --benchmark 100 --verbose 2 \ --checkpoint_file Data/check.h5 \ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \ 
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ 
+-s 50 \ 
+--copy_sensor_mask \ 
+--benchmark 100 
+--verbose 2 \ 
+--checkpoint_file Data/check.h5 \ 
+--checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \  -i Data/input_data_128_128_128_het_index.h5 \  -o Data/delme.h5  \  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  -s 50 \  --copy_sensor_mask \  --benchmark 100  --verbose 2 \  --checkpoint_file Data/check.h5 \  --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \  
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  
+-s 50 \ 
+ --copy_sensor_mask \  
+--benchmark 100 
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+ -i Data/input_data_128_128_128_het_index.h5 \ 
+ -o Data/delme.h5  \  
+ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \  
+ -s 50 \ 
+ --copy_sensor_mask \  
+ --benchmark 100 \
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \   -i Data/input_data_128_128_128_het_index.h5 \   -o Data/delme.h5  \    -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \    -s 50 \   --copy_sensor_mask \    --benchmark 100 \  --verbose 2 \   --checkpoint_file Data/check.h5 \   --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  </runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommand>
+        <rundir></rundir>
+        <buildfirst>true</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+    <conf name="Release-generic-static" type="1">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \
 -i Data/input_data_128_128_128_het_index.h5 \
 -o Data/delme.h5  \
 -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
@@ -179,7 +474,129 @@
 --copy_sensor_mask \
 --benchmark 100 --verbose 2 \
 --checkpoint_file /home/jarosjir/TMP/CUDA/check.h5 \
---checkpoint_interval 20</runcommand>
+--checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>&lt;Different Values></runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ -i Data/input_data_128_128_128_het_index.h5 \ -o Data/delme.h5  \ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ -s 50 \ --copy_sensor_mask \ --benchmark 100 --verbose 2 \ --checkpoint_file Data/check.h5 \ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \ 
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ 
+-s 50 \ 
+--copy_sensor_mask \ 
+--benchmark 100 
+--verbose 2 \ 
+--checkpoint_file Data/check.h5 \ 
+--checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \  -i Data/input_data_128_128_128_het_index.h5 \  -o Data/delme.h5  \  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  -s 50 \  --copy_sensor_mask \  --benchmark 100  --verbose 2 \  --checkpoint_file Data/check.h5 \  --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \  
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  
+-s 50 \ 
+ --copy_sensor_mask \  
+--benchmark 100 
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+ -i Data/input_data_128_128_128_het_index.h5 \ 
+ -o Data/delme.h5  \  
+ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \  
+ -s 50 \ 
+ --copy_sensor_mask \  
+ --benchmark 100 \
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \   -i Data/input_data_128_128_128_het_index.h5 \   -o Data/delme.h5  \    -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \    -s 50 \   --copy_sensor_mask \    --benchmark 100 \  --verbose 2 \   --checkpoint_file Data/check.h5 \   --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  </runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommand>
+        <rundir></rundir>
+        <buildfirst>true</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+    <conf name="Release-generic-dynamic" type="1">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \
+-i Data/input_data_128_128_128_het_index.h5 \
+-o Data/delme.h5  \
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \
+-s 50 \
+--copy_sensor_mask \
+--benchmark 100 --verbose 2 \
+--checkpoint_file /home/jarosjir/TMP/CUDA/check.h5 \
+--checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>&lt;Different Values></runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ -i Data/input_data_128_128_128_het_index.h5 \ -o Data/delme.h5  \ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ -s 50 \ --copy_sensor_mask \ --benchmark 100 --verbose 2 \ --checkpoint_file Data/check.h5 \ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \ 
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \ 
+-s 50 \ 
+--copy_sensor_mask \ 
+--benchmark 100 
+--verbose 2 \ 
+--checkpoint_file Data/check.h5 \ 
+--checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \  -i Data/input_data_128_128_128_het_index.h5 \  -o Data/delme.h5  \  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  -s 50 \  --copy_sensor_mask \  --benchmark 100  --verbose 2 \  --checkpoint_file Data/check.h5 \  --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \
+-i Data/input_data_128_128_128_het_index.h5 \ 
+-o Data/delme.h5  \  
+-p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+-u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final --u_non_staggered_raw \  
+-s 50 \ 
+ --copy_sensor_mask \  
+--benchmark 100 
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \ 
+ -i Data/input_data_128_128_128_het_index.h5 \ 
+ -o Data/delme.h5  \  
+ -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \
+ -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \  
+ -s 50 \ 
+ --copy_sensor_mask \  
+ --benchmark 100 \
+ --verbose 2 \ 
+ --checkpoint_file Data/check.h5 \ 
+ --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" \   -i Data/input_data_128_128_128_het_index.h5 \   -o Data/delme.h5  \    -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final \  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final \  --u_non_staggered_raw \    -s 50 \   --copy_sensor_mask \    --benchmark 100 \  --verbose 2 \   --checkpoint_file Data/check.h5 \   --checkpoint_interval 20</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  </runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}" -i Data/input_data_128_128_128_het_index.h5  -o Data/delme.h5  -p --p_max --p_min --p_rms --p_max_all --p_min_all --p_final  -u --u_max --u_min --u_rms --u_max_all --u_min_all --u_final  --u_non_staggered_raw   -s 50    --copy_sensor_mask   --benchmark 100  --verbose 2    --checkpoint_file Data/check.h5   --checkpoint_interval 20]</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

@@ -22,11 +22,35 @@
             </sourceRootList>
             <confList>
                 <confElem>
-                    <name>Debug</name>
+                    <name>Debug-pcjaros-static</name>
                     <type>1</type>
                 </confElem>
                 <confElem>
-                    <name>Release</name>
+                    <name>Debug-pcjaros-dynamic</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Debug-generic-static</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Debug-generic-dynamic</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Release-pcjaros-static</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Release-pcjaros-dynamic</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Release-generic-static</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Release-generic-dynamic</name>
                     <type>1</type>
                 </confElem>
             </confList>

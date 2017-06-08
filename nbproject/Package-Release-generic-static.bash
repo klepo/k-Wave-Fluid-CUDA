@@ -6,14 +6,14 @@
 
 # Macros
 TOP=`pwd`
-CND_PLATFORM=GNU-Linux
-CND_CONF=Debug
+CND_PLATFORM=CUDA-Linux
+CND_CONF=Release-generic-static
 CND_DISTDIR=dist
 CND_BUILDDIR=build
 CND_DLIB_EXT=so
 NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/k-wave-fluid-cuda
+OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/k-wave-fluid-cuda
 OUTPUT_BASENAME=k-wave-fluid-cuda
 PACKAGE_TOP_DIR=k-wave-fluid-cuda/
 
