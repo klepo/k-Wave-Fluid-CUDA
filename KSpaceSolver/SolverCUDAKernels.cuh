@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              27 July     2016, 15:09 (revised)
+ *              18 June     2017, 11:30 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,6 +50,18 @@
  */
 namespace SolverCUDAKernels
 {
+  /**
+   * @enum TransposePadding
+   * @brief How is the data during matrix transposition padded.
+   */
+  enum class TransposePadding
+  {
+    kNone,       ///< none
+    kInput,      ///< input matrix is padded
+    kOutput,     ///< output matrix is padded
+    kInputOutput ///< both matrices are padded
+  };
+
   /// Get the CUDA architecture and GPU code version the code was compiled with
   int GetCUDACodeVersion();
 
@@ -300,11 +312,13 @@ namespace SolverCUDAKernels
   //----------------------------------- unstaggered velocity -------------------------------------//
 
   /// Transpose a real 3D matrix in the X-Y direction
+  template<TransposePadding padding>
   void TrasposeReal3DMatrixXY(float*       outputMatrix,
                               const float* inputMatrix,
                               const dim3&  dimSizes);
 
   /// Transpose a real 3D matrix in the X-Y direction
+  template<TransposePadding padding>
   void TrasposeReal3DMatrixXZ(float*       outputMatrix,
                               const float* inputMatrix,
                               const dim3&  dimSizes);

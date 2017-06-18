@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2011, 13:10 (created) \n
- *              10 August    2016, 11:56 (revised)
+ *              18 June      2017, 11:30 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -82,7 +82,8 @@ std::map<cufftResult, TErrorMessage> TCUFFTComplexMatrix::cuFFTErrorMessages
   {CUFFT_PARSE_ERROR              , ERR_FMT_CUFFT_PARSE_ERROR},
   {CUFFT_NO_WORKSPACE             , ERR_FMT_CUFFT_NO_WORKSPACE},
   {CUFFT_NOT_IMPLEMENTED          , eRR_FMT_CUFFT_NOT_IMPLEMENTED},
-  {CUFFT_LICENSE_ERROR            , ERR_FMT_CUFFT_LICENSE_ERROR}
+  {CUFFT_LICENSE_ERROR            , ERR_FMT_CUFFT_LICENSE_ERROR},
+  {CUFFT_NOT_SUPPORTED            , ERR_FMT_CUFFT_NOT_SUPPORTED}
 };
 //--------------------------------------------------------------------------------------------------
 
@@ -108,11 +109,6 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_3D_R2C(const TDimensionSizes& inMatrix
                            CUFFT_R2C);
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Plan_3D_R2C");
-
-  // be careful, this feature is deprecated in CUDA 6.5
-  cufftError = cufftSetCompatibilityMode(cufftPlan_3D_R2C, CUFFT_COMPATIBILITY_NATIVE);
-
-  if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "SetCompatibilty_3D_R2C_Plan");
 }// end of CreateFFTPlan3D_RealToComplex
 //-------------------------------------------------------------------------------------------------
 
@@ -133,12 +129,6 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_3D_C2R(const TDimensionSizes& outMatri
                            CUFFT_C2R);
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "CUDA_FFT_3D_C2R");
-
-
-  // be careful, this feature is deprecated in CUDA 6.5
-  cufftError =  cufftSetCompatibilityMode(cufftPlan_3D_C2R, CUFFT_COMPATIBILITY_NATIVE);
-
-  if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "SetCompatibilty_3D_C2R_Plan");
 }//end of CreateFFTPlan3D_ComplexToReal
 //--------------------------------------------------------------------------------------------------
 
@@ -146,7 +136,7 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_3D_C2R(const TDimensionSizes& outMatri
 /**
  * Create cuFFT plan for 1DX Real-to-Complex. \n
  * This version doesn't need any scratch place for planning. All 1D transforms are done in a
- * single batch (no transpose needed).
+ * single batch (no transpose needed) and in out-of-place manner.
  *
  * @param [in] inMatrixDims - The dimension sizes of the input matrix
  * @throw runtime_error if the plan can't be created.
@@ -165,6 +155,7 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DX_R2C(const TDimensionSizes& inMatri
   int rank = 1;
   int n[] = {nx};
 
+  // Since runs out-of-place no padding is needed.
   int inembed[] = {nx};
   int istride   = 1;
   int idist     = nx;
@@ -182,13 +173,6 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DX_R2C(const TDimensionSizes& inMatri
                              CUFFT_R2C, batch);
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "CUDA_FFT_1DX_R2C");
-
-  // be careful, this feature is deprecated in CUDA 7.0.
-  // It is necessary to use this compatibility level, otherwise we would have to use an
-  // out-of-place transform - (inplace transform corrupts data)
-  cufftError =  cufftSetCompatibilityMode(cufftPlan_1DX_R2C, CUFFT_COMPATIBILITY_NATIVE);
-
-  if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "SetCompatibilty_1DX_R2C_Plan");
 }//end of Create_FFT_Plan_1DX_R2C
 //--------------------------------------------------------------------------------------------------
 
@@ -196,7 +180,8 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DX_R2C(const TDimensionSizes& inMatri
 /**
  * Create cuFFT plan for 1DY Real-to-Complex. \n
  * This version doesn't need any scratch place for planning. All 1D transforms are done in a single
- * batch. Data has to be transposed before the transform.
+ * batch. Data has to be transposed and padded according to the cuFFT data layout before the
+ * transform. The FFT is done in-place.
  *
  * @param [in] inMatrixDims - The dimension sizes of the input matrix
  * @throw runtime_error if the plan can't be created.
@@ -215,9 +200,10 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DY_R2C(const TDimensionSizes& inMatri
   int rank = 1;
   int n[] = {ny};
 
-  int inembed[] = {ny};
+  // The input matrix is transposed with every row padded by a single element.
+  int inembed[] = {ny +1};
   int istride   = 1;
-  int idist     = ny;
+  int idist     = ny + 1;
 
   int onembed[] = {ny_2};
   int ostride   = 1;
@@ -231,20 +217,14 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DY_R2C(const TDimensionSizes& inMatri
                              CUFFT_R2C, batch);
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "CUDA_FFT_1DY_R2C");
-
-  // be careful, this feature is deprecated in CUDA 7.0.
-  // It is necessary to use this compatibility level, otherwise we would have to use an
-  // out-of-place transform - (inplace transforms corrupts data)
-  cufftError =  cufftSetCompatibilityMode(cufftPlan_1DY_R2C, CUFFT_COMPATIBILITY_NATIVE);
-
-  if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "SetCompatibilty_1DY_R2C_Plan");
 }//end of Create_FFT_Plan_1DY_R2C
 //--------------------------------------------------------------------------------------------------
 
-/*
+/**
  * Create cuFFT plan for 1DZ Real-to-Complex. \n
  * This version doesn't need any scratch place for planning.  All 1D transforms are done in a single
- * batch. Data has to be transposed before the transform.
+ * batch. Data has to be transposed and padded according to the cuFFT data layout before the
+ * transform. The FFT is done in-place.
  *
  * @param [in] inMatrixDims - The dimension sizes of the input matrix
  * @throw runtime_error if the plan can't be created.
@@ -262,9 +242,10 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DZ_R2C(const TDimensionSizes& inMatri
   int rank = 1;
   int n[] = {nz};
 
-  int inembed[] = {nz};
+  // The input matrix is transposed with every row padded by a single element.
+  int inembed[] = {nz + 1};
   int istride   = 1;
-  int idist     = nz;
+  int idist     = nz + 1;
 
   int onembed[] = {nz_2};
   int ostride   = 1;
@@ -279,21 +260,15 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DZ_R2C(const TDimensionSizes& inMatri
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "CUDA_FFT_1DZ_R2C");
 
-  // be careful, this feature is deprecated in CUDA 7.0.
-  // It is necessary to use this compatibility level, otherwise we would have to use an
-  // out-of-place transform - (inplace transforms corrupts data)
-  cufftError =  cufftSetCompatibilityMode(cufftPlan_1DZ_R2C, CUFFT_COMPATIBILITY_NATIVE);
-
-  if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "SetCompatibilty_1DZ_R2C_Plan");
 }//end of Create_FFT_Plan_1DZ_R2C
 //--------------------------------------------------------------------------------------------------
 
 
 
-/*
+/**
  * Create cuFFT plan for 1DX Complex-to-Real. \n
  * This version doesn't need any scratch place for planning.  All 1D transforms are done in a
- * single batch (no transpose needed).
+ * single batch (no transpose needed). The FFT is done out-of-place.
  *
  * @param [in] outMatrixDims - The dimension sizes of the input matrix
  * @throw runtime_error if the plan can't be created.
@@ -312,6 +287,7 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DX_C2R(const TDimensionSizes& outMatr
   int rank = 1;
   int n[] = {nx};
 
+  // Since runs out-of-place no padding is needed.
   int inembed[] = {nx_2};
   int istride   = 1;
   int idist     = nx_2;
@@ -328,21 +304,15 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DX_C2R(const TDimensionSizes& outMatr
                              CUFFT_C2R, batch);
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "CUDA_FFT_1DX_C2R");
-
-  // be careful, this feature is deprecated in CUDA 7.0.
-  // It is necessary to use this compatibility level, otherwise we would have to use an
-  // out-of-place transform - (inplace transforms corrupts data)
-  cufftError =  cufftSetCompatibilityMode(cufftPlan_1DX_C2R, CUFFT_COMPATIBILITY_NATIVE);
-
-  if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "SetCompatibilty_1DX_C2R_Plan");
 }//end of Create_FFT_Plan_1DX_C2R
 //-------------------------------------------------------------------------------------------------
 
 
-/*
+/**
  * Create cuFFT plan for 1DY Complex-to-Real. \n
  * This version doesn't need any scratch place for planning. All 1D transforms are done in a single
- * batch. Data has to be transposed before the transform.
+ * batch. The output matrix is padded and transposed to be padded according to the cuFFT data
+ * layout.
  *
  * @param [in] outMatrixDims - The dimension sizes of the input matrix
  * @throw runtime_error if the plan can't be created.
@@ -364,9 +334,10 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DY_C2R(const TDimensionSizes& outMatr
   int istride   = 1;
   int idist     = ny_2;
 
-  int onembed[] = {ny};
+  // The output matrix is transposed with every row padded by a single element.
+  int onembed[] = {ny + 1};
   int ostride   = 1;
-  int odist     = ny;
+  int odist     = ny + 1;
 
   int batch =  nx * nz;
 
@@ -376,21 +347,15 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DY_C2R(const TDimensionSizes& outMatr
                              CUFFT_C2R, batch);
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "CUDA_FFT_1DY_C2R");
-
-  // be careful, this feature is deprecated in CUDA 7.0.
-  // It is necessary to use this compatibility level, otherwise we would have to use an
-  // out-of-place transform - (inplace transforms corrupts data)
-  cufftError =  cufftSetCompatibilityMode(cufftPlan_1DY_C2R, CUFFT_COMPATIBILITY_NATIVE);
-
-  if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "SetCompatibilty_1DX_C2R_Plan");
 }//end of Create_FFT_Plan_1DY_R2C
 //--------------------------------------------------------------------------------------------------
 
 
-/*
+/**
  * Create cuFFT plan for 1DZ Complex-to-Real. \n
  * This version doesn't need any scratch place for planning. All 1D transforms are done in a single
- * batch. Data has to be transposed before the transform.
+ * batch. The output matrix is padded and transposed to be padded according to the cuFFT data
+ * layout.
  *
  * @param [in] outMatrixDims - the dimension sizes of the input matrix
  * @throw runtime_error if the plan can't be created.
@@ -413,9 +378,10 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DZ_C2R(const TDimensionSizes& outMatr
   int istride   = 1;
   int idist     = nz_2;
 
-  int onembed[] = {nz};
+  // The output matrix is transposed with every row padded by a single element.
+  int onembed[] = {nz + 1};
   int ostride   = 1;
-  int odist     = nz;
+  int odist     = nz + 1;
 
   int batch =  nx * ny;
 
@@ -425,13 +391,6 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DZ_C2R(const TDimensionSizes& outMatr
                              CUFFT_C2R, batch);
 
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "CUDA_FFT_1DZ_C2R");
-
-  // be careful, this feature is deprecated in CUDA 7.0.
-  // It is necessary to use this compatibility level, otherwise we would have to use an
-  // out-of-place transform - (inplace transforms corrupts data)
-  cufftError =  cufftSetCompatibilityMode(cufftPlan_1DZ_C2R, CUFFT_COMPATIBILITY_NATIVE);
-
-  if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "SetCompatibilty_1DZ_R2C_Plan");
 }//end of Create_FFT_Plan_1DX_R2C
 //--------------------------------------------------------------------------------------------------
 
@@ -573,7 +532,8 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_R2C(TRealMatrix& inMatrix)
                 inMatrix.GetDimensionSizes().ny,
                 inMatrix.GetDimensionSizes().nz);
 
-  SolverCUDAKernels::TrasposeReal3DMatrixXY(deviceData,
+  SolverCUDAKernels::TrasposeReal3DMatrixXY<SolverCUDAKernels::TransposePadding::kOutput>
+                                           (deviceData,
                                             inMatrix.GetDeviceData(),
                                             dimSizes);
 
@@ -602,7 +562,8 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_R2C(TRealMatrix& inMatrix)
                 inMatrix.GetDimensionSizes().ny,
                 inMatrix.GetDimensionSizes().nz);
 
-  SolverCUDAKernels::TrasposeReal3DMatrixXZ(deviceData,
+  SolverCUDAKernels::TrasposeReal3DMatrixXZ<SolverCUDAKernels::TransposePadding::kOutput>
+                                           (deviceData,
                                             inMatrix.GetDeviceData(),
                                             dimSizes);
 
@@ -659,7 +620,8 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_C2R(TRealMatrix& outMatrix)
                 outMatrix.GetDimensionSizes().nx,
                 outMatrix.GetDimensionSizes().nz);
 
-  SolverCUDAKernels::TrasposeReal3DMatrixXY(outMatrix.GetDeviceData(),
+  SolverCUDAKernels::TrasposeReal3DMatrixXY<SolverCUDAKernels::TransposePadding::kInput>
+                                           (outMatrix.GetDeviceData(),
                                             deviceData,
                                             dimSizes);
 }// end of Compute_FFT_1DY_C2R
@@ -690,7 +652,8 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_C2R(TRealMatrix& outMatrix)
                 outMatrix.GetDimensionSizes().ny,
                 outMatrix.GetDimensionSizes().nx);
 
-  SolverCUDAKernels::TrasposeReal3DMatrixXZ(outMatrix.GetDeviceData(),
+  SolverCUDAKernels::TrasposeReal3DMatrixXZ<SolverCUDAKernels::TransposePadding::kInput>
+                                           (outMatrix.GetDeviceData(),
                                             GetDeviceData(),
                                             DimSizes);
 }// end of Compute_FFT_1DZ_C2R
