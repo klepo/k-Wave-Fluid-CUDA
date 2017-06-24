@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              18 June     2017, 11:30 (revised)
+ *              24 June     2017, 16:31 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -113,28 +113,10 @@ __global__ void CUDAGetCUDACodeVersion(int* cudaCodeVersion)
 {
   *cudaCodeVersion = -1;
 
-  #if (__CUDA_ARCH__ == 610)
-    *cudaCodeVersion = 61;
-  #elif (__CUDA_ARCH__ == 600)
-    *cudaCodeVersion = 60;
-  #elif (__CUDA_ARCH__ == 530)
-    *cudaCodeVersion = 53;
-  #elif (__CUDA_ARCH__ == 520)
-    *cudaCodeVersion = 52;
-  #elif (__CUDA_ARCH__ == 500)
-    *cudaCodeVersion = 50;
-  #elif (__CUDA_ARCH__ == 370)
-    *cudaCodeVersion = 37;
-  #elif (__CUDA_ARCH__ == 350)
-    *cudaCodeVersion = 35;
-  #elif (__CUDA_ARCH__ == 320)
-    *cudaCodeVersion = 32;
-  #elif (__CUDA_ARCH__ == 300)
-    *cudaCodeVersion = 30;
-  #elif (__CUDA_ARCH__ == 210)
-    *cudaCodeVersion = 21;
-  #elif (__CUDA_ARCH__ == 200)
-    *cudaCodeVersion = 20;
+  // Read __CUDA_ARCH__ only in actual kernel compilation pass.
+  // NVCC does some more passes, where it isn't defined.
+  #ifdef __CUDA_ARCH__
+    *cudaCodeVersion = (__CUDA_ARCH__ / 10);
   #endif
 }// end of CUDAGetCodeVersion
 //--------------------------------------------------------------------------------------------------
