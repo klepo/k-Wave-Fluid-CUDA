@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              27 July     2016, 15:09 (revised)
+ *              24 June     2017, 16:31 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -113,24 +113,10 @@ __global__ void CUDAGetCUDACodeVersion(int* cudaCodeVersion)
 {
   *cudaCodeVersion = -1;
 
-  #if (__CUDA_ARCH__ == 530)
-    *cudaCodeVersion = 53;
-  #elif (__CUDA_ARCH__ == 520)
-    *cudaCodeVersion = 52;
-  #elif (__CUDA_ARCH__ == 500)
-    *cudaCodeVersion = 50;
-  #elif (__CUDA_ARCH__ == 370)
-    *cudaCodeVersion = 37;
-  #elif (__CUDA_ARCH__ == 350)
-    *cudaCodeVersion = 35;
-  #elif (__CUDA_ARCH__ == 320)
-    *cudaCodeVersion = 32;
-  #elif (__CUDA_ARCH__ == 300)
-    *cudaCodeVersion = 30;
-  #elif (__CUDA_ARCH__ == 210)
-    *cudaCodeVersion = 21;
-  #elif (__CUDA_ARCH__ == 200)
-    *cudaCodeVersion = 20;
+  // Read __CUDA_ARCH__ only in actual kernel compilation pass.
+  // NVCC does some more passes, where it isn't defined.
+  #ifdef __CUDA_ARCH__
+    *cudaCodeVersion = (__CUDA_ARCH__ / 10);
   #endif
 }// end of CUDAGetCodeVersion
 //--------------------------------------------------------------------------------------------------
@@ -1272,7 +1258,7 @@ __global__ void CUDAComputeDensityNonlinearHeterogeneous(float*       rhox,
 }//end of CUDAComputeDensityNonlinearHeterogeneous
 //--------------------------------------------------------------------------------------------------
 
-/*
+/**
  * Interface to kernel which calculate new values of rho (acoustic density).
  * Non-linear, heterogenous case.
  * @param [out] rhox  - density x
@@ -1434,7 +1420,7 @@ __global__ void CUDAComputeDensityLinearHeterogeneous(float*       rhox,
 }// end of CUDACompute_rhoxyz_linear_heterogeneous
 //--------------------------------------------------------------------------------------------------
 
-/*
+/**
  * Interface to kernel which calculate new values of rho (acoustic density).
  * Linear, heterogenous case.
  * @param [out] rhox  - Density x
@@ -2249,119 +2235,61 @@ void SolverCUDAKernels::SumPressureLinearLossless(TRealMatrix& p,
 //--------------------------------------------------------------------------------------------------
 
 
-
-/**
- * CUDA kernel to transpose a 3D matrix in XY planes if the dim sizes are divisible by 32 in X and
- * Y axes.
- * Every block in a 1D grid transposes a few slabs.
- * Every block is composed of a 2D mesh of threads. The y dim is for up to 4 tiles.
- * Each tile is processed by a single 32-thread warp.
- * The shared memory is used to coalesce memory accesses and the padding is to eliminate bank
- * conflicts.
- *
- * @param [out] outputMatrix - Output matrix
- * @param [in]  inputMatrix  - Input  matrix
- * @param [in]  dimSizes     - Dimension sizes of the original matrix
- *
- * @warning  The size X and Y dimensions have to be divisible by 32
- *
- * @warning A blockDim.x has to be 32 (one warp) \n
- *          blockDim.y has to between 1 and 4 (for tiles at once) \n
- *          blockDim.z must stay 1 \n
- *          Grid has to be organized (N, 1 ,1)
- *
- */
-__global__ void CUDATrasnposeReal3DMatrixXYSquare(float*       outputMatrix,
-                                                  const float* inputMatrix,
-                                                  const dim3   dimSizes)
-{
-  // this size is fixed shared memory
-  // we transpose 4 tiles of 32*32 at the same time, +1 solves bank conflicts
-  ///@todo - What about Warp shuffle?
-  ///@todo http://www.pixel.io/blog/2013/3/25/fast-matrix-transposition-on-kepler-without-using-shared-mem.html
-  volatile __shared__ float sharedTile[4][32][32+1];
-
-  // run over all slabs, one block per slab
-  for (auto slabIdx = blockIdx.x; slabIdx < dimSizes.z; slabIdx += gridDim.x)
-  {
-    // calculate offset of the slab
-    const float * inputSlab  = inputMatrix  + (dimSizes.x * dimSizes.y * slabIdx);
-          float * outputSlab = outputMatrix + (dimSizes.x * dimSizes.y * slabIdx);
-
-    dim3 tileIdx    {0,0,0};
-    dim3 tileCount  {dimSizes.x >> 5, dimSizes.y >> 5, 1};
-
-    // go over all all tiles in the row. Transpose 4 rows at the same time
-    for (tileIdx.y = threadIdx.y; tileIdx.y < tileCount.y; tileIdx.y += blockDim.y)
-    {
-      // go over all tiles in the row
-      for (tileIdx.x = 0; tileIdx.x < tileCount.x; tileIdx.x++)
-      {
-        // Go over one tile and load data, unroll does not help
-        for (auto row = 0; row < 32; row++)
-        {
-          sharedTile[threadIdx.y][row][threadIdx.x]
-                  = inputSlab[(tileIdx.y * 32   + row) * dimSizes.x +
-                              (tileIdx.x * 32)  + threadIdx.x];
-        } // load data
-
-        // no need for barrier - warp synchronous programming
-
-        // Go over one tile and store data, unroll does not help
-        for (auto row = 0; row < 32; row ++)
-        {
-          outputSlab[(tileIdx.x * 32   + row) * dimSizes.y +
-                     (tileIdx.y * 32)  + threadIdx.x]
-                  = sharedTile[threadIdx.y][threadIdx.x][row];
-
-        } // store data
-      } // tile X
-    }// tile Y
-  } //slab
-}// end of cudaTrasnposeReal3DMatrixXYSquare
-//--------------------------------------------------------------------------------------------------
-
-
 /**
  * CUDA kernel to transpose a 3D matrix in XY planes of any dimension sizes
  * Every block in a 1D grid transposes a few slabs.
- * Every block is composed of a 2D mesh of threads. The y dim is for up to 4 tiles.
- * Each tile is processed by a single 32-thread warp.
+ * Every block is composed of a 2D mesh of threads. The y dim gives the number of tiles processed
+ * simultaneously. Each tile is processed by a single thread warp.
  * The shared memory is used to coalesce memory accesses and the padding is to eliminate bank
- * conflicts.  First the full tiles are transposed, then the remainder in the X, then Y and  finally
- * the last bit in the bottom right corner.
+ * conflicts.  First the full tiles are transposed, then the remainder in the X, then Y and finally
+ * the last bit in the bottom right corner.  \n
+ * As a part of the transposition, the matrices can be padded to conform with cuFFT
+ *
+ * @tparam      padding      - Which matrices are padded (template parameter)
+ * @tparam      isSquareSlab - Are the slabs of a square shape with sizes
+ *                             divisible by the warp size
+ * @tparam      warpSize     - Set the warp size. Built in value cannot be used
+ *                             due to shared memory allocation
  *
  * @param [out] outputMatrix - Output matrix
  * @param [in]  inputMatrix  - Input  matrix
  * @param [in]  dimSizes     - Dimension sizes of the original matrix
  *
- * @warning  The size X and Y dimensions have to be divisible by 32
- *
- * @warning A blockDim.x has to be 32 (one warp) \n
- *          blockDim.y has to between 1 and 4 (for tiles at once) \n
+ * @warning A blockDim.x has to of a warp size (typically 32) \n
+ *          blockDim.y should be between 1 and 4 (four tiles at once). blockDim.y
+ *          has to be equal with the tilesAtOnce parameter.  \n
  *          blockDim.z must stay 1 \n
  *          Grid has to be organized (N, 1 ,1)
  *
  */
-__global__ void CUDATrasnposeReal3DMatrixXYRect(float*       outputMatrix,
-                                                const float* inputMatrix,
-                                                const dim3   dimSizes)
+template<SolverCUDAKernels::TransposePadding padding,
+         bool                                isSquareSlab,
+         int                                 warpSize,
+         int                                 tilesAtOnce>
+__global__ void cudaTrasnposeReal3DMatrixXY(float*       outputMatrix,
+                                            const float* inputMatrix,
+                                            const dim3   dimSizes)
 {
   // this size is fixed shared memory
-  // we transpose 4 tiles of 32*32 at the same time, +1 solves bank conflicts
-  volatile __shared__ float sharedTile[4][32][32+1];
+  // we transpose tilesAtOnce tiles of warp size^2 at the same time, +1 solves bank conflicts
+  volatile __shared__ float sharedTile[tilesAtOnce][warpSize][warpSize + 1];
+
+  using TP = SolverCUDAKernels::TransposePadding;
+  constexpr int inPad  = ((padding == TP::kInput)  || (padding == TP::kInputOutput)) ? 1 : 0;
+  constexpr int outPad = ((padding == TP::kOutput) || (padding == TP::kInputOutput)) ? 1 : 0;
+
+  const dim3 tileCount = {dimSizes.x / warpSize, dimSizes.y / warpSize, 1};
 
   // run over all slabs, one block per slab
   for (auto slabIdx = blockIdx.x; slabIdx < dimSizes.z; slabIdx += gridDim.x)
   {
     // calculate offset of the slab
-    const float * inputSlab  = inputMatrix  + (dimSizes.x * dimSizes.y * slabIdx);
-          float * outputSlab = outputMatrix + (dimSizes.x * dimSizes.y * slabIdx);
+    const float* inputSlab  = inputMatrix  + ((dimSizes.x + inPad) * dimSizes.y * slabIdx);
+          float* outputSlab = outputMatrix + (dimSizes.x * (dimSizes.y + outPad) * slabIdx);
 
-    dim3 tileIdx = {0,0,0};
-    dim3 tileCount = {dimSizes.x >> 5, dimSizes.y >> 5, 1};
+    dim3 tileIdx = {0, 0, 0};
 
-    // go over all all tiles in the row. Transpose 4 rows at the same time
+    // go over all tiles in the row. Transpose tilesAtOnce rows at the same time
     for (tileIdx.y = threadIdx.y; tileIdx.y < tileCount.y; tileIdx.y += blockDim.y)
     {
       //--------------------------- full tiles in X --------------------------//
@@ -2369,121 +2297,134 @@ __global__ void CUDATrasnposeReal3DMatrixXYRect(float*       outputMatrix,
       for (tileIdx.x = 0; tileIdx.x < tileCount.x; tileIdx.x++)
       {
         // Go over one tile and load data, unroll does not help
-        for (auto row = 0; row < 32; row++)
+        for (auto row = 0; row < warpSize; row++)
         {
           sharedTile[threadIdx.y][row][threadIdx.x]
-                     = inputSlab[(tileIdx.y * 32   + row) * dimSizes.x +
-                                 (tileIdx.x * 32)  + threadIdx.x];
+                    = inputSlab[(tileIdx.y * warpSize   + row) * (dimSizes.x + inPad) +
+                                (tileIdx.x * warpSize)  + threadIdx.x];
         } // load data
         // no need for barrier - warp synchronous programming
         // Go over one tile and store data, unroll does not help
-        for (auto row = 0; row < 32; row ++)
+        for (auto row = 0; row < warpSize; row ++)
         {
-          outputSlab[(tileIdx.x * 32   + row) * dimSizes.y +
-                     (tileIdx.y * 32)  + threadIdx.x]
-                  = sharedTile[threadIdx.y][threadIdx.x][row];
+          outputSlab[(tileIdx.x * warpSize   + row) * (dimSizes.y + outPad) +
+                     (tileIdx.y * warpSize)  + threadIdx.x]
+                    = sharedTile[threadIdx.y][threadIdx.x][row];
 
         } // store data
       } // tile X
 
-      //--------------------------- reminders in X ---------------------------//
-      // go over the remainder tile in X (those that can't fill a 32-warps)
-      if ((tileCount.x * 32 + threadIdx.x) < dimSizes.x)
+      // the slab is not a square with edge sizes divisible by warpSize
+      if (!isSquareSlab)
       {
-        for (auto row = 0; row < 32; row++)
+        //--------------------------- reminders in X ---------------------------//
+        // go over the remainder tile in X (those that can't fill warps)
+        if ((tileCount.x * warpSize + threadIdx.x) < dimSizes.x)
         {
-          sharedTile[threadIdx.y][row][threadIdx.x]
-                  = inputSlab[(tileIdx.y   * 32   + row) * dimSizes.x +
-                              (tileCount.x * 32)  + threadIdx.x];
-        }
-      }// load
+          for (auto row = 0; row < warpSize; row++)
+          {
+            sharedTile[threadIdx.y][row][threadIdx.x]
+                      = inputSlab[(tileIdx.y   * warpSize   + row) * (dimSizes.x + inPad) +
+                                  (tileCount.x * warpSize)  + threadIdx.x];
+          }
+        }// load
 
-      // go over the remainder tile in X (those that can't fill a 32-warp)
-      for (auto row = 0; (tileCount.x * 32 + row) < dimSizes.x; row++)
-      {
-        outputSlab[(tileCount.x * 32   + row) * dimSizes.y +
-                   (tileIdx.y   * 32)  + threadIdx.x]
-                = sharedTile[threadIdx.y][threadIdx.x][row];
-      }// store
+        // go over the remainder tile in X (those that can't fill a 32-warp)
+        for (auto row = 0; (tileCount.x * warpSize + row) < dimSizes.x; row++)
+        {
+          outputSlab[(tileCount.x * warpSize   + row) * (dimSizes.y + outPad) +
+                     (tileIdx.y   * warpSize)  + threadIdx.x]
+                    = sharedTile[threadIdx.y][threadIdx.x][row];
+        }// store
+      } // isSquareSlab
     }// tile Y
 
-    //--------------------------- reminders in Y ---------------------------//
-    // go over the remainder tile in y (those that can't fill 32 warps)
-    // go over all full tiles in the row, first in parallel
-    for (tileIdx.x = threadIdx.y; tileIdx.x < tileCount.x; tileIdx.x += blockDim.y)
+    if (!isSquareSlab)
     {
-      // go over the remainder tile in Y (only a few rows)
-      for (auto row = 0; (tileCount.y * 32 + row) < dimSizes.y; row++)
+      //--------------------------- reminders in Y ---------------------------//
+      // go over the remainder tile in y (those that can't fill 32 warps)
+      // go over all full tiles in the row, first in parallel
+      for (tileIdx.x = threadIdx.y; tileIdx.x < tileCount.x; tileIdx.x += blockDim.y)
       {
-        sharedTile[threadIdx.y][row][threadIdx.x]
-                = inputSlab[(tileCount.y * 32   + row) * dimSizes.x +
-                            (tileIdx.x   * 32)  + threadIdx.x];
-      } // load
-
-      // go over the remainder tile in Y (and store only columns)
-      if ((tileCount.y * 32 + threadIdx.x) < dimSizes.y)
-      {
-        for (auto row = 0; row < 32 ; row++)
-        {
-          outputSlab[(tileIdx.x   * 32   + row) * dimSizes.y +
-                     (tileCount.y * 32)  + threadIdx.x]
-                  = sharedTile[threadIdx.y][threadIdx.x][row];
-        }
-      }// store
-    }// reminder Y
-
-    //------------------------ reminder in X and Y -----------------------------//
-    if (threadIdx.y == 0)
-    {
-    // go over the remainder tile in X and Y (only a few rows and colls)
-      if ((tileCount.x * 32 + threadIdx.x) < dimSizes.x)
-      {
-        for (auto row = 0; (tileCount.y * 32 + row) < dimSizes.y; row++)
+        // go over the remainder tile in Y (only a few rows)
+        for (auto row = 0; (tileCount.y * warpSize + row) < dimSizes.y; row++)
         {
           sharedTile[threadIdx.y][row][threadIdx.x]
-                  = inputSlab[(tileCount.y * 32   + row) * dimSizes.x +
-                              (tileCount.x * 32)  + threadIdx.x];
+                    = inputSlab[(tileCount.y * warpSize   + row) * (dimSizes.x + inPad) +
+                                (tileIdx.x   * warpSize)  + threadIdx.x];
         } // load
-      }
 
-      // go over the remainder tile in Y (and store only colls)
-      if ((tileCount.y * 32 + threadIdx.x) < dimSizes.y)
-      {
-        for (auto row = 0; (tileCount.x * 32 + row) < dimSizes.x ; row++)
+        // go over the remainder tile in Y (and store only columns)
+        if ((tileCount.y * warpSize + threadIdx.x) < dimSizes.y)
         {
-          outputSlab[(tileCount.x * 32   + row) * dimSizes.y +
-                     (tileCount.y * 32)  + threadIdx.x]
-                  = sharedTile[threadIdx.y][threadIdx.x][row];
+          for (auto row = 0; row < warpSize ; row++)
+          {
+            outputSlab[(tileIdx.x   * warpSize   + row) * (dimSizes.y + outPad) +
+                       (tileCount.y * warpSize)  + threadIdx.x]
+                      = sharedTile[threadIdx.y][threadIdx.x][row];
+          }
+        }// store
+      }// reminder Y
+
+      //------------------------ reminder in X and Y -----------------------------//
+      if (threadIdx.y == 0)
+      {
+      // go over the remainder tile in X and Y (only a few rows and colls)
+        if ((tileCount.x * warpSize + threadIdx.x) < dimSizes.x)
+        {
+          for (auto row = 0; (tileCount.y * warpSize + row) < dimSizes.y; row++)
+          {
+            sharedTile[threadIdx.y][row][threadIdx.x]
+                      = inputSlab[(tileCount.y * warpSize   + row) * (dimSizes.x + inPad) +
+                                  (tileCount.x * warpSize)  + threadIdx.x];
+          } // load
         }
-      }// store
-    }// reminder X  and Y
+
+        // go over the remainder tile in Y (and store only colls)
+        if ((tileCount.y * warpSize + threadIdx.x) < dimSizes.y)
+        {
+          for (auto row = 0; (tileCount.x * warpSize + row) < dimSizes.x ; row++)
+          {
+            outputSlab[(tileCount.x * warpSize   + row) * (dimSizes.y + outPad) +
+                       (tileCount.y * warpSize)  + threadIdx.x]
+                      = sharedTile[threadIdx.y][threadIdx.x][row];
+          }
+        }// store
+      }// reminder X  and Y
+    } // kRectangle
   } //slab
-}// end of cudaTrasnposeReal3DMatrixXYRect
+}// end of cudaTrasnposeReal3DMatrixXY
 //--------------------------------------------------------------------------------------------------
 
 
 /**
  * Transpose a real 3D matrix in the X-Y direction. It is done out-of-place.
  *
+ * @tparam      padding     - Which matrices are padded
+ *
  * @param [out] outputMatrix - Output matrix data
  * @param [in]  inputMatrix  - Input  matrix data
  * @param [in]  dimSizes     - Dimension sizes of the original matrix
  */
+template<SolverCUDAKernels::TransposePadding padding>
 void SolverCUDAKernels::TrasposeReal3DMatrixXY(float*       outputMatrix,
                                                const float* inputMatrix,
                                                const dim3&  dimSizes)
 {
   // fixed size at the moment, may be tuned based on the domain shape in the future
+  // warpSize set to 32, and 4 tiles processed at once
   if ((dimSizes.x % 32 == 0) && (dimSizes.y % 32 == 0))
   {
-    // when the dims are multiples of 32, then use a faster implementation
-    CUDATrasnposeReal3DMatrixXYSquare<<<GetSolverTransposeGirdSize(),GetSolverTransposeBlockSize()  >>>
-                                     (outputMatrix, inputMatrix, dimSizes);
+    cudaTrasnposeReal3DMatrixXY<padding, true, 32, 4>
+                               <<<GetSolverTransposeGirdSize(),GetSolverTransposeBlockSize()>>>
+                               (outputMatrix, inputMatrix, dimSizes);
+
   }
   else
   {
-    CUDATrasnposeReal3DMatrixXYRect<<<GetSolverTransposeGirdSize(), GetSolverTransposeBlockSize() >>>
-                                   (outputMatrix, inputMatrix, dimSizes);
+    cudaTrasnposeReal3DMatrixXY<padding, false, 32, 4>
+                               <<<GetSolverTransposeGirdSize(), GetSolverTransposeBlockSize() >>>
+                               (outputMatrix, inputMatrix, dimSizes);
   }
 
   // check for errors
@@ -2491,110 +2432,85 @@ void SolverCUDAKernels::TrasposeReal3DMatrixXY(float*       outputMatrix,
 }// end of TrasposeReal3DMatrixXY
 //--------------------------------------------------------------------------------------------------
 
+//------------------------ Explicit instances of TrasposeReal3DMatrixXY --------------------------//
+/// Transpose a real 3D matrix in the X-Y direction, input matrix padded, output matrix compact
+template
+void SolverCUDAKernels::TrasposeReal3DMatrixXY<SolverCUDAKernels::TransposePadding::kInput>
+                                              (float*       outputMatrix,
+                                               const float* inputMatrix,
+                                               const dim3&  dimSizes);
 
+/// Transpose a real 3D matrix in the X-Y direction, input matrix compact, output matrix padded
+template
+void SolverCUDAKernels::TrasposeReal3DMatrixXY<SolverCUDAKernels::TransposePadding::kOutput>
+                                              (float*       outputMatrix,
+                                               const float* inputMatrix,
+                                               const dim3&  dimSizes);
 
-/**
- * CUDA kernel to transpose a 3D matrix in XZ planes if the dim sizes are divisible
- * by 32 in X and Z axes.
- * Every block in a 1D grid transposes a few slabs.
- * Every block is composed of a 2D mesh of threads. The y dim is for up to 4 tiles.
- * Each tile is processed by a single 32-thread warp.
- * The shared memory is used to coalesce memory accesses and the padding is to
- * eliminate bank conflicts.
- *
- * @param [out] outputMatrix - Output matrix
- * @param [in]  inputMatrix  - Input  matrix
- * @param [in]  dimSizes     - Dimension sizes of the original matrix
- *
- * @warning  The size X and Z dimensions have to be divisible by 32
- *
- * @warning A blockDim.x has to be 32 (one warp) \n
- *          blockDim.y has to between 1 and 4 (for tiles at once) \n
- *          blockDim.z must stay 1 \n
- *          Grid has to be organized (N, 1 ,1)
- *
- */
-__global__ void CUDATrasnposeReal3DMatrixXZSquare(float*       outputMatrix,
-                                                  const float* inputMatrix,
-                                                  const dim3   dimSizes)
-{
-  // this size is fixed shared memory
-  // we transpose 4 tiles of 32*32 at the same time, +1 solves bank conflicts
-  volatile __shared__ float shared_tile[4][32][32+1];
-
-  // run over all XZ slabs, one block per slab
-  for (auto row = blockIdx.x; row < dimSizes.y; row += gridDim.x)
-  {
-    dim3 tileIdx   = {0,0,0};
-    dim3 tileCount = {dimSizes.x >> 5, dimSizes.z >> 5, 1};
-
-    // go over all all tiles in the slab. Transpose multiple slabs at the same time
-    for (tileIdx.y = threadIdx.y; tileIdx.y < tileCount.y; tileIdx.y += blockDim.y)
-    {
-      // go over all tiles in the row
-      for (tileIdx.x = 0; tileIdx.x < tileCount.x; tileIdx.x ++)
-      {
-        // Go over one tile and load data, unroll does not help
-        for (auto slab = 0; slab < 32; slab++)
-        {
-          shared_tile[threadIdx.y][slab][threadIdx.x]
-                  = inputMatrix[(tileIdx.y * 32   + slab) * (dimSizes.x * dimSizes.y) +
-                              (row * dimSizes.x) +
-                               tileIdx.x * 32  + threadIdx.x];
-        } // load data
-        // no need for barrier - warp synchronous programming
-
-        // Go over one tile and store data, unroll does not help
-        for (auto slab = 0; slab < 32; slab++)
-        {
-          outputMatrix[(tileIdx.x * 32 + slab) * (dimSizes.y * dimSizes.z) +
-                      row * dimSizes.z +
-                      tileIdx.y * 32  + threadIdx.x]
-                  = shared_tile[threadIdx.y][threadIdx.x][slab];
-        } // store data
-      } // tile X
-    }// tile Y
-  } //slab
-}// end of cudaTrasnposeReal3DMatrixXZSquare
-//--------------------------------------------------------------------------------------------------
-
+/// Transpose a real 3D matrix in the X-Y direction, input and output matrix compact
+template
+void SolverCUDAKernels::TrasposeReal3DMatrixXY<SolverCUDAKernels::TransposePadding::kNone>
+                                              (float*       outputMatrix,
+                                               const float* inputMatrix,
+                                               const dim3&  dimSizes);
+/// Transpose a real 3D matrix in the X-Y direction, input and output matrix padded
+template
+void SolverCUDAKernels::TrasposeReal3DMatrixXY<SolverCUDAKernels::TransposePadding::kInputOutput>
+                                              (float*       outputMatrix,
+                                               const float* inputMatrix,
+                                               const dim3&  dimSizes);
 
 
 /**
  * CUDA kernel to transpose a 3D matrix in XZ planes of any dimension sizes
  * Every block in a 1D grid transposes a few slabs.
- * Every block is composed of a 2D mesh of threads. The y dim is for up to 4 tiles.
- * Each tile is processed by a single 32-thread warp.
- * The shared memory is used to coalesce memory accesses and the padding is to
- * eliminate bank conflicts.
- * First the full tiles are transposed, then the remainder in the X, then Y and finally the last
- * bit in the bottom right corner.
+  * Every block is composed of a 2D mesh of threads. The y dim gives the number of tiles processed
+ * simultaneously. Each tile is processed by a single thread warp.
+ * The shared memory is used to coalesce memory accesses and the padding is to eliminate bank
+ * conflicts.  First the full tiles are transposed, then the remainder in the X, then Z and finally
+ * the last bit in the bottom right corner.  \n
+ * As a part of the transposition, the matrices can be padded to conform with cuFFT
+ *
+ *
+ * @tparam      padding      - Which matrices are padded (template parameter)
+ * @tparam      isSquareSlab - Are the slabs of a square shape with sizes
+ *                             divisible by the warp size
+ * @tparam      warpSize     - Set the warp size. Built in value cannot be used
+ *                             due to shared memory allocation
  *
  * @param [out] outputMatrix - Output matrix
  * @param [in]  inputMatrix  - Input  matrix
  * @param [in]  dimSizes     - Dimension sizes of the original matrix
  *
- * @warning  The size X and Z dimensions have to be divisible by 32
- *
- * @warning A blockDim.x has to be 32 (one warp) \n
- *          blockDim.y has to between 1 and 4 (for tiles at once) \n
+ * @warning A blockDim.x has to of a warp size (typically 32) \n
+ *          blockDim.y should be between 1 and 4 (four tiles at once). blockDim.y
+ *          has to be equal with the tilesAtOnce parameter.  \n
  *          blockDim.z must stay 1 \n
  *          Grid has to be organized (N, 1 ,1)
  *
  */
-__global__ void CUDATrasnposeReal3DMatrixXZRect(float*       outputMatrix,
-                                                const float* inputMatrix,
-                                                const dim3   dimSizes)
+template<SolverCUDAKernels::TransposePadding padding,
+         bool                                isSquareSlab,
+         int                                 warpSize,
+         int                                 tilesAtOnce>
+__global__ void cudaTrasnposeReal3DMatrixXZ(float*       outputMatrix,
+                                            const float* inputMatrix,
+                                            const dim3   dimSizes)
 {
   // this size is fixed shared memory
-  // we transpose 4 tiles of 32*32 at the same time, +1 solves bank conflicts
-  volatile __shared__ float shared_tile[4][32][32+1];
+  // we transpose tilesAtOnce tiles of warp size^2 at the same time, +1 solves bank conflicts
+  volatile __shared__ float shared_tile[tilesAtOnce][warpSize][ warpSize + 1];
+
+  using TP = SolverCUDAKernels::TransposePadding;
+  constexpr int inPad  = ((padding == TP::kInput)  || (padding == TP::kInputOutput)) ? 1 : 0;
+  constexpr int outPad = ((padding == TP::kOutput) || (padding == TP::kInputOutput)) ? 1 : 0;
+
+  const dim3 tileCount = {dimSizes.x / warpSize, dimSizes.z / warpSize, 1};
 
   // run over all XZ slabs, one block per slab
-  for (auto row = blockIdx.x; row < dimSizes.y; row += gridDim.x)
+  for (auto row = blockIdx.x; row < dimSizes.y; row += gridDim.x )
   {
-    dim3 tileIdx   = {0,0,0};
-    dim3 tileCount = {dimSizes.x >> 5, dimSizes.z >> 5, 1};
+    dim3 tileIdx = {0, 0, 0};
 
     // go over all all tiles in the XZ slab. Transpose multiple slabs at the same time (on per Z)
     for (tileIdx.y = threadIdx.y; tileIdx.y < tileCount.y; tileIdx.y += blockDim.y)
@@ -2603,129 +2519,144 @@ __global__ void CUDATrasnposeReal3DMatrixXZRect(float*       outputMatrix,
       for (tileIdx.x = 0; tileIdx.x < tileCount.x; tileIdx.x++)
       {
         // Go over one tile and load data, unroll does not help
-        for (auto slab = 0; slab < 32; slab++)
+        for (auto slab = 0; slab < warpSize; slab++)
         {
           shared_tile[threadIdx.y][slab][threadIdx.x]
-                  = inputMatrix[(tileIdx.y * 32   + slab) * (dimSizes.x * dimSizes.y) +
-                               row * dimSizes.x +
-                               tileIdx.x * 32  + threadIdx.x];
+                     = inputMatrix[(tileIdx.y * warpSize + slab) * ((dimSizes.x + inPad) * dimSizes.y) +
+                                    row * (dimSizes.x + inPad) +
+                                    tileIdx.x * warpSize + threadIdx.x];
         } // load data
 
         // no need for barrier - warp synchronous programming
 
         // Go over one tile and store data, unroll does not help
-        for (auto slab = 0; slab < 32; slab++)
+        for (auto slab = 0; slab < warpSize; slab++)
         {
-          outputMatrix[(tileIdx.x * 32 + slab) * (dimSizes.y * dimSizes.z) +
-                      row * dimSizes.z +
-                      tileIdx.y * 32  + threadIdx.x]
-                  = shared_tile[threadIdx.y][threadIdx.x][slab];
+          outputMatrix[(tileIdx.x * warpSize + slab) * (dimSizes.y * (dimSizes.z + outPad)) +
+                       (row * (dimSizes.z + outPad)) +
+                       tileIdx.y * warpSize + threadIdx.x]
+                      = shared_tile[threadIdx.y][threadIdx.x][slab];
         } // store data
       } // tile X
 
-      //--------------------------- reminders in X ---------------------------//
-      // go over the remainder tile in X (those that can't fill a 32-warp)
-      if ((tileCount.x * 32 + threadIdx.x) < dimSizes.x)
+      // the slab is not a square with edge sizes divisible by warpSize
+      if (!isSquareSlab)
       {
-        for (auto slab = 0; slab < 32; slab++)
+        //--------------------------- reminders in X ---------------------------//
+        // go over the remainder tile in X (those that can't fill warps)
+        if ((tileCount.x * warpSize + threadIdx.x) < dimSizes.x)
         {
-          shared_tile[threadIdx.y][slab][threadIdx.x]
-                  = inputMatrix[(tileIdx.y   * 32  + slab) * (dimSizes.x * dimSizes.y) +
-                               row * dimSizes.x +
-                               tileCount.x * 32  + threadIdx.x];
-        }
-      }// load
+          for (auto slab = 0; slab < warpSize; slab++)
+          {
+            shared_tile[threadIdx.y][slab][threadIdx.x]
+                       = inputMatrix[(tileIdx.y * warpSize + slab) * ((dimSizes.x + inPad) * dimSizes.y) +
+                                     (row * (dimSizes.x + inPad)) +
+                                     tileCount.x * warpSize + threadIdx.x];
+          }
+        }// load
 
-      // go over the remainder tile in X (those that can't fill 32 warps)
-      for (auto slab = 0; (tileCount.x * 32 + slab) < dimSizes.x; slab++)
-      {
-        outputMatrix[(tileCount.x * 32  + slab) * (dimSizes.y * dimSizes.z) +
-                    row * dimSizes.z +
-                    tileIdx.y   * 32  + threadIdx.x]
-                = shared_tile[threadIdx.y][threadIdx.x][slab];
-      }// store
+        // go over the remainder tile in X (those that can't fill warps)
+        for (auto slab = 0; (tileCount.x * warpSize + slab) < dimSizes.x; slab++)
+        {
+          outputMatrix[(tileCount.x * warpSize + slab) * (dimSizes.y * (dimSizes.z + outPad)) +
+                       (row * (dimSizes.z + outPad)) +
+                       tileIdx.y * warpSize + threadIdx.x]
+                      = shared_tile[threadIdx.y][threadIdx.x][slab];
+        }// store
+      } // isSquareSlab
     }// tile Y
 
-    //--------------------------- reminders in Z -----------------------------//
-    // go over the remainder tile in z (those that can't fill a 32-warp)
-    // go over all full tiles in the row, first in parallel
-    for (tileIdx.x = threadIdx.y; tileIdx.x < tileCount.x; tileIdx.x += blockDim.y)
+    // the slab is not a square with edge sizes divisible by warpSize
+    if (!isSquareSlab)
     {
-      // go over the remainder tile in Y (only a few rows)
-      for (auto slab = 0; (tileCount.y * 32 + slab) < dimSizes.z; slab++)
+      //--------------------------- reminders in Z -----------------------------//
+      // go over the remainder tile in z (those that can't fill a -warp)
+      // go over all full tiles in the row, first in parallel
+      for (tileIdx.x = threadIdx.y; tileIdx.x < tileCount.x; tileIdx.x += blockDim.y)
       {
-        shared_tile[threadIdx.y][slab][threadIdx.x]
-                = inputMatrix[(tileCount.y  * 32  + slab) * (dimSizes.x * dimSizes.y) +
-                             row * dimSizes.x +
-                             tileIdx.x    * 32  + threadIdx.x];
-
-      } // load
-
-      // go over the remainder tile in Y (and store only cullomns)
-      if ((tileCount.y * 32 + threadIdx.x) < dimSizes.z)
-      {
-        for (auto slab = 0; slab < 32; slab++)
-        {
-          outputMatrix[(tileIdx.x   * 32  + slab) * (dimSizes.y * dimSizes.z) +
-                      row * dimSizes.z +
-                      tileCount.y * 32  + threadIdx.x]
-                  = shared_tile[threadIdx.y][threadIdx.x][slab];
-        }
-      }// store
-    }// reminder Y
-
-   //------------------------ reminder in X and Z -----------------------------//
-  if (threadIdx.y == 0)
-    {
-    // go over the remainder tile in X and Y (only a few rows and colls)
-      if ((tileCount.x * 32 + threadIdx.x) < dimSizes.x)
-      {
-        for (auto slab = 0; (tileCount.y * 32 + slab) < dimSizes.z; slab++)
+        // go over the remainder tile in Y (only a few rows)
+        for (auto slab = 0; (tileCount.y * warpSize + slab) < dimSizes.z; slab++)
         {
           shared_tile[threadIdx.y][slab][threadIdx.x]
-                  = inputMatrix[(tileCount.y  * 32  + slab) * (dimSizes.x * dimSizes.y) +
-                               row * dimSizes.x +
-                               tileCount.x  * 32  + threadIdx.x];
-        } // load
-      }
+                     = inputMatrix[(tileCount.y * warpSize + slab) * ((dimSizes.x + inPad) * dimSizes.y) +
+                                   (row * (dimSizes.x + inPad)) +
+                                   tileIdx.x * warpSize + threadIdx.x];
 
-      // go over the remainder tile in Z (and store only colls)
-      if ((tileCount.y * 32 + threadIdx.x) < dimSizes.z)
-      {
-        for (auto slab = 0; (tileCount.x * 32 + slab) < dimSizes.x ; slab++)
+        } // load
+
+        // go over the remainder tile in Y (and store only columns)
+        if ((tileCount.y * warpSize + threadIdx.x) < dimSizes.z)
         {
-          outputMatrix[(tileCount.x * 32  + slab) * (dimSizes.y * dimSizes.z) +
-                      row * dimSizes.z +
-                      tileCount.y * 32  + threadIdx.x]
-                  = shared_tile[threadIdx.y][threadIdx.x][slab];
+          for (auto slab = 0; slab < warpSize; slab++)
+          {
+            outputMatrix[(tileIdx.x * warpSize + slab) * (dimSizes.y * (dimSizes.z + outPad)) +
+                         (row * (dimSizes.z + outPad)) +
+                         tileCount.y * warpSize + threadIdx.x]
+                        = shared_tile[threadIdx.y][threadIdx.x][slab];
+          }
+        }// store
+      }// reminder Y
+
+     //------------------------ reminder in X and Z -----------------------------//
+    if (threadIdx.y == 0)
+      {
+      // go over the remainder tile in X and Y (only a few rows and colls)
+        if ((tileCount.x * warpSize + threadIdx.x) < dimSizes.x)
+        {
+          for (auto slab = 0; (tileCount.y * warpSize + slab) < dimSizes.z; slab++)
+          {
+            shared_tile[threadIdx.y][slab][threadIdx.x]
+                       = inputMatrix[(tileCount.y * warpSize + slab) * ((dimSizes.x + inPad) * dimSizes.y) +
+                                     (row * (dimSizes.x + inPad)) +
+                                     tileCount.x * warpSize + threadIdx.x];
+          } // load
         }
-      }// store
-    }// reminder X  and Y
-  } //slab
-}// end of cudaTrasnposeReal3DMatrixXZRect
+
+        // go over the remainder tile in Z (and store only colls)
+        if ((tileCount.y * warpSize + threadIdx.x) < dimSizes.z)
+        {
+          for (auto slab = 0; (tileCount.x * warpSize + slab) < dimSizes.x ; slab++)
+          {
+            outputMatrix[(tileCount.x * warpSize + slab) * (dimSizes.y * (dimSizes.z + outPad)) +
+                         (row * (dimSizes.z + outPad)) +
+                         tileCount.y * warpSize + threadIdx.x]
+                        = shared_tile[threadIdx.y][threadIdx.x][slab];
+          }
+        }// store
+      }// reminder X and Y
+    } //isSquareSlab
+  } // slab
+}// end of cudaTrasnposeReal3DMatrixXZ
 //--------------------------------------------------------------------------------------------------
 
 
 
 /**
- * Transpose a real 3D matrix in the X-Y direction. It is done out-of-place
+ * Transpose a real 3D matrix in the X-Z direction. It is done out-of-place
+ *
+ * @tparam      padding      - Which matrices are padded
+ *
  * @param [out] outputMatrix - Output matrix
  * @param [in]  inputMatrix  - Input  matrix
  * @param [in]  dimSizes     - Dimension sizes of the original matrix
  */
+template<SolverCUDAKernels::TransposePadding padding>
 void SolverCUDAKernels::TrasposeReal3DMatrixXZ(float*       outputMatrix,
                                                const float* inputMatrix,
                                                const dim3&  dimSizes)
 {
-  if ((dimSizes.x % 32 == 0) && (dimSizes.y % 32 == 0))
+  // fixed size at the moment, may be tuned based on the domain shape in the future
+  // warpSize set to 32, and 4 tiles processed at once
+  if ((dimSizes.x % 32 == 0) && (dimSizes.z % 32 == 0))
   {
-    // when the dims are multiples of 32, then use a faster implementation
-    CUDATrasnposeReal3DMatrixXZSquare<<<GetSolverTransposeGirdSize(), GetSolverTransposeBlockSize() >>>
+    cudaTrasnposeReal3DMatrixXZ<padding, true, 32, 4>
+                                     <<<GetSolverTransposeGirdSize(), GetSolverTransposeBlockSize()>>>
                                      (outputMatrix, inputMatrix, dimSizes);
   }
   else
   {
-    CUDATrasnposeReal3DMatrixXZRect<<<GetSolverTransposeGirdSize(), GetSolverTransposeBlockSize() >>>
+    cudaTrasnposeReal3DMatrixXZ<padding, false, 32, 4>
+                                   <<<GetSolverTransposeGirdSize(), GetSolverTransposeBlockSize()>>>
                                    (outputMatrix, inputMatrix, dimSizes);
   }
 
@@ -2733,6 +2664,35 @@ void SolverCUDAKernels::TrasposeReal3DMatrixXZ(float*       outputMatrix,
   checkCudaErrors(cudaGetLastError());
 }// end of TrasposeReal3DMatrixXZ
 //--------------------------------------------------------------------------------------------------
+
+//------------------------ Explicit instances of TrasposeReal3DMatrixXZ --------------------------//
+/// Transpose a real 3D matrix in the X-Z direction, input matrix padded, output matrix compact
+template
+void SolverCUDAKernels::TrasposeReal3DMatrixXZ<SolverCUDAKernels::TransposePadding::kInput>
+                                              (float*       outputMatrix,
+                                               const float* inputMatrix,
+                                               const dim3&  dimSizes);
+
+/// Transpose a real 3D matrix in the X-Z direction, input matrix compact, output matrix padded
+template
+void SolverCUDAKernels::TrasposeReal3DMatrixXZ<SolverCUDAKernels::TransposePadding::kOutput>
+                                              (float*       outputMatrix,
+                                               const float* inputMatrix,
+                                               const dim3&  dimSizes);
+
+/// Transpose a real 3D matrix in the X-Z direction, input and output matrix compact
+template
+void SolverCUDAKernels::TrasposeReal3DMatrixXZ<SolverCUDAKernels::TransposePadding::kNone>
+                                              (float*       outputMatrix,
+                                               const float* inputMatrix,
+                                               const dim3&  dimSizes);
+
+/// Transpose a real 3D matrix in the X-Z direction, input and output matrix padded
+template
+void SolverCUDAKernels::TrasposeReal3DMatrixXZ<SolverCUDAKernels::TransposePadding::kInputOutput>
+                                              (float*       outputMatrix,
+                                               const float* inputMatrix,
+                                               const dim3&  dimSizes);
 
 
 /**

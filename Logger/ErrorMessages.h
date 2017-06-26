@@ -13,7 +13,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August   2011, 12:34 (created) \n
- *              29 July     2016, 16:42 (revised)
+ *              18 June     2017, 11:30 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -283,6 +283,9 @@ TErrorMessage eRR_FMT_CUFFT_NOT_IMPLEMENTED
 /// CUDA FFT error message.
 TErrorMessage ERR_FMT_CUFFT_LICENSE_ERROR
         = "Error: cuFFT license error for %s.";
+/// CUDA FFT error message.
+TErrorMessage ERR_FMT_CUFFT_NOT_SUPPORTED
+        = "Error: cuFFT operation is not supported for parameters given. %s.";
 /// CUDA FFT error message.
 TErrorMessage ERR_FMT_CUFFT_UNKNOWN_ERROR
         = "Error: cuFFT failed with unknown error for %s.";
