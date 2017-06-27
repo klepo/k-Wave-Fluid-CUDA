@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              24 June     2017, 16:31 (revised)
+ *              27 June     2017, 13:05 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -1155,20 +1155,20 @@ __global__ void CUDAComputeDensityNonlinearHomogeneous(float*       rhox,
   {
     const dim3 coords = GetReal3DCoords(i);
 
-    const float pml_x_el = pml_x[coords.x];
-    const float pml_y_el = pml_y[coords.y];
-    const float pml_z_el = pml_z[coords.z];
+    const float pmlxEl = pml_x[coords.x];
+    const float pmlyEl = pml_y[coords.y];
+    const float pmlzEl = pml_z[coords.z];
 
-    const float dux = duxdx[i];
-    const float duy = duydy[i];
-    const float duz = duzdz[i];
+    const float rhoxEl = rhox[i];
+    const float rhoyEl = rhoy[i];
+    const float rhozEl = rhoz[i];
 
-    rhox[i] = pml_x_el * ((pml_x_el * rhox[i] - cudaDeviceConstants.dt_rho0_scalar * dux) /
-                          (1.0f + cudaDeviceConstants.dt2 * dux));
-    rhoy[i] = pml_y_el * ((pml_y_el * rhoy[i] - cudaDeviceConstants.dt_rho0_scalar * duy) /
-                          (1.0f + cudaDeviceConstants.dt2 * duy));
-    rhoz[i] = pml_z_el * ((pml_z_el * rhoz[i] - cudaDeviceConstants.dt_rho0_scalar * duz) /
-                          (1.0f + cudaDeviceConstants.dt2 * duz));
+    const float sumRhosDt = (2.0f * (rhoxEl + rhoyEl + rhozEl) + cudaDeviceConstants.rho0_scalar) *
+                            cudaDeviceConstants.dt;
+
+    rhox[i] = pmlxEl * ((pmlxEl * rhoxEl) - sumRhosDt * duxdx[i]);
+    rhoy[i] = pmlyEl * ((pmlyEl * rhoyEl) - sumRhosDt * duydy[i]);
+    rhoz[i] = pmlzEl * ((pmlzEl * rhozEl) - sumRhosDt * duzdz[i]);
   }
 }// end of CUDAComputeDensityNonlinearHomogeneous
 //--------------------------------------------------------------------------------------------------
@@ -1241,19 +1241,20 @@ __global__ void CUDAComputeDensityNonlinearHeterogeneous(float*       rhox,
   {
     const dim3 coords = GetReal3DCoords(i);
 
-    const float pml_x_el = pml_x[coords.x];
-    const float pml_y_el = pml_y[coords.y];
-    const float pml_z_el = pml_z[coords.z];
+    const float pmlxEl = pml_x[coords.x];
+    const float pmlyEl = pml_y[coords.y];
+    const float pmlzEl = pml_z[coords.z];
 
-    const float dt_rho0 = cudaDeviceConstants.dt * rho0[i];
+    const float rhoxEl = rhox[i];
+    const float rhoyEl = rhoy[i];
+    const float rhozEl = rhoz[i];
 
-    const float dux = duxdx[i];
-    const float duy = duydy[i];
-    const float duz = duzdz[i];
+    const float sumRhosDt = (2.0f * (rhoxEl + rhoyEl + rhozEl) + rho0[i]) *
+                            cudaDeviceConstants.dt;
 
-    rhox[i] = pml_x_el * ((pml_x_el * rhox[i] - dt_rho0 * dux) / (1.0f + cudaDeviceConstants.dt2 * dux));
-    rhoy[i] = pml_y_el * ((pml_y_el * rhoy[i] - dt_rho0 * duy) / (1.0f + cudaDeviceConstants.dt2 * duy));
-    rhoz[i] = pml_z_el * ((pml_z_el * rhoz[i] - dt_rho0 * duz) / (1.0f + cudaDeviceConstants.dt2 * duz));
+    rhox[i] = pmlxEl * ((pmlxEl * rhoxEl) - sumRhosDt * duxdx[i]);
+    rhoy[i] = pmlyEl * ((pmlyEl * rhoyEl) - sumRhosDt * duydy[i]);
+    rhoz[i] = pmlzEl * ((pmlzEl * rhozEl) - sumRhosDt * duzdz[i]);
   }
 }//end of CUDAComputeDensityNonlinearHeterogeneous
 //--------------------------------------------------------------------------------------------------
