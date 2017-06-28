@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August   2014, 11:15 (created)
- *              29 July     2016, 16:56 (revised)
+ *              28 June     2017, 14:59 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -95,8 +95,8 @@ void TWholeDomainOutputHDF5Stream::Create()
                                     TParameters::GetInstance().GetCompressionLevel());
 
   // Write dataset parameters
-  file.WriteMatrixDomainType(file.GetRootGroup(), rootObjectName, THDF5_File::REAL);
-  file.WriteMatrixDataType  (file.GetRootGroup(), rootObjectName, THDF5_File::FLOAT);
+  file.WriteMatrixDomainType(file.GetRootGroup(), rootObjectName, THDF5_File::TMatrixDomainType::REAL);
+  file.WriteMatrixDataType  (file.GetRootGroup(), rootObjectName, THDF5_File::TMatrixDataType::FLOAT);
 
   // Set buffer size
   bufferSize = sourceMatrix.GetElementCount();
@@ -124,7 +124,7 @@ void TWholeDomainOutputHDF5Stream::Reopen()
   dataset = file.OpenDataset(file.GetRootGroup(), rootObjectName);
 
   sampledTimeStep = 0;
-  if (reduceOp == NONE)
+  if (reduceOp == TReduceOperator::NONE)
   { // seek in the dataset
     sampledTimeStep = (params.Get_t_index() < params.GetStartTimeIndex()) ?
                        0 : (params.Get_t_index() - params.GetStartTimeIndex());
@@ -155,7 +155,7 @@ void TWholeDomainOutputHDF5Stream::Sample()
 {
   switch (reduceOp)
   {
-    case NONE :
+    case TReduceOperator::NONE :
     {
       // Copy all data from GPU to CPU (no need to use a kernel)
       // this violates the const prerequisite, however this routine is still NOT used in the code
@@ -180,27 +180,27 @@ void TWholeDomainOutputHDF5Stream::Sample()
       break;
     }// case NONE
 
-    case RMS  :
+    case TReduceOperator::RMS  :
     {
-      OutputStreamsCUDAKernels::SampleAll<RMS>
+      OutputStreamsCUDAKernels::SampleAll<TReduceOperator::RMS>
                                          (deviceBuffer,
                                           sourceMatrix.GetDeviceData(),
                                           sourceMatrix.GetElementCount());
       break;
     }// case RMS
 
-    case MAX  :
+    case TReduceOperator::MAX  :
     {
-      OutputStreamsCUDAKernels::SampleAll<MAX>
+      OutputStreamsCUDAKernels::SampleAll<TReduceOperator::MAX>
                                          (deviceBuffer,
                                           sourceMatrix.GetDeviceData(),
                                           sourceMatrix.GetElementCount());
       break;
     }//case MAX
 
-    case MIN  :
+    case TReduceOperator::MIN  :
     {
-      OutputStreamsCUDAKernels::SampleAll<MIN>
+      OutputStreamsCUDAKernels::SampleAll<TReduceOperator::MIN>
                                          (deviceBuffer,
                                           sourceMatrix.GetDeviceData(),
                                           sourceMatrix.GetElementCount());
@@ -221,7 +221,7 @@ void TWholeDomainOutputHDF5Stream::PostProcess()
 
   // When no reduce operator is applied, the data is flushed after every time step
   // which means it has been done before
-  if (reduceOp != NONE)
+  if (reduceOp != TReduceOperator::NONE)
   {
     // Copy data from GPU matrix
     CopyDataFromDevice();
@@ -240,7 +240,7 @@ void TWholeDomainOutputHDF5Stream::Checkpoint()
     CopyDataFromDevice();
 
   // raw data has already been flushed, others has to be flushed here
-  if (reduceOp != NONE) FlushBufferToFile();
+  if (reduceOp != TReduceOperator::NONE) FlushBufferToFile();
 }// end of Checkpoint
 //-------------------------------------------------------------------------------------------------
 
@@ -274,7 +274,7 @@ void TWholeDomainOutputHDF5Stream::FlushBufferToFile()
   TDimensionSizes position(0,0,0);
 
   // Not used for NONE now!
-  if (reduceOp == NONE)
+  if (reduceOp == TReduceOperator::NONE)
   {
       position.nt = sampledTimeStep;
       size.nt = sampledTimeStep;

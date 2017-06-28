@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              29 July      2016, 16:55 (revised)
+ *              28 June      2017, 15:03 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -81,13 +81,13 @@ void TBaseOutputHDF5Stream::PostProcess()
 {
   switch (reduceOp)
   {
-    case NONE:
+    case TReduceOperator::NONE:
     {
       // do nothing
       break;
     }
 
-    case RMS:
+    case TReduceOperator::RMS:
     {
       const float scalingCoeff = 1.0f / (TParameters::GetInstance().Get_nt() -
                                          TParameters::GetInstance().GetStartTimeIndex());
@@ -96,13 +96,13 @@ void TBaseOutputHDF5Stream::PostProcess()
       break;
     }
 
-    case MAX:
+    case TReduceOperator::MAX:
     {
       // do nothing
       break;
     }
 
-    case MIN:
+    case TReduceOperator::MIN:
     {
       // do nothing
       break;
@@ -135,7 +135,7 @@ void TBaseOutputHDF5Stream::AllocateMemory()
   // we need different initialization for different reduce ops
   switch (reduceOp)
   {
-    case NONE :
+    case TReduceOperator::NONE :
     {
       // zero the matrix - on the CPU side and lock on core 0 (gpu pinned to 1st socket)
       for (size_t i = 0; i < bufferSize; i++)
@@ -145,7 +145,7 @@ void TBaseOutputHDF5Stream::AllocateMemory()
       break;
     }
 
-    case RMS :
+    case TReduceOperator::RMS :
     {
       // zero the matrix - on the CPU side and lock on core 0 (gpu pinned to 1st socket)
       for (size_t i = 0; i < bufferSize; i++)
@@ -155,7 +155,7 @@ void TBaseOutputHDF5Stream::AllocateMemory()
       break;
     }
 
-    case MAX :
+    case TReduceOperator::MAX :
     {
       // set the values to the highest negative float value - on the core 0
       for (size_t i = 0; i < bufferSize; i++)
@@ -165,7 +165,7 @@ void TBaseOutputHDF5Stream::AllocateMemory()
       break;
     }
 
-    case MIN :
+    case TReduceOperator::MIN :
     {
       // set the values to the highest float value - on the core 0
       for (size_t i = 0; i < bufferSize; i++)
@@ -183,7 +183,7 @@ void TBaseOutputHDF5Stream::AllocateMemory()
   // cudaHostAllocWriteCombined - cannot be used since GPU writes and CPU reads
 
   // Map CPU buffer to GPU memory (RAW data) or allocate a GPU buffer (aggregated)
-  if (reduceOp == NONE)
+  if (reduceOp == TReduceOperator::NONE)
   {
     // Register CPU memory for zero-copy
     checkCudaErrors(cudaHostGetDevicePointer<float>(&deviceBuffer, hostBuffer, 0));
@@ -217,7 +217,7 @@ void TBaseOutputHDF5Stream::FreeMemory()
   hostBuffer = nullptr;
 
   // Free GPU memory
-  if (reduceOp != NONE)
+  if (reduceOp != TReduceOperator::NONE)
   {
     checkCudaErrors(cudaFree(deviceBuffer));
   }

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              29 July     2016, 16:41 (revised)
+ *              28 June     2017, 14:20 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -109,8 +109,8 @@ TKSpaceFirstOrder3DSolver::~TKSpaceFirstOrder3DSolver()
  */
 void TKSpaceFirstOrder3DSolver::AllocateMemory()
 {
-  TLogger::Log(TLogger::BASIC, OUT_FMT_MEMORY_ALLOCATION);
-  TLogger::Flush(TLogger::BASIC);
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_MEMORY_ALLOCATION);
+  TLogger::Flush(TLogger::TLogLevel::BASIC);
 
   // create container, then all matrices
   matrixContainer.AddMatrices();
@@ -119,7 +119,7 @@ void TKSpaceFirstOrder3DSolver::AllocateMemory()
   // add output streams into container
   outputStreamContainer.AddStreams(matrixContainer);
 
-  TLogger::Log(TLogger::BASIC, OUT_FMT_DONE);
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DONE);
 }// end of AllocateMemory
 //--------------------------------------------------------------------------------------------------
 
@@ -140,8 +140,8 @@ void TKSpaceFirstOrder3DSolver::FreeMemory()
 void TKSpaceFirstOrder3DSolver::LoadInputData()
 {
   // Load data from disk
-  TLogger::Log(TLogger::BASIC, OUT_FMT_DATA_LOADING);
-  TLogger::Flush(TLogger::BASIC);
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DATA_LOADING);
+  TLogger::Flush(TLogger::TLogLevel::BASIC);
 
   dataLoadTime.Start();
 
@@ -151,9 +151,9 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
   THDF5_File& checkpointFile = parameters.GetCheckpointFile();
 
   // Load data from disk
-  TLogger::Log(TLogger::FULL, OUT_FMT_FINSIH_NO_DONE);
-  TLogger::Log(TLogger::FULL, OUT_FMT_READING_INPUT_FILE);
-  TLogger::Flush(TLogger::FULL);
+  TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_FINSIH_NO_DONE);
+  TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_READING_INPUT_FILE);
+  TLogger::Flush(TLogger::TLogLevel::FULL);
 
   // load data from the input file
   matrixContainer.LoadDataFromInputFile(inputFile);
@@ -161,7 +161,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
   // close the input file
   inputFile.Close();
 
-  TLogger::Log(TLogger::FULL, OUT_FMT_DONE);
+  TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_DONE);
 
   // The simulation does not use check pointing or this is the first turn
   bool recoverFromCheckpoint = (parameters.IsCheckpointEnabled() &&
@@ -171,8 +171,8 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
   if (recoverFromCheckpoint)
   {
     //--------------------------- Read data from the checkpoint file -----------------------------//
-    TLogger::Log(TLogger::FULL, OUT_FMT_READING_CHECKPOINT_FILE);
-    TLogger::Flush(TLogger::FULL);
+    TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_READING_CHECKPOINT_FILE);
+    TLogger::Flush(TLogger::TLogLevel::FULL);
 
     // Open checkpoint file
     checkpointFile.Open(parameters.GetCheckpointFileName());
@@ -189,12 +189,12 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
     matrixContainer.LoadDataFromCheckpointFile(checkpointFile);
 
     checkpointFile.Close();
-    TLogger::Log(TLogger::FULL, OUT_FMT_DONE);
+    TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_DONE);
 
     //----------------------------- Read data from the output file -------------------------------//
     // Reopen output file for RW access
-    TLogger::Log(TLogger::FULL, OUT_FMT_READING_OUTPUT_FILE);
-    TLogger::Flush(TLogger::FULL);
+    TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_READING_OUTPUT_FILE);
+    TLogger::Flush(TLogger::TLogLevel::FULL);
 
     outputFile.Open(parameters.GetOutputFileName(), H5F_ACC_RDWR);
 
@@ -206,17 +206,17 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
 
     // Reopen streams
     outputStreamContainer.ReopenStreams();
-    TLogger::Log(TLogger::FULL, OUT_FMT_DONE);
+    TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_DONE);
   }
   else
   {
     //-------------------------- First round of multi-leg simulation -----------------------------//
     // Create the output file
-    TLogger::Log(TLogger::FULL, OUT_FMT_CREATING_OUTPUT_FILE);
-    TLogger::Flush(TLogger::FULL);
+    TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_CREATING_OUTPUT_FILE);
+    TLogger::Flush(TLogger::TLogLevel::FULL);
 
     outputFile.Create(parameters.GetOutputFileName());
-    TLogger::Log(TLogger::FULL, OUT_FMT_DONE);
+    TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_DONE);
 
     // Create the steams, link them with the sampled matrices
     // however DO NOT allocate memory!
@@ -225,9 +225,9 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
 
   dataLoadTime.Stop();
 
-  if (TLogger::GetLevel() != TLogger::FULL)
+  if (TLogger::GetLevel() != TLogger::TLogLevel::FULL)
   {
-    TLogger::Log(TLogger::BASIC, OUT_FMT_DONE);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DONE);
   }
 }// end of LoadInputData
 //--------------------------------------------------------------------------------------------------
@@ -241,8 +241,8 @@ void TKSpaceFirstOrder3DSolver::Compute()
 {
   preProcessingTime.Start();
 
-  TLogger::Log(TLogger::BASIC, OUT_FMT_FFT_PLANS);
-  TLogger::Flush(TLogger::BASIC);
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_FFT_PLANS);
+  TLogger::Flush(TLogger::TLogLevel::BASIC);
 
   TCUDAParameters& cudaParameters = parameters.GetCudaParameters();
 
@@ -251,10 +251,10 @@ void TKSpaceFirstOrder3DSolver::Compute()
   {
     // initilaise all cuda FFT plans
     InitializeFFTPlans();
-    TLogger::Log(TLogger::BASIC, OUT_FMT_DONE);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DONE);
 
-    TLogger::Log(TLogger::BASIC,OUT_FMT_PRE_PROCESSING);
-    TLogger::Flush(TLogger::BASIC);
+    TLogger::Log(TLogger::TLogLevel::BASIC,OUT_FMT_PRE_PROCESSING);
+    TLogger::Flush(TLogger::TLogLevel::BASIC);
 
     // preprocessing is done on CPU and must pretend the CUDA configuration
     PreProcessingPhase();
@@ -267,34 +267,34 @@ void TKSpaceFirstOrder3DSolver::Compute()
     // Constant memory uses some variables calculated during preprocessing
     cudaParameters.SetUpDeviceConstants();
 
-    TLogger::Log(TLogger::BASIC, OUT_FMT_DONE);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DONE);
   }
   catch (const std::exception& e)
   {
-    TLogger::Log(TLogger::BASIC, OUT_FMT_FAILED);
-    TLogger::Log(TLogger::BASIC, OUT_FMT_LAST_SEPARATOR);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_FAILED);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_LAST_SEPARATOR);
 
     TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),ERR_FMT_PATH_DELIMITERS, 9).c_str());
   }
 
   // Logger header for simulation
-  TLogger::Log(TLogger::BASIC, OUT_FMT_ELAPSED_TIME, preProcessingTime.GetElapsedTime());
-  TLogger::Log(TLogger::BASIC, OUT_FMT_COMP_RESOURCES_HEADER);
-  TLogger::Log(TLogger::BASIC, OUT_FMT_CURRENT_HOST_MEMORY,   GetHostMemoryUsageInMB());
-  TLogger::Log(TLogger::BASIC, OUT_FMT_CURRENT_DEVICE_MEMORY, GetDeviceMemoryUsageInMB());
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_ELAPSED_TIME, preProcessingTime.GetElapsedTime());
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_COMP_RESOURCES_HEADER);
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CURRENT_HOST_MEMORY,   GetHostMemoryUsageInMB());
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CURRENT_DEVICE_MEMORY, GetDeviceMemoryUsageInMB());
 
 
   const string blockDims = TLogger::FormatMessage(OUT_FMT_CUDA_GRID_SHAPE_FORMAT,
                                                   cudaParameters.GetSolverGridSize1D(),
                                                   cudaParameters.GetSolverBlockSize1D());
 
-  TLogger::Log(TLogger::FULL, OUT_FMT_CUDA_SOLVER_GRID_SHAPE, blockDims.c_str());
+  TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_CUDA_SOLVER_GRID_SHAPE, blockDims.c_str());
 
   const string gridDims = TLogger::FormatMessage(OUT_FMT_CUDA_GRID_SHAPE_FORMAT,
                                                  cudaParameters.GetSamplerGridSize1D(),
                                                  cudaParameters.GetSamplerBlockSize1D());
 
-  TLogger::Log(TLogger::FULL, OUT_FMT_CUDA_SAMPLER_GRID_SHAPE, gridDims.c_str());
+  TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_CUDA_SAMPLER_GRID_SHAPE, gridDims.c_str());
 
   // Main loop
   try
@@ -305,11 +305,11 @@ void TKSpaceFirstOrder3DSolver::Compute()
 
     simulationTime.Stop();
 
-    TLogger::Log(TLogger::BASIC,OUT_FMT_SIMULATOIN_END_SEPARATOR);
+    TLogger::Log(TLogger::TLogLevel::BASIC,OUT_FMT_SIMULATOIN_END_SEPARATOR);
   }
   catch (const std::exception& e)
   {
-    TLogger::Log(TLogger::BASIC, OUT_FMT_SIMULATION_FINAL_SEPARATOR);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SIMULATION_FINAL_SEPARATOR);
     TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),ERR_FMT_PATH_DELIMITERS, 9).c_str());
   }
 
@@ -320,31 +320,31 @@ void TKSpaceFirstOrder3DSolver::Compute()
   {
     if (IsCheckpointInterruption())
     { // Checkpoint
-      TLogger::Log(TLogger::BASIC, OUT_FMT_ELAPSED_TIME, simulationTime.GetElapsedTime());
-      TLogger::Log(TLogger::BASIC, OUT_FMT_CHECKPOINT_TIME_STEPS, parameters.Get_t_index());
-      TLogger::Log(TLogger::BASIC, OUT_FMT_CHECKPOINT_HEADER);
-      TLogger::Log(TLogger::BASIC, OUT_FMT_CREATING_CHECKPOINT);
-      TLogger::Flush(TLogger::BASIC);
+      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_ELAPSED_TIME, simulationTime.GetElapsedTime());
+      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CHECKPOINT_TIME_STEPS, parameters.Get_t_index());
+      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CHECKPOINT_HEADER);
+      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CREATING_CHECKPOINT);
+      TLogger::Flush(TLogger::TLogLevel::BASIC);
 
-      if (TLogger::GetLevel() == TLogger::FULL)
+      if (TLogger::GetLevel() == TLogger::TLogLevel::FULL)
       {
-        TLogger::Log(TLogger::BASIC, OUT_FMT_FINSIH_NO_DONE);
+        TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_FINSIH_NO_DONE);
       }
 
       SaveCheckpointData();
 
-      if (TLogger::GetLevel() != TLogger::FULL)
+      if (TLogger::GetLevel() != TLogger::TLogLevel::FULL)
       {
-        TLogger::Log(TLogger::BASIC, OUT_FMT_DONE);
+        TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DONE);
       }
     }
     else
     { // Finish
 
-      TLogger::Log(TLogger::BASIC, OUT_FMT_ELAPSED_TIME, simulationTime.GetElapsedTime());
-      TLogger::Log(TLogger::BASIC, OUT_FMT_SEPARATOR);
-      TLogger::Log(TLogger::BASIC, OUT_FMT_POST_PROCESSING);
-      TLogger::Flush(TLogger::BASIC);
+      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_ELAPSED_TIME, simulationTime.GetElapsedTime());
+      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SEPARATOR);
+      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_POST_PROCESSING);
+      TLogger::Flush(TLogger::TLogLevel::BASIC);
 
       PostProcessing();
 
@@ -353,13 +353,13 @@ void TKSpaceFirstOrder3DSolver::Compute()
       {
         std::remove(parameters.GetCheckpointFileName().c_str());
       }
-      TLogger::Log(TLogger::BASIC, OUT_FMT_DONE);
+      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DONE);
     }
   }
   catch (const std::exception &e)
   {
-    TLogger::Log(TLogger::BASIC, OUT_FMT_FAILED);
-    TLogger::Log(TLogger::BASIC, OUT_FMT_LAST_SEPARATOR);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_FAILED);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_LAST_SEPARATOR);
 
     TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),ERR_FMT_PATH_DELIMITERS,9).c_str());
   }
@@ -371,11 +371,11 @@ void TKSpaceFirstOrder3DSolver::Compute()
     WriteOutputDataInfo();
     parameters.GetOutputFile().Close();
 
-    TLogger::Log(TLogger::BASIC, OUT_FMT_ELAPSED_TIME, postProcessingTime.GetElapsedTime());
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_ELAPSED_TIME, postProcessingTime.GetElapsedTime());
     }
   catch (const std::exception &e)
   {
-    TLogger::Log(TLogger::BASIC, OUT_FMT_LAST_SEPARATOR);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_LAST_SEPARATOR);
     TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),ERR_FMT_PATH_DELIMITERS, 9).c_str());
   }
 }// end of Compute()
@@ -443,71 +443,71 @@ const string TKSpaceFirstOrder3DSolver::GetCodeName() const
  */
 void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense() const
 {
-  TLogger::Log(TLogger::BASIC,
+  TLogger::Log(TLogger::TLogLevel::BASIC,
                OUT_FMT_BUILD_NO_DATE_TIME,
                10,11,__DATE__,
                8,8,__TIME__);
 
   if (parameters.GetGitHash() != "")
   {
-    TLogger::Log(TLogger::BASIC, OUT_FMT_VERSION_GIT_HASH, parameters.GetGitHash().c_str());
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_VERSION_GIT_HASH, parameters.GetGitHash().c_str());
   }
 
-  TLogger::Log(TLogger::BASIC, OUT_FMT_SEPARATOR);
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SEPARATOR);
 
   // OS detection
   #ifdef __linux__
-    TLogger::Log(TLogger::BASIC, OUT_FMT_LINUX_BUILD);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_LINUX_BUILD);
   #elif __APPLE__
-    TLogger::Log(TLogger::BASIC, OUT_FMT_MAC_OS_BUILD);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_MAC_OS_BUILD);
   #elif _WIN32
-    TLogger::Log(TLogger::BASIC, OUT_FMT_WINDOWS_BUILD);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_WINDOWS_BUILD);
   #endif
 
   // Compiler detections
   #if (defined(__GNUC__) || defined(__GNUG__)) && !(defined(__clang__) || defined(__INTEL_COMPILER))
-    TLogger::Log(TLogger::BASIC, OUT_FMT_GNU_COMPILER, __VERSION__);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_GNU_COMPILER, __VERSION__);
   #endif
   #ifdef __INTEL_COMPILER
-    TLogger::Log(TLogger::BASIC, OUT_FMT_INTEL_COMPILER, __INTEL_COMPILER);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_INTEL_COMPILER, __INTEL_COMPILER);
   #endif
   #ifdef _MSC_VER
-	TLogger::Log(TLogger::BASIC, OUT_FMT_VISUAL_STUDIO_COMPILER, _MSC_VER);
+	TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_VISUAL_STUDIO_COMPILER, _MSC_VER);
   #endif
 
       // instruction set
   #if (defined (__AVX2__))
-    TLogger::Log(TLogger::BASIC, OUT_FMT_AVX2);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_AVX2);
   #elif (defined (__AVX__))
-    TLogger::Log(TLogger::BASIC, OUT_FMT_AVX);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_AVX);
   #elif (defined (__SSE4_2__))
-    TLogger::Log(TLogger::BASIC, OUT_FMT_SSE42);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SSE42);
   #elif (defined (__SSE4_1__))
-    TLogger::Log(TLogger::BASIC, OUT_FMT_SSE41);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SSE41);
   #elif (defined (__SSE3__))
-    TLogger::Log(TLogger::BASIC, OUT_FMT_SSE3);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SSE3);
   #elif (defined (__SSE2__))
-    TLogger::Log(TLogger::BASIC, OUT_FMT_SSE2);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SSE2);
   #endif
 
-  TLogger::Log(TLogger::BASIC, OUT_FMT_SEPARATOR);
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SEPARATOR);
 
  // CUDA detection
   int cudaRuntimeVersion;
   if (cudaRuntimeGetVersion(&cudaRuntimeVersion) != cudaSuccess)
   {
-    TLogger::Log(TLogger::BASIC, OUT_FMT_CUDA_RUNTIME_NA);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CUDA_RUNTIME_NA);
   }
   else
   {
-    TLogger::Log(TLogger::BASIC,
+    TLogger::Log(TLogger::TLogLevel::BASIC,
                  OUT_FMT_CUDA_RUNTIME,
                  cudaRuntimeVersion/1000, (cudaRuntimeVersion%100)/10);
   }
 
   int cudaDriverVersion;
   cudaDriverGetVersion(&cudaDriverVersion);
-  TLogger::Log(TLogger::BASIC,
+  TLogger::Log(TLogger::TLogLevel::BASIC,
                OUT_FMT_CUDA_DRIVER,
                cudaDriverVersion/1000, (cudaDriverVersion%100)/10);
 
@@ -515,31 +515,31 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense() const
   // no GPU was found
   if (cudaParameters.GetDeviceIdx() == TCUDAParameters::DEFAULT_DEVICE_IDX)
   {
-    TLogger::Log(TLogger::BASIC, OUT_FMT_CUDA_DEVICE_INFO_NA);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CUDA_DEVICE_INFO_NA);
   }
   else
   {
-    TLogger::Log(TLogger::BASIC,
+    TLogger::Log(TLogger::TLogLevel::BASIC,
                   OUT_FMT_CUDA_CODE_ARCH,
                   SolverCUDAKernels::GetCUDACodeVersion()/10.f);
-    TLogger::Log(TLogger::BASIC, OUT_FMT_SEPARATOR);
-    TLogger::Log(TLogger::BASIC, OUT_FMT_CUDA_DEVICE, cudaParameters.GetDeviceIdx());
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SEPARATOR);
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CUDA_DEVICE, cudaParameters.GetDeviceIdx());
 
     int paddingLength = 65 - ( 22 +   strlen(cudaParameters.GetDeviceName().c_str()));
 
-    TLogger::Log(TLogger::BASIC,
+    TLogger::Log(TLogger::TLogLevel::BASIC,
                  OUT_FMT_CUDA_DEVICE_NAME,
                  cudaParameters.GetDeviceName().c_str(),
                  paddingLength,
                  OUT_FMT_CUDA_DEVICE_NAME_PADDING.c_str());
 
-    TLogger::Log(TLogger::BASIC,
+    TLogger::Log(TLogger::TLogLevel::BASIC,
                  OUT_FMT_CUDA_CAPABILITY,
                  cudaParameters.GetDeviceProperties().major,
                  cudaParameters.GetDeviceProperties().minor);
   }
 
-  TLogger::Log(TLogger::BASIC, OUT_FMT_LICENCE);
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_LICENCE);
 }// end of GetFullCodeAndLincence
 //--------------------------------------------------------------------------------------------------
 
@@ -697,12 +697,12 @@ void TKSpaceFirstOrder3DSolver::InitializeFFTPlans()
 void TKSpaceFirstOrder3DSolver::PreProcessingPhase()
 {
   // get the correct sensor mask and recompute indices
-  if (parameters.Get_sensor_mask_type() == TParameters::INDEX)
+  if (parameters.Get_sensor_mask_type() == TParameters::TSensorMaskType::INDEX)
   {
     Get_sensor_mask_index().RecomputeIndicesToCPP();
   }
 
-  if (parameters.Get_sensor_mask_type() == TParameters::CORNERS)
+  if (parameters.Get_sensor_mask_type() == TParameters::TSensorMaskType::CORNERS)
   {
     Get_sensor_mask_corners().RecomputeIndicesToCPP();
   }
@@ -782,7 +782,7 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
   }
 
   // Progress header
-  TLogger::Log(TLogger::BASIC,OUT_FMT_SIMULATION_HEADER);
+  TLogger::Log(TLogger::TLogLevel::BASIC,OUT_FMT_SIMULATION_HEADER);
 
   // Initial copy of data to the GPU
   matrixContainer.CopyMatricesToDevice();
@@ -890,14 +890,14 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
   // store sensor mask if wanted
   if (parameters.IsCopySensorMask())
   {
-    if (parameters.Get_sensor_mask_type() == TParameters::INDEX)
+    if (parameters.Get_sensor_mask_type() == TParameters::TSensorMaskType::INDEX)
     {
       Get_sensor_mask_index().RecomputeIndicesToMatlab();
       Get_sensor_mask_index().WriteDataToHDF5File(parameters.GetOutputFile(),sensor_mask_index_NAME,
                                                   parameters.GetCompressionLevel());
     }
 
-    if (parameters.Get_sensor_mask_type() == TParameters::CORNERS)
+    if (parameters.Get_sensor_mask_type() == TParameters::TSensorMaskType::CORNERS)
     {
       Get_sensor_mask_corners().RecomputeIndicesToMatlab();
       Get_sensor_mask_corners().WriteDataToHDF5File(parameters.GetOutputFile(),sensor_mask_corners_NAME,
@@ -960,7 +960,7 @@ void  TKSpaceFirstOrder3DSolver::WriteOutputDataInfo()
   fileHeader.SetMajorFileVersion();
   fileHeader.SetMinorFileVersion();
   fileHeader.SetActualCreationTime();
-  fileHeader.SetFileType(THDF5_FileHeader::OUTPUT);
+  fileHeader.SetFileType(THDF5_FileHeader::TFileType::OUTPUT);
   fileHeader.SetHostName();
 
   fileHeader.SetMemoryConsumption(GetHostMemoryUsageInMB());
@@ -989,8 +989,8 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   // if it happens and the file is opened (from the recovery, close it)
   if (checkpointFile.IsOpen()) checkpointFile.Close();
 
-  TLogger::Log(TLogger::FULL,OUT_FMT_STORING_CHECKPOINT_DATA);
-  TLogger::Flush(TLogger::FULL);
+  TLogger::Log(TLogger::TLogLevel::FULL,OUT_FMT_STORING_CHECKPOINT_DATA);
+  TLogger::Flush(TLogger::TLogLevel::FULL);
 
   // Create the new file (overwrite the old one)
   checkpointFile.Create(parameters.GetCheckpointFileName());
@@ -1018,24 +1018,24 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   // Write checkpoint file header
   THDF5_FileHeader checkpointFileHeader = parameters.GetFileHeader();
 
-  checkpointFileHeader.SetFileType(THDF5_FileHeader::CHECKPOINT);
+  checkpointFileHeader.SetFileType(THDF5_FileHeader::TFileType::CHECKPOINT);
   checkpointFileHeader.SetCodeName(GetCodeName());
   checkpointFileHeader.SetActualCreationTime();
 
   checkpointFileHeader.WriteHeaderToCheckpointFile(checkpointFile);
 
   checkpointFile.Close();
-  TLogger::Log(TLogger::FULL, OUT_FMT_DONE);
+  TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_DONE);
 
   // checkpoint only if necessary (t_index > start_index), we're here one step ahead!
   if (parameters.Get_t_index() > parameters.GetStartTimeIndex())
   {
-    TLogger::Log(TLogger::FULL,OUT_FMT_STORING_SENSOR_DATA);
-    TLogger::Flush(TLogger::FULL);
+    TLogger::Log(TLogger::TLogLevel::FULL,OUT_FMT_STORING_SENSOR_DATA);
+    TLogger::Flush(TLogger::TLogLevel::FULL);
 
     outputStreamContainer.CheckpointStreams();
 
-    TLogger::Log(TLogger::FULL, OUT_FMT_DONE);
+    TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_DONE);
   }
 
   outputStreamContainer.CloseStreams();
@@ -1945,13 +1945,13 @@ void TKSpaceFirstOrder3DSolver::PrintStatistics()
     now += toGo;
     current = localtime(&now);
 
-    TLogger::Log(TLogger::BASIC,
+    TLogger::Log(TLogger::TLogLevel::BASIC,
                  OUT_FMT_SIMULATION_PROGRESS,
                  (size_t) ((t_index) / (nt * 0.01f)),'%',
                  elTime, toGo,
                  current->tm_mday, current->tm_mon+1, current->tm_year-100,
                  current->tm_hour, current->tm_min, current->tm_sec);
-    TLogger::Flush(TLogger::BASIC);
+    TLogger::Flush(TLogger::TLogLevel::BASIC);
   }
 }// end of PrintStatistics
 //--------------------------------------------------------------------------------------------------
@@ -1995,7 +1995,7 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
   THDF5_File&       outputFile = parameters.GetOutputFile();
 
   // test file type
-  if (fileHeader.GetFileType() != THDF5_FileHeader::OUTPUT)
+  if (fileHeader.GetFileType() != THDF5_FileHeader::TFileType::OUTPUT)
   {
     throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_OUTPUT_FILE_FORMAT,
                                               parameters.GetOutputFileName().c_str()));
@@ -2052,7 +2052,7 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
   fileHeader.ReadHeaderFromCheckpointFile(checkpointFile);
 
   // test file type
-  if (fileHeader.GetFileType() != THDF5_FileHeader::CHECKPOINT)
+  if (fileHeader.GetFileType() != THDF5_FileHeader::TFileType::CHECKPOINT)
   {
     throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_CHECKPOINT_FILE_FORMAT,
                                               parameters.GetCheckpointFileName().c_str()));

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              10 August   2016, 11:58 (revised)
+ *              28 June     2017, 15:14 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -81,12 +81,12 @@ TIndexMatrix::~TIndexMatrix()
 void TIndexMatrix::ReadDataFromHDF5File(THDF5_File&  file,
                                         TMatrixName& matrixName)
 {
-  if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::LONG)
+  if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDataType::LONG)
   {
     throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_INDEX, matrixName.c_str()));
   }
 
-  if (file.ReadMatrixDomainType(file.GetRootGroup(),matrixName) != THDF5_File::REAL)
+  if (file.ReadMatrixDomainType(file.GetRootGroup(),matrixName) != THDF5_File::TMatrixDomainType::REAL)
   {
     throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_REAL,matrixName.c_str()));
   }
@@ -142,8 +142,8 @@ void TIndexMatrix::WriteDataToHDF5File(THDF5_File&  file,
   file.CloseDataset(dataset);
 
   // write data and domain types
-  file.WriteMatrixDataType(file.GetRootGroup(),   matrixName, THDF5_File::LONG);
-  file.WriteMatrixDomainType(file.GetRootGroup(), matrixName, THDF5_File::REAL);
+  file.WriteMatrixDataType(file.GetRootGroup(),   matrixName, THDF5_File::TMatrixDataType::LONG);
+  file.WriteMatrixDomainType(file.GetRootGroup(), matrixName, THDF5_File::TMatrixDomainType::REAL);
 }// end of WriteDataToHDF5File
 //--------------------------------------------------------------------------------------------------
 

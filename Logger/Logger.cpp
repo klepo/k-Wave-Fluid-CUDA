@@ -42,7 +42,7 @@ using std::string;
 //------------------------------------------------------------------------------------------------//
 
 /// static declaration of the LogLevel private field
-TLogger::TLogLevel TLogger::logLevel = BASIC;
+TLogger::TLogLevel TLogger::logLevel = TLogLevel::BASIC;
 
 
 /**

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              10 August   2016, 10:49 (revised)
+ *              28 June     2018, 15:41 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -786,8 +786,8 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
     throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, cDatasetName));
   }
 
-  WriteMatrixDataType(parentGroup, datasetName, FLOAT);
-  WriteMatrixDomainType(parentGroup, datasetName, REAL);
+  WriteMatrixDataType(parentGroup, datasetName, TMatrixDataType::FLOAT);
+  WriteMatrixDomainType(parentGroup, datasetName, TMatrixDomainType::REAL);
 } // end of WriteScalarValue (float)
 //--------------------------------------------------------------------------------------------------
 
@@ -840,8 +840,8 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
     throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, cDatasetName));
   }
 
-  WriteMatrixDataType(parentGroup, datasetName, LONG);
-  WriteMatrixDomainType(parentGroup, datasetName, REAL);
+  WriteMatrixDataType(parentGroup, datasetName, TMatrixDataType::LONG);
+  WriteMatrixDomainType(parentGroup, datasetName, TMatrixDomainType::REAL);
 }// end of WriteScalarValue
 //--------------------------------------------------------------------------------------------------
 
@@ -1033,7 +1033,7 @@ void THDF5_File::WriteMatrixDataType(const hid_t            parentGroup,
   WriteStringAttribute(parentGroup,
                        datasetName,
                        matrixDataTypeName,
-                       matrixDataTypeNames[matrixDataType]);
+                       matrixDataTypeNames[static_cast<int>(matrixDataType)]);
 }// end of WriteMatrixDataType
 //--------------------------------------------------------------------------------------------------
 
@@ -1052,7 +1052,7 @@ void THDF5_File::WriteMatrixDomainType(const hid_t              parentGroup,
   WriteStringAttribute(parentGroup,
                        datasetName,
                        matrixDomainTypeName,
-                       matrixDomainTypeNames[matrixDomainType]);
+                       matrixDomainTypeNames[static_cast<int>(matrixDomainType)]);
 }// end of WriteMatrixDomainType
 //--------------------------------------------------------------------------------------------------
 
@@ -1243,33 +1243,33 @@ void THDF5_FileHeader::ReadHeaderFromInputFile(THDF5_File& inputFile)
   // Get file root handle
   hid_t rootGroup = inputFile.GetRootGroup();
   // read file type
-  headerValues[FILE_TYPE] =
+  headerValues[TFileHeaderItems::FILE_TYPE] =
           inputFile.ReadStringAttribute(rootGroup,
                                         "/",
-                                        headerNames[FILE_TYPE].c_str());
+                                        headerNames[TFileHeaderItems::FILE_TYPE].c_str());
 
-  if (GetFileType() == INPUT)
+  if (GetFileType() == TFileType::INPUT)
   {
-    headerValues[CREATED_BY]
+    headerValues[TFileHeaderItems::CREATED_BY]
             = inputFile.ReadStringAttribute(rootGroup,
                                             "/",
-                                            headerNames[CREATED_BY].c_str());
-    headerValues[CREATION_DATA]
+                                            headerNames[TFileHeaderItems::CREATED_BY].c_str());
+    headerValues[TFileHeaderItems::CREATION_DATA]
             = inputFile.ReadStringAttribute(rootGroup,
                                             "/",
-                                            headerNames[CREATION_DATA].c_str());
-    headerValues[FILE_DESCRIPTION]
+                                            headerNames[TFileHeaderItems::CREATION_DATA].c_str());
+    headerValues[TFileHeaderItems::FILE_DESCRIPTION]
             = inputFile.ReadStringAttribute(rootGroup,
                                             "/",
-                                            headerNames[FILE_DESCRIPTION].c_str());
-    headerValues[MAJOR_VERSION]
+                                            headerNames[TFileHeaderItems::FILE_DESCRIPTION].c_str());
+    headerValues[TFileHeaderItems::MAJOR_VERSION]
             = inputFile.ReadStringAttribute(rootGroup,
                                             "/",
-                                            headerNames[MAJOR_VERSION].c_str());
-    headerValues[MINOR_VERSION]
+                                            headerNames[TFileHeaderItems::MAJOR_VERSION].c_str());
+    headerValues[TFileHeaderItems::MINOR_VERSION]
             = inputFile.ReadStringAttribute(rootGroup,
                                             "/",
-                                            headerNames[MINOR_VERSION].c_str());
+                                            headerNames[TFileHeaderItems::MINOR_VERSION].c_str());
   }
   else
   {
@@ -1292,33 +1292,33 @@ void THDF5_FileHeader::ReadHeaderFromOutputFile(THDF5_File& outputFile)
   // Get file root handle
   hid_t rootGroup = outputFile.GetRootGroup();
 
-  headerValues[FILE_TYPE]
+  headerValues[TFileHeaderItems::FILE_TYPE]
           = outputFile.ReadStringAttribute(rootGroup,
                                            "/",
-                                           headerNames[FILE_TYPE].c_str());
+                                           headerNames[TFileHeaderItems::FILE_TYPE].c_str());
 
-  if (GetFileType() == OUTPUT)
+  if (GetFileType() == TFileType::OUTPUT)
   {
-    headerValues[TOTAL_EXECUTION_TIME]
+    headerValues[TFileHeaderItems::TOTAL_EXECUTION_TIME]
             = outputFile.ReadStringAttribute(rootGroup,
                                              "/",
-                                             headerNames[TOTAL_EXECUTION_TIME].c_str());
-    headerValues[DATA_LOAD_TIME]
+                                             headerNames[TFileHeaderItems::TOTAL_EXECUTION_TIME].c_str());
+    headerValues[TFileHeaderItems::DATA_LOAD_TIME]
             = outputFile.ReadStringAttribute(rootGroup,
                                              "/",
-                                             headerNames[DATA_LOAD_TIME].c_str());
-    headerValues[PREPROCESSING_TIME]
+                                             headerNames[TFileHeaderItems::DATA_LOAD_TIME].c_str());
+    headerValues[TFileHeaderItems::PREPROCESSING_TIME]
             = outputFile.ReadStringAttribute(rootGroup,
                                              "/",
-                                             headerNames[PREPROCESSING_TIME].c_str());
-    headerValues[SIMULATION_TIME]
+                                             headerNames[TFileHeaderItems::PREPROCESSING_TIME].c_str());
+    headerValues[TFileHeaderItems::SIMULATION_TIME]
             = outputFile.ReadStringAttribute(rootGroup,
                                              "/",
-                                             headerNames[SIMULATION_TIME].c_str());
-    headerValues[POST_PROCESSING_TIME]
+                                             headerNames[TFileHeaderItems::SIMULATION_TIME].c_str());
+    headerValues[TFileHeaderItems::POST_PROCESSING_TIME]
             = outputFile.ReadStringAttribute(rootGroup,
                                              "/",
-                                             headerNames[POST_PROCESSING_TIME].c_str());
+                                             headerNames[TFileHeaderItems::POST_PROCESSING_TIME].c_str());
   }
   else
   {
@@ -1338,21 +1338,21 @@ void THDF5_FileHeader::ReadHeaderFromCheckpointFile(THDF5_File& checkpointFile)
   // Get file root handle
   hid_t rootGroup = checkpointFile.GetRootGroup();
   // read file type
-  headerValues[FILE_TYPE] =
-          checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[FILE_TYPE]);
+  headerValues[TFileHeaderItems::FILE_TYPE] =
+          checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[TFileHeaderItems::FILE_TYPE]);
 
-  if (GetFileType() == CHECKPOINT)
+  if (GetFileType() == TFileType::CHECKPOINT)
   {
-    headerValues[CREATED_BY]
-            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[CREATED_BY]);
-    headerValues[CREATION_DATA]
-            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[CREATION_DATA]);
-    headerValues[FILE_DESCRIPTION]
-            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[FILE_DESCRIPTION]);
-    headerValues[MAJOR_VERSION]
-            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[MAJOR_VERSION]);
-    headerValues[MINOR_VERSION]
-            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[MINOR_VERSION]);
+    headerValues[TFileHeaderItems::CREATED_BY]
+            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[TFileHeaderItems::CREATED_BY]);
+    headerValues[TFileHeaderItems::CREATION_DATA]
+            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[TFileHeaderItems::CREATION_DATA]);
+    headerValues[TFileHeaderItems::FILE_DESCRIPTION]
+            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[TFileHeaderItems::FILE_DESCRIPTION]);
+    headerValues[TFileHeaderItems::MAJOR_VERSION]
+            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[TFileHeaderItems::MAJOR_VERSION]);
+    headerValues[TFileHeaderItems::MINOR_VERSION]
+            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[TFileHeaderItems::MINOR_VERSION]);
   }
   else
   {
@@ -1391,33 +1391,33 @@ void THDF5_FileHeader::WriteHeaderToCheckpointFile(THDF5_File& checkpointFile)
   // Write header
   checkpointFile.WriteStringAttribute(rootGroup,
                                       "/",
-                                      headerNames [FILE_TYPE].c_str(),
-                                      headerValues[FILE_TYPE].c_str());
+                                      headerNames [TFileHeaderItems::FILE_TYPE].c_str(),
+                                      headerValues[TFileHeaderItems::FILE_TYPE].c_str());
 
   checkpointFile.WriteStringAttribute(rootGroup,
                                       "/",
-                                      headerNames [CREATED_BY].c_str(),
-                                      headerValues[CREATED_BY].c_str());
+                                      headerNames [TFileHeaderItems::CREATED_BY].c_str(),
+                                      headerValues[TFileHeaderItems::CREATED_BY].c_str());
 
   checkpointFile.WriteStringAttribute(rootGroup,
                                       "/",
-                                      headerNames [CREATION_DATA].c_str(),
-                                      headerValues[CREATION_DATA].c_str());
+                                      headerNames [TFileHeaderItems::CREATION_DATA].c_str(),
+                                      headerValues[TFileHeaderItems::CREATION_DATA].c_str());
 
   checkpointFile.WriteStringAttribute(rootGroup,
                                       "/",
-                                      headerNames [FILE_DESCRIPTION].c_str(),
-                                      headerValues[FILE_DESCRIPTION].c_str());
+                                      headerNames [TFileHeaderItems::FILE_DESCRIPTION].c_str(),
+                                      headerValues[TFileHeaderItems::FILE_DESCRIPTION].c_str());
 
   checkpointFile.WriteStringAttribute(rootGroup,
                                       "/",
-                                      headerNames [MAJOR_VERSION].c_str(),
-                                      headerValues[MAJOR_VERSION].c_str());
+                                      headerNames [TFileHeaderItems::MAJOR_VERSION].c_str(),
+                                      headerValues[TFileHeaderItems::MAJOR_VERSION].c_str());
 
   checkpointFile.WriteStringAttribute(rootGroup,
                                       "/",
-                                      headerNames [MINOR_VERSION].c_str(),
-                                      headerValues[MINOR_VERSION].c_str());
+                                      headerNames [TFileHeaderItems::MINOR_VERSION].c_str(),
+                                      headerValues[TFileHeaderItems::MINOR_VERSION].c_str());
 }// end of WriteHeaderToCheckpointFile
 //--------------------------------------------------------------------------------------------------
 
@@ -1433,9 +1433,9 @@ void THDF5_FileHeader::SetActualCreationTime()
   time(&now);
   current = localtime(&now);
 
-  headerValues[CREATION_DATA] = TLogger::FormatMessage("%02i/%02i/%02i, %02i:%02i:%02i",
-                                      current->tm_mday, current->tm_mon + 1, current->tm_year - 100,
-                                      current->tm_hour, current->tm_min, current->tm_sec);
+  headerValues[TFileHeaderItems::CREATION_DATA] = TLogger::FormatMessage("%02i/%02i/%02i, %02i:%02i:%02i",
+                                                  current->tm_mday, current->tm_mon + 1, current->tm_year - 100,
+                                                  current->tm_hour, current->tm_min, current->tm_sec);
 
 }// end of SetCreationTime
 //--------------------------------------------------------------------------------------------------
@@ -1446,19 +1446,19 @@ void THDF5_FileHeader::SetActualCreationTime()
  */
 THDF5_FileHeader::TFileVersion THDF5_FileHeader::GetFileVersion()
 {
-  if ((headerValues[MAJOR_VERSION] == hdf5_MajorFileVersionsNames[0]) &&
-      (headerValues[MINOR_VERSION] == hdf5_MinorFileVersionsNames[0]))
+  if ((headerValues[TFileHeaderItems::MAJOR_VERSION] == hdf5_MajorFileVersionsNames[0]) &&
+      (headerValues[TFileHeaderItems::MINOR_VERSION] == hdf5_MinorFileVersionsNames[0]))
   {
-    return VERSION_10;
+    return TFileVersion::VERSION_10;
   }
 
-  if ((headerValues[MAJOR_VERSION] == hdf5_MajorFileVersionsNames[0]) &&
-      (headerValues[MINOR_VERSION] == hdf5_MinorFileVersionsNames[1]))
+  if ((headerValues[TFileHeaderItems::MAJOR_VERSION] == hdf5_MajorFileVersionsNames[0]) &&
+      (headerValues[TFileHeaderItems::MINOR_VERSION] == hdf5_MinorFileVersionsNames[1]))
   {
-    return VERSION_11;
+    return TFileVersion::VERSION_11;
   }
 
-  return VERSION_UNKNOWN;
+  return TFileVersion::VERSION_UNKNOWN;
 }// end of GetFileVersion
 //--------------------------------------------------------------------------------------------------
 
@@ -1471,15 +1471,15 @@ THDF5_FileHeader::TFileVersion THDF5_FileHeader::GetFileVersion()
  */
 THDF5_FileHeader::TFileType  THDF5_FileHeader::GetFileType()
 {
-  for (int i = INPUT; i < UNKNOWN ; i++)
+  for (int i = static_cast<int>(TFileType::INPUT); i < static_cast<int>(TFileType::UNKNOWN); i++)
   {
-    if (headerValues[FILE_TYPE] == hdf5_FileTypesNames[static_cast<TFileType >(i)])
+    if (headerValues[TFileHeaderItems::FILE_TYPE] == hdf5_FileTypesNames[i])
     {
       return static_cast<TFileType >(i);
     }
   }
 
-  return THDF5_FileHeader::UNKNOWN;
+  return THDF5_FileHeader::TFileType::UNKNOWN;
 }// end of GetFileType
 //--------------------------------------------------------------------------------------------------
 
@@ -1490,7 +1490,7 @@ THDF5_FileHeader::TFileType  THDF5_FileHeader::GetFileType()
  */
 void THDF5_FileHeader::SetFileType(const THDF5_FileHeader::TFileType fileType)
 {
-  headerValues[FILE_TYPE] = hdf5_FileTypesNames[fileType];
+  headerValues[TFileHeaderItems::FILE_TYPE] = hdf5_FileTypesNames[static_cast<int>(fileType)];
 }// end of SetFileType
 //--------------------------------------------------------------------------------------------------
 
@@ -1518,7 +1518,7 @@ void THDF5_FileHeader::SetHostName()
     WSACleanup();
   #endif
 
-  headerValues[HOST_NAME] = hostName;
+  headerValues[TFileHeaderItems::HOST_NAME] = hostName;
 }// end of SetHostName
 //--------------------------------------------------------------------------------------------------
 
@@ -1530,9 +1530,9 @@ void THDF5_FileHeader::SetHostName()
  */
 void THDF5_FileHeader::SetMemoryConsumption(const size_t totalMemory)
 {
-  headerValues[TOTAL_MEMORY_CONSUMPTION] = TLogger::FormatMessage("%ld MB", totalMemory);
+  headerValues[TFileHeaderItems::TOTAL_MEMORY_CONSUMPTION] = TLogger::FormatMessage("%ld MB", totalMemory);
 
-  headerValues[PEAK_CORE_MEMORY_CONSUMPTION]
+  headerValues[TFileHeaderItems::PEAK_CORE_MEMORY_CONSUMPTION]
           = TLogger::FormatMessage("%ld MB",
                                    totalMemory / TParameters::GetInstance().GetNumberOfThreads());
 
@@ -1555,11 +1555,11 @@ void THDF5_FileHeader::SetExecutionTimes(const double totalTime,
                                          const double simulationTime,
                                          const double postprocessingTime)
 {
-  headerValues[TOTAL_EXECUTION_TIME] = TLogger::FormatMessage("%8.2fs", totalTime);
-  headerValues[DATA_LOAD_TIME]       = TLogger::FormatMessage("%8.2fs", loadTime);
-  headerValues[PREPROCESSING_TIME]   = TLogger::FormatMessage("%8.2fs", preProcessingTime);
-  headerValues[SIMULATION_TIME]      = TLogger::FormatMessage("%8.2fs", simulationTime);
-  headerValues[POST_PROCESSING_TIME] = TLogger::FormatMessage("%8.2fs", postprocessingTime);
+  headerValues[TFileHeaderItems::TOTAL_EXECUTION_TIME] = TLogger::FormatMessage("%8.2fs", totalTime);
+  headerValues[TFileHeaderItems::DATA_LOAD_TIME]       = TLogger::FormatMessage("%8.2fs", loadTime);
+  headerValues[TFileHeaderItems::PREPROCESSING_TIME]   = TLogger::FormatMessage("%8.2fs", preProcessingTime);
+  headerValues[TFileHeaderItems::SIMULATION_TIME]      = TLogger::FormatMessage("%8.2fs", simulationTime);
+  headerValues[TFileHeaderItems::POST_PROCESSING_TIME] = TLogger::FormatMessage("%8.2fs", postprocessingTime);
 }// end of SetExecutionTimes
 //--------------------------------------------------------------------------------------------------
 
@@ -1578,11 +1578,11 @@ void THDF5_FileHeader::GetExecutionTimes(double& totalTime,
                                          double& simulationTime,
                                          double& postprocessingTime)
 {
-  totalTime          = std::stof(headerValues[TOTAL_EXECUTION_TIME]);
-  loadTime           = std::stof(headerValues[DATA_LOAD_TIME]);
-  preProcessingTime  = std::stof(headerValues[PREPROCESSING_TIME]);
-  simulationTime     = std::stof(headerValues[SIMULATION_TIME]);
-  postprocessingTime = std::stof(headerValues[POST_PROCESSING_TIME]);
+  totalTime          = std::stof(headerValues[TFileHeaderItems::TOTAL_EXECUTION_TIME]);
+  loadTime           = std::stof(headerValues[TFileHeaderItems::DATA_LOAD_TIME]);
+  preProcessingTime  = std::stof(headerValues[TFileHeaderItems::PREPROCESSING_TIME]);
+  simulationTime     = std::stof(headerValues[TFileHeaderItems::SIMULATION_TIME]);
+  postprocessingTime = std::stof(headerValues[TFileHeaderItems::POST_PROCESSING_TIME]);
 }// end of GetExecutionTimes
 //--------------------------------------------------------------------------------------------------
 
@@ -1592,7 +1592,7 @@ void THDF5_FileHeader::GetExecutionTimes(double& totalTime,
  */
 void THDF5_FileHeader::SetNumberOfCores()
 {
-  headerValues[NUMBER_OF_CORES]
+  headerValues[TFileHeaderItems::NUMBER_OF_CORES]
           = TLogger::FormatMessage("%ld", TParameters::GetInstance().GetNumberOfThreads());
 }// end of SetNumberOfCores
 //--------------------------------------------------------------------------------------------------
@@ -1610,22 +1610,22 @@ void THDF5_FileHeader::PopulateHeaderFileMap()
 {
   headerNames.clear();
 
-  headerNames[CREATED_BY] = "created_by";
-  headerNames[CREATION_DATA] = "creation_date";
-  headerNames[FILE_DESCRIPTION] = "file_description";
-  headerNames[MAJOR_VERSION] = "major_version";
-  headerNames[MINOR_VERSION] = "minor_version";
-  headerNames[FILE_TYPE] = "file_type";
+  headerNames[TFileHeaderItems::CREATED_BY]       = "created_by";
+  headerNames[TFileHeaderItems::CREATION_DATA]    = "creation_date";
+  headerNames[TFileHeaderItems::FILE_DESCRIPTION] = "file_description";
+  headerNames[TFileHeaderItems::MAJOR_VERSION]    = "major_version";
+  headerNames[TFileHeaderItems::MINOR_VERSION]    = "minor_version";
+  headerNames[TFileHeaderItems::FILE_TYPE]        = "file_type";
 
-  headerNames[HOST_NAME] = "host_names";
-  headerNames[NUMBER_OF_CORES] = "number_of_cpu_cores";
-  headerNames[TOTAL_MEMORY_CONSUMPTION] = "total_memory_in_use";
-  headerNames[PEAK_CORE_MEMORY_CONSUMPTION] = "peak_core_memory_in_use";
+  headerNames[TFileHeaderItems::HOST_NAME]                    = "host_names";
+  headerNames[TFileHeaderItems::NUMBER_OF_CORES]              = "number_of_cpu_cores";
+  headerNames[TFileHeaderItems::TOTAL_MEMORY_CONSUMPTION]     = "total_memory_in_use";
+  headerNames[TFileHeaderItems::PEAK_CORE_MEMORY_CONSUMPTION] = "peak_core_memory_in_use";
 
-  headerNames[TOTAL_EXECUTION_TIME] = "total_execution_time";
-  headerNames[DATA_LOAD_TIME] = "data_loading_phase_execution_time";
-  headerNames[PREPROCESSING_TIME] = "pre-processing_phase_execution_time";
-  headerNames[SIMULATION_TIME] = "simulation_phase_execution_time";
-  headerNames[POST_PROCESSING_TIME] = "post-processing_phase_execution_time";
+  headerNames[TFileHeaderItems::TOTAL_EXECUTION_TIME] = "total_execution_time";
+  headerNames[TFileHeaderItems::DATA_LOAD_TIME]       = "data_loading_phase_execution_time";
+  headerNames[TFileHeaderItems::PREPROCESSING_TIME]   = "pre-processing_phase_execution_time";
+  headerNames[TFileHeaderItems::SIMULATION_TIME]      = "simulation_phase_execution_time";
+  headerNames[TFileHeaderItems::POST_PROCESSING_TIME] = "post-processing_phase_execution_time";
 }// end of PopulateHeaderFileMap
 //--------------------------------------------------------------------------------------------------

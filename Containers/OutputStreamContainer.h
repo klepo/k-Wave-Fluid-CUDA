@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        04 December  2014, 11:00 (created)
- *              02 August    2016, 17:15 (revised)
+ *              28 June      2017, 14:09 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -43,32 +43,6 @@
 
 
 /**
- * @enum    TOutputStreamIdx
- * @brief   Output streams identifiers in k-Wave.
- * @details   Output streams identifiers in k-Wave.
- * @warning the order of Idxs is mandatory! it determines the order of sampling and is used for
- *          hiding the PCI-E latency
- */
-enum TOutputStreamIdx
-{
-  // raw quantities are sampled first - to allow some degree of asynchronous copies
-  p_sensor_raw,  ux_sensor_raw, uy_sensor_raw, uz_sensor_raw,
-  ux_shifted_sensor_raw, uy_shifted_sensor_raw, uz_shifted_sensor_raw,
-
-  // then we sample aggregated quantities
-  p_sensor_rms, p_sensor_max, p_sensor_min,
-  p_sensor_max_all, p_sensor_min_all,
-
-  ux_sensor_rms, uy_sensor_rms, uz_sensor_rms,
-  ux_sensor_max, uy_sensor_max, uz_sensor_max,
-  ux_sensor_min, uy_sensor_min, uz_sensor_min,
-
-  ux_sensor_max_all, uy_sensor_max_all, uz_sensor_max_all,
-  ux_sensor_min_all, uy_sensor_min_all, uz_sensor_min_all,
-};// end of TOutputStreamIdx
-//--------------------------------------------------------------------------------------------------
-
-/**
  * @class TOutputStreamContainer
  * @brief A container for output streams.
  * @details The output stream container maintains matrices used to sample data.
@@ -77,6 +51,32 @@ enum TOutputStreamIdx
 class TOutputStreamContainer
 {
   public:
+    /**
+      * @enum    TOutputStreamIdx
+      * @brief   Output streams identifiers in k-Wave.
+      * @details   Output streams identifiers in k-Wave.
+      * @warning the order of Idxs is mandatory! it determines the order of sampling and is used for
+      *          hiding the PCI-E latency
+      */
+    enum class TOutputStreamIdx
+    {
+      // raw quantities are sampled first - to allow some degree of asynchronous copies
+      p_sensor_raw,  ux_sensor_raw, uy_sensor_raw, uz_sensor_raw,
+      ux_shifted_sensor_raw, uy_shifted_sensor_raw, uz_shifted_sensor_raw,
+
+      // then we sample aggregated quantities
+      p_sensor_rms, p_sensor_max, p_sensor_min,
+      p_sensor_max_all, p_sensor_min_all,
+
+      ux_sensor_rms, uy_sensor_rms, uz_sensor_rms,
+      ux_sensor_max, uy_sensor_max, uz_sensor_max,
+      ux_sensor_min, uy_sensor_min, uz_sensor_min,
+
+      ux_sensor_max_all, uy_sensor_max_all, uz_sensor_max_all,
+      ux_sensor_min_all, uy_sensor_min_all, uz_sensor_min_all,
+    };// end of TOutputStreamIdx
+    //----------------------------------------------------------------------------------------------
+
     /// Constructor.
     TOutputStreamContainer() {};
     /// Destructor.
@@ -140,9 +140,9 @@ class TOutputStreamContainer
 
    private:
     /// Create a new output stream
-    TBaseOutputHDF5Stream* CreateNewOutputStream(TMatrixContainer&  matrixContainer,
-                                                 const TMatrixIdx   sampledMatrixIdx,
-                                                 const TMatrixName& fileDatasetName,
+    TBaseOutputHDF5Stream* CreateNewOutputStream(TMatrixContainer&                            matrixContainer,
+                                                 const TMatrixContainer::TMatrixIdx           sampledMatrixIdx,
+                                                 const TMatrixName&                           fileDatasetName,
                                                  const TBaseOutputHDF5Stream::TReduceOperator reduceOp);
 
     /// Copy constructor not allowed for public.

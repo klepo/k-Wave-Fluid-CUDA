@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August   2012, 11:25 (created) \n
- *              10 August   2016, 12:54 (revised)
+ *              28 June     2017, 14:49 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -98,15 +98,15 @@ TCommandLineParameters::TCommandLineParameters() :
  */
 void TCommandLineParameters::PrintUsage()
 {
-  TLogger::Log(TLogger::BASIC, OUT_FMT_USAGE_PART_1);
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_USAGE_PART_1);
 
   #ifdef _OPENMP
-    TLogger::Log(TLogger::BASIC,
+    TLogger::Log(TLogger::TLogLevel::BASIC,
                  OUT_FMT_USAGE_THREADS,
                  omp_get_num_procs());
   #endif
 
-  TLogger::Log(TLogger::BASIC,
+  TLogger::Log(TLogger::TLogLevel::BASIC,
                OUT_FMT_USAGE_PART_2,
                DEFAULT_PROGRESS_PRINT_INTERVAL,
                DEFAULT_COMPRESSION_LEVEL);
@@ -118,45 +118,45 @@ void TCommandLineParameters::PrintUsage()
  */
 void TCommandLineParameters::PrintComandlineParamers()
 {
-  TLogger::Log(TLogger::ADVANCED, OUT_FMT_SEPARATOR);
+  TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SEPARATOR);
 
-  TLogger::Log(TLogger::ADVANCED,
+  TLogger::Log(TLogger::TLogLevel::ADVANCED,
                TLogger::WordWrapString(OUT_FMT_INPUT_FILE + inputFileName,
                                        ERR_FMT_PATH_DELIMITERS,
                                        15).c_str());
 
-  TLogger::Log(TLogger::ADVANCED,
+  TLogger::Log(TLogger::TLogLevel::ADVANCED,
                TLogger::WordWrapString(OUT_FMT_OUTPUT_FILE + outputFileName,
                                        ERR_FMT_PATH_DELIMITERS,
                                        15).c_str());
 
   if (IsCheckpointEnabled())
   {
-    TLogger::Log(TLogger::ADVANCED,
+    TLogger::Log(TLogger::TLogLevel::ADVANCED,
                  TLogger::WordWrapString(OUT_FMT_CHECKPOINT_FILE + checkpointFileName,
                                          ERR_FMT_PATH_DELIMITERS,
                                          15).c_str());
 
-    TLogger::Log(TLogger::ADVANCED, OUT_FMT_SEPARATOR);
+    TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SEPARATOR);
 
-    TLogger::Log(TLogger::ADVANCED, OUT_FMT_CHECKPOINT_INTERVAL, checkpointInterval);
+    TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_CHECKPOINT_INTERVAL, checkpointInterval);
   }
   else
   {
-    TLogger::Log(TLogger::ADVANCED, OUT_FMT_SEPARATOR);
+    TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SEPARATOR);
   }
 
 
-  TLogger::Log(TLogger::ADVANCED, OUT_FMT_COMPRESSION_LEVEL, compressionLevel);
+  TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_COMPRESSION_LEVEL, compressionLevel);
 
-  TLogger::Log(TLogger::FULL,     OUT_FMT_PRINT_PROGRESS_INTERVAL, progressPrintInterval);
+  TLogger::Log(TLogger::TLogLevel::FULL,     OUT_FMT_PRINT_PROGRESS_INTERVAL, progressPrintInterval);
 
   if (benchmarkFlag)
   {
-    TLogger::Log(TLogger::FULL, OUT_FMT_BENCHMARK_TIME_STEP, benchmarkTimeStepCount);
+    TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_BENCHMARK_TIME_STEP, benchmarkTimeStepCount);
   }
 
-  TLogger::Log(TLogger::ADVANCED, OUT_FMT_SAMPLING_FLAGS);
+  TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SAMPLING_FLAGS);
 
 
   string sampledQuantitiesList = "";
@@ -233,17 +233,17 @@ void TCommandLineParameters::PrintComandlineParamers()
     sampledQuantitiesList.pop_back();
   }
 
-  TLogger::Log(TLogger::ADVANCED,
+  TLogger::Log(TLogger::TLogLevel::ADVANCED,
                TLogger::WordWrapString(sampledQuantitiesList,
                                        " ",2).c_str());
 
-  TLogger::Log(TLogger::ADVANCED, OUT_FMT_SEPARATOR);
+  TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SEPARATOR);
 
-  TLogger::Log(TLogger::ADVANCED, OUT_FMT_SAMPLING_BEGINS_AT, startTimeStep + 1);
+  TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SAMPLING_BEGINS_AT, startTimeStep + 1);
 
   if (copySensorMask)
   {
-    TLogger::Log(TLogger::ADVANCED, OUT_FMT_COPY_SENSOR_MASK);
+    TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_COPY_SENSOR_MASK);
   }
 }// end of PrintComandlineParamers
 //--------------------------------------------------------------------------------------------------

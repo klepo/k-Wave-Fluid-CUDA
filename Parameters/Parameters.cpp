@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2012, 13:39 (created) \n
- *              10 August    2016, 12:57 (revised)
+ *              28 June      2017, 15:08 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -109,15 +109,15 @@ void TParameters::Init(int argc, char** argv)
 
   if (GetGitHash() != "")
   {
-    TLogger::Log(TLogger::FULL, OUT_FMT_GIT_HASH_LEFT, GetGitHash().c_str());
-    TLogger::Log(TLogger::FULL, OUT_FMT_SEPARATOR);
+    TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_GIT_HASH_LEFT, GetGitHash().c_str());
+    TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_SEPARATOR);
   }
   if (commandLineParameters.IsVersion())
   {
     return;
   }
 
-  TLogger::Log(TLogger::BASIC, OUT_FMT_READING_CONFIGURATION);
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_READING_CONFIGURATION);
   ReadScalarsFromInputFile(inputFile);
 
   if (commandLineParameters.IsBenchmarkFlag())
@@ -133,7 +133,7 @@ void TParameters::Init(int argc, char** argv)
                                                        nt));
   }
 
-  TLogger::Log(TLogger::BASIC, OUT_FMT_DONE);
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DONE);
 }// end of ParseCommandLine
 //--------------------------------------------------------------------------------------------------
 
@@ -143,18 +143,18 @@ void TParameters::Init(int argc, char** argv)
  */
 void TParameters::SelectDevice()
 {
-  TLogger::Log(TLogger::BASIC,
+  TLogger::Log(TLogger::TLogLevel::BASIC,
                OUT_FMT_SELECTED_DEVICE);
-  TLogger::Flush(TLogger::BASIC);
+  TLogger::Flush(TLogger::TLogLevel::BASIC);
 
   int deviceIdx = commandLineParameters.GetCUDADeviceIdx();
   cudaParameters.SelectDevice(deviceIdx); // throws an exception when wrong
 
-  TLogger::Log(TLogger::BASIC,
+  TLogger::Log(TLogger::TLogLevel::BASIC,
                OUT_FMT_DEVICE_ID,
                cudaParameters.GetDeviceIdx());
 
-  TLogger::Log(TLogger::BASIC,
+  TLogger::Log(TLogger::TLogLevel::BASIC,
                OUT_FMT_DEVICE_NAME,
                cudaParameters.GetDeviceName().c_str());
 }// end of SelectDevice
@@ -166,11 +166,11 @@ void TParameters::SelectDevice()
  */
 void TParameters::PrintSimulatoinSetup()
 {
-  TLogger::Log(TLogger::BASIC,
+  TLogger::Log(TLogger::TLogLevel::BASIC,
                OUT_FMT_NUMBER_OF_THREADS,
                GetNumberOfThreads());
 
-  TLogger::Log(TLogger::BASIC,  OUT_FMT_SIMULATION_DETAIL_TITLE);
+  TLogger::Log(TLogger::TLogLevel::BASIC,  OUT_FMT_SIMULATION_DETAIL_TITLE);
 
 
   const string domainsSizes = TLogger::FormatMessage(OUT_FMT_DOMAIN_SIZE_FORMAT,
@@ -178,20 +178,20 @@ void TParameters::PrintSimulatoinSetup()
                                                      GetFullDimensionSizes().ny,
                                                      GetFullDimensionSizes().nz);
   // Print simulation size
-  TLogger::Log(TLogger::BASIC, OUT_FMT_DOMAIN_SIZE, domainsSizes.c_str());
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DOMAIN_SIZE, domainsSizes.c_str());
 
-  TLogger::Log(TLogger::BASIC, OUT_FMT_SIMULATION_LENGTH, Get_nt());
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SIMULATION_LENGTH, Get_nt());
 
   // Print all command line parameters
   commandLineParameters.PrintComandlineParamers();
 
-  if (Get_sensor_mask_type() == INDEX)
+  if (Get_sensor_mask_type() == TSensorMaskType::INDEX)
   {
-    TLogger::Log(TLogger::ADVANCED, OUT_FMT_SENSOR_MASK_INDEX);
+    TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SENSOR_MASK_INDEX);
   }
-  if (Get_sensor_mask_type() == CORNERS)
+  if (Get_sensor_mask_type() == TSensorMaskType::CORNERS)
   {
-    TLogger::Log(TLogger::ADVANCED, OUT_FMT_SENSOR_MASK_CUBOID);
+    TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SENSOR_MASK_CUBOID);
   }
 }// end of PrintParametersOfTask
 //--------------------------------------------------------------------------------------------------
@@ -217,7 +217,7 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
   fileHeader.ReadHeaderFromInputFile(inputFile);
 
   // check file type
-  if (fileHeader.GetFileType() != THDF5_FileHeader::INPUT)
+  if (fileHeader.GetFileType() != THDF5_FileHeader::TFileType::INPUT)
   {
     throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_INPUT_FILE_FORMAT,
                                               GetInputFileName().c_str()));
@@ -271,7 +271,7 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
   reducedDimensionSizes.nz = z;
 
   // if the file is of version 1.0, there must be a sensor mask index (backward compatibility)
-  if (fileHeader.GetFileVersion() == THDF5_FileHeader::VERSION_10)
+  if (fileHeader.GetFileVersion() == THDF5_FileHeader::TFileVersion::VERSION_10)
   {
     sensor_mask_ind_size = inputFile.GetDatasetElementCount(rootGroup, sensor_mask_index_NAME);
 
@@ -283,7 +283,7 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
   }// version 1.0
 
   // This is the current version 1.1
-  if (fileHeader.GetFileVersion() == THDF5_FileHeader::VERSION_11)
+  if (fileHeader.GetFileVersion() == THDF5_FileHeader::TFileVersion::VERSION_11)
   {
     // read sensor mask type as a size_t value to enum
     size_t sensorMaskTypeNumericValue = 0;
@@ -294,12 +294,12 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
     {
       case 0:
       {
-        sensor_mask_type = INDEX;
+        sensor_mask_type = TSensorMaskType::INDEX;
         break;
       }
       case 1:
       {
-        sensor_mask_type = CORNERS;
+        sensor_mask_type = TSensorMaskType::CORNERS;
         break;
       }
       default:
@@ -312,12 +312,12 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
     // read the input mask size
     switch (sensor_mask_type)
     {
-      case INDEX:
+      case TSensorMaskType::INDEX:
       {
         sensor_mask_ind_size = inputFile.GetDatasetElementCount(rootGroup, sensor_mask_index_NAME);
         break;
       }
-      case CORNERS:
+      case TSensorMaskType::CORNERS:
       {
         // mask dimensions are [6, N, 1] - I want to know N
         sensor_mask_corners_size = inputFile.GetDatasetDimensionSizes(rootGroup, sensor_mask_corners_NAME).ny;
@@ -495,9 +495,9 @@ void TParameters::SaveScalarsToFile(THDF5_File& outputFile)
 
     switch (sensor_mask_type)
     {
-      case INDEX: SensorMaskTypeNumericValue = 0;
+      case TSensorMaskType::INDEX: SensorMaskTypeNumericValue = 0;
         break;
-      case CORNERS: SensorMaskTypeNumericValue = 1;
+      case TSensorMaskType::CORNERS: SensorMaskTypeNumericValue = 1;
         break;
     }// switch
 

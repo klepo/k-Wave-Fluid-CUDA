@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2011, 14:02 (created) \n
- *              29 July     2016, 16:53 (revised)
+ *              28 June     2017, 15:13 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -78,13 +78,13 @@ void TComplexMatrix::ReadDataFromHDF5File(THDF5_File&  file,
                                           TMatrixName& matrixName)
 {
   // check data type
-  if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::FLOAT)
+  if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDataType::FLOAT)
   {
     throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_FLOAT, matrixName.c_str()));
   }
 
   // check domain type
-  if (file.ReadMatrixDomainType(file.GetRootGroup(), matrixName) != THDF5_File::COMPLEX)
+  if (file.ReadMatrixDomainType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDomainType::COMPLEX)
   {
     throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_COMPLEX, matrixName.c_str()));
   }
@@ -129,8 +129,8 @@ void TComplexMatrix::WriteDataToHDF5File(THDF5_File&  file,
   file.CloseDataset(dataset);
 
  // Write data and domain type
-  file.WriteMatrixDataType(file.GetRootGroup()  , matrixName, THDF5_File::FLOAT);
-  file.WriteMatrixDomainType(file.GetRootGroup(), matrixName, THDF5_File::COMPLEX);
+  file.WriteMatrixDataType(file.GetRootGroup()  , matrixName, THDF5_File::TMatrixDataType::FLOAT);
+  file.WriteMatrixDomainType(file.GetRootGroup(), matrixName, THDF5_File::TMatrixDomainType::COMPLEX);
 }// end of WriteDataToHDF5File
 //--------------------------------------------------------------------------------------------------
 

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              10 August   2016, 15:42 (revised)
+ *              28 June     2017, 14:08 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -208,247 +208,247 @@ protected:
     /// Reads the header of the output file and sets the cumulative elapsed time from the first log.
     void LoadElapsedTimeFromOutputFile(THDF5_File& o1utputFile);
 
-    //-------------------------------------- Get matrices ----------------------------------------//
+//-------------------------------------- Get matrices ----------------------------------------//
     /// Get the kappa matrix from the container.
     TRealMatrix& Get_kappa()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(kappa);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::kappa);
     };
     /// Get the c^2 matrix from the container.
     TRealMatrix& Get_c2()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(c2);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixContainer::TMatrixIdx::c2);
     };
 
     /// Get the p matrix from the container.
     TRealMatrix& Get_p()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(p);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::p);
     };
 
     /// Get the ux_sgx matrix from the container.
     TRealMatrix& Get_ux_sgx()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(ux_sgx);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::ux_sgx);
     };
     /// Get the uy_sgy matrix from the container.
     TRealMatrix& Get_uy_sgy()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(uy_sgy);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::uy_sgy);
     };
     /// Get the uz_sgz matrix from the container.
     TRealMatrix& Get_uz_sgz()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(uz_sgz);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::uz_sgz);
     };
 
     /// Get the ux_shifted matrix from the container.
     TRealMatrix& Get_ux_shifted()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(ux_shifted);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::ux_shifted);
     };
     /// Get the uy_shifted matrix from the container.
     TRealMatrix& Get_uy_shifted()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(uy_shifted);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::uy_shifted);
     };
     /// Get the uz_shifted matrix from the container.
     TRealMatrix& Get_uz_shifted()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(uz_shifted);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::uz_shifted);
     };
 
     /// Get the duxdx matrix from the container.
     TRealMatrix& Get_duxdx()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(duxdx);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::duxdx);
     };
     /// Get the duydy matrix from the container.
     TRealMatrix& Get_duydy()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(duydy);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::duydy);
     };
     /// Get the duzdz matrix from the container.
     TRealMatrix& Get_duzdz()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(duzdz);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::duzdz);
     };
 
     /// Get the dt.*rho0_sgx matrix from the container.
     TRealMatrix& Get_dt_rho0_sgx()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(dt_rho0_sgx);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::dt_rho0_sgx);
     };
     /// Get the dt.*rho0_sgy matrix from the container.
     TRealMatrix& Get_dt_rho0_sgy()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(dt_rho0_sgy);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::dt_rho0_sgy);
     };
     /// Get the dt.*rho0_sgz matrix from the container.
     TRealMatrix& Get_dt_rho0_sgz()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(dt_rho0_sgz);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::dt_rho0_sgz);
     };
 
     /// Get the rhox matrix from the container.
     TRealMatrix& Get_rhox()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(rhox);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::rhox);
     };
     /// Get the rhoy matrix from the container.
     TRealMatrix& Get_rhoy()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(rhoy);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::rhoy);
     };
     /// Get the rhoz matrix from the container.
     TRealMatrix& Get_rhoz()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(rhoz);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::rhoz);
     };
     /// Get the rho0 matrix from the container.
     TRealMatrix& Get_rho0()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(rho0);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::rho0);
     };
 
     /// Get the ddx_k_shift_pos matrix from the container.
     TComplexMatrix& Get_ddx_k_shift_pos()
     {
-      return matrixContainer.GetMatrix<TComplexMatrix>(ddx_k_shift_pos);
+      return matrixContainer.GetMatrix<TComplexMatrix>(TMatrixContainer::TMatrixIdx::ddx_k_shift_pos);
     };
     /// Get the ddy_k_shift_pos matrix from the container.
     TComplexMatrix& Get_ddy_k_shift_pos()
     {
-      return matrixContainer.GetMatrix<TComplexMatrix>(ddy_k_shift_pos);
+      return matrixContainer.GetMatrix<TComplexMatrix>(TMatrixContainer::TMatrixIdx::ddy_k_shift_pos);
     };
     /// Get the ddz_k_shift_pos matrix from the container.
     TComplexMatrix& Get_ddz_k_shift_pos()
     {
-      return matrixContainer.GetMatrix<TComplexMatrix>(ddz_k_shift_pos);
+      return matrixContainer.GetMatrix<TComplexMatrix>(TMatrixContainer::TMatrixIdx::ddz_k_shift_pos);
     };
     /// Get the ddx_k_shift_neg matrix from the container.
     TComplexMatrix& Get_ddx_k_shift_neg()
     {
-      return matrixContainer.GetMatrix<TComplexMatrix>(ddx_k_shift_neg);
+      return matrixContainer.GetMatrix<TComplexMatrix>(TMatrixContainer::TMatrixIdx::ddx_k_shift_neg);
     };
     /// Get the ddy_k_shift_neg matrix from the container.
     TComplexMatrix& Get_ddy_k_shift_neg()
     {
-      return matrixContainer.GetMatrix<TComplexMatrix>(ddy_k_shift_neg);
+      return matrixContainer.GetMatrix<TComplexMatrix>(TMatrixContainer::TMatrixIdx::ddy_k_shift_neg);
     };
     /// Get the ddz_k_shift_neg matrix from the container.
     TComplexMatrix& Get_ddz_k_shift_neg()
     {
-      return matrixContainer.GetMatrix<TComplexMatrix>(ddz_k_shift_neg);
+      return matrixContainer.GetMatrix<TComplexMatrix>(TMatrixContainer::TMatrixIdx::ddz_k_shift_neg);
     };
 
     /// Get the x_shift_neg_r matrix from the container.
     TComplexMatrix& Get_x_shift_neg_r()
     {
-      return matrixContainer.GetMatrix<TComplexMatrix>(x_shift_neg_r);
+      return matrixContainer.GetMatrix<TComplexMatrix>(TMatrixContainer::TMatrixIdx::x_shift_neg_r);
     };
     /// Get the y_shift_neg_r from the container.
     TComplexMatrix& Get_y_shift_neg_r()
     {
-      return matrixContainer.GetMatrix<TComplexMatrix>(y_shift_neg_r);
+      return matrixContainer.GetMatrix<TComplexMatrix>(TMatrixContainer::TMatrixIdx::y_shift_neg_r);
     };
     /// Get the y_shift_neg_r from the container.
     TComplexMatrix& Get_z_shift_neg_r()
     {
-      return matrixContainer.GetMatrix<TComplexMatrix>(z_shift_neg_r);
+      return matrixContainer.GetMatrix<TComplexMatrix>(TMatrixContainer::TMatrixIdx::z_shift_neg_r);
     };
 
     /// Get the pml_x_sgx matrix from the container.
     TRealMatrix& Get_pml_x_sgx()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(pml_x_sgx);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::pml_x_sgx);
     };
     /// Get the pml_y_sgy matrix from the container.
     TRealMatrix& Get_pml_y_sgy()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(pml_y_sgy);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::pml_y_sgy);
     };
     /// Get the pml_z_sgz matrix from the container.
     TRealMatrix& Get_pml_z_sgz()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(pml_z_sgz);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::pml_z_sgz);
     };
 
     /// Get the pml_x matrix from the container.
     TRealMatrix& Get_pml_x()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(pml_x);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::pml_x);
     };
     /// Get the pml_y matrix from the container.
     TRealMatrix& Get_pml_y()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(pml_y);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::pml_y);
     };
     /// Get the pml_z matrix from the container.
     TRealMatrix& Get_pml_z()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(pml_z);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::pml_z);
     };
 
 
     /// Get the dxudxn matrix from the container.
     TRealMatrix& Get_dxudxn()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(dxudxn);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::dxudxn);
     };
     /// Get the dyudyn matrix from the container.
     TRealMatrix& Get_dyudyn()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(dyudyn);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::dyudyn);
     };
     /// Get the dzudzn matrix from the container.
     TRealMatrix& Get_dzudzn()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(dzudzn);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::dzudzn);
     };
 
     /// Get the dxudxn_sgx matrix from the container.
     TRealMatrix& Get_dxudxn_sgx()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(dxudxn_sgx);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::dxudxn_sgx);
     };
     /// Get the dyudyn_sgy matrix from the container.
     TRealMatrix& Get_dyudyn_sgy()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(dyudyn_sgy);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::dyudyn_sgy);
     };
     /// Get the dzudzn_sgz matrix from the container.
     TRealMatrix& Get_dzudzn_sgz()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(dzudzn_sgz);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::dzudzn_sgz);
     };
 
 
     /// Get the BonA matrix from the container.
     TRealMatrix& Get_BonA()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(BonA);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::BonA);
     };
     /// Get the absorb_tau matrix from the container.
     TRealMatrix& Get_absorb_tau()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(absorb_tau);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::absorb_tau);
     };
     /// Get the absorb_eta matrix from the container.
     TRealMatrix& Get_absorb_eta()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(absorb_eta);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::absorb_eta);
     };
 
     /// Get the absorb_nabla1 matrix from the container.
     TRealMatrix& Get_absorb_nabla1()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(absorb_nabla1);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::absorb_nabla1);
     };
     /// Get the absorb_nabla2 matrix from the container.
     TRealMatrix& Get_absorb_nabla2()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(absorb_nabla2);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::absorb_nabla2);
     };
 
 
@@ -457,30 +457,30 @@ protected:
     /// Get the sensor_mask_index matrix from the container.
     TIndexMatrix& Get_sensor_mask_index()
     {
-      return matrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_index);
+      return matrixContainer.GetMatrix<TIndexMatrix>(TMatrixContainer::TMatrixIdx::sensor_mask_index);
     };
 
 
     /// Get the sensor_mask_corners matrix from the container.
     TIndexMatrix& Get_sensor_mask_corners()
     {
-      return matrixContainer.GetMatrix<TIndexMatrix>(sensor_mask_corners);
+      return matrixContainer.GetMatrix<TIndexMatrix>(TMatrixContainer::TMatrixIdx::sensor_mask_corners);
     };
 
     /// Get the u_source_index matrix from the container.
     TIndexMatrix& Get_u_source_index()
     {
-      return matrixContainer.GetMatrix<TIndexMatrix>(u_source_index);
+      return matrixContainer.GetMatrix<TIndexMatrix>(TMatrixContainer::TMatrixIdx::u_source_index);
     };
     /// Get the p_source_index matrix from the container.
     TIndexMatrix& Get_p_source_index()
     {
-      return matrixContainer.GetMatrix<TIndexMatrix>(p_source_index);
+      return matrixContainer.GetMatrix<TIndexMatrix>(TMatrixContainer::TMatrixIdx::p_source_index);
     };
     /// Get the delay_mask matrix from the container.
     TIndexMatrix& Get_delay_mask()
     {
-      return matrixContainer.GetMatrix<TIndexMatrix>(delay_mask);
+      return matrixContainer.GetMatrix<TIndexMatrix>(TMatrixContainer::TMatrixIdx::delay_mask);
     }
 
 
@@ -489,36 +489,36 @@ protected:
     /// Get the transducer_source_input matrix from the container.
     TRealMatrix& Get_transducer_source_input()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(transducer_source_input);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::transducer_source_input);
     };
 
     /// Get the p_source_input matrix from the container.
     TRealMatrix& Get_p_source_input()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(p_source_input);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::p_source_input);
     };
 
     /// Get the p0_source_input from the container.
     TRealMatrix& Get_p0_source_input()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(p0_source_input);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::p0_source_input);
     };
 
 
     /// Get the ux_source_input matrix from the container.
     TRealMatrix& Get_ux_source_input()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(ux_source_input);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::ux_source_input);
     };
     /// Get the uy_source_input matrix from the container.
     TRealMatrix& Get_uy_source_input()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(uy_source_input);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::uy_source_input);
     };
     /// Get the uz_source_input matrix from the container.
     TRealMatrix& Get_uz_source_input()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(uz_source_input);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::uz_source_input);
     };
 
 
@@ -527,40 +527,40 @@ protected:
     /// Get the Temp_1_RS3D matrix from the container.
     TRealMatrix& Get_temp_1_real_3D()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(temp_1_real_3D);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::temp_1_real_3D);
     };
     /// Get the Temp_2_RS3D matrix from the container.
     TRealMatrix& Get_temp_2_real_3D()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(temp_2_real_3D);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::temp_2_real_3D);
     };
     /// Get the Temp_3_RS3D matrix from the container.
     TRealMatrix& Get_temp_3_real_3D()
     {
-      return matrixContainer.GetMatrix<TRealMatrix>(temp_3_real_3D);
+      return matrixContainer.GetMatrix<TRealMatrix>(TMatrixContainer::TMatrixIdx::temp_3_real_3D);
     };
 
 
     /// Get the CUFFT_X_temp from the container.
     TCUFFTComplexMatrix& Get_cufft_x_temp()
     {
-      return matrixContainer.GetMatrix<TCUFFTComplexMatrix>(cufft_x_temp);
+      return matrixContainer.GetMatrix<TCUFFTComplexMatrix>(TMatrixContainer::TMatrixIdx::cufft_x_temp);
     };
     /// Get the FFT_Y_temp from the container.
     TCUFFTComplexMatrix& Get_cufft_y_temp()
     {
-      return matrixContainer.GetMatrix<TCUFFTComplexMatrix>(cufft_y_temp);
+      return matrixContainer.GetMatrix<TCUFFTComplexMatrix>(TMatrixContainer::TMatrixIdx::cufft_y_temp);
     };
     /// Get the FFT_Z_temp from the container.
     TCUFFTComplexMatrix& Get_cufft_z_temp()
     {
-      return matrixContainer.GetMatrix<TCUFFTComplexMatrix>(cufft_z_temp);
+      return matrixContainer.GetMatrix<TCUFFTComplexMatrix>(TMatrixContainer::TMatrixIdx::cufft_z_temp);
     };
 
     /// Get the FFT_shift_temp the container.
     TCUFFTComplexMatrix& Get_cufft_shift_temp()
     {
-      return matrixContainer.GetMatrix<TCUFFTComplexMatrix>(cufft_shift_temp);
+      return matrixContainer.GetMatrix<TCUFFTComplexMatrix>(TMatrixContainer::TMatrixIdx::cufft_shift_temp);
     };
 
 private:

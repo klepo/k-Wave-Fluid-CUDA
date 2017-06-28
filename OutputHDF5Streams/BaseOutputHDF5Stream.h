@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              26 July      2016, 12:35 (revised)
+ *              28 June      2017, 14:51 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -51,16 +51,16 @@ class TBaseOutputHDF5Stream
      * @brief How to aggregate data.
      * @brief How to aggregate data.
      */
-    enum TReduceOperator
+    enum class TReduceOperator
     {
-        /// store actual data (time series)
-        NONE,
-         /// calculate root mean square
-        RMS,
-        /// store maximum
-        MAX,
-        /// store minimum
-        MIN
+      /// store actual data (time series)
+      NONE,
+       /// calculate root mean square
+      RMS,
+      /// store maximum
+      MAX,
+      /// store minimum
+      MIN
     };
 
     /// Constructor.

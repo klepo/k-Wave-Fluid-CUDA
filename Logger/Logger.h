@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        19 April    2016, 12:52 (created) \n
- *              10 August   2016, 16:44 (revised)
+ *              28 June     2017, 14:20 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -57,7 +57,7 @@ class TLogger
     * @details A enum to specify at which log level the message should be displayed, or the level
     * set.
     */
-    enum TLogLevel
+    enum class TLogLevel
     {
       /// Basic (default) level of verbosity
       BASIC    = 0,

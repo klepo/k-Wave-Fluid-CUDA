@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December 2014, 15:44 (created) \n
- *              10 August   2016, 16:43 (revised)
+ *              28 June     2017, 14:08 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -52,7 +52,7 @@ struct TMatrixRecord
    * @enum TMatrixType
    * @brief All possible types of the matrix.
    */
-  enum TMatrixType
+  enum class TMatrixType
   {
     REAL, COMPLEX, INDEX, CUFFT
   };

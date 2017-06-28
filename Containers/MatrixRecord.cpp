@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December 2014, 15:44 (created) \n
- *              10 August   2016, 16:43 (revised)
+ *              28 June     2017, 14:10 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -46,7 +46,7 @@
  */
 TMatrixRecord::TMatrixRecord() :
         matrixPtr(nullptr),
-        matrixType(REAL),
+        matrixType(TMatrixType::REAL),
         dimensionSizes(),
         loadData(false),
         checkpoint(false),
