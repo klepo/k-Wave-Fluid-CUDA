@@ -125,24 +125,12 @@ class TLogger
     template<typename ... Args>
     static std::string FormatMessage(const std::string& format, Args ... args)
     {
-      // Windows build
-      #ifdef __linux__
-	  	  /// when the size is 0, the routine returns the size of the formated string
-        size_t size = snprintf(nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
+	  	/// when the size is 0, the routine returns the size of the formated string
+      size_t size = snprintf(nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
 
-        std::unique_ptr<char[]> buf( new char[ size ] );
-        snprintf(buf.get(), size, format.c_str(), args ... );
-        return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
-      #endif
-
-	   // Windows build
-      #ifdef _WIN64
-		    size_t size = _snprintf (nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
-
-		    std::unique_ptr<char[]> buf( new char[ size ] );
-		    _snprintf (buf.get(), size, format.c_str(), args ... );
-		    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
-      #endif
+      std::unique_ptr<char[]> buf(new char[size]);
+      snprintf(buf.get(), size, format.c_str(), args ... );
+      return std::string(buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
     }
   private:
     /// Default constructor is not allowed, static class
