@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              28 June     2017, 14:20 (revised)
+ *              28 June     2017, 17:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -1152,7 +1152,7 @@ void TKSpaceFirstOrder3DSolver::ComputeGradientVelocity()
 void TKSpaceFirstOrder3DSolver::ComputeDensityNonliner()
 {
   // Scalar
-  if (parameters.Get_rho0_scalar())
+  if (parameters.Get_rho0_scalar_flag())
   {
     SolverCUDAKernels::ComputeDensityNonlinearHomogeneous(Get_rhox(),
                                                           Get_rhoy(),
@@ -1188,7 +1188,7 @@ else
 void TKSpaceFirstOrder3DSolver::ComputeDensityLinear()
 {
   // Scalar
-  if (parameters.Get_rho0_scalar())
+  if (parameters.Get_rho0_scalar_flag())
   {
     SolverCUDAKernels::ComputeDensityLinearHomogeneous(Get_rhox(),
                                                        Get_rhoy(),
@@ -1763,7 +1763,7 @@ void TKSpaceFirstOrder3DSolver::ComputePressurePartsNonLinear(TRealMatrix& rho_p
 void TKSpaceFirstOrder3DSolver::ComputePressurePartsLinear(TRealMatrix& rhoxyz_sum,
                                                            TRealMatrix& rho0_du_sum)
 {
-  const bool   is_rho0_scalar = parameters.Get_rho0_scalar();
+  const bool   is_rho0_scalar = parameters.Get_rho0_scalar_flag();
   const float* rho0_matrix    = (is_rho0_scalar) ? nullptr : Get_rho0().GetDeviceData();
 
   SolverCUDAKernels::ComputePressurePartsLinear(rhoxyz_sum,
@@ -1877,7 +1877,7 @@ void TKSpaceFirstOrder3DSolver::SumPressureNonlinearLossless()
  */
 void TKSpaceFirstOrder3DSolver::SumPressureLinearLossless()
 {
-  const float  is_c2_scalar =  parameters.Get_c0_scalar();
+  const bool  is_c2_scalar =  parameters.Get_c0_scalar_flag();
   const float* c2_matrix    = (is_c2_scalar) ? nullptr : Get_c2().GetDeviceData();
 
   SolverCUDAKernels::SumPressureLinearLossless(Get_p(),
