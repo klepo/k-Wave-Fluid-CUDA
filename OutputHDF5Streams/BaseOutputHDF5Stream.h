@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              28 June      2017, 14:51 (revised)
+ *              07 July      2017, 18:51 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -63,14 +63,21 @@ class TBaseOutputHDF5Stream
       MIN
     };
 
+
+    /// Default constructor not allowed.
+    TBaseOutputHDF5Stream() = delete;
     /// Constructor.
     TBaseOutputHDF5Stream(THDF5_File&           file,
                           TMatrixName&          rootObjectName,
                           const TRealMatrix&    sourceMatrix,
                           const TReduceOperator reduceOp);
-
+    /// Copy constructor not allowed.
+    TBaseOutputHDF5Stream(const TBaseOutputHDF5Stream&);
     /// Destructor
     virtual ~TBaseOutputHDF5Stream() {};
+
+    /// Operator= is not allowed.
+    TBaseOutputHDF5Stream& operator=(const TBaseOutputHDF5Stream&);
 
     /// Create a HDF5 stream and allocate data for it.
     virtual void Create() = 0;
@@ -94,13 +101,6 @@ class TBaseOutputHDF5Stream
     virtual void Close() = 0;
 
   protected:
-    /// Default constructor not allowed.
-    TBaseOutputHDF5Stream();
-    /// Copy constructor not allowed.
-    TBaseOutputHDF5Stream(const TBaseOutputHDF5Stream& src);
-    /// Operator = not allowed (we don't want any data movements).
-    TBaseOutputHDF5Stream& operator= (const TBaseOutputHDF5Stream& src);
-
     /// A generic function to allocate memory - not used in the base class.
     virtual void AllocateMemory();
     /// A generic function to free memory - not used in the base class.
@@ -137,9 +137,9 @@ class TBaseOutputHDF5Stream
     float* deviceBuffer;
 
     /// chunk size of 4MB in number of float elements
-    static const size_t CHUNK_SIZE_4MB = 1048576;
+    static constexpr size_t CHUNK_SIZE_4MB = 1048576;
     /// The minimum number of elements to start sampling in parallel (4MB)
-    static const size_t MIN_GRIDPOINTS_TO_SAMPLE_IN_PARALLEL = 1048576;
+    static constexpr size_t MIN_GRIDPOINTS_TO_SAMPLE_IN_PARALLEL = 1048576;
 
 };// end of TBaseOutputHDF5Stream
 //--------------------------------------------------------------------------------------------------

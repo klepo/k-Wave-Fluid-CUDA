@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 14:17 (created) \n
- *              29 July     2016, 16:51 (revised)
+ *              07 July     2017, 18:27 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -51,9 +51,13 @@ class TBaseIndexMatrix : public TBaseMatrix
   public:
     /// Default constructor.
     TBaseIndexMatrix();
-
+    /// Copy constructor is not allowed.
+    TBaseIndexMatrix(const TBaseIndexMatrix&) = delete;
     /// Destructor.
     virtual ~TBaseIndexMatrix(){};
+
+    /// operator= is not allowed.
+    TBaseIndexMatrix& operator=(const TBaseIndexMatrix&) = delete;
 
     /// Get dimension sizes of the matrix.
     virtual struct TDimensionSizes GetDimensionSizes() const
@@ -112,11 +116,6 @@ class TBaseIndexMatrix : public TBaseMatrix
     virtual void AllocateMemory();
     /// Memory deallocation (both on CPU and GPU)
     virtual void FreeMemory();
-
-    /// Copy constructor is not allowed for public
-    TBaseIndexMatrix(const TBaseIndexMatrix& src);
-    /// operator =  is not allowed for public
-    TBaseIndexMatrix & operator=(const TBaseIndexMatrix& src);
 
     /// Total number of elements.
     size_t nElements;

@@ -10,7 +10,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 July     2016, 11:26 (created) \n
- *              21 July     2016, 13:08 (revised)
+ *              07 July     2017, 18:20 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -34,11 +34,10 @@
 
 
 /**
- * @typedef TErrorMessage
  * @brief   Datatype for error messages.
  * @details Datatype for error messages.
  */
-typedef const std::string TErrorMessage;
+using TErrorMessage = const std::string;
 
 /// Error message header
 TErrorMessage ERR_FMT_HEAD =

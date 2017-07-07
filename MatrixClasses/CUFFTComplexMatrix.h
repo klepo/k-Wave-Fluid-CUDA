@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2011, 13:10 (created) \n
- *              10 August    2016, 10:57 (revised)
+ *              07 July      2017, 18:33 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,10 +50,17 @@
 class TCUFFTComplexMatrix : public TComplexMatrix
 {
   public:
+    /// Default constructor not allowed.
+    TCUFFTComplexMatrix() = delete;
     /// Constructor (inherited from TComplexMatrix).
     TCUFFTComplexMatrix(const TDimensionSizes& DimensionSizes) : TComplexMatrix(DimensionSizes) {};
+    /// Copy constructor not allowed.
+    TCUFFTComplexMatrix(const TCUFFTComplexMatrix&) = delete;
     /// Destructor (Inherited from TComplexMatrix).
     virtual ~TCUFFTComplexMatrix(){};
+
+    /// operator= is not allowed.
+    TCUFFTComplexMatrix& operator=(const TCUFFTComplexMatrix&) = delete;
 
     /// Create static cuFFT plan for Real-to-Complex.
     static void Create_FFT_Plan_3D_R2C(const TDimensionSizes& inMatrixDims);
@@ -98,12 +105,6 @@ class TCUFFTComplexMatrix : public TComplexMatrix
 
 
   protected:
-
-    /// Copy constructor not allowed for public.
-    TCUFFTComplexMatrix(const TCUFFTComplexMatrix& src);
-    /// Operator = not allowed for public.
-    TCUFFTComplexMatrix & operator = (const TCUFFTComplexMatrix& src);
-
     /// cuFFT plan for the 3D Real-to-Complex transform.
     static cufftHandle cufftPlan_3D_R2C;
     /// cuFFT plan for the 3D Complex-to-Real transform.

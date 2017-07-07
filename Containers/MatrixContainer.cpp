@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              28 June      2017, 14:10 (revised)
+ *              07 July      2017, 13:56 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -48,7 +48,7 @@
 /**
  * Constructor
  */
-TMatrixContainer::TMatrixContainer()
+TMatrixContainer::TMatrixContainer() : matrixContainer()
 {
 
 }// end of Constructor.

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              28 June     2017, 14:08 (revised)
+ *              07 July     2017, 18:06 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -59,8 +59,13 @@ class TKSpaceFirstOrder3DSolver
   public:
     /// Constructor.
     TKSpaceFirstOrder3DSolver();
+    /// Copy constructor not allowed.
+    TKSpaceFirstOrder3DSolver(const TKSpaceFirstOrder3DSolver&) = delete;
     /// Destructor.
     virtual ~TKSpaceFirstOrder3DSolver();
+
+    /// operator= not allowed.
+    TKSpaceFirstOrder3DSolver& operator=(const TKSpaceFirstOrder3DSolver&) = delete;
 
     /// Memory allocation.
     virtual void AllocateMemory();
@@ -107,12 +112,6 @@ class TKSpaceFirstOrder3DSolver
     double GetCumulatedPostProcessingTime() const;
 
 protected:
-
-    /// Copy constructor not allowed for public.
-    TKSpaceFirstOrder3DSolver(const TKSpaceFirstOrder3DSolver& src);
-    /// operator = not allowed for public.
-    TKSpaceFirstOrder3DSolver& operator= (const TKSpaceFirstOrder3DSolver& src);
-
     /// Initialize FFT plans.
     void InitializeFFTPlans();
     /// Compute pre-processing phase.

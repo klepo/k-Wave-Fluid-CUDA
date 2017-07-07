@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        19 April    2016, 12:52 (created) \n
- *              28 June     2017, 14:20 (revised)
+ *              07 July     2017, 18:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -67,6 +67,15 @@ class TLogger
       FULL     = 2,
     };
 
+    /// Default constructor is not allowed, static class
+    TLogger() = delete;
+    /// Copy constructor is not allowed, static class
+    TLogger(const TLogger&) = delete;
+    /// Destructor is not allowed, static class
+    ~TLogger() = delete;
+
+    /// Operator= is not allowed, static class
+    TLogger& operator=(const TLogger&) = delete;
 
     /// Set the log level.
     static void SetLevel(const TLogLevel actualLogLevel);
@@ -133,12 +142,6 @@ class TLogger
       return std::string(buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
     }
   private:
-    /// Default constructor is not allowed, static class
-    TLogger();
-    /// Copy constructor is not allowed, static class
-    TLogger(const TLogger& orig);
-    /// Destructor is not allowed, static class
-    ~TLogger();
 
     /// Log level of the logger
     static TLogLevel logLevel;
@@ -149,7 +152,7 @@ class TLogger
                              const std::string&  delimiters);
 
 }; // TLogger
-
+//--------------------------------------------------------------------------------------------------
 
 
 //------------------------------------------------------------------------------------------------//

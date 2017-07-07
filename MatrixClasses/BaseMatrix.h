@@ -1,6 +1,6 @@
 /**
  * @file        BaseMatrix.h
- * 
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2012, 11:34 (created) \n
- *              26 July     2016, 12:30 (revised)
+ *              07 July     2017, 18:27 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,9 +50,13 @@ class TBaseMatrix
   public:
     /// Default constructor.
     TBaseMatrix() {};
-
+      /// Copy constructor is not allowed.
+    TBaseMatrix(const TBaseMatrix&) = delete;
     /// Destructor
     virtual ~TBaseMatrix() {};
+
+    /// Operator= is not allowed.
+    TBaseMatrix& operator=(const TBaseMatrix&) = delete;
 
     /// Get dimension sizes of the matrix.
     virtual struct TDimensionSizes GetDimensionSizes() const  = 0;

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              28 June      2017, 14:08 (revised)
+ *              07 July      2017, 13:56 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -99,8 +99,13 @@ class TMatrixContainer
 
     /// Constructor.
     TMatrixContainer();
+    /// Copy constructor is not allowed.
+    TMatrixContainer(const TMatrixContainer&) = delete;
     /// Destructor.
     ~TMatrixContainer();
+
+    /// Operator = is not allowed.
+    TMatrixContainer& operator=(const TMatrixContainer&) = delete;
 
     /**
      * @brief   Get the number of matrices in the container.
@@ -146,7 +151,6 @@ class TMatrixContainer
       return static_cast<T &> (*(matrixContainer[matrixIdx].matrixPtr));
     };
 
-
     /// Create all matrices in the container.
     void CreateMatrices();
     /// Populate the container based on the simulation type.
@@ -166,22 +170,15 @@ class TMatrixContainer
     /// Copy all matrices from device to host (GPU -> CPU).
     void CopyMatricesFromDevice();
 
-
   protected:
 
   private:
 
     /// Datatype for the map associating the matrix ID enum and matrix record.
-    typedef std::map<TMatrixIdx, TMatrixRecord> TMatrixRecordContainer;
+    using TMatrixRecordContainer = std::map<TMatrixIdx, TMatrixRecord>;
 
     /// map holding the container
     TMatrixRecordContainer matrixContainer;
-
-    /// Copy constructor is not allowed for public
-    TMatrixContainer(const TMatrixContainer& orig);
-
-    /// Operator = is not allowed for public.
-    TMatrixContainer & operator = (const TMatrixContainer& src);
 
 };// end of TMatrixContainer
 //--------------------------------------------------------------------------------------------------

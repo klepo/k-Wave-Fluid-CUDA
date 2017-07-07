@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        04 December  2014, 11:00 (created)
- *              28 June      2017, 14:09 (revised)
+ *              07 July      2017, 14:01 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -78,9 +78,14 @@ class TOutputStreamContainer
     //----------------------------------------------------------------------------------------------
 
     /// Constructor.
-    TOutputStreamContainer() {};
+    TOutputStreamContainer();
+    /// Copy constructor not allowed.
+    TOutputStreamContainer(const TOutputStreamContainer&) = delete;
     /// Destructor.
     ~TOutputStreamContainer();
+
+    /// Operator = not allowed.
+    TOutputStreamContainer& operator=(TOutputStreamContainer&) = delete;
 
     /**
      * @brief Get size of the container.
@@ -145,13 +150,8 @@ class TOutputStreamContainer
                                                  const TMatrixName&                           fileDatasetName,
                                                  const TBaseOutputHDF5Stream::TReduceOperator reduceOp);
 
-    /// Copy constructor not allowed for public.
-    TOutputStreamContainer(const TOutputStreamContainer&);
-    /// Operator = not allowed for public.
-    TOutputStreamContainer& operator= (TOutputStreamContainer&);
-
     /// Output stream map.
-    typedef std::map<TOutputStreamIdx, TBaseOutputHDF5Stream*> TOutputStreamMap;
+    using TOutputStreamMap = std::map<TOutputStreamIdx, TBaseOutputHDF5Stream*>;
 
     /// Map with output streams.
     TOutputStreamMap outputStreamContainer;

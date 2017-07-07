@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2011, 13:10 (created) \n
- *              18 June      2017, 11:30 (revised)
+ *              07 July      2017, 18:35 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,15 +50,15 @@
 //------------------------------------------------------------------------------------------------//
 //----------------------------------- Static Member Variables ------------------------------------//
 //------------------------------------------------------------------------------------------------//
-cufftHandle TCUFFTComplexMatrix::cufftPlan_3D_R2C = static_cast<cufftHandle>(NULL);
-cufftHandle TCUFFTComplexMatrix::cufftPlan_3D_C2R = static_cast<cufftHandle>(NULL);
+cufftHandle TCUFFTComplexMatrix::cufftPlan_3D_R2C = cufftHandle();
+cufftHandle TCUFFTComplexMatrix::cufftPlan_3D_C2R = cufftHandle();
 
-cufftHandle TCUFFTComplexMatrix::cufftPlan_1DX_R2C = static_cast<cufftHandle>(NULL);
-cufftHandle TCUFFTComplexMatrix::cufftPlan_1DY_R2C = static_cast<cufftHandle>(NULL);
-cufftHandle TCUFFTComplexMatrix::cufftPlan_1DZ_R2C = static_cast<cufftHandle>(NULL);
-cufftHandle TCUFFTComplexMatrix::cufftPlan_1DX_C2R = static_cast<cufftHandle>(NULL);
-cufftHandle TCUFFTComplexMatrix::cufftPlan_1DY_C2R = static_cast<cufftHandle>(NULL);
-cufftHandle TCUFFTComplexMatrix::cufftPlan_1DZ_C2R = static_cast<cufftHandle>(NULL);
+cufftHandle TCUFFTComplexMatrix::cufftPlan_1DX_R2C = cufftHandle();
+cufftHandle TCUFFTComplexMatrix::cufftPlan_1DY_R2C = cufftHandle();
+cufftHandle TCUFFTComplexMatrix::cufftPlan_1DZ_R2C = cufftHandle();
+cufftHandle TCUFFTComplexMatrix::cufftPlan_1DX_C2R = cufftHandle();
+cufftHandle TCUFFTComplexMatrix::cufftPlan_1DY_C2R = cufftHandle();
+cufftHandle TCUFFTComplexMatrix::cufftPlan_1DZ_C2R = cufftHandle();
 
 
 
@@ -406,56 +406,56 @@ void TCUFFTComplexMatrix::DestroyAllPlansAndStaticData()
   if (cufftPlan_3D_R2C)
   {
     cufftError = cufftDestroy(cufftPlan_3D_R2C);
-    cufftPlan_3D_R2C = static_cast<cufftHandle>(NULL);
+    cufftPlan_3D_R2C = cufftHandle();
     if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Destroy_3D_R2C_Plan");
   }
 
   if (cufftPlan_3D_C2R)
   {
     cufftError = cufftDestroy(cufftPlan_3D_C2R);
-    cufftPlan_3D_C2R = static_cast<cufftHandle>(NULL);
+    cufftPlan_3D_C2R = cufftHandle();
     if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Destroy_3D_C2R_Plan");
   }
 
   if (cufftPlan_1DX_R2C)
   {
     cufftError = cufftDestroy(cufftPlan_1DX_R2C);
-    cufftPlan_1DX_R2C = static_cast<cufftHandle>(NULL);
+    cufftPlan_1DX_R2C = cufftHandle();
     if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Destroy_1DX_R2C_Plan");
   }
 
   if (cufftPlan_1DY_R2C)
   {
     cufftError = cufftDestroy(cufftPlan_1DY_R2C);
-    cufftPlan_1DY_R2C = static_cast<cufftHandle>(NULL);
+    cufftPlan_1DY_R2C = cufftHandle();
     if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Destroy_1DY_R2C_Plan");
   }
 
   if (cufftPlan_1DZ_R2C)
   {
     cufftError = cufftDestroy(cufftPlan_1DZ_R2C);
-    cufftPlan_1DZ_R2C = static_cast<cufftHandle>(NULL);
+    cufftPlan_1DZ_R2C = cufftHandle();
     if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Destroy_1DZ_R2C_Plan");
   }
 
   if (cufftPlan_1DX_C2R)
   {
     cufftError = cufftDestroy(cufftPlan_1DX_C2R);
-    cufftPlan_1DX_C2R = static_cast<cufftHandle>(NULL);
+    cufftPlan_1DX_C2R = cufftHandle();
     if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Destroy_1DX_C2R_Plan");
   }
 
   if (cufftPlan_1DY_C2R)
   {
     cufftError = cufftDestroy(cufftPlan_1DY_C2R);
-    cufftPlan_1DY_C2R = static_cast<cufftHandle>(NULL);
+    cufftPlan_1DY_C2R = cufftHandle();
     if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Destroy_1DY_C2R_Plan");
   }
 
   if (cufftPlan_1DZ_C2R)
   {
     cufftError = cufftDestroy(cufftPlan_1DZ_C2R);
-    cufftPlan_1DZ_C2R = static_cast<cufftHandle>(NULL);
+    cufftPlan_1DZ_C2R = cufftHandle();
     if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Destroy_1DZ_C2R_Plan");
   }
 

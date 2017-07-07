@@ -9,9 +9,9 @@
  * @brief       The implementation file for the output stream container.
  *
  * @version     kspaceFirstOrder3D 3.4
-  *
+ *
  * @date        04 December  2014, 11:41 (created) \n
- *              28 June      2017  15:06 (revised)
+ *              07 July      2017  14:00 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -46,6 +46,15 @@
 //------------------------------------------------------------------------------------------------//
 //--------------------------------------- Public methods -----------------------------------------//
 //------------------------------------------------------------------------------------------------//
+
+/**
+ * Default constructor.
+ */
+TOutputStreamContainer::TOutputStreamContainer() : outputStreamContainer()
+{
+
+}// end of TOutputStreamContainer
+//--------------------------------------------------------------------------------------------------
 
 /**
  * Destructor.

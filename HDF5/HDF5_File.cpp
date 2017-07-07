@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              28 June     2018, 15:41 (revised)
+ *              07 July     2017, 19:36 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -1202,9 +1202,10 @@ inline string THDF5_File::ReadStringAttribute(const hid_t  parentGroup,
 /**
  * Constructor.
  */
-THDF5_FileHeader::THDF5_FileHeader()
+THDF5_FileHeader::THDF5_FileHeader() :
+        headerValues(),
+        headerNames()
 {
-  headerValues.clear();
   PopulateHeaderFileMap();
 }// end of constructor
 //--------------------------------------------------------------------------------------------------
@@ -1213,10 +1214,11 @@ THDF5_FileHeader::THDF5_FileHeader()
  * Copy constructor.
  * @param [in] src - Source object
  */
-THDF5_FileHeader::THDF5_FileHeader(const THDF5_FileHeader& src)
+THDF5_FileHeader::THDF5_FileHeader(const THDF5_FileHeader& src) :
+        headerValues(src.headerValues),
+        headerNames(src.headerNames)
 {
-  headerValues = src.headerValues;
-  headerNames = src.headerNames;
+
 }// end of copy constructor
 //--------------------------------------------------------------------------------------------------
 

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 July     2016, 12:27 (created) \n
- *              29 July     2016, 16:43 (revised)
+ *              07 July     2016, 18:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -34,11 +34,10 @@
 #define	ERROR_MESSAGES_WINDOWS_H
 
 /**
- * @typedef TErrorMessage
  * @brief   Datatype for error messages.
  * @details Datatype for error messages.
  */
-typedef const std::string TErrorMessage;
+using TErrorMessage = const std::string;
 
 /// Error message header
 TErrorMessage ERR_FMT_HEAD =

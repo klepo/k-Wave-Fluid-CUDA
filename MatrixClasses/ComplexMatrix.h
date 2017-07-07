@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2011, 14:02 (created) \n
- *              29 July     2016, 16:53 (revised)
+ *              07 July     2017, 18:42 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -40,11 +40,10 @@
 #include <Utils/DimensionSizes.h>
 
 /**
- * @typedef TFloatComplex
- * @brief   C++ complex values
- * @details C++ complex values
+ * @brief   C++ complex single precision values
+ * @details C++ complex single precision values
  */
-typedef std::complex<float> TFloatComplex;
+using TFloatComplex=std::complex<float>;
 
 /**
  * @class   TComplexMatrix
@@ -54,11 +53,17 @@ typedef std::complex<float> TFloatComplex;
 class TComplexMatrix : public TBaseFloatMatrix
 {
   public:
+    /// Default constructor not allowed.
+    TComplexMatrix() = delete;
     /// Constructor.
     TComplexMatrix(const TDimensionSizes& dimensionSizes);
+    /// Copy constructor not allowed.
+    TComplexMatrix(const TComplexMatrix&) = delete;
     /// Destructor.
     virtual ~TComplexMatrix();
 
+    /// Operator= is not allowed.
+    TComplexMatrix& operator= (const TComplexMatrix&);
 
     /**
      * @brief   Operator [].
@@ -93,13 +98,6 @@ class TComplexMatrix : public TBaseFloatMatrix
 
 
 protected:
-    /// Default constructor not allowed for public.
-    TComplexMatrix() : TBaseFloatMatrix() {};
-    /// Copy constructor not allowed for public.
-    TComplexMatrix(const TComplexMatrix& src);
-    /// Operator not allowed for public.
-    TComplexMatrix& operator = (const TComplexMatrix& src);
-
     /// Initialize dimension sizes and related structures.
     virtual void InitDimensions(const TDimensionSizes& dimensionSizes);
 

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              28 June     2017, 15:08 (revised)
+ *              07 July     2017, 14:04 (revised)
  *
  *
  * @section HDF HDF5 File Structure
@@ -526,8 +526,13 @@ class THDF5_File
 
     /// Constructor of the class.
     THDF5_File();
+    /// Copy constructor is not allowed.
+    THDF5_File(const THDF5_File&) = delete;
     /// Destructor.
     virtual ~THDF5_File();
+
+    /// Operator = is not allowed.
+    THDF5_File& operator=(const THDF5_File&) = delete;
 
     //----------------------- Basic file operations --------------------------//
     /// Create a file.
@@ -695,12 +700,7 @@ class THDF5_File
                                     TMatrixName& datasetName,
                                     TMatrixName& attributeName);
 
-   protected:
-
-    /// Copy constructor is not allowed for public.
-    THDF5_File(const THDF5_File& src);
-    /// Operator = is not allowed for public.
-    THDF5_File& operator= (const THDF5_File& src);
+  protected:
 
   private:
     /// String representation of the Domain type in the HDF5 file.

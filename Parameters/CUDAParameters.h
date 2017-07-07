@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 November 2015, 16:49 (created) \n
- *              25 July     2016, 13:17 (revised)
+ *              07 July     2017, 19:03 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,8 +50,14 @@ class TCUDAParameters
   public:
     /// Only TParameters can create this class.
     friend class TParameters;
+
+    /// Copy constructor not allowed.
+    TCUDAParameters(const TCUDAParameters&) = delete;
     /// Destructor.
     ~TCUDAParameters() {}
+
+    /// operator= is not allowed.
+    TCUDAParameters& operator= (const TCUDAParameters&) = delete;
 
     /// Get Idx of the device being used
     int GetDeviceIdx()                 const { return deviceIdx;               }
@@ -92,12 +98,6 @@ class TCUDAParameters
     /// Default constructor - only friend class can create an instance.
     TCUDAParameters();
 
-    /// Copy constructor not allowed for public.
-    TCUDAParameters(const TCUDAParameters& src);
-
-    /// operator = not allowed for public.
-    TCUDAParameters& operator = (const TCUDAParameters& src);
-
     /// Check whether the CUDA driver version installed is sufficient for the code.
     void CheckCUDAVersion();
 
@@ -128,7 +128,7 @@ class TCUDAParameters
     cudaDeviceProp deviceProperties;
 
     /// Undefined block or grid size
-    static const int UNDEFINDED_SIZE = -1;
+    static constexpr int UNDEFINDED_SIZE = -1;
 
 };// end of TCUDAParameters
 //--------------------------------------------------------------------------------------------------

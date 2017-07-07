@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 July     2016, 12:33 (created) \n
- *              29 July     2016, 16:49 (revised)
+ *              07 July     2017, 18:22 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -33,11 +33,10 @@
 #define OUTPUT_MESSAGES_LINUX_H
 
 /**
- * @typedef TOutputMessage
  * @brief   Datatype for output messages.
  * @details Datatype for output messages.
  */
-typedef const std::string TOutputMessage;
+using TOutputMessage = const std::string;
 
 
 //--------------------------------------- Common outputs -----------------------------------------//

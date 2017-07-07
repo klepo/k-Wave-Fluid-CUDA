@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August   2012, 11:25 (created) \n
- *              10 August   2016, 13:27 (revised)
+ *              07 July     2017, 19:06 (revised)
  *
  * @section Params Command Line Parameters
  *
@@ -216,8 +216,14 @@ class TCommandLineParameters
     /// Only TParameters can create this class.
     friend class TParameters;
 
+    /// Copy constructor not allowed.
+    TCommandLineParameters(const TCommandLineParameters&) = delete;
+
     /// Destructor.
     virtual ~TCommandLineParameters() {};
+
+    /// operator= not allowed.
+    TCommandLineParameters& operator= (const TCommandLineParameters&) = delete;
 
     /// Get input file name.
     const std::string& GetInputFileName()      const {return inputFileName;};
@@ -296,12 +302,6 @@ class TCommandLineParameters
     /// Default constructor - only friend class can create an instance.
     TCommandLineParameters();
 
-    /// Copy constructor not allowed for public.
-    TCommandLineParameters(const TCommandLineParameters& src);
-
-    /// operator = not allowed for public.
-    TCommandLineParameters& operator= (const TCommandLineParameters& src);
-
   private:
     /// Input file name.
     std::string inputFileName;
@@ -369,9 +369,9 @@ class TCommandLineParameters
     size_t startTimeStep;
 
     /// Default compression level.
-    static const size_t DEFAULT_COMPRESSION_LEVEL = 0;
+    static constexpr size_t DEFAULT_COMPRESSION_LEVEL = 0;
     /// Default progress print interval.
-    static const size_t DEFAULT_PROGRESS_PRINT_INTERVAL  = 5;
+    static constexpr size_t DEFAULT_PROGRESS_PRINT_INTERVAL  = 5;
 };// end of class TCommandLineParameters
 //--------------------------------------------------------------------------------------------------
 
