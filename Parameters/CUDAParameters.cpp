@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 November 2015, 16:49 (created) \n
- *              10 August   2016, 12:21 (revised)
+ *              10 July     2017, 16:11 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -260,17 +260,17 @@ void TCUDAParameters::SetUpDeviceConstants() const
   TDimensionSizes  reducedDimSizes = params.GetReducedDimensionSizes();
 
   // Set values for constant memory
-  constantsToTransfer.nx  = fullDimSizes.nx;
-  constantsToTransfer.ny  = fullDimSizes.ny;
-  constantsToTransfer.nz  = fullDimSizes.nz;
-  constantsToTransfer.nElements = fullDimSizes.GetElementCount();
-  constantsToTransfer.slabSize  = fullDimSizes.nx * fullDimSizes.ny;
+  constantsToTransfer.nx  = static_cast<unsigned int>(fullDimSizes.nx);
+  constantsToTransfer.ny  = static_cast<unsigned int>(fullDimSizes.ny);
+  constantsToTransfer.nz  = static_cast<unsigned int>(fullDimSizes.nz);
+  constantsToTransfer.nElements = static_cast<unsigned int>(fullDimSizes.GetElementCount());
+  constantsToTransfer.slabSize  = static_cast<unsigned int>(fullDimSizes.nx * fullDimSizes.ny);
 
-  constantsToTransfer.nxComplex = reducedDimSizes.nx;
-  constantsToTransfer.nyComplex = reducedDimSizes.ny;
-  constantsToTransfer.nzComplex = reducedDimSizes.nz;
-  constantsToTransfer.nElementsComplex = reducedDimSizes.GetElementCount();
-  constantsToTransfer.slabSizeComplex = reducedDimSizes.nx * reducedDimSizes.ny;
+  constantsToTransfer.nxComplex = static_cast<unsigned int>(reducedDimSizes.nx);
+  constantsToTransfer.nyComplex = static_cast<unsigned int>(reducedDimSizes.ny);
+  constantsToTransfer.nzComplex = static_cast<unsigned int>(reducedDimSizes.nz);
+  constantsToTransfer.nElementsComplex = static_cast<unsigned int>(reducedDimSizes.GetElementCount());
+  constantsToTransfer.slabSizeComplex  = static_cast<unsigned int>(reducedDimSizes.nx * reducedDimSizes.ny);
 
   constantsToTransfer.fftDivider  = 1.0f / fullDimSizes.GetElementCount();
   constantsToTransfer.fftDividerX = 1.0f / fullDimSizes.nx;
@@ -293,13 +293,13 @@ void TCUDAParameters::SetUpDeviceConstants() const
 
 
   // source masks
-  constantsToTransfer.p_source_index_size = params.Get_p_source_index_size();
-  constantsToTransfer.p_source_mode       = params.Get_p_source_mode();
-  constantsToTransfer.p_source_many       = params.Get_p_source_many();
+  constantsToTransfer.p_source_index_size = static_cast<unsigned int>(params.Get_p_source_index_size());
+  constantsToTransfer.p_source_mode       = static_cast<unsigned int>(params.Get_p_source_mode());
+  constantsToTransfer.p_source_many       = static_cast<unsigned int>(params.Get_p_source_many());
 
-  constantsToTransfer.u_source_index_size = params.Get_u_source_index_size();
-  constantsToTransfer.u_source_mode       = params.Get_u_source_mode();
-  constantsToTransfer.u_source_many       = params.Get_u_source_many();
+  constantsToTransfer.u_source_index_size = static_cast<unsigned int>(params.Get_u_source_index_size());
+  constantsToTransfer.u_source_mode       = static_cast<unsigned int>(params.Get_u_source_mode());
+  constantsToTransfer.u_source_many       = static_cast<unsigned int>(params.Get_u_source_many());
 
   constantsToTransfer.SetUpCUDADeviceConstatns();
 }// end of SetUpDeviceConstants

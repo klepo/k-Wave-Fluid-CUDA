@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        19 April    2016, 12:52 (created) \n
- *              10 August   2016, 11:52 (revised)
+ *              10 July     2017, 16:10 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -158,13 +158,13 @@ string TLogger::WordWrapString(const string& inputString,
         wrappedText += " ";
       }
       wrappedText += " " + OUT_FMT_VERTICAL_LINE + "\n" + indentationString + word;
-      spaceLeft = lineSize - (word.length() + indentation);
+      spaceLeft = lineSize - (static_cast<int>(word.length()) + indentation);
     }
     else
     {
       // add the word at the same line
       wrappedText += word;
-      spaceLeft -= word.length();
+      spaceLeft -= static_cast<int>(word.length());
 
       char c;
       if (textStream.get(c).good())

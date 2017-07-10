@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2011, 13:10 (created) \n
- *              07 July      2017, 18:35 (revised)
+ *              10 July      2017, 16:10 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -528,9 +528,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DX_R2C(TRealMatrix& inMatrix)
 void TCUFFTComplexMatrix::Compute_FFT_1DY_R2C(TRealMatrix& inMatrix)
 {
   /// Transpose a real 3D matrix in the X-Y direction
-  dim3 dimSizes(inMatrix.GetDimensionSizes().nx,
-                inMatrix.GetDimensionSizes().ny,
-                inMatrix.GetDimensionSizes().nz);
+  dim3 dimSizes(static_cast<unsigned int>(inMatrix.GetDimensionSizes().nx),
+                static_cast<unsigned int>(inMatrix.GetDimensionSizes().ny),
+                static_cast<unsigned int>(inMatrix.GetDimensionSizes().nz));
 
   SolverCUDAKernels::TrasposeReal3DMatrixXY<SolverCUDAKernels::TransposePadding::kOutput>
                                            (deviceData,
@@ -558,9 +558,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_R2C(TRealMatrix& inMatrix)
 void TCUFFTComplexMatrix::Compute_FFT_1DZ_R2C(TRealMatrix& inMatrix)
 {
   /// Transpose a real 3D matrix in the X-Z direction
-  dim3 dimSizes(inMatrix.GetDimensionSizes().nx,
-                inMatrix.GetDimensionSizes().ny,
-                inMatrix.GetDimensionSizes().nz);
+  dim3 dimSizes(static_cast<unsigned int>(inMatrix.GetDimensionSizes().nx),
+                static_cast<unsigned int>(inMatrix.GetDimensionSizes().ny),
+                static_cast<unsigned int>(inMatrix.GetDimensionSizes().nz));
 
   SolverCUDAKernels::TrasposeReal3DMatrixXZ<SolverCUDAKernels::TransposePadding::kOutput>
                                            (deviceData,
@@ -616,9 +616,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DY_C2R(TRealMatrix& outMatrix)
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_1DY_C2R");
 
   /// Transpose a real 3D matrix back in the X-Y direction
-  dim3 dimSizes(outMatrix.GetDimensionSizes().ny,
-                outMatrix.GetDimensionSizes().nx,
-                outMatrix.GetDimensionSizes().nz);
+  dim3 dimSizes(static_cast<unsigned int>(outMatrix.GetDimensionSizes().ny),
+                static_cast<unsigned int>(outMatrix.GetDimensionSizes().nx),
+                static_cast<unsigned int>(outMatrix.GetDimensionSizes().nz));
 
   SolverCUDAKernels::TrasposeReal3DMatrixXY<SolverCUDAKernels::TransposePadding::kInput>
                                            (outMatrix.GetDeviceData(),
@@ -648,9 +648,9 @@ void TCUFFTComplexMatrix::Compute_FFT_1DZ_C2R(TRealMatrix& outMatrix)
   if (cufftError != CUFFT_SUCCESS) ThrowCUFFTException(cufftError, "Execute_FFT_1DZ_C2R");
 
   /// Transpose a real 3D matrix in the Z<->X direction
-  dim3 DimSizes(outMatrix.GetDimensionSizes().nz,
-                outMatrix.GetDimensionSizes().ny,
-                outMatrix.GetDimensionSizes().nx);
+  dim3 DimSizes(static_cast<unsigned int>(outMatrix.GetDimensionSizes().nz),
+                static_cast<unsigned int>(outMatrix.GetDimensionSizes().ny),
+                static_cast<unsigned int>(outMatrix.GetDimensionSizes().nx));
 
   SolverCUDAKernels::TrasposeReal3DMatrixXZ<SolverCUDAKernels::TransposePadding::kInput>
                                            (outMatrix.GetDeviceData(),

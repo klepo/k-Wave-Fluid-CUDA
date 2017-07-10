@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 February 2015, 12:51 (created)
- *              28 June     2017, 14:59 (revised)
+ *              10 July     2017, 16:11 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -208,20 +208,20 @@ void TCuboidOutputHDF5Stream::Sample()
 {
   size_t cuboidInBufferStart = 0;
   // dimension sizes of the matrix being sampled
-  const dim3 dimSizes (sourceMatrix.GetDimensionSizes().nx,
-                       sourceMatrix.GetDimensionSizes().ny,
-                       sourceMatrix.GetDimensionSizes().nz);
+  const dim3 dimSizes (static_cast<unsigned int>(sourceMatrix.GetDimensionSizes().nx),
+                       static_cast<unsigned int>(sourceMatrix.GetDimensionSizes().ny),
+                       static_cast<unsigned int>(sourceMatrix.GetDimensionSizes().nz));
 
   // Run over all cuboids - this is not a good solution as we need to run a distinct kernel for a cuboid
   for (size_t cuboidIdx = 0; cuboidIdx < cuboidsInfo.size(); cuboidIdx++)
   {
     // copy down dim sizes
-    const dim3 topLeftCorner(sensorMask.GetTopLeftCorner(cuboidIdx).nx,
-                             sensorMask.GetTopLeftCorner(cuboidIdx).ny,
-                             sensorMask.GetTopLeftCorner(cuboidIdx).nz);
-    const dim3 bottomRightCorner(sensorMask.GetBottomRightCorner(cuboidIdx).nx,
-                                 sensorMask.GetBottomRightCorner(cuboidIdx).ny,
-                                 sensorMask.GetBottomRightCorner(cuboidIdx).nz);
+    const dim3 topLeftCorner(static_cast<unsigned int>(sensorMask.GetTopLeftCorner(cuboidIdx).nx),
+                             static_cast<unsigned int>(sensorMask.GetTopLeftCorner(cuboidIdx).ny),
+                             static_cast<unsigned int>(sensorMask.GetTopLeftCorner(cuboidIdx).nz));
+    const dim3 bottomRightCorner(static_cast<unsigned int>(sensorMask.GetBottomRightCorner(cuboidIdx).nx),
+                                 static_cast<unsigned int>(sensorMask.GetBottomRightCorner(cuboidIdx).ny),
+                                 static_cast<unsigned int>(sensorMask.GetBottomRightCorner(cuboidIdx).nz));
 
     //get number of samples within the cuboid
     const size_t nSamples = (sensorMask.GetBottomRightCorner(cuboidIdx) -

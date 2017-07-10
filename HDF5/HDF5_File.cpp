@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              07 July     2017, 19:36 (revised)
+ *              10 July     2017, 16:09 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -346,7 +346,7 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
   }
 
   // set compression level
-  status = H5Pset_deflate(propertyList, compressionLevel);
+  status = H5Pset_deflate(propertyList, static_cast<unsigned int>(compressionLevel));
   if (status < 0)
   {
     throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_SET_COMPRESSION,
@@ -417,7 +417,7 @@ hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
   }
 
   // set compression level
-  status = H5Pset_deflate(propertyList, compressionLevel);
+  status = H5Pset_deflate(propertyList, static_cast<unsigned int>(compressionLevel));
   if (status < 0)
   {
     throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_SET_COMPRESSION,

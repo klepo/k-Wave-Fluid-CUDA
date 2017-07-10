@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              27 June     2017, 13:05 (revised)
+ *              10 July     2017, 19:09 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -483,10 +483,11 @@ void SolverCUDAKernels::AddTransducerSource(TRealMatrix&        ux_sgx,
                                             TIndexMatrix&       delay_mask,
                                             const TRealMatrix&  transducer_signal)
 {
-  const auto u_source_index_size = u_source_index.GetElementCount();
+  // cuda only supports 32bits anyway
+  const int u_source_index_size = static_cast<int>(u_source_index.GetElementCount());
 
   // Grid size is calculated based on the source size
-  const int gridSize  = (static_cast<int>(u_source_index_size) < (GetSolverGridSize1D() *  GetSolverBlockSize1D()))
+  const int gridSize  = (u_source_index_size < (GetSolverGridSize1D() *  GetSolverBlockSize1D()))
                         ? (u_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D()
                         : GetSolverGridSize1D();
 
@@ -551,13 +552,13 @@ void SolverCUDAKernels::AddVelocitySource(TRealMatrix&        uxyz_sgxyz,
                                           const TIndexMatrix& u_source_index,
                                           const size_t        t_index)
 {
-  const auto u_source_index_size = u_source_index.GetElementCount();
+  const int u_source_index_size = static_cast<int>(u_source_index.GetElementCount());
 
   // Grid size is calculated based on the source size
   // for small sources, a custom number of thread blocks is created,
   // otherwise, a standard number is used
 
-  const int gridSize = (static_cast<int>(u_source_index_size) < (GetSolverGridSize1D() *  GetSolverBlockSize1D()))
+  const int gridSize = (u_source_index_size < (GetSolverGridSize1D() *  GetSolverBlockSize1D()))
                        ? (u_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D()
                        :  GetSolverGridSize1D();
 
@@ -656,9 +657,9 @@ void SolverCUDAKernels::AddPressureSource(TRealMatrix&        rhox,
                                           const TIndexMatrix& p_source_index,
                                           const size_t        t_index)
 {
-  const auto p_source_index_size = p_source_index.GetElementCount();
+  const int p_source_index_size = static_cast<int>(p_source_index.GetElementCount());
   // Grid size is calculated based on the source size
-  const int gridSize  = (static_cast<int>(p_source_index_size) < (GetSolverGridSize1D() *  GetSolverBlockSize1D()))
+  const int gridSize  = (p_source_index_size < (GetSolverGridSize1D() *  GetSolverBlockSize1D()))
                         ? (p_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D()
                         :  GetSolverGridSize1D();
 
