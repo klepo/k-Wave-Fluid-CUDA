@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              10 July     2017, 16:09 (revised)
+ *              10 July     2017, 17:00s (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -525,7 +525,7 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense() const
     TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SEPARATOR);
     TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CUDA_DEVICE, cudaParameters.GetDeviceIdx());
 
-    const int paddingLength = static_cast<int>(65 - (2 + cudaParameters.GetDeviceName().length()));
+    const int paddingLength = static_cast<int>(65 - (22 + cudaParameters.GetDeviceName().length()));
 
     TLogger::Log(TLogger::TLogLevel::BASIC,
                  OUT_FMT_CUDA_DEVICE_NAME,
