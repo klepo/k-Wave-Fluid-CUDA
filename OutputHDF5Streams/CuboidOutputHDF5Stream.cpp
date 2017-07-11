@@ -11,8 +11,8 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  *
- * @date        13 February 2015, 12:51 (created)
- *              10 July     2017, 16:11 (revised)
+ * @date        13 February  2015, 12:51 (created)
+ *              11 June      2017, 15:44 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -59,7 +59,7 @@ using std::string;
 
  */
 TCuboidOutputHDF5Stream::TCuboidOutputHDF5Stream(THDF5_File&           file,
-                                                 TMatrixName&          groupName,
+                                                 MatrixName&          groupName,
                                                  const TRealMatrix&    sourceMatrix,
                                                  const TIndexMatrix&   sensorMask,
                                                  const TReduceOperator reduceOp)

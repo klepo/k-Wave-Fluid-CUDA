@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              28 June     2017, 15:14 (revised)
+ *              11 July     2017, 14:43 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -79,7 +79,7 @@ TIndexMatrix::~TIndexMatrix()
  * @throw ios:failure if error occurs.
  */
 void TIndexMatrix::ReadDataFromHDF5File(THDF5_File&  file,
-                                        TMatrixName& matrixName)
+                                        MatrixName& matrixName)
 {
   if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDataType::LONG)
   {
@@ -105,7 +105,7 @@ void TIndexMatrix::ReadDataFromHDF5File(THDF5_File&  file,
  * @throw ios:failure if error occurs.
  */
 void TIndexMatrix::WriteDataToHDF5File(THDF5_File&  file,
-                                       TMatrixName& matrixName,
+                                       MatrixName& matrixName,
                                        const size_t compressionLevel)
 {
   // set chunks - may be necessary for long index based sensor masks

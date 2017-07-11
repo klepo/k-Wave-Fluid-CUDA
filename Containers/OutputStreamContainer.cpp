@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        04 December  2014, 11:41 (created) \n
- *              07 July      2017  14:00 (revised)
+ *              11 July      2017  14:41 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -84,7 +84,7 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
     outputStreamContainer[TOutputStreamIdx::p_sensor_raw]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::p,
-                                    p_NAME,
+                                    kPName,
                                     ReductionOp::NONE);
   }
 
@@ -93,7 +93,7 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
     outputStreamContainer[TOutputStreamIdx::p_sensor_rms]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::p,
-                                    p_rms_NAME,
+                                    kPRmsName,
                                     ReductionOp::RMS);
   }
 
@@ -102,7 +102,7 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
     outputStreamContainer[TOutputStreamIdx::p_sensor_max] =
             CreateNewOutputStream(matrixContainer,
                                   MatrixId::p,
-                                  p_max_NAME,
+                                  kPMaxName,
                                   ReductionOp::MAX);
   }
 
@@ -111,7 +111,7 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
     outputStreamContainer[TOutputStreamIdx::p_sensor_min] =
             CreateNewOutputStream(matrixContainer,
                                   MatrixId::p,
-                                  p_min_NAME,
+                                  kPminName,
                                   ReductionOp::MIN);
   }
 
@@ -119,7 +119,7 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
   {
     outputStreamContainer[TOutputStreamIdx::p_sensor_max_all] =
             new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             p_max_all_NAME,
+                                             kPMaxAllName,
                                              matrixContainer.GetMatrix<TRealMatrix>(MatrixId::p),
                                              ReductionOp::MAX);
   }
@@ -128,7 +128,7 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
   {
     outputStreamContainer[TOutputStreamIdx::p_sensor_min_all] =
             new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             p_min_all_NAME,
+                                             kPMinAllName,
                                              matrixContainer.GetMatrix<TRealMatrix>(MatrixId::p),
                                              ReductionOp::MIN);
   }
@@ -139,17 +139,17 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
     outputStreamContainer[TOutputStreamIdx::ux_sensor_raw]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::ux_sgx,
-                                    ux_NAME,
+                                    kUxName,
                                     ReductionOp::NONE);
     outputStreamContainer[TOutputStreamIdx::uy_sensor_raw]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::uy_sgy,
-                                    uy_NAME,
+                                    kUyName,
                                     ReductionOp::NONE);
     outputStreamContainer[TOutputStreamIdx::uz_sensor_raw]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::uz_sgz,
-                                    uz_NAME,
+                                    kUzName,
                                     ReductionOp::NONE);
   }
 
@@ -158,17 +158,17 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
     outputStreamContainer[TOutputStreamIdx::ux_shifted_sensor_raw]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::ux_shifted,
-                                    ux_non_staggered_NAME,
+                                    kUxNonStaggeredName,
                                     ReductionOp::NONE);
     outputStreamContainer[TOutputStreamIdx::uy_shifted_sensor_raw]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::uy_shifted,
-                                    uy_non_staggered_NAME,
+                                    kUyNonStaggeredName,
                                     ReductionOp::NONE);
     outputStreamContainer[TOutputStreamIdx::uz_shifted_sensor_raw]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::uz_shifted,
-                                    uz_non_staggered_NAME,
+                                    kUzNonStaggeredName,
                                     ReductionOp::NONE);
   }
 
@@ -177,17 +177,17 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
     outputStreamContainer[TOutputStreamIdx::ux_sensor_rms]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::ux_sgx,
-                                    ux_rms_NAME,
+                                    kUxRmsName,
                                     ReductionOp::RMS);
     outputStreamContainer[TOutputStreamIdx::uy_sensor_rms]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::uy_sgy,
-                                    uy_rms_NAME,
+                                    kUyRmsName,
                                     ReductionOp::RMS);
     outputStreamContainer[TOutputStreamIdx::uz_sensor_rms]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::uz_sgz,
-                                    uz_rms_NAME,
+                                    kUzRmsName,
                                     ReductionOp::RMS);
   }
 
@@ -196,17 +196,17 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
     outputStreamContainer[TOutputStreamIdx::ux_sensor_max]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::ux_sgx,
-                                    ux_max_NAME,
+                                    kUxMaxName,
                                     ReductionOp::MAX);
     outputStreamContainer[TOutputStreamIdx::uy_sensor_max]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::uy_sgy,
-                                    uy_max_NAME,
+                                    kUyMaxName,
                                     ReductionOp::MAX);
     outputStreamContainer[TOutputStreamIdx::uz_sensor_max]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::uz_sgz,
-                                    uz_max_NAME,
+                                    kUzMaxName,
                                     ReductionOp::MAX);
   }
 
@@ -215,17 +215,17 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
     outputStreamContainer[TOutputStreamIdx::ux_sensor_min]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::ux_sgx,
-                                    ux_min_NAME,
+                                    kUxMinName,
                                     ReductionOp::MIN);
     outputStreamContainer[TOutputStreamIdx::uy_sensor_min]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::uy_sgy,
-                                    uy_min_NAME,
+                                    kUyMinName,
                                     ReductionOp::MIN);
     outputStreamContainer[TOutputStreamIdx::uz_sensor_min]
             = CreateNewOutputStream(matrixContainer,
                                     MatrixId::uz_sgz,
-                                    uz_min_NAME,
+                                    kUzMinName,
                                     ReductionOp::MIN);
   }
 
@@ -233,17 +233,17 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
   {
     outputStreamContainer[TOutputStreamIdx::ux_sensor_max_all] =
             new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             ux_max_all_NAME,
+                                             kUxMaxAllName,
                                              matrixContainer.GetMatrix<TRealMatrix>(MatrixId::ux_sgx),
                                              ReductionOp::MAX);
     outputStreamContainer[TOutputStreamIdx::uy_sensor_max_all] =
             new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             uy_max_all_NAME,
+                                             kUyMaxAllName,
                                              matrixContainer.GetMatrix<TRealMatrix>(MatrixId::uy_sgy),
                                              ReductionOp::MAX);
     outputStreamContainer[TOutputStreamIdx::uz_sensor_max_all] =
             new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             uz_max_all_NAME,
+                                             kUzMaxAllName,
                                              matrixContainer.GetMatrix<TRealMatrix>(MatrixId::uz_sgz),
                                              ReductionOp::MAX);
   }
@@ -252,17 +252,17 @@ void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
   {
     outputStreamContainer[TOutputStreamIdx::ux_sensor_min_all] =
             new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             ux_min_all_NAME,
+                                             kUxMinAllName,
                                              matrixContainer.GetMatrix<TRealMatrix>(MatrixId::ux_sgx),
                                              ReductionOp::MIN);
     outputStreamContainer[TOutputStreamIdx::uy_sensor_min_all] =
             new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             uy_min_all_NAME,
+                                             kUyMinAllName,
                                              matrixContainer.GetMatrix<TRealMatrix>(MatrixId::uy_sgy),
                                              ReductionOp::MIN);
     outputStreamContainer[TOutputStreamIdx::uz_sensor_min_all] =
             new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             uz_min_all_NAME,
+                                             kUzMinAllName,
                                              matrixContainer.GetMatrix<TRealMatrix>(MatrixId::uz_sgz),
                                              ReductionOp::MIN);
   }
@@ -414,7 +414,7 @@ void TOutputStreamContainer::FreeStreams()
  */
 TBaseOutputHDF5Stream* TOutputStreamContainer::CreateNewOutputStream(TMatrixContainer&                            matrixContainer,
                                                                      const TMatrixContainer::TMatrixIdx           sampledMatrixIdx,
-                                                                     const TMatrixName&                           fileDatasetName,
+                                                                     const MatrixName&                           fileDatasetName,
                                                                      const TBaseOutputHDF5Stream::TReduceOperator reduceOp)
 {
   TParameters& params = TParameters::GetInstance();

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              11 July     2017, 13:06s (revised)
+ *              11 July     2017, 14:44 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -182,7 +182,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
 
     // read the actual value of t_index
     size_t new_t_index;
-    checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), t_index_NAME, new_t_index);
+    checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), kTIndexName, new_t_index);
     parameters.Set_t_index(new_t_index);
 
     // Read necessary matrices from the checkpoint file
@@ -862,7 +862,7 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
   {
     Get_p().CopyFromDevice();
     Get_p().WriteDataToHDF5File(parameters.GetOutputFile(),
-                                p_final_NAME,
+                                kPFinalName,
                                 parameters.GetCompressionLevel());
   }// p_final
 
@@ -873,13 +873,13 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
     Get_uz_sgz().CopyFromDevice();
 
     Get_ux_sgx().WriteDataToHDF5File(parameters.GetOutputFile(),
-                                     ux_final_NAME,
+                                     kUxFinalName,
                                      parameters.GetCompressionLevel());
     Get_uy_sgy().WriteDataToHDF5File(parameters.GetOutputFile(),
-                                     uy_final_NAME,
+                                     kUyFinalName,
                                      parameters.GetCompressionLevel());
     Get_uz_sgz().WriteDataToHDF5File(parameters.GetOutputFile(),
-                                     uz_final_NAME,
+                                     kUzFinalName,
                                      parameters.GetCompressionLevel());
   }// u_final
 
@@ -893,14 +893,14 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
     if (parameters.Get_sensor_mask_type() == TParameters::TSensorMaskType::INDEX)
     {
       Get_sensor_mask_index().RecomputeIndicesToMatlab();
-      Get_sensor_mask_index().WriteDataToHDF5File(parameters.GetOutputFile(),sensor_mask_index_NAME,
+      Get_sensor_mask_index().WriteDataToHDF5File(parameters.GetOutputFile(),kSensorMaskIndexName,
                                                   parameters.GetCompressionLevel());
     }
 
     if (parameters.Get_sensor_mask_type() == TParameters::TSensorMaskType::CORNERS)
     {
       Get_sensor_mask_corners().RecomputeIndicesToMatlab();
-      Get_sensor_mask_corners().WriteDataToHDF5File(parameters.GetOutputFile(),sensor_mask_corners_NAME,
+      Get_sensor_mask_corners().WriteDataToHDF5File(parameters.GetOutputFile(),kSensorMaskCornersName,
                                                     parameters.GetCompressionLevel());
     }
   }
@@ -948,7 +948,7 @@ void  TKSpaceFirstOrder3DSolver::WriteOutputDataInfo()
 {
   // write t_index into the output file
   parameters.GetOutputFile().WriteScalarValue(parameters.GetOutputFile().GetRootGroup(),
-                                              t_index_NAME,
+                                              kTIndexName,
                                               parameters.Get_t_index());
 
   // Write scalars
@@ -1001,18 +1001,18 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   matrixContainer.StoreDataIntoCheckpointFile(checkpointFile);
   // Write t_index
   checkpointFile.WriteScalarValue(checkpointFile.GetRootGroup(),
-                                  t_index_NAME,
+                                  kTIndexName,
                                   parameters.Get_t_index());
 
   // store basic dimension sizes (Nx, Ny, Nz) - Nt is not necessary
   checkpointFile.WriteScalarValue(checkpointFile.GetRootGroup(),
-                                  Nx_NAME,
+                                  kNxName,
                                   parameters.GetFullDimensionSizes().nx);
   checkpointFile.WriteScalarValue(checkpointFile.GetRootGroup(),
-                                  Ny_NAME,
+                                  kNyName,
                                   parameters.GetFullDimensionSizes().ny);
   checkpointFile.WriteScalarValue(checkpointFile.GetRootGroup(),
-                                  Nz_NAME,
+                                  kNzName,
                                   parameters.GetFullDimensionSizes().nz);
 
   // Write checkpoint file header
@@ -2019,9 +2019,9 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
 
   // Check dimension sizes
   TDimensionSizes outputDimSizes;
-  outputFile.ReadScalarValue(outputFile.GetRootGroup(), Nx_NAME, outputDimSizes.nx);
-  outputFile.ReadScalarValue(outputFile.GetRootGroup(), Ny_NAME, outputDimSizes.ny);
-  outputFile.ReadScalarValue(outputFile.GetRootGroup(), Nz_NAME, outputDimSizes.nz);
+  outputFile.ReadScalarValue(outputFile.GetRootGroup(), kNxName, outputDimSizes.nx);
+  outputFile.ReadScalarValue(outputFile.GetRootGroup(), kNyName, outputDimSizes.ny);
+  outputFile.ReadScalarValue(outputFile.GetRootGroup(), kNzName, outputDimSizes.nz);
 
  if (parameters.GetFullDimensionSizes() != outputDimSizes)
  {
@@ -2076,9 +2076,9 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
 
   // Check dimension sizes
   TDimensionSizes checkpointDimSizes;
-  checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), Nx_NAME, checkpointDimSizes.nx);
-  checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), Ny_NAME, checkpointDimSizes.ny);
-  checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), Nz_NAME, checkpointDimSizes.nz);
+  checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), kNxName, checkpointDimSizes.nx);
+  checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), kNyName, checkpointDimSizes.ny);
+  checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), kNzName, checkpointDimSizes.nz);
 
  if (parameters.GetFullDimensionSizes() != checkpointDimSizes)
  {

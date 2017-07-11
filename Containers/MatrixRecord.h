@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December 2014, 15:44 (created) \n
- *              28 June     2017, 14:08 (revised)
+ *              19 July     2017, 14:40 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -72,7 +72,7 @@ struct TMatrixRecord
            const TDimensionSizes  dimensionSizes,
            const bool             loadData,
            const bool             checkpoint,
-           TMatrixName&           matrixName);
+           MatrixName&           matrixName);
 
   /// Pointer to the matrix object.
   TBaseMatrix*    matrixPtr;

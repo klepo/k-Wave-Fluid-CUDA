@@ -11,8 +11,8 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  *
- * @date        28 August   2014, 11:15 (created)
- *              28 June     2017, 14:59 (revised)
+ * @date        28 August    2014, 11:15 (created)
+ *              11 June      2017, 15:44 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -51,7 +51,7 @@
  * @param [in] reduceOp     - Reduce operator
  */
 TWholeDomainOutputHDF5Stream::TWholeDomainOutputHDF5Stream(THDF5_File&           file,
-                                                           TMatrixName&          datasetName,
+                                                           MatrixName&          datasetName,
                                                            TRealMatrix&          sourceMatrix,
                                                            const TReduceOperator reduceOp)
         : TBaseOutputHDF5Stream(file, datasetName, sourceMatrix, reduceOp),

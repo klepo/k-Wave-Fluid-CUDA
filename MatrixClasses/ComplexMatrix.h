@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2011, 14:02 (created) \n
- *              07 July     2017, 18:42 (revised)
+ *              11 July     2017, 14:43 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -89,11 +89,11 @@ class TComplexMatrix : public TBaseFloatMatrix
 
     /// Load data from the HDF5_File.
     virtual void ReadDataFromHDF5File(THDF5_File& file,
-                                      TMatrixName& matrixName);
+                                      MatrixName& matrixName);
 
     /// Write data into the HDF5_File
     virtual void WriteDataToHDF5File(THDF5_File&  file,
-                                     TMatrixName& matrixName,
+                                     MatrixName& matrixName,
                                      const size_t compressionLevel);
 
 

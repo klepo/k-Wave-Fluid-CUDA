@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              07 July     2017, 14:04 (revised)
+ *              11 July     2017, 14:42 (revised)
  *
  *
  * @section HDF HDF5 File Structure
@@ -563,10 +563,10 @@ class THDF5_File
     //----------------------------------- Group manipulators -------------------------------------//
     /// Create a HDF5 group at a specified place in the file tree.
     hid_t CreateGroup(const hid_t  parentGroup,
-                      TMatrixName& groupName);
+                      MatrixName& groupName);
     /// Open a HDF5 group at a specified place in the file tree.
     hid_t OpenGroup(const hid_t  parentGroup,
-                    TMatrixName& groupName);
+                    MatrixName& groupName);
     /// Close group.
     void CloseGroup(const hid_t group);
 
@@ -581,18 +581,18 @@ class THDF5_File
     //---------------------------------- Dataset manipulators -------------------------------------//
     /// Open the HDF5 dataset at a specified place in the file tree.
     hid_t OpenDataset(const hid_t parentGroup,
-                      TMatrixName& datasetName);
+                      MatrixName& datasetName);
 
     /// Create a float HDF5 dataset at a specified place in the file tree (3D/4D).
     hid_t CreateFloatDataset(const hid_t            parentGroup,
-                             TMatrixName&           datasetName,
+                             MatrixName&           datasetName,
                              const TDimensionSizes& dimensionSizes,
                              const TDimensionSizes& chunkSizes,
                              const size_t           compressionLevel);
 
     /// Create an index HDF5 dataset at a specified place in the file tree (3D only).
     hid_t CreateIndexDataset(const hid_t            parentGroup,
-                             TMatrixName&           datasetName,
+                             MatrixName&           datasetName,
                              const TDimensionSizes& dimensionSizes,
                              const TDimensionSizes& chunkSizes,
                              const size_t           compressionLevel);
@@ -631,30 +631,30 @@ class THDF5_File
 
     /// Write the scalar value under a specified group, float value.
     void WriteScalarValue(const hid_t  parentGroup,
-                          TMatrixName& datasetName,
+                          MatrixName& datasetName,
                           const float  value);
     /// Write the scalar value under a specified group, index value.
     void WriteScalarValue(const hid_t  parentGroup,
-                          TMatrixName& datasetName,
+                          MatrixName& datasetName,
                           const size_t value);
 
     /// Read the scalar value under a specified group, float value.
     void ReadScalarValue(const hid_t  parentGroup,
-                         TMatrixName& datasetName,
+                         MatrixName& datasetName,
                          float&       value);
     /// Read the scalar value under a specified group, index value.
     void ReadScalarValue(const hid_t  parentGroup,
-                         TMatrixName& datasetName,
+                         MatrixName& datasetName,
                          size_t&      value);
 
     /// Read data from the dataset under a specified group, float dataset.
     void ReadCompleteDataset(const hid_t            parentGroup,
-                             TMatrixName&           datasetName,
+                             MatrixName&           datasetName,
                              const TDimensionSizes& dimensionSizes,
                              float*                 data);
     /// Read data from the dataset under a specified group, index dataset.
     void ReadCompleteDataset(const hid_t            parentGroup,
-                             TMatrixName&           datasetName,
+                             MatrixName&           datasetName,
                              const TDimensionSizes& dimensionSizes,
                              size_t*                data);
 
@@ -662,43 +662,43 @@ class THDF5_File
 
     /// Get dimension sizes of the dataset  under a specified group.
     TDimensionSizes GetDatasetDimensionSizes(const hid_t  parentGroup,
-                                             TMatrixName& datasetName);
+                                             MatrixName& datasetName);
 
     /// Get number of dimensions of the dataset  under a specified group.
     size_t GetDatasetNumberOfDimensions(const hid_t  parentGroup,
-                                        TMatrixName& datasetName);
+                                        MatrixName& datasetName);
 
     /// Get dataset element count under a specified group.
     size_t GetDatasetElementCount(const hid_t  parentGroup,
-                                  TMatrixName& datasetName);
+                                  MatrixName& datasetName);
 
 
     /// Write matrix data type into the dataset under a specified group.
     void WriteMatrixDataType (const hid_t                parentGroup,
-                              TMatrixName&               datasetName,
+                              MatrixName&               datasetName,
                               const TMatrixDataType& matrixDataType);
     /// Write matrix domain type into the dataset under the root group.
     void WriteMatrixDomainType(const hid_t                  parentGroup,
-                               TMatrixName&                 datasetName,
+                               MatrixName&                 datasetName,
                                const TMatrixDomainType& matrixDomainType);
 
     /// Read matrix data type from the dataset.
     THDF5_File::TMatrixDataType   ReadMatrixDataType(const hid_t  parentGroup,
-                                                     TMatrixName& datasetName);
+                                                     MatrixName& datasetName);
     /// Read matrix domain type from the dataset under a specified group.
     THDF5_File::TMatrixDomainType ReadMatrixDomainType(const hid_t  parentGroup,
-                                                       TMatrixName& datasetName);
+                                                       MatrixName& datasetName);
 
 
     /// Write string attribute into the dataset under the root group.
     void   WriteStringAttribute(const hid_t        parentGroup,
-                                TMatrixName&       datasetName,
-                                TMatrixName&       attributeName,
+                                MatrixName&       datasetName,
+                                MatrixName&       attributeName,
                                 const std::string& value);
     /// Read string attribute from the dataset under the root group.
     std::string ReadStringAttribute(const hid_t  parentGroup,
-                                    TMatrixName& datasetName,
-                                    TMatrixName& attributeName);
+                                    MatrixName& datasetName,
+                                    MatrixName& attributeName);
 
   protected:
 

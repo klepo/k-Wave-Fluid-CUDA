@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2011, 10:30 (created) \n
- *              07 July      2017, 18:45 (revised)
+ *              11 July      2017, 14:43 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -59,11 +59,11 @@ class TRealMatrix : public TBaseFloatMatrix
 
     /// Read data from the HDF5 file - only from the root group.
     virtual void ReadDataFromHDF5File(THDF5_File&  file,
-                                      TMatrixName& matrixName);
+                                      MatrixName& matrixName);
 
     /// Write data into the HDF5 file.
     virtual void WriteDataToHDF5File(THDF5_File&  file,
-                                     TMatrixName& matrixName,
+                                     MatrixName& matrixName,
                                      const size_t compressionLevel);
 
     /**

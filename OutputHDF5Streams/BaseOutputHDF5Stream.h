@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              07 July      2017, 18:51 (revised)
+ *              11 June      2017, 15:44 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -68,7 +68,7 @@ class TBaseOutputHDF5Stream
     TBaseOutputHDF5Stream() = delete;
     /// Constructor.
     TBaseOutputHDF5Stream(THDF5_File&           file,
-                          TMatrixName&          rootObjectName,
+                          MatrixName&          rootObjectName,
                           const TRealMatrix&    sourceMatrix,
                           const TReduceOperator reduceOp);
     /// Copy constructor not allowed.

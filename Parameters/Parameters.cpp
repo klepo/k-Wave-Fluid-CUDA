@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2012, 13:39 (created) \n
- *              28 June      2017, 15:08 (revised)
+ *              11 July      2017, 14:47 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -240,26 +240,26 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
 
   const hid_t rootGroup = inputFile.GetRootGroup();
 
-  inputFile.ReadScalarValue(rootGroup, Nt_NAME, nt);
+  inputFile.ReadScalarValue(rootGroup, kNtName, nt);
 
-  inputFile.ReadScalarValue(rootGroup, dt_NAME, dt);
-  inputFile.ReadScalarValue(rootGroup, dx_NAME, dx);
-  inputFile.ReadScalarValue(rootGroup, dy_NAME, dy);
-  inputFile.ReadScalarValue(rootGroup, dz_NAME, dz);
+  inputFile.ReadScalarValue(rootGroup, kDtName, dt);
+  inputFile.ReadScalarValue(rootGroup, kDxName, dx);
+  inputFile.ReadScalarValue(rootGroup, kDyName, dy);
+  inputFile.ReadScalarValue(rootGroup, kDzName, dz);
 
-  inputFile.ReadScalarValue(rootGroup, c_ref_NAME,      c_ref);
-  inputFile.ReadScalarValue(rootGroup, pml_x_size_NAME, pml_x_size);
-  inputFile.ReadScalarValue(rootGroup, pml_y_size_NAME, pml_y_size);
-  inputFile.ReadScalarValue(rootGroup, pml_z_size_NAME, pml_z_size);
+  inputFile.ReadScalarValue(rootGroup, kCRefName,      c_ref);
+  inputFile.ReadScalarValue(rootGroup, kPmlXSizeName, pml_x_size);
+  inputFile.ReadScalarValue(rootGroup, kPmlYSizeName, pml_y_size);
+  inputFile.ReadScalarValue(rootGroup, kPmlZSizeName, pml_z_size);
 
-  inputFile.ReadScalarValue(rootGroup, pml_x_alpha_NAME, pml_x_alpha);
-  inputFile.ReadScalarValue(rootGroup, pml_y_alpha_NAME, pml_y_alpha);
-  inputFile.ReadScalarValue(rootGroup, pml_z_alpha_NAME, pml_z_alpha);
+  inputFile.ReadScalarValue(rootGroup, kPmlXAlphaName, pml_x_alpha);
+  inputFile.ReadScalarValue(rootGroup, kPmlYAlphaName, pml_y_alpha);
+  inputFile.ReadScalarValue(rootGroup, kPmlZAlphaName, pml_z_alpha);
 
   size_t x, y, z;
-	inputFile.ReadScalarValue(rootGroup, Nx_NAME, x);
-  inputFile.ReadScalarValue(rootGroup, Ny_NAME, y);
-  inputFile.ReadScalarValue(rootGroup, Nz_NAME, z);
+	inputFile.ReadScalarValue(rootGroup, kNxName, x);
+  inputFile.ReadScalarValue(rootGroup, kNyName, y);
+  inputFile.ReadScalarValue(rootGroup, kNzName, z);
 
 
   fullDimensionSizes.nx = x;
@@ -273,7 +273,7 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
   // if the file is of version 1.0, there must be a sensor mask index (backward compatibility)
   if (fileHeader.GetFileVersion() == THDF5_FileHeader::TFileVersion::VERSION_10)
   {
-    sensor_mask_ind_size = inputFile.GetDatasetElementCount(rootGroup, sensor_mask_index_NAME);
+    sensor_mask_ind_size = inputFile.GetDatasetElementCount(rootGroup, kSensorMaskIndexName);
 
     //if -u_non_staggered_raw enabled, throw an error - not supported
     if (IsStore_u_non_staggered_raw())
@@ -287,7 +287,7 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
   {
     // read sensor mask type as a size_t value to enum
     size_t sensorMaskTypeNumericValue = 0;
-    inputFile.ReadScalarValue(rootGroup, sensor_mask_type_NAME, sensorMaskTypeNumericValue);
+    inputFile.ReadScalarValue(rootGroup, kSensorMaskTypeName, sensorMaskTypeNumericValue);
 
     // convert the long value on
     switch (sensorMaskTypeNumericValue)
@@ -314,30 +314,30 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
     {
       case TSensorMaskType::INDEX:
       {
-        sensor_mask_ind_size = inputFile.GetDatasetElementCount(rootGroup, sensor_mask_index_NAME);
+        sensor_mask_ind_size = inputFile.GetDatasetElementCount(rootGroup, kSensorMaskIndexName);
         break;
       }
       case TSensorMaskType::CORNERS:
       {
         // mask dimensions are [6, N, 1] - I want to know N
-        sensor_mask_corners_size = inputFile.GetDatasetDimensionSizes(rootGroup, sensor_mask_corners_NAME).ny;
+        sensor_mask_corners_size = inputFile.GetDatasetDimensionSizes(rootGroup, kSensorMaskCornersName).ny;
         break;
       }
     }// switch
   }// version 1.1
 
   // flags
-  inputFile.ReadScalarValue(rootGroup, ux_source_flag_NAME, ux_source_flag);
-  inputFile.ReadScalarValue(rootGroup, uy_source_flag_NAME, uy_source_flag);
-  inputFile.ReadScalarValue(rootGroup, uz_source_flag_NAME, uz_source_flag);
-  inputFile.ReadScalarValue(rootGroup, transducer_source_flag_NAME, transducer_source_flag);
+  inputFile.ReadScalarValue(rootGroup, kUxSourceFlagName, ux_source_flag);
+  inputFile.ReadScalarValue(rootGroup, kUySourceFlagName, uy_source_flag);
+  inputFile.ReadScalarValue(rootGroup, kUzSourceFlagName, uz_source_flag);
+  inputFile.ReadScalarValue(rootGroup, kTransducerSourceFlagName, transducer_source_flag);
 
-  inputFile.ReadScalarValue(rootGroup, p_source_flag_NAME, p_source_flag);
-  inputFile.ReadScalarValue(rootGroup, p0_source_flag_NAME,p0_source_flag);
+  inputFile.ReadScalarValue(rootGroup, kPSourceFlagName, p_source_flag);
+  inputFile.ReadScalarValue(rootGroup, kP0SourceFlagName,p0_source_flag);
 
-  inputFile.ReadScalarValue(rootGroup, nonuniform_grid_flag_NAME, nonuniform_grid_flag);
-  inputFile.ReadScalarValue(rootGroup, absorbing_flag_NAME,       absorbing_flag);
-  inputFile.ReadScalarValue(rootGroup, nonlinear_flag_NAME,       nonlinear_flag);
+  inputFile.ReadScalarValue(rootGroup, kNonUniformGridFlagName, nonuniform_grid_flag);
+  inputFile.ReadScalarValue(rootGroup, kAbsorbingFlagName,       absorbing_flag);
+  inputFile.ReadScalarValue(rootGroup, kNonLinearFlagName,       nonlinear_flag);
 
   // Vector sizes.
   if (transducer_source_flag == 0)
@@ -346,19 +346,19 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
   }
   else
   {
-    transducer_source_input_size =inputFile.GetDatasetElementCount(rootGroup, transducer_source_input_NAME);
+    transducer_source_input_size =inputFile.GetDatasetElementCount(rootGroup, kTransducerSourceInputName);
   }
 
   if ((transducer_source_flag > 0) || (ux_source_flag > 0) || (uy_source_flag > 0) || (uz_source_flag > 0))
   {
-    u_source_index_size = inputFile.GetDatasetElementCount(rootGroup, u_source_index_NAME);
+    u_source_index_size = inputFile.GetDatasetElementCount(rootGroup, kUSourceIndexName);
   }
 
   // uxyz_source_flags.
   if ((ux_source_flag > 0) || (uy_source_flag > 0) || (uz_source_flag > 0))
   {
-    inputFile.ReadScalarValue(rootGroup, u_source_many_NAME, u_source_many);
-    inputFile.ReadScalarValue(rootGroup, u_source_mode_NAME, u_source_mode);
+    inputFile.ReadScalarValue(rootGroup, kUSourceManyName, u_source_many);
+    inputFile.ReadScalarValue(rootGroup, kUSourceModeName, u_source_mode);
   }
   else
   {
@@ -369,10 +369,10 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
   // p_source_flag
   if (p_source_flag != 0)
   {
-    inputFile.ReadScalarValue(rootGroup, p_source_many_NAME, p_source_many);
-    inputFile.ReadScalarValue(rootGroup, p_source_mode_NAME, p_source_mode);
+    inputFile.ReadScalarValue(rootGroup, kPSourceManyName, p_source_many);
+    inputFile.ReadScalarValue(rootGroup, kPSourceModeName, p_source_mode);
 
-    p_source_index_size = inputFile.GetDatasetElementCount(rootGroup, p_source_index_NAME);
+    p_source_index_size = inputFile.GetDatasetElementCount(rootGroup, kPSourceIndexName);
   }
   else
   {
@@ -384,42 +384,42 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
   // absorb flag.
   if (absorbing_flag != 0)
   {
-    inputFile.ReadScalarValue(rootGroup, alpha_power_NAME, alpha_power);
+    inputFile.ReadScalarValue(rootGroup, kAlphaPowerName, alpha_power);
     if (alpha_power == 1.0f)
     {
       throw std::invalid_argument(ERR_FMT_ILLEGAL_ALPHA_POWER_VALUE);
     }
 
-    alpha_coeff_scalar_flag = inputFile.GetDatasetDimensionSizes(rootGroup, alpha_coeff_NAME) == scalarSizes;
+    alpha_coeff_scalar_flag = inputFile.GetDatasetDimensionSizes(rootGroup, kAlphaCoeffName) == scalarSizes;
 
     if (alpha_coeff_scalar_flag)
     {
-      inputFile.ReadScalarValue(rootGroup, alpha_coeff_NAME, alpha_coeff_scalar);
+      inputFile.ReadScalarValue(rootGroup, kAlphaCoeffName, alpha_coeff_scalar);
     }
   }
 
-  c0_scalar_flag = inputFile.GetDatasetDimensionSizes(rootGroup, c0_NAME) == scalarSizes;
+  c0_scalar_flag = inputFile.GetDatasetDimensionSizes(rootGroup, kC0Name) == scalarSizes;
   if (c0_scalar_flag)
   {
-    inputFile.ReadScalarValue(rootGroup, c0_NAME, c0_scalar);
+    inputFile.ReadScalarValue(rootGroup, kC0Name, c0_scalar);
   }
 
   if (nonlinear_flag)
   {
-    BonA_scalar_flag = inputFile.GetDatasetDimensionSizes(rootGroup, BonA_NAME) == scalarSizes;
+    BonA_scalar_flag = inputFile.GetDatasetDimensionSizes(rootGroup, kBonAName) == scalarSizes;
     if (BonA_scalar_flag)
     {
-      inputFile.ReadScalarValue(rootGroup, BonA_NAME, BonA_scalar);
+      inputFile.ReadScalarValue(rootGroup, kBonAName, BonA_scalar);
     }
   }
 
-  rho0_scalar_flag = inputFile.GetDatasetDimensionSizes(rootGroup, rho0_NAME) == scalarSizes;
+  rho0_scalar_flag = inputFile.GetDatasetDimensionSizes(rootGroup, kRho0Name) == scalarSizes;
   if (rho0_scalar_flag)
   {
-    inputFile.ReadScalarValue(rootGroup, rho0_NAME,     rho0_scalar);
-    inputFile.ReadScalarValue(rootGroup, rho0_sgx_NAME, rho0_sgx_scalar);
-    inputFile.ReadScalarValue(rootGroup, rho0_sgy_NAME, rho0_sgy_scalar);
-    inputFile.ReadScalarValue(rootGroup, rho0_sgz_NAME, rho0_sgz_scalar);
+    inputFile.ReadScalarValue(rootGroup, kRho0Name,     rho0_scalar);
+    inputFile.ReadScalarValue(rootGroup, kRho0SgxName, rho0_sgx_scalar);
+    inputFile.ReadScalarValue(rootGroup, kRho0SgyName, rho0_sgy_scalar);
+    inputFile.ReadScalarValue(rootGroup, kRho0SgzName, rho0_sgz_scalar);
     }
 }// end of ReadScalarsFromInputFile
 //--------------------------------------------------------------------------------------------------
@@ -434,58 +434,58 @@ void TParameters::SaveScalarsToFile(THDF5_File& outputFile)
   const hid_t HDF5RootGroup = outputFile.GetRootGroup();
 
   // Write dimension sizes
-  outputFile.WriteScalarValue(HDF5RootGroup, Nx_NAME, fullDimensionSizes.nx);
-  outputFile.WriteScalarValue(HDF5RootGroup, Ny_NAME, fullDimensionSizes.ny);
-  outputFile.WriteScalarValue(HDF5RootGroup, Nz_NAME, fullDimensionSizes.nz);
+  outputFile.WriteScalarValue(HDF5RootGroup, kNxName, fullDimensionSizes.nx);
+  outputFile.WriteScalarValue(HDF5RootGroup, kNyName, fullDimensionSizes.ny);
+  outputFile.WriteScalarValue(HDF5RootGroup, kNzName, fullDimensionSizes.nz);
 
-  outputFile.WriteScalarValue(HDF5RootGroup, Nt_NAME, nt);
+  outputFile.WriteScalarValue(HDF5RootGroup, kNtName, nt);
 
-  outputFile.WriteScalarValue(HDF5RootGroup, dt_NAME, dt);
-  outputFile.WriteScalarValue(HDF5RootGroup, dx_NAME, dx);
-  outputFile.WriteScalarValue(HDF5RootGroup, dy_NAME, dy);
-  outputFile.WriteScalarValue(HDF5RootGroup, dz_NAME, dz);
+  outputFile.WriteScalarValue(HDF5RootGroup, kDtName, dt);
+  outputFile.WriteScalarValue(HDF5RootGroup, kDxName, dx);
+  outputFile.WriteScalarValue(HDF5RootGroup, kDyName, dy);
+  outputFile.WriteScalarValue(HDF5RootGroup, kDzName, dz);
 
-  outputFile.WriteScalarValue(HDF5RootGroup, c_ref_NAME, c_ref);
+  outputFile.WriteScalarValue(HDF5RootGroup, kCRefName, c_ref);
 
-  outputFile.WriteScalarValue(HDF5RootGroup, pml_x_size_NAME, pml_x_size);
-  outputFile.WriteScalarValue(HDF5RootGroup, pml_y_size_NAME, pml_y_size);
-  outputFile.WriteScalarValue(HDF5RootGroup, pml_z_size_NAME, pml_z_size);
+  outputFile.WriteScalarValue(HDF5RootGroup, kPmlXSizeName, pml_x_size);
+  outputFile.WriteScalarValue(HDF5RootGroup, kPmlYSizeName, pml_y_size);
+  outputFile.WriteScalarValue(HDF5RootGroup, kPmlZSizeName, pml_z_size);
 
-  outputFile.WriteScalarValue(HDF5RootGroup, pml_x_alpha_NAME, pml_x_alpha);
-  outputFile.WriteScalarValue(HDF5RootGroup, pml_y_alpha_NAME, pml_y_alpha);
-  outputFile.WriteScalarValue(HDF5RootGroup, pml_z_alpha_NAME, pml_z_alpha);
+  outputFile.WriteScalarValue(HDF5RootGroup, kPmlXAlphaName, pml_x_alpha);
+  outputFile.WriteScalarValue(HDF5RootGroup, kPmlYAlphaName, pml_y_alpha);
+  outputFile.WriteScalarValue(HDF5RootGroup, kPmlZAlphaName, pml_z_alpha);
 
-  outputFile.WriteScalarValue(HDF5RootGroup, ux_source_flag_NAME, ux_source_flag);
-  outputFile.WriteScalarValue(HDF5RootGroup, uy_source_flag_NAME, uy_source_flag);
-  outputFile.WriteScalarValue(HDF5RootGroup, uz_source_flag_NAME, uz_source_flag);
-  outputFile.WriteScalarValue(HDF5RootGroup, transducer_source_flag_NAME, transducer_source_flag);
+  outputFile.WriteScalarValue(HDF5RootGroup, kUxSourceFlagName, ux_source_flag);
+  outputFile.WriteScalarValue(HDF5RootGroup, kUySourceFlagName, uy_source_flag);
+  outputFile.WriteScalarValue(HDF5RootGroup, kUzSourceFlagName, uz_source_flag);
+  outputFile.WriteScalarValue(HDF5RootGroup, kTransducerSourceFlagName, transducer_source_flag);
 
-  outputFile.WriteScalarValue(HDF5RootGroup, p_source_flag_NAME,  p_source_flag);
-  outputFile.WriteScalarValue(HDF5RootGroup, p0_source_flag_NAME, p0_source_flag);
+  outputFile.WriteScalarValue(HDF5RootGroup, kPSourceFlagName,  p_source_flag);
+  outputFile.WriteScalarValue(HDF5RootGroup, kP0SourceFlagName, p0_source_flag);
 
-  outputFile.WriteScalarValue(HDF5RootGroup, nonuniform_grid_flag_NAME, nonuniform_grid_flag);
-  outputFile.WriteScalarValue(HDF5RootGroup, absorbing_flag_NAME,       absorbing_flag);
-  outputFile.WriteScalarValue(HDF5RootGroup, nonlinear_flag_NAME,       nonlinear_flag);
+  outputFile.WriteScalarValue(HDF5RootGroup, kNonUniformGridFlagName, nonuniform_grid_flag);
+  outputFile.WriteScalarValue(HDF5RootGroup, kAbsorbingFlagName,       absorbing_flag);
+  outputFile.WriteScalarValue(HDF5RootGroup, kNonLinearFlagName,       nonlinear_flag);
 
   // uxyz_source_flags.
   if ((ux_source_flag > 0) || (uy_source_flag > 0) || (uz_source_flag > 0))
   {
-    outputFile.WriteScalarValue(HDF5RootGroup, u_source_many_NAME, u_source_many);
-      outputFile.WriteScalarValue(HDF5RootGroup, u_source_mode_NAME, u_source_mode);
+    outputFile.WriteScalarValue(HDF5RootGroup, kUSourceManyName, u_source_many);
+      outputFile.WriteScalarValue(HDF5RootGroup, kUSourceModeName, u_source_mode);
   }
 
   // p_source_flag.
   if (p_source_flag != 0)
   {
-    outputFile.WriteScalarValue(HDF5RootGroup, p_source_many_NAME, p_source_many);
-    outputFile.WriteScalarValue(HDF5RootGroup, p_source_mode_NAME, p_source_mode);
+    outputFile.WriteScalarValue(HDF5RootGroup, kPSourceManyName, p_source_many);
+    outputFile.WriteScalarValue(HDF5RootGroup, kPSourceModeName, p_source_mode);
 
     }
 
   // absorb flag
   if (absorbing_flag != 0)
   {
-    outputFile.WriteScalarValue(HDF5RootGroup, alpha_power_NAME, alpha_power);
+    outputFile.WriteScalarValue(HDF5RootGroup, kAlphaPowerName, alpha_power);
   }
 
   // if copy sensor mask, then copy the mask type
@@ -501,7 +501,7 @@ void TParameters::SaveScalarsToFile(THDF5_File& outputFile)
         break;
     }// switch
 
-    outputFile.WriteScalarValue(HDF5RootGroup, sensor_mask_type_NAME, SensorMaskTypeNumericValue);
+    outputFile.WriteScalarValue(HDF5RootGroup, kSensorMaskTypeName, SensorMaskTypeNumericValue);
   }
 }// end of SaveScalarsToFile
 //--------------------------------------------------------------------------------------------------

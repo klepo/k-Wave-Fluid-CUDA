@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 10:30 (created) \n
- *              28 June      2017, 15:15 (revised)
+ *              11 July      2017, 14:43 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -72,7 +72,7 @@ TRealMatrix::~TRealMatrix()
  * @throw ios::failure if error occurred.
  */
 void TRealMatrix::ReadDataFromHDF5File(THDF5_File&  file,
-                                       TMatrixName& matrixName)
+                                       MatrixName& matrixName)
 {
   // test matrix datatype
   if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDataType::FLOAT)
@@ -100,7 +100,7 @@ void TRealMatrix::ReadDataFromHDF5File(THDF5_File&  file,
  * @throw ios::failure if an error occurred.
  */
 void TRealMatrix::WriteDataToHDF5File(THDF5_File&  file,
-                                      TMatrixName& matrixName,
+                                      MatrixName& matrixName,
                                       const size_t compressionLevel)
 {
   TDimensionSizes chunks = dimensionSizes;

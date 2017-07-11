@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        04 December  2014, 11:00 (created)
- *              07 July      2017, 14:01 (revised)
+ *              11 July      2017, 14:41 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -147,7 +147,7 @@ class TOutputStreamContainer
     /// Create a new output stream
     TBaseOutputHDF5Stream* CreateNewOutputStream(TMatrixContainer&                            matrixContainer,
                                                  const TMatrixContainer::TMatrixIdx           sampledMatrixIdx,
-                                                 const TMatrixName&                           fileDatasetName,
+                                                 const MatrixName&                           fileDatasetName,
                                                  const TBaseOutputHDF5Stream::TReduceOperator reduceOp);
 
     /// Output stream map.

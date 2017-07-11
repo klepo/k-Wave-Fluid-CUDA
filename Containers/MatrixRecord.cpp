@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December 2014, 15:44 (created) \n
- *              28 June     2017, 14:10 (revised)
+ *              11 July     2017, 14:39 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -106,7 +106,7 @@ void TMatrixRecord::Set(const TMatrixType     matrixType,
                         const TDimensionSizes dimensionSizes,
                         const bool            loadData,
                         const bool            checkpoint,
-                        TMatrixName&          matrixName)
+                        MatrixName&          matrixName)
 {
   this->matrixPtr        = nullptr;
   this->matrixType       = matrixType;

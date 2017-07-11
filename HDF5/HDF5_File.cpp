@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              10 July     2017, 16:09 (revised)
+ *              11 July     2017, 14:42 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -206,7 +206,7 @@ THDF5_File::~THDF5_File()
  * @throw ios::failure
  */
 hid_t THDF5_File::CreateGroup(const hid_t  parentGroup,
-                              TMatrixName& groupName)
+                              MatrixName& groupName)
 {
   hid_t group = H5Gcreate(parentGroup, groupName.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
@@ -230,7 +230,7 @@ hid_t THDF5_File::CreateGroup(const hid_t  parentGroup,
  * @throw ios::failure
  */
 hid_t THDF5_File::OpenGroup(const hid_t  parentGroup,
-                            TMatrixName& groupName)
+                            MatrixName& groupName)
 {
   hid_t group = H5Gopen(parentGroup, groupName.c_str(), H5P_DEFAULT);
 
@@ -266,7 +266,7 @@ void THDF5_File::CloseGroup(const hid_t group)
  * @throw ios::failure
  */
 hid_t THDF5_File::OpenDataset(const hid_t  parentGroup,
-                              TMatrixName& datasetName)
+                              MatrixName& datasetName)
 {
   // Open dataset
   hid_t dataset = H5Dopen(parentGroup, datasetName.c_str(), H5P_DEFAULT);
@@ -294,7 +294,7 @@ hid_t THDF5_File::OpenDataset(const hid_t  parentGroup,
  * @throw ios::failure
  */
 hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
-                                     TMatrixName&           datasetName,
+                                     MatrixName&           datasetName,
                                      const TDimensionSizes& dimensionSizes,
                                      const TDimensionSizes& chunkSizes,
                                      const size_t           compressionLevel)
@@ -390,7 +390,7 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
  * @throw ios::failure
  */
 hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
-                                     TMatrixName&           datasetName,
+                                     MatrixName&           datasetName,
                                      const TDimensionSizes& dimensionSizes,
                                      const TDimensionSizes& chunkSizes,
                                      const size_t           compressionLevel)
@@ -746,7 +746,7 @@ void THDF5_File::WriteDataByMaskToHyperSlab(const hid_t            dataset,
  * @throw ios::failure
  */
 void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
-                                  TMatrixName& datasetName,
+                                  MatrixName& datasetName,
                                   const float  value)
 {
 
@@ -801,7 +801,7 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
  * @throw ios::failure
  */
 void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
-                                  TMatrixName& datasetName,
+                                  MatrixName& datasetName,
                                   const size_t value)
 {
   const int rank = 3;
@@ -853,7 +853,7 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
  * @param [out] value       - Data to be read
  */
 void THDF5_File::ReadScalarValue(const hid_t  parentGroup,
-                                 TMatrixName& datasetName,
+                                 MatrixName& datasetName,
                                  float&       value)
 {
   ReadCompleteDataset(parentGroup, datasetName, TDimensionSizes(1,1,1), &value);
@@ -868,7 +868,7 @@ void THDF5_File::ReadScalarValue(const hid_t  parentGroup,
  * @param [out] value       - Data to be read
  */
 void THDF5_File::ReadScalarValue(const hid_t  parentGroup,
-                                 TMatrixName& datasetName,
+                                 MatrixName& datasetName,
                                  size_t&      value)
 {
   ReadCompleteDataset(parentGroup, datasetName, TDimensionSizes(1,1,1), &value);
@@ -885,7 +885,7 @@ void THDF5_File::ReadScalarValue(const hid_t  parentGroup,
  * @throw ios::failure
  */
 void THDF5_File::ReadCompleteDataset (const hid_t            parentGroup,
-                                      TMatrixName&           datasetName,
+                                      MatrixName&           datasetName,
                                       const TDimensionSizes& dimensionSizes,
                                       float*                 data)
 {
@@ -917,7 +917,7 @@ void THDF5_File::ReadCompleteDataset (const hid_t            parentGroup,
  * @throw ios::failure
  */
 void THDF5_File::ReadCompleteDataset(const hid_t            parentGroup,
-                                     TMatrixName&           datasetName,
+                                     MatrixName&           datasetName,
                                      const TDimensionSizes& dimensionSizes,
                                      size_t*                data)
 {
@@ -947,7 +947,7 @@ void THDF5_File::ReadCompleteDataset(const hid_t            parentGroup,
  * @throw ios::failure
  */
 TDimensionSizes THDF5_File::GetDatasetDimensionSizes(const hid_t parentGroup,
-                                                     TMatrixName& datasetName)
+                                                     MatrixName& datasetName)
 {
   const size_t ndims = GetDatasetNumberOfDimensions(parentGroup, datasetName);
 
@@ -980,7 +980,7 @@ TDimensionSizes THDF5_File::GetDatasetDimensionSizes(const hid_t parentGroup,
  * @throw ios::failure
  */
 size_t THDF5_File::GetDatasetNumberOfDimensions(const hid_t  parentGroup,
-                                                TMatrixName& datasetName)
+                                                MatrixName& datasetName)
 {
   int dims = 0;
 
@@ -1004,7 +1004,7 @@ size_t THDF5_File::GetDatasetNumberOfDimensions(const hid_t  parentGroup,
  * @throw ios::failure
  */
 size_t THDF5_File::GetDatasetElementCount(const hid_t  parentGroup,
-                                          TMatrixName& datasetName)
+                                          MatrixName& datasetName)
 {
   hsize_t dims[3] = {0, 0, 0};
 
@@ -1027,7 +1027,7 @@ size_t THDF5_File::GetDatasetElementCount(const hid_t  parentGroup,
  * @param [in] matrixDataType - Matrix data type in the file
  */
 void THDF5_File::WriteMatrixDataType(const hid_t            parentGroup,
-                                     TMatrixName&           datasetName,
+                                     MatrixName&           datasetName,
                                      const TMatrixDataType& matrixDataType)
 {
   WriteStringAttribute(parentGroup,
@@ -1046,7 +1046,7 @@ void THDF5_File::WriteMatrixDataType(const hid_t            parentGroup,
  * @param [in] matrixDomainType - Matrix domain type
  */
 void THDF5_File::WriteMatrixDomainType(const hid_t              parentGroup,
-                                       TMatrixName&             datasetName,
+                                       MatrixName&             datasetName,
                                        const TMatrixDomainType& matrixDomainType)
 {
   WriteStringAttribute(parentGroup,
@@ -1066,7 +1066,7 @@ void THDF5_File::WriteMatrixDomainType(const hid_t              parentGroup,
  * @throw ios::failure
  */
 THDF5_File::TMatrixDataType THDF5_File::ReadMatrixDataType(const hid_t parentGroup,
-                                                           TMatrixName& datasetName)
+                                                           MatrixName& datasetName)
 {
   string paramValue = ReadStringAttribute(parentGroup, datasetName, matrixDataTypeName);
 
@@ -1099,7 +1099,7 @@ THDF5_File::TMatrixDataType THDF5_File::ReadMatrixDataType(const hid_t parentGro
  * @throw ios::failure
  */
 THDF5_File::TMatrixDomainType THDF5_File::ReadMatrixDomainType(const hid_t  parentGroup,
-                                                               TMatrixName& datasetName)
+                                                               MatrixName& datasetName)
 {
   string paramValue = ReadStringAttribute(parentGroup, datasetName, matrixDomainTypeName);
 
@@ -1133,8 +1133,8 @@ THDF5_File::TMatrixDomainType THDF5_File::ReadMatrixDomainType(const hid_t  pare
  * @throw ios::failure
  */
 inline void THDF5_File::WriteStringAttribute(const hid_t   parentGroup,
-                                             TMatrixName&  datasetName,
-                                             TMatrixName&  attributeName,
+                                             MatrixName&  datasetName,
+                                             MatrixName&  attributeName,
                                              const string& value)
 {
   herr_t status = H5LTset_attribute_string(parentGroup,
@@ -1161,8 +1161,8 @@ inline void THDF5_File::WriteStringAttribute(const hid_t   parentGroup,
  * @throw ios::failure
  */
 inline string THDF5_File::ReadStringAttribute(const hid_t  parentGroup,
-                                              TMatrixName& datasetName,
-                                              TMatrixName& attributeName)
+                                              MatrixName& datasetName,
+                                              MatrixName& attributeName)
 {
   char value[256] = "";
   herr_t status = H5LTget_attribute_string(parentGroup,
