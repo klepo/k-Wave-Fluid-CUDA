@@ -1,6 +1,6 @@
 /**
  * @file        BaseIndexMatrix.cpp
- * 
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 14:17 (created) \n
- *              29 July     2016, 16:51 (revised)
+ *              11 July     2017, 16:44 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -115,7 +115,7 @@ void TBaseIndexMatrix::AllocateMemory()
   //size of memory to allocate
   size_t sizeInBytes = nAllocatedElements * sizeof(size_t);
 
-  hostData = static_cast<size_t*>(_mm_malloc(sizeInBytes, DATA_ALIGNMENT));
+  hostData = static_cast<size_t*>(_mm_malloc(sizeInBytes, kDataAlignment));
 
   if (!hostData)
   {

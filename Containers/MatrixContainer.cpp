@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              11 July      2017, 14:39 (revised)
+ *              11 July      2017, 16:40 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -129,8 +129,8 @@ void TMatrixContainer::AddMatrices()
 
   const TParameters& params = TParameters::GetInstance();
 
-  TDimensionSizes fullDims    = params.GetFullDimensionSizes();
-  TDimensionSizes reducedDims = params.GetReducedDimensionSizes();
+  DimensionSizes fullDims    = params.GetFullDimensionSizes();
+  DimensionSizes reducedDims = params.GetReducedDimensionSizes();
 
   // this cannot be constexpr because of Visual studio 12.
   const bool LOAD         = true;
@@ -169,21 +169,21 @@ void TMatrixContainer::AddMatrices()
     matrixContainer[MatrixId::dt_rho0_sgz].Set(MatrixType::REAL, fullDims, LOAD, NOCHECKPOINT, kRho0SgzName);
   }
 
-  matrixContainer[MatrixId::ddx_k_shift_pos].Set(MatrixType::COMPLEX, TDimensionSizes(reducedDims.nx, 1, 1), LOAD, NOCHECKPOINT, kDdxKShiftPosRName);
-  matrixContainer[MatrixId::ddy_k_shift_pos].Set(MatrixType::COMPLEX, TDimensionSizes(1, reducedDims.ny, 1), LOAD, NOCHECKPOINT, kDdyKShiftPosName);
-  matrixContainer[MatrixId::ddz_k_shift_pos].Set(MatrixType::COMPLEX, TDimensionSizes(1, 1, reducedDims.nz), LOAD, NOCHECKPOINT, kDdzKShiftPosName);
+  matrixContainer[MatrixId::ddx_k_shift_pos].Set(MatrixType::COMPLEX, DimensionSizes(reducedDims.nx, 1, 1), LOAD, NOCHECKPOINT, kDdxKShiftPosRName);
+  matrixContainer[MatrixId::ddy_k_shift_pos].Set(MatrixType::COMPLEX, DimensionSizes(1, reducedDims.ny, 1), LOAD, NOCHECKPOINT, kDdyKShiftPosName);
+  matrixContainer[MatrixId::ddz_k_shift_pos].Set(MatrixType::COMPLEX, DimensionSizes(1, 1, reducedDims.nz), LOAD, NOCHECKPOINT, kDdzKShiftPosName);
 
-  matrixContainer[MatrixId::ddx_k_shift_neg].Set(MatrixType::COMPLEX, TDimensionSizes(reducedDims.nx ,1, 1), LOAD, NOCHECKPOINT, kDdxKShiftNegRName);
-  matrixContainer[MatrixId::ddy_k_shift_neg].Set(MatrixType::COMPLEX, TDimensionSizes(1, reducedDims.ny, 1), LOAD, NOCHECKPOINT, kDdyKShiftNegName);
-  matrixContainer[MatrixId::ddz_k_shift_neg].Set(MatrixType::COMPLEX, TDimensionSizes(1, 1, reducedDims.nz), LOAD, NOCHECKPOINT, kDdzKShiftNegName);
+  matrixContainer[MatrixId::ddx_k_shift_neg].Set(MatrixType::COMPLEX, DimensionSizes(reducedDims.nx ,1, 1), LOAD, NOCHECKPOINT, kDdxKShiftNegRName);
+  matrixContainer[MatrixId::ddy_k_shift_neg].Set(MatrixType::COMPLEX, DimensionSizes(1, reducedDims.ny, 1), LOAD, NOCHECKPOINT, kDdyKShiftNegName);
+  matrixContainer[MatrixId::ddz_k_shift_neg].Set(MatrixType::COMPLEX, DimensionSizes(1, 1, reducedDims.nz), LOAD, NOCHECKPOINT, kDdzKShiftNegName);
 
-  matrixContainer[MatrixId::pml_x_sgx].Set(MatrixType::REAL, TDimensionSizes(fullDims.nx, 1, 1), LOAD, NOCHECKPOINT, kPmlXSgxName);
-  matrixContainer[MatrixId::pml_y_sgy].Set(MatrixType::REAL, TDimensionSizes(1, fullDims.ny, 1), LOAD, NOCHECKPOINT, kPmlYSgyName);
-  matrixContainer[MatrixId::pml_z_sgz].Set(MatrixType::REAL, TDimensionSizes(1, 1, fullDims.nz), LOAD, NOCHECKPOINT, kPmlZSgzName);
+  matrixContainer[MatrixId::pml_x_sgx].Set(MatrixType::REAL, DimensionSizes(fullDims.nx, 1, 1), LOAD, NOCHECKPOINT, kPmlXSgxName);
+  matrixContainer[MatrixId::pml_y_sgy].Set(MatrixType::REAL, DimensionSizes(1, fullDims.ny, 1), LOAD, NOCHECKPOINT, kPmlYSgyName);
+  matrixContainer[MatrixId::pml_z_sgz].Set(MatrixType::REAL, DimensionSizes(1, 1, fullDims.nz), LOAD, NOCHECKPOINT, kPmlZSgzName);
 
-  matrixContainer[MatrixId::pml_x].Set(MatrixType::REAL, TDimensionSizes(fullDims.nx, 1, 1), LOAD, NOCHECKPOINT, kPmlXName);
-  matrixContainer[MatrixId::pml_y].Set(MatrixType::REAL, TDimensionSizes(1, fullDims.ny, 1), LOAD, NOCHECKPOINT, kPmlYName);
-  matrixContainer[MatrixId::pml_z].Set(MatrixType::REAL, TDimensionSizes(1, 1, fullDims.nz), LOAD, NOCHECKPOINT, kPmlZName);
+  matrixContainer[MatrixId::pml_x].Set(MatrixType::REAL, DimensionSizes(fullDims.nx, 1, 1), LOAD, NOCHECKPOINT, kPmlXName);
+  matrixContainer[MatrixId::pml_y].Set(MatrixType::REAL, DimensionSizes(1, fullDims.ny, 1), LOAD, NOCHECKPOINT, kPmlYName);
+  matrixContainer[MatrixId::pml_z].Set(MatrixType::REAL, DimensionSizes(1, 1, fullDims.nz), LOAD, NOCHECKPOINT, kPmlZName);
 
   if (params.Get_nonlinear_flag())
   {
@@ -209,7 +209,7 @@ void TMatrixContainer::AddMatrices()
   if (params.Get_sensor_mask_type() == TParameters::TSensorMaskType::INDEX)
   {
     matrixContainer[MatrixId::sensor_mask_index].Set(MatrixType::INDEX,
-                                                     TDimensionSizes(params.Get_sensor_mask_index_size(), 1, 1),
+                                                     DimensionSizes(params.Get_sensor_mask_index_size(), 1, 1),
                                                      LOAD, NOCHECKPOINT, kSensorMaskIndexName);
   }
 
@@ -217,7 +217,7 @@ void TMatrixContainer::AddMatrices()
   if (params.Get_sensor_mask_type() == TParameters::TSensorMaskType::CORNERS)
   {
     matrixContainer[MatrixId::sensor_mask_corners].Set(MatrixType::INDEX,
-                                                       TDimensionSizes(6, params.Get_sensor_mask_corners_size(), 1),
+                                                       DimensionSizes(6, params.Get_sensor_mask_corners_size(), 1),
                                                        LOAD, NOCHECKPOINT, kSensorMaskCornersName);
   }
 
@@ -234,7 +234,7 @@ void TMatrixContainer::AddMatrices()
       (params.Get_uz_source_flag() != 0))
   {
     matrixContainer[MatrixId::u_source_index].Set(MatrixType::INDEX,
-                                                  TDimensionSizes(1, 1, params.Get_u_source_index_size()),
+                                                  DimensionSizes(1, 1, params.Get_u_source_index_size()),
                                                   LOAD, NOCHECKPOINT, kUSourceIndexName);
   }
 
@@ -242,11 +242,11 @@ void TMatrixContainer::AddMatrices()
   if (params.Get_transducer_source_flag() != 0)
   {
     matrixContainer[MatrixId::delay_mask].Set(MatrixType::INDEX,
-                                              TDimensionSizes(1 ,1, params.Get_u_source_index_size()),
+                                              DimensionSizes(1 ,1, params.Get_u_source_index_size()),
                                               LOAD, NOCHECKPOINT, kDelayMaskName);
 
     matrixContainer[MatrixId::transducer_source_input].Set(MatrixType::REAL,
-                                                           TDimensionSizes(1 ,1, params.Get_transducer_source_input_size()),
+                                                           DimensionSizes(1 ,1, params.Get_transducer_source_input_size()),
                                                            LOAD, NOCHECKPOINT, kTransducerSourceInputName);
   }
 
@@ -256,18 +256,18 @@ void TMatrixContainer::AddMatrices()
     if (params.Get_p_source_many() == 0)
     { // 1D case
       matrixContainer[MatrixId::p_source_input].Set(MatrixType::REAL,
-                                                    TDimensionSizes(1, 1, params.Get_p_source_flag()),
+                                                    DimensionSizes(1, 1, params.Get_p_source_flag()),
                                                     LOAD, NOCHECKPOINT, kPSourceInputName);
     }
     else
     { // 2D case
       matrixContainer[MatrixId::p_source_input].Set(MatrixType::REAL,
-                                                    TDimensionSizes(1, params.Get_p_source_index_size(),params.Get_p_source_flag()),
+                                                    DimensionSizes(1, params.Get_p_source_index_size(),params.Get_p_source_flag()),
                                                     LOAD, NOCHECKPOINT, kPSourceInputName);
     }
 
     matrixContainer[MatrixId::p_source_index].Set(MatrixType::INDEX,
-                                                  TDimensionSizes(1, 1, params.Get_p_source_index_size()),
+                                                  DimensionSizes(1, 1, params.Get_p_source_index_size()),
                                                   LOAD, NOCHECKPOINT, kPSourceIndexName);
   }
 
@@ -277,13 +277,13 @@ void TMatrixContainer::AddMatrices()
     if (params.Get_u_source_many() == 0)
     { // 1D
       matrixContainer[MatrixId::ux_source_input].Set(MatrixType::REAL,
-                                                     TDimensionSizes(1, 1, params.Get_ux_source_flag()),
+                                                     DimensionSizes(1, 1, params.Get_ux_source_flag()),
                                                      LOAD, NOCHECKPOINT, kUxSourceInputName);
     }
     else
     { // 2D
       matrixContainer[MatrixId::ux_source_input].Set(MatrixType::REAL,
-                                                     TDimensionSizes(1, params.Get_u_source_index_size(), params.Get_ux_source_flag()),
+                                                     DimensionSizes(1, params.Get_u_source_index_size(), params.Get_ux_source_flag()),
                                                      LOAD, NOCHECKPOINT, kUxSourceInputName);
     }
   }// ux_source_input
@@ -293,13 +293,13 @@ void TMatrixContainer::AddMatrices()
     if (params.Get_u_source_many() == 0)
     { // 1D
       matrixContainer[MatrixId::uy_source_input].Set(MatrixType::REAL,
-                                                     TDimensionSizes(1, 1, params.Get_uy_source_flag()),
+                                                     DimensionSizes(1, 1, params.Get_uy_source_flag()),
                                                      LOAD, NOCHECKPOINT, kUySourceInputName);
     }
     else
     { // 2D
       matrixContainer[MatrixId::uy_source_input].Set(MatrixType::REAL,
-                                                     TDimensionSizes(1,params.Get_u_source_index_size(),params.Get_uy_source_flag()),
+                                                     DimensionSizes(1,params.Get_u_source_index_size(),params.Get_uy_source_flag()),
                                                      LOAD, NOCHECKPOINT, kUySourceInputName);
     }
   }// uy_source_input
@@ -309,13 +309,13 @@ void TMatrixContainer::AddMatrices()
     if (params.Get_u_source_many() == 0)
     { // 1D
       matrixContainer[MatrixId::uz_source_input].Set(MatrixType::REAL,
-                                                     TDimensionSizes(1, 1, params.Get_uz_source_flag()),
+                                                     DimensionSizes(1, 1, params.Get_uz_source_flag()),
                                                      LOAD, NOCHECKPOINT, kUzSourceInputName);
     }
     else
     { // 2D
       matrixContainer[MatrixId::uz_source_input].Set(MatrixType::REAL,
-                                                     TDimensionSizes(1, params.Get_u_source_index_size(), params.Get_uz_source_flag()),
+                                                     DimensionSizes(1, params.Get_u_source_index_size(), params.Get_uz_source_flag()),
                                                      LOAD, NOCHECKPOINT, kUzSourceInputName);
     }
   }// uz_source_input
@@ -323,19 +323,19 @@ void TMatrixContainer::AddMatrices()
   //-- Nonlinear grid
   if (params.Get_nonuniform_grid_flag()!= 0)
   {
-    matrixContainer[MatrixId::dxudxn].Set(MatrixType::REAL, TDimensionSizes(fullDims.nx, 1, 1), LOAD, NOCHECKPOINT, kDxudxnName);
-    matrixContainer[MatrixId::dyudyn].Set(MatrixType::REAL, TDimensionSizes(1, fullDims.ny, 1), LOAD, NOCHECKPOINT, kDyudynName);
-    matrixContainer[MatrixId::dzudzn].Set(MatrixType::REAL, TDimensionSizes(1 ,1, fullDims.nz), LOAD, NOCHECKPOINT, kDzudznName);
+    matrixContainer[MatrixId::dxudxn].Set(MatrixType::REAL, DimensionSizes(fullDims.nx, 1, 1), LOAD, NOCHECKPOINT, kDxudxnName);
+    matrixContainer[MatrixId::dyudyn].Set(MatrixType::REAL, DimensionSizes(1, fullDims.ny, 1), LOAD, NOCHECKPOINT, kDyudynName);
+    matrixContainer[MatrixId::dzudzn].Set(MatrixType::REAL, DimensionSizes(1 ,1, fullDims.nz), LOAD, NOCHECKPOINT, kDzudznName);
 
-    matrixContainer[MatrixId::dxudxn_sgx].Set(MatrixType::REAL, TDimensionSizes(fullDims.nx, 1, 1), LOAD, NOCHECKPOINT, kDxudxnSgxName);
-    matrixContainer[MatrixId::dyudyn_sgy].Set(MatrixType::REAL, TDimensionSizes(1, fullDims.ny, 1), LOAD, NOCHECKPOINT, kDyudynSgyName);
-    matrixContainer[MatrixId::dzudzn_sgz].Set(MatrixType::REAL, TDimensionSizes(1 ,1, fullDims.nz), LOAD, NOCHECKPOINT, kDzudznSgzName);
+    matrixContainer[MatrixId::dxudxn_sgx].Set(MatrixType::REAL, DimensionSizes(fullDims.nx, 1, 1), LOAD, NOCHECKPOINT, kDxudxnSgxName);
+    matrixContainer[MatrixId::dyudyn_sgy].Set(MatrixType::REAL, DimensionSizes(1, fullDims.ny, 1), LOAD, NOCHECKPOINT, kDyudynSgyName);
+    matrixContainer[MatrixId::dzudzn_sgz].Set(MatrixType::REAL, DimensionSizes(1 ,1, fullDims.nz), LOAD, NOCHECKPOINT, kDzudznSgzName);
   }
 
   //-- u_non_staggered_raw
   if (params.IsStore_u_non_staggered_raw())
   {
-    TDimensionSizes shiftDims = fullDims;
+    DimensionSizes shiftDims = fullDims;
 
     const size_t nx_2 = fullDims.nx / 2 + 1;
     const size_t ny_2 = fullDims.ny / 2 + 1;
@@ -375,9 +375,9 @@ void TMatrixContainer::AddMatrices()
     matrixContainer[MatrixId::uz_shifted].Set(MatrixType::REAL, fullDims, NOLOAD, NOCHECKPOINT, kUzShiftedName);
 
     // shifts from the input file
-    matrixContainer[MatrixId::x_shift_neg_r].Set(MatrixType::COMPLEX, TDimensionSizes(nx_2, 1, 1), LOAD,NOCHECKPOINT, kXShifyNegRName);
-    matrixContainer[MatrixId::y_shift_neg_r].Set(MatrixType::COMPLEX, TDimensionSizes(1, ny_2, 1), LOAD,NOCHECKPOINT, kYShiftNegRName);
-    matrixContainer[MatrixId::z_shift_neg_r].Set(MatrixType::COMPLEX, TDimensionSizes(1, 1, nz_2), LOAD,NOCHECKPOINT, kZShiftNegRName);
+    matrixContainer[MatrixId::x_shift_neg_r].Set(MatrixType::COMPLEX, DimensionSizes(nx_2, 1, 1), LOAD,NOCHECKPOINT, kXShifyNegRName);
+    matrixContainer[MatrixId::y_shift_neg_r].Set(MatrixType::COMPLEX, DimensionSizes(1, ny_2, 1), LOAD,NOCHECKPOINT, kYShiftNegRName);
+    matrixContainer[MatrixId::z_shift_neg_r].Set(MatrixType::COMPLEX, DimensionSizes(1, 1, nz_2), LOAD,NOCHECKPOINT, kZShiftNegRName);
   }// u_non_staggered
 
 

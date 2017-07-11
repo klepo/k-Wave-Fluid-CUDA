@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August    2014, 11:15 (created)
- *              11 June      2017, 15:44 (revised)
+ *              11 July      2017, 16:49 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -83,7 +83,7 @@ TWholeDomainOutputHDF5Stream::~TWholeDomainOutputHDF5Stream()
  */
 void TWholeDomainOutputHDF5Stream::Create()
 {
-  TDimensionSizes chunkSize(sourceMatrix.GetDimensionSizes().nx,
+  DimensionSizes chunkSize(sourceMatrix.GetDimensionSizes().nx,
                             sourceMatrix.GetDimensionSizes().ny,
                             1);
 
@@ -162,15 +162,15 @@ void TWholeDomainOutputHDF5Stream::Sample()
       const_cast<TRealMatrix&> (sourceMatrix).CopyFromDevice();
 
       // We use here direct HDF5 offload using MEMSPACE - seems to be faster for bigger datasets
-      const TDimensionSizes datasetPosition(0, 0, 0, sampledTimeStep); //4D position in the dataset
+      const DimensionSizes datasetPosition(0, 0, 0, sampledTimeStep); //4D position in the dataset
 
-      TDimensionSizes cuboidSize(sourceMatrix.GetDimensionSizes());// Size of the cuboid
+      DimensionSizes cuboidSize(sourceMatrix.GetDimensionSizes());// Size of the cuboid
       cuboidSize.nt = 1;
 
       // iterate over all cuboid to be sampled
       file.WriteCuboidToHyperSlab(dataset,
                                   datasetPosition,
-                                  TDimensionSizes(0,0,0,0), // position in the SourceMatrix
+                                  DimensionSizes(0,0,0,0), // position in the SourceMatrix
                                   cuboidSize,
                                   sourceMatrix.GetDimensionSizes(),
                                   sourceMatrix.GetHostData());
@@ -270,8 +270,8 @@ void TWholeDomainOutputHDF5Stream::Close()
  */
 void TWholeDomainOutputHDF5Stream::FlushBufferToFile()
 {
-  TDimensionSizes size = sourceMatrix.GetDimensionSizes();
-  TDimensionSizes position(0,0,0);
+  DimensionSizes size = sourceMatrix.GetDimensionSizes();
+  DimensionSizes position(0,0,0);
 
   // Not used for NONE now!
   if (reduceOp == TReduceOperator::NONE)

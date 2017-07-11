@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2011, 14:02 (created) \n
- *              11 July     2017, 14:43 (revised)
+ *              11 July     2017, 16:45 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -56,7 +56,7 @@ class TComplexMatrix : public TBaseFloatMatrix
     /// Default constructor not allowed.
     TComplexMatrix() = delete;
     /// Constructor.
-    TComplexMatrix(const TDimensionSizes& dimensionSizes);
+    TComplexMatrix(const DimensionSizes& dimensionSizes);
     /// Copy constructor not allowed.
     TComplexMatrix(const TComplexMatrix&) = delete;
     /// Destructor.
@@ -99,7 +99,7 @@ class TComplexMatrix : public TBaseFloatMatrix
 
 protected:
     /// Initialize dimension sizes and related structures.
-    virtual void InitDimensions(const TDimensionSizes& dimensionSizes);
+    virtual void InitDimensions(const DimensionSizes& dimensionSizes);
 
 private:
 

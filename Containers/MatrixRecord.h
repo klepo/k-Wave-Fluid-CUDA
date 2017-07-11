@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December 2014, 15:44 (created) \n
- *              19 July     2017, 14:40 (revised)
+ *              11 July     2017, 16:41 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -69,7 +69,7 @@ struct TMatrixRecord
 
   /// Set all values of the record.
   void Set(const TMatrixType      matrixType,
-           const TDimensionSizes  dimensionSizes,
+           const DimensionSizes  dimensionSizes,
            const bool             loadData,
            const bool             checkpoint,
            MatrixName&           matrixName);
@@ -79,7 +79,7 @@ struct TMatrixRecord
   /// Matrix data type.
   TMatrixType     matrixType;
   /// Matrix dimension sizes.
-  TDimensionSizes dimensionSizes;
+  DimensionSizes dimensionSizes;
   /// Is the matrix content loaded from the HDF5 file?
   bool            loadData;
   /// Is the matrix necessary to be preserver when checkpoint is enabled?

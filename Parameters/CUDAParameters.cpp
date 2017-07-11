@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 November 2015, 16:49 (created) \n
- *              10 July     2017, 16:11 (revised)
+ *              11 July     2017, 16:50 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -198,7 +198,7 @@ void TCUDAParameters::SetKernelConfiguration()
 {
   const TParameters& params = TParameters::GetInstance();
 
-  TDimensionSizes fullDims(params.GetFullDimensionSizes());
+  DimensionSizes fullDims(params.GetFullDimensionSizes());
 
   // Set kernel configuration for 1D kernels
   // The goal here is to have blocks of size 256 threads and at least 8 x times
@@ -211,9 +211,9 @@ void TCUDAParameters::SetKernelConfiguration()
   solverGridSize1D  = deviceProperties.multiProcessorCount * 8;
 
   // the grid size is to small, get 1 gridpoint per thread
-  if ((size_t(solverGridSize1D) * size_t(solverBlockSize1D)) > fullDims.GetElementCount())
+  if ((size_t(solverGridSize1D) * size_t(solverBlockSize1D)) > fullDims.size())
   {
-    solverGridSize1D  = int((fullDims.GetElementCount()  + size_t(solverBlockSize1D) - 1 ) / size_t(solverBlockSize1D));
+    solverGridSize1D  = int((fullDims.size()  + size_t(solverBlockSize1D) - 1 ) / size_t(solverBlockSize1D));
   }
 
   // Transposition works by processing for tiles of 32x32 by 4 warps. Every block
@@ -256,23 +256,23 @@ void TCUDAParameters::SetUpDeviceConstants() const
   TCUDADeviceConstants constantsToTransfer;
 
   TParameters& params = TParameters::GetInstance();
-  TDimensionSizes  fullDimSizes = params.GetFullDimensionSizes();
-  TDimensionSizes  reducedDimSizes = params.GetReducedDimensionSizes();
+  DimensionSizes  fullDimSizes = params.GetFullDimensionSizes();
+  DimensionSizes  reducedDimSizes = params.GetReducedDimensionSizes();
 
   // Set values for constant memory
   constantsToTransfer.nx  = static_cast<unsigned int>(fullDimSizes.nx);
   constantsToTransfer.ny  = static_cast<unsigned int>(fullDimSizes.ny);
   constantsToTransfer.nz  = static_cast<unsigned int>(fullDimSizes.nz);
-  constantsToTransfer.nElements = static_cast<unsigned int>(fullDimSizes.GetElementCount());
+  constantsToTransfer.nElements = static_cast<unsigned int>(fullDimSizes.size());
   constantsToTransfer.slabSize  = static_cast<unsigned int>(fullDimSizes.nx * fullDimSizes.ny);
 
   constantsToTransfer.nxComplex = static_cast<unsigned int>(reducedDimSizes.nx);
   constantsToTransfer.nyComplex = static_cast<unsigned int>(reducedDimSizes.ny);
   constantsToTransfer.nzComplex = static_cast<unsigned int>(reducedDimSizes.nz);
-  constantsToTransfer.nElementsComplex = static_cast<unsigned int>(reducedDimSizes.GetElementCount());
+  constantsToTransfer.nElementsComplex = static_cast<unsigned int>(reducedDimSizes.size());
   constantsToTransfer.slabSizeComplex  = static_cast<unsigned int>(reducedDimSizes.nx * reducedDimSizes.ny);
 
-  constantsToTransfer.fftDivider  = 1.0f / fullDimSizes.GetElementCount();
+  constantsToTransfer.fftDivider  = 1.0f / fullDimSizes.size();
   constantsToTransfer.fftDividerX = 1.0f / fullDimSizes.nx;
   constantsToTransfer.fftDividerY = 1.0f / fullDimSizes.ny;
   constantsToTransfer.fftDividerZ = 1.0f / fullDimSizes.nz;

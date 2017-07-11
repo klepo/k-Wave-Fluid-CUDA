@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              11 July     2017, 14:42 (revised)
+ *              11 July     2017, 16:42 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -295,18 +295,18 @@ hid_t THDF5_File::OpenDataset(const hid_t  parentGroup,
  */
 hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
                                      MatrixName&           datasetName,
-                                     const TDimensionSizes& dimensionSizes,
-                                     const TDimensionSizes& chunkSizes,
+                                     const DimensionSizes& dimensionSizes,
+                                     const DimensionSizes& chunkSizes,
                                      const size_t           compressionLevel)
 {
-  const int rank = (dimensionSizes.Is3D()) ? 3 : 4;
+  const int rank = (dimensionSizes.is3D()) ? 3 : 4;
 
 // a windows hack
   hsize_t dims [4];
   hsize_t chunk[4];
 
   // 3D dataset
-  if (dimensionSizes.Is3D())
+  if (dimensionSizes.is3D())
   {
     dims[0] = dimensionSizes.nz;
     dims[1] = dimensionSizes.ny;
@@ -391,8 +391,8 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
  */
 hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
                                      MatrixName&           datasetName,
-                                     const TDimensionSizes& dimensionSizes,
-                                     const TDimensionSizes& chunkSizes,
+                                     const DimensionSizes& dimensionSizes,
+                                     const DimensionSizes& chunkSizes,
                                      const size_t           compressionLevel)
 {
   const int rank = 3;
@@ -471,8 +471,8 @@ void  THDF5_File::CloseDataset(const hid_t dataset)
  * @throw ios::failure
  */
 void THDF5_File::WriteHyperSlab(const hid_t            dataset,
-                                const TDimensionSizes& position,
-                                const TDimensionSizes& size,
+                                const DimensionSizes& position,
+                                const DimensionSizes& size,
                                 const float*           data)
 {
   herr_t status;
@@ -542,8 +542,8 @@ void THDF5_File::WriteHyperSlab(const hid_t            dataset,
  * @throw ios::failure
  */
 void THDF5_File::WriteHyperSlab(const hid_t            dataset,
-                                const TDimensionSizes& position,
-                                const TDimensionSizes& size,
+                                const DimensionSizes& position,
+                                const DimensionSizes& size,
                                 const size_t*          data)
 {
   herr_t status;
@@ -616,10 +616,10 @@ void THDF5_File::WriteHyperSlab(const hid_t            dataset,
  * @throw ios::failure
  */
 void THDF5_File::WriteCuboidToHyperSlab(const hid_t            dataset,
-                                        const TDimensionSizes& hyperslabPosition,
-                                        const TDimensionSizes& cuboidPosition,
-                                        const TDimensionSizes& cuboidSize,
-                                        const TDimensionSizes& matrixDimensions,
+                                        const DimensionSizes& hyperslabPosition,
+                                        const DimensionSizes& cuboidPosition,
+                                        const DimensionSizes& cuboidSize,
+                                        const DimensionSizes& matrixDimensions,
                                         const float*           matrixData)
 {
   herr_t status;
@@ -684,10 +684,10 @@ void THDF5_File::WriteCuboidToHyperSlab(const hid_t            dataset,
  * @throw ios::failure
  */
 void THDF5_File::WriteDataByMaskToHyperSlab(const hid_t            dataset,
-                                            const TDimensionSizes& hyperslabPosition,
+                                            const DimensionSizes& hyperslabPosition,
                                             const size_t           indexSensorSize,
                                             const size_t*          indexSensorData,
-                                            const TDimensionSizes& matrixDimensions,
+                                            const DimensionSizes& matrixDimensions,
                                             const float*           matrixData)
 {
   herr_t status;
@@ -856,7 +856,7 @@ void THDF5_File::ReadScalarValue(const hid_t  parentGroup,
                                  MatrixName& datasetName,
                                  float&       value)
 {
-  ReadCompleteDataset(parentGroup, datasetName, TDimensionSizes(1,1,1), &value);
+  ReadCompleteDataset(parentGroup, datasetName, DimensionSizes(1,1,1), &value);
 } // end of ReadScalarValue
 //--------------------------------------------------------------------------------------------------
 
@@ -871,7 +871,7 @@ void THDF5_File::ReadScalarValue(const hid_t  parentGroup,
                                  MatrixName& datasetName,
                                  size_t&      value)
 {
-  ReadCompleteDataset(parentGroup, datasetName, TDimensionSizes(1,1,1), &value);
+  ReadCompleteDataset(parentGroup, datasetName, DimensionSizes(1,1,1), &value);
 }// end of ReadScalarValue
 //--------------------------------------------------------------------------------------------------
 
@@ -886,13 +886,13 @@ void THDF5_File::ReadScalarValue(const hid_t  parentGroup,
  */
 void THDF5_File::ReadCompleteDataset (const hid_t            parentGroup,
                                       MatrixName&           datasetName,
-                                      const TDimensionSizes& dimensionSizes,
+                                      const DimensionSizes& dimensionSizes,
                                       float*                 data)
 {
   const char* cDatasetName = datasetName.c_str();
   // Check Dimensions sizes
-  if (GetDatasetDimensionSizes(parentGroup, datasetName).GetElementCount() !=
-      dimensionSizes.GetElementCount())
+  if (GetDatasetDimensionSizes(parentGroup, datasetName).size() !=
+      dimensionSizes.size())
   {
     throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_DIMENSION_SIZES, cDatasetName));
   }
@@ -918,12 +918,12 @@ void THDF5_File::ReadCompleteDataset (const hid_t            parentGroup,
  */
 void THDF5_File::ReadCompleteDataset(const hid_t            parentGroup,
                                      MatrixName&           datasetName,
-                                     const TDimensionSizes& dimensionSizes,
+                                     const DimensionSizes& dimensionSizes,
                                      size_t*                data)
 {
   const char* cDatasetName = datasetName.c_str();
-  if (GetDatasetDimensionSizes(parentGroup, datasetName).GetElementCount() !=
-      dimensionSizes.GetElementCount())
+  if (GetDatasetDimensionSizes(parentGroup, datasetName).size() !=
+      dimensionSizes.size())
   {
     throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_DIMENSION_SIZES, cDatasetName));
   }
@@ -946,7 +946,7 @@ void THDF5_File::ReadCompleteDataset(const hid_t            parentGroup,
  * @return Dimension sizes of the dataset
  * @throw ios::failure
  */
-TDimensionSizes THDF5_File::GetDatasetDimensionSizes(const hid_t parentGroup,
+DimensionSizes THDF5_File::GetDatasetDimensionSizes(const hid_t parentGroup,
                                                      MatrixName& datasetName)
 {
   const size_t ndims = GetDatasetNumberOfDimensions(parentGroup, datasetName);
@@ -962,11 +962,11 @@ TDimensionSizes THDF5_File::GetDatasetDimensionSizes(const hid_t parentGroup,
 
   if (ndims == 3)
   {
-    return TDimensionSizes(dims[2], dims[1], dims[0]);
+    return DimensionSizes(dims[2], dims[1], dims[0]);
   }
   else
   {
-    return TDimensionSizes(dims[3], dims[2], dims[1], dims[0]);
+    return DimensionSizes(dims[3], dims[2], dims[1], dims[0]);
   }
 }// end of GetDatasetDimensionSizes
 //--------------------------------------------------------------------------------------------------

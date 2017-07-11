@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              11 July     2017, 14:43 (revised)
+ *              11 July     2017, 16:45 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -45,7 +45,7 @@
  *
  * @param [in] dimensionSizes - Dimension sizes
  */
-TIndexMatrix::TIndexMatrix(const TDimensionSizes& dimensionSizes)
+TIndexMatrix::TIndexMatrix(const DimensionSizes& dimensionSizes)
         : TBaseIndexMatrix()
 {
   this->dimensionSizes = dimensionSizes;
@@ -109,7 +109,7 @@ void TIndexMatrix::WriteDataToHDF5File(THDF5_File&  file,
                                        const size_t compressionLevel)
 {
   // set chunks - may be necessary for long index based sensor masks
-  TDimensionSizes chunks = dimensionSizes;
+  DimensionSizes chunks = dimensionSizes;
   chunks.nz = 1;
 
   //1D matrices
@@ -137,7 +137,7 @@ void TIndexMatrix::WriteDataToHDF5File(THDF5_File&  file,
                                           chunks,
                                           compressionLevel);
 
-  file.WriteHyperSlab(dataset, TDimensionSizes(0, 0, 0), dimensionSizes, hostData);
+  file.WriteHyperSlab(dataset, DimensionSizes(0, 0, 0), dimensionSizes, hostData);
 
   file.CloseDataset(dataset);
 
@@ -155,13 +155,13 @@ void TIndexMatrix::WriteDataToHDF5File(THDF5_File&  file,
  * @param [in] index - Index of the cuboid
  * @return The top left corner
  */
-TDimensionSizes TIndexMatrix::GetTopLeftCorner(const size_t& index) const
+DimensionSizes TIndexMatrix::GetTopLeftCorner(const size_t& index) const
 {
   size_t x =  hostData[6 * index    ];
   size_t y =  hostData[6 * index + 1];
   size_t z =  hostData[6 * index + 2];
 
-  return TDimensionSizes(x, y, z);
+  return DimensionSizes(x, y, z);
 }// end of GetTopLeftCorner
 //--------------------------------------------------------------------------------------------------
 
@@ -172,13 +172,13 @@ TDimensionSizes TIndexMatrix::GetTopLeftCorner(const size_t& index) const
  * @param [in] index -Index of the cuboid
  * @return The bottom right corner
 */
-TDimensionSizes TIndexMatrix::GetBottomRightCorner(const size_t& index) const
+DimensionSizes TIndexMatrix::GetBottomRightCorner(const size_t& index) const
 {
   size_t x =  hostData[6 * index + 3];
   size_t y =  hostData[6 * index + 4];
   size_t z =  hostData[6 * index + 5];
 
-  return TDimensionSizes(x, y, z);
+  return DimensionSizes(x, y, z);
 }// end of GetBottomRightCorner
 //-------------------------------------------------------------------------------------------------
 
@@ -219,7 +219,7 @@ size_t TIndexMatrix::GetTotalNumberOfElementsInAllCuboids() const
   size_t elementSum = 0;
   for (size_t cuboidIdx = 0; cuboidIdx < dimensionSizes.ny; cuboidIdx++)
   {
-    elementSum += (GetBottomRightCorner(cuboidIdx) - GetTopLeftCorner(cuboidIdx)).GetElementCount();
+    elementSum += (GetBottomRightCorner(cuboidIdx) - GetTopLeftCorner(cuboidIdx)).size();
   }
 
   return elementSum;

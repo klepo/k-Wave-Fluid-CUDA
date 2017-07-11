@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2012, 11:34 (created) \n
- *              11 July     2017, 14:43 (revised)
+ *              11 July     2017, 16:44 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -59,7 +59,7 @@ class TBaseMatrix
     TBaseMatrix& operator=(const TBaseMatrix&) = delete;
 
     /// Get dimension sizes of the matrix.
-    virtual struct TDimensionSizes GetDimensionSizes() const  = 0;
+    virtual struct DimensionSizes GetDimensionSizes() const  = 0;
 
     /// Get total element count of the matrix.
     virtual size_t GetElementCount()              const = 0;

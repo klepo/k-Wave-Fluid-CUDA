@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              11 July     2017, 14:43 (revised)
+ *              11 July     2017, 16:45 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -49,7 +49,7 @@ class TIndexMatrix : public TBaseIndexMatrix
     /// Default constructor not allowed.
     TIndexMatrix() = delete;
     /// Constructor allocating memory.
-    TIndexMatrix(const TDimensionSizes& dimensionSizes);
+    TIndexMatrix(const DimensionSizes& dimensionSizes);
     /// Copy constructor not allowed.
     TIndexMatrix(const TIndexMatrix&);
     /// Destructor.
@@ -89,9 +89,9 @@ class TIndexMatrix : public TBaseIndexMatrix
     };
 
     /// Get the top left corner of the index-th cuboid.
-    TDimensionSizes GetTopLeftCorner(const size_t& index) const;
+    DimensionSizes GetTopLeftCorner(const size_t& index) const;
     /// Get the bottom right corner of the index-th cuboid
-    TDimensionSizes GetBottomRightCorner(const size_t& index) const;
+    DimensionSizes GetBottomRightCorner(const size_t& index) const;
 
     ///  Recompute indices MATALAB->C++.
     void RecomputeIndicesToCPP();

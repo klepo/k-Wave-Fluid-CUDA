@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 10:30 (created) \n
- *              11 July      2017, 14:43 (revised)
+ *              11 July      2017, 16:45 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -46,7 +46,7 @@
  * Constructor.
  * @param [in] dimensionSizes - Dimension sizes of the matrix
  */
-TRealMatrix::TRealMatrix(const TDimensionSizes& dimensionSizes)
+TRealMatrix::TRealMatrix(const DimensionSizes& dimensionSizes)
          : TBaseFloatMatrix()
 {
   InitDimensions(dimensionSizes);
@@ -103,7 +103,7 @@ void TRealMatrix::WriteDataToHDF5File(THDF5_File&  file,
                                       MatrixName& matrixName,
                                       const size_t compressionLevel)
 {
-  TDimensionSizes chunks = dimensionSizes;
+  DimensionSizes chunks = dimensionSizes;
   chunks.nz = 1;
 
   //1D matrices
@@ -130,7 +130,7 @@ void TRealMatrix::WriteDataToHDF5File(THDF5_File&  file,
                                           chunks,
                                           compressionLevel);
 
-  file.WriteHyperSlab(dataset, TDimensionSizes(0, 0, 0), dimensionSizes, hostData);
+  file.WriteHyperSlab(dataset, DimensionSizes(0, 0, 0), dimensionSizes, hostData);
 
   file.CloseDataset(dataset);
 
@@ -149,7 +149,7 @@ void TRealMatrix::WriteDataToHDF5File(THDF5_File&  file,
  *
  * @param [in] dimensionSizes - 3D Dimension sizes
  */
-void TRealMatrix::InitDimensions(const TDimensionSizes& dimensionSizes)
+void TRealMatrix::InitDimensions(const DimensionSizes& dimensionSizes)
 {
   this->dimensionSizes = dimensionSizes;
 

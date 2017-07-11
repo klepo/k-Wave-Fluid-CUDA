@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 12:13 (created) \n
- *              10 August    2016, 11:54 (revised)
+ *              10 July      2017, 16:44 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -136,7 +136,7 @@ void TBaseFloatMatrix::AllocateMemory()
   size_t sizeInBytes = nAllocatedElements * sizeof(float);
 
   // Allocate CPU memory
-  hostData = static_cast<float*> (_mm_malloc(sizeInBytes, DATA_ALIGNMENT));
+  hostData = static_cast<float*> (_mm_malloc(sizeInBytes, kDataAlignment));
   if (!hostData)
   {
     throw std::bad_alloc();

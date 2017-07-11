@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              11 July     2017, 14:42 (revised)
+ *              11 July     2017, 16:42 (revised)
  *
  *
  * @section HDF HDF5 File Structure
@@ -586,15 +586,15 @@ class THDF5_File
     /// Create a float HDF5 dataset at a specified place in the file tree (3D/4D).
     hid_t CreateFloatDataset(const hid_t            parentGroup,
                              MatrixName&           datasetName,
-                             const TDimensionSizes& dimensionSizes,
-                             const TDimensionSizes& chunkSizes,
+                             const DimensionSizes& dimensionSizes,
+                             const DimensionSizes& chunkSizes,
                              const size_t           compressionLevel);
 
     /// Create an index HDF5 dataset at a specified place in the file tree (3D only).
     hid_t CreateIndexDataset(const hid_t            parentGroup,
                              MatrixName&           datasetName,
-                             const TDimensionSizes& dimensionSizes,
-                             const TDimensionSizes& chunkSizes,
+                             const DimensionSizes& dimensionSizes,
+                             const DimensionSizes& chunkSizes,
                              const size_t           compressionLevel);
 
     /// Close the HDF5 dataset.
@@ -604,29 +604,29 @@ class THDF5_File
     //----------------------------- Dataset Read/Write operations --------------------------------//
     /// Write a hyper-slab into the dataset - float dataset.
     void WriteHyperSlab(const hid_t            dataset,
-                        const TDimensionSizes& position,
-                        const TDimensionSizes& size,
+                        const DimensionSizes& position,
+                        const DimensionSizes& size,
                         const float*           data);
     /// Write a hyper-slab into the dataset - long dataset.
     void WriteHyperSlab(const hid_t            dataset,
-                        const TDimensionSizes& position,
-                        const TDimensionSizes& size,
+                        const DimensionSizes& position,
+                        const DimensionSizes& size,
                         const size_t*          data);
 
     /// Write a cuboid selected within the matrixData into a hyperslab.
     void WriteCuboidToHyperSlab(const hid_t            dataset,
-                                const TDimensionSizes& hyperslabPosition,
-                                const TDimensionSizes& cuboidPosition,
-                                const TDimensionSizes& cuboidSize,
-                                const TDimensionSizes& matrixDimensions,
+                                const DimensionSizes& hyperslabPosition,
+                                const DimensionSizes& cuboidPosition,
+                                const DimensionSizes& cuboidSize,
+                                const DimensionSizes& matrixDimensions,
                                 const float*           mMatrixData);
 
     /// Write sensor data selected by the sensor mask - Occasionally very slow, do not use!
     void WriteDataByMaskToHyperSlab(const hid_t            dataset,
-                                    const TDimensionSizes& hyperslabPosition,
+                                    const DimensionSizes& hyperslabPosition,
                                     const size_t           indexSensorSize,
                                     const size_t*          indexSensorData,
-                                    const TDimensionSizes& matrixDimensions,
+                                    const DimensionSizes& matrixDimensions,
                                     const float*           matrixData);
 
     /// Write the scalar value under a specified group, float value.
@@ -650,18 +650,18 @@ class THDF5_File
     /// Read data from the dataset under a specified group, float dataset.
     void ReadCompleteDataset(const hid_t            parentGroup,
                              MatrixName&           datasetName,
-                             const TDimensionSizes& dimensionSizes,
+                             const DimensionSizes& dimensionSizes,
                              float*                 data);
     /// Read data from the dataset under a specified group, index dataset.
     void ReadCompleteDataset(const hid_t            parentGroup,
                              MatrixName&           datasetName,
-                             const TDimensionSizes& dimensionSizes,
+                             const DimensionSizes& dimensionSizes,
                              size_t*                data);
 
     //---------------------------- Attributes Read/Write operations ------------------------------//
 
     /// Get dimension sizes of the dataset  under a specified group.
-    TDimensionSizes GetDatasetDimensionSizes(const hid_t  parentGroup,
+    DimensionSizes GetDatasetDimensionSizes(const hid_t  parentGroup,
                                              MatrixName& datasetName);
 
     /// Get number of dimensions of the dataset  under a specified group.

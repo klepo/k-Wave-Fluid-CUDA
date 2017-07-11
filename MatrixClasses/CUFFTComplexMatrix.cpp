@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2011, 13:10 (created) \n
- *              10 July      2017, 16:10 (revised)
+ *              11 July      2017, 16:45 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -99,7 +99,7 @@ std::map<cufftResult, TErrorMessage> TCUFFTComplexMatrix::cuFFTErrorMessages
  * @param [in] inMatrixDims - The dimension sizes of the input matrix
  * @throw runtime_error if the plan can't be created.
  */
-void TCUFFTComplexMatrix::Create_FFT_Plan_3D_R2C(const TDimensionSizes& inMatrixDims)
+void TCUFFTComplexMatrix::Create_FFT_Plan_3D_R2C(const DimensionSizes& inMatrixDims)
 {
   cufftResult cufftError;
   cufftError = cufftPlan3d(&cufftPlan_3D_R2C,
@@ -119,7 +119,7 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_3D_R2C(const TDimensionSizes& inMatrix
  * @param [in] outMatrixDims - the dimension sizes of the output matrix
  * @throw runtime_error if the plan can't be created.
  */
-void TCUFFTComplexMatrix::Create_FFT_Plan_3D_C2R(const TDimensionSizes& outMatrixDims)
+void TCUFFTComplexMatrix::Create_FFT_Plan_3D_C2R(const DimensionSizes& outMatrixDims)
 {
   cufftResult_t cufftError;
   cufftError = cufftPlan3d(&cufftPlan_3D_C2R,
@@ -141,7 +141,7 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_3D_C2R(const TDimensionSizes& outMatri
  * @param [in] inMatrixDims - The dimension sizes of the input matrix
  * @throw runtime_error if the plan can't be created.
  */
-void TCUFFTComplexMatrix::Create_FFT_Plan_1DX_R2C(const TDimensionSizes& inMatrixDims)
+void TCUFFTComplexMatrix::Create_FFT_Plan_1DX_R2C(const DimensionSizes& inMatrixDims)
 {
   cufftResult_t cufftError;
 
@@ -186,7 +186,7 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DX_R2C(const TDimensionSizes& inMatri
  * @param [in] inMatrixDims - The dimension sizes of the input matrix
  * @throw runtime_error if the plan can't be created.
  */
-void TCUFFTComplexMatrix::Create_FFT_Plan_1DY_R2C(const TDimensionSizes& inMatrixDims)
+void TCUFFTComplexMatrix::Create_FFT_Plan_1DY_R2C(const DimensionSizes& inMatrixDims)
 {
   cufftResult_t cufftError;
 
@@ -229,7 +229,7 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DY_R2C(const TDimensionSizes& inMatri
  * @param [in] inMatrixDims - The dimension sizes of the input matrix
  * @throw runtime_error if the plan can't be created.
  */
-void TCUFFTComplexMatrix::Create_FFT_Plan_1DZ_R2C(const TDimensionSizes& inMatrixDims)
+void TCUFFTComplexMatrix::Create_FFT_Plan_1DZ_R2C(const DimensionSizes& inMatrixDims)
 {
   cufftResult_t cufftError;
 
@@ -273,7 +273,7 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DZ_R2C(const TDimensionSizes& inMatri
  * @param [in] outMatrixDims - The dimension sizes of the input matrix
  * @throw runtime_error if the plan can't be created.
  */
-void TCUFFTComplexMatrix::Create_FFT_Plan_1DX_C2R(const TDimensionSizes& outMatrixDims)
+void TCUFFTComplexMatrix::Create_FFT_Plan_1DX_C2R(const DimensionSizes& outMatrixDims)
 {
   cufftResult_t cufftError;
 
@@ -317,7 +317,7 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DX_C2R(const TDimensionSizes& outMatr
  * @param [in] outMatrixDims - The dimension sizes of the input matrix
  * @throw runtime_error if the plan can't be created.
  */
-void TCUFFTComplexMatrix::Create_FFT_Plan_1DY_C2R(const TDimensionSizes& outMatrixDims)
+void TCUFFTComplexMatrix::Create_FFT_Plan_1DY_C2R(const DimensionSizes& outMatrixDims)
 {
   cufftResult_t cufftError;
   // set dimensions
@@ -360,7 +360,7 @@ void TCUFFTComplexMatrix::Create_FFT_Plan_1DY_C2R(const TDimensionSizes& outMatr
  * @param [in] outMatrixDims - the dimension sizes of the input matrix
  * @throw runtime_error if the plan can't be created.
  */
-void TCUFFTComplexMatrix::Create_FFT_Plan_1DZ_C2R(const TDimensionSizes& outMatrixDims)
+void TCUFFTComplexMatrix::Create_FFT_Plan_1DZ_C2R(const DimensionSizes& outMatrixDims)
 {
   cufftResult_t cufftError;
 

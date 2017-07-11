@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              11 July     2017, 14:44 (revised)
+ *              11 July     2017, 16:44 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -2018,7 +2018,7 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
   }
 
   // Check dimension sizes
-  TDimensionSizes outputDimSizes;
+  DimensionSizes outputDimSizes;
   outputFile.ReadScalarValue(outputFile.GetRootGroup(), kNxName, outputDimSizes.nx);
   outputFile.ReadScalarValue(outputFile.GetRootGroup(), kNyName, outputDimSizes.ny);
   outputFile.ReadScalarValue(outputFile.GetRootGroup(), kNzName, outputDimSizes.nz);
@@ -2075,7 +2075,7 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
   }
 
   // Check dimension sizes
-  TDimensionSizes checkpointDimSizes;
+  DimensionSizes checkpointDimSizes;
   checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), kNxName, checkpointDimSizes.nx);
   checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), kNyName, checkpointDimSizes.ny);
   checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), kNzName, checkpointDimSizes.nz);

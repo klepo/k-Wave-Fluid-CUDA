@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        08 December 2011, 16:34 (created)      \n
- *              07 July     2017, 19:46 (revised)
+ *              11 July     2017, 16:50 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -101,9 +101,9 @@ class TParameters
     void SaveScalarsToFile(THDF5_File& outputFile);
 
     /// Full dimension sizes of the simulation (real classes).
-    TDimensionSizes GetFullDimensionSizes()    const {return fullDimensionSizes; };
+    DimensionSizes GetFullDimensionSizes()    const {return fullDimensionSizes; };
     /// Reduced dimension sizes of the simulation (complex classes).
-    TDimensionSizes GetReducedDimensionSizes() const {return reducedDimensionSizes;};
+    DimensionSizes GetReducedDimensionSizes() const {return reducedDimensionSizes;};
 
     /// Get Nt value.
     size_t  Get_nt()               const {return nt;};
@@ -318,9 +318,9 @@ class TParameters
     float alpha_power;
 
     /// Full 3D dimension sizes.
-    TDimensionSizes fullDimensionSizes;
+    DimensionSizes fullDimensionSizes;
     /// Reduced 3D dimension sizes.
-    TDimensionSizes reducedDimensionSizes;
+    DimensionSizes reducedDimensionSizes;
 
     /// sensor mask type (0 = index, 1 = corners).
     TSensorMaskType sensor_mask_type;

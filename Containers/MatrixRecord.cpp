@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December 2014, 15:44 (created) \n
- *              11 July     2017, 14:39 (revised)
+ *              11 July     2017, 16:40 (revised)
  *
 * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -103,7 +103,7 @@ TMatrixRecord& TMatrixRecord::operator= (const TMatrixRecord& src)
  * @param [in] matrixName     - HDF5 matrix name
  */
 void TMatrixRecord::Set(const TMatrixType     matrixType,
-                        const TDimensionSizes dimensionSizes,
+                        const DimensionSizes dimensionSizes,
                         const bool            loadData,
                         const bool            checkpoint,
                         MatrixName&          matrixName)

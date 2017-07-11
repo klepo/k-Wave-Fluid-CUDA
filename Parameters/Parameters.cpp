@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2012, 13:39 (created) \n
- *              11 July      2017, 14:47 (revised)
+ *              11 July      2017, 16:50 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -206,7 +206,7 @@ void TParameters::PrintSimulatoinSetup()
  */
 void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
 {
-  TDimensionSizes scalarSizes(1,1,1);
+  DimensionSizes scalarSizes(1,1,1);
 
   if (!inputFile.IsOpen())
   {

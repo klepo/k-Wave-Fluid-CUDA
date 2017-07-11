@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2011, 14:02 (created) \n
- *              11 July     2017, 14:43 (revised)
+ *              11 July     2017, 16:45 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -48,7 +48,7 @@
  * @param [in] dimensionSizes - Dimension sizes of the matrix
  */
 
-TComplexMatrix::TComplexMatrix(const TDimensionSizes& dimensionSizes)
+TComplexMatrix::TComplexMatrix(const DimensionSizes& dimensionSizes)
         : TBaseFloatMatrix()
 {
   InitDimensions(dimensionSizes);
@@ -90,7 +90,7 @@ void TComplexMatrix::ReadDataFromHDF5File(THDF5_File&  file,
   }
 
   // Initialise dimensions
-  TDimensionSizes complexDims = dimensionSizes;
+  DimensionSizes complexDims = dimensionSizes;
   complexDims.nx = 2 * complexDims.nx;
 
   // Read data from the file
@@ -112,10 +112,10 @@ void TComplexMatrix::WriteDataToHDF5File(THDF5_File&  file,
                                          const size_t compressionLevel)
 {
   // set dimensions and chunks
-  TDimensionSizes complexDims = dimensionSizes;
+  DimensionSizes complexDims = dimensionSizes;
   complexDims.nx = 2 * complexDims.nx;
 
-  TDimensionSizes chunks = complexDims;
+  DimensionSizes chunks = complexDims;
   complexDims.nz = 1;
 
   // create a dataset
@@ -125,7 +125,7 @@ void TComplexMatrix::WriteDataToHDF5File(THDF5_File&  file,
                                           chunks,
                                           compressionLevel);
  // Write write the matrix at once.
-  file.WriteHyperSlab(dataset, TDimensionSizes(0, 0, 0), dimensionSizes, hostData);
+  file.WriteHyperSlab(dataset, DimensionSizes(0, 0, 0), dimensionSizes, hostData);
   file.CloseDataset(dataset);
 
  // Write data and domain type
@@ -144,7 +144,7 @@ void TComplexMatrix::WriteDataToHDF5File(THDF5_File&  file,
  *
  * @param [in] dimensionSizes - Dimension sizes of the matrix
  */
-void TComplexMatrix::InitDimensions(const TDimensionSizes& dimensionSizes)
+void TComplexMatrix::InitDimensions(const DimensionSizes& dimensionSizes)
 {
 
   this->dimensionSizes = dimensionSizes;

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August    2014, 10:10 (created)
- *              11 June      2017, 15:44 (revised)
+ *              11 July      2017, 16:48 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -99,12 +99,12 @@ void TIndexOutputHDF5Stream::Create()
   const TParameters& params = TParameters::GetInstance();
 
   // Derive dataset dimension sizes
-  TDimensionSizes datasetSize(nSampledElementsPerStep,
+  DimensionSizes datasetSize(nSampledElementsPerStep,
                               (reduceOp == TReduceOperator::NONE) ?  params.Get_nt() - params.GetStartTimeIndex() : 1,
                               1);
 
   // Set HDF5 chunk size
-  TDimensionSizes chunkSize(nSampledElementsPerStep, 1, 1);
+  DimensionSizes chunkSize(nSampledElementsPerStep, 1, 1);
   // for chunks bigger than 32 MB
   if (nSampledElementsPerStep > (CHUNK_SIZE_4MB * 8))
   {
@@ -168,7 +168,7 @@ void TIndexOutputHDF5Stream::Reopen()
       // Since there is only a single timestep in the dataset, I can read the whole dataset
       file.ReadCompleteDataset(file.GetRootGroup(),
                                rootObjectName,
-                               TDimensionSizes(bufferSize, 1, 1),
+                               DimensionSizes(bufferSize, 1, 1),
                                hostBuffer);
 
       // Send data to device
@@ -318,8 +318,8 @@ void TIndexOutputHDF5Stream::Close()
 void TIndexOutputHDF5Stream::FlushBufferToFile()
 {
   file.WriteHyperSlab(dataset,
-                      TDimensionSizes(0,sampledTimeStep,0),
-                      TDimensionSizes(bufferSize,1,1),
+                      DimensionSizes(0,sampledTimeStep,0),
+                      DimensionSizes(bufferSize,1,1),
                       hostBuffer);
   sampledTimeStep++;
 }// end of FlushToFile

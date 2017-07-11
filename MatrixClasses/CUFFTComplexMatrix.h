@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2011, 13:10 (created) \n
- *              07 July      2017, 18:33 (revised)
+ *              11 July      2017, 16:45 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -53,7 +53,7 @@ class TCUFFTComplexMatrix : public TComplexMatrix
     /// Default constructor not allowed.
     TCUFFTComplexMatrix() = delete;
     /// Constructor (inherited from TComplexMatrix).
-    TCUFFTComplexMatrix(const TDimensionSizes& DimensionSizes) : TComplexMatrix(DimensionSizes) {};
+    TCUFFTComplexMatrix(const DimensionSizes& DimensionSizes) : TComplexMatrix(DimensionSizes) {};
     /// Copy constructor not allowed.
     TCUFFTComplexMatrix(const TCUFFTComplexMatrix&) = delete;
     /// Destructor (Inherited from TComplexMatrix).
@@ -63,23 +63,23 @@ class TCUFFTComplexMatrix : public TComplexMatrix
     TCUFFTComplexMatrix& operator=(const TCUFFTComplexMatrix&) = delete;
 
     /// Create static cuFFT plan for Real-to-Complex.
-    static void Create_FFT_Plan_3D_R2C(const TDimensionSizes& inMatrixDims);
+    static void Create_FFT_Plan_3D_R2C(const DimensionSizes& inMatrixDims);
     /// Create static cuFFT plan for Complex-to-Real.
-    static void Create_FFT_Plan_3D_C2R(const TDimensionSizes& outMatrixDims);
+    static void Create_FFT_Plan_3D_C2R(const DimensionSizes& outMatrixDims);
 
     /// Create static cuFFT plan for Real-to-Complex in the X dimension.
-    static void Create_FFT_Plan_1DX_R2C(const TDimensionSizes& inMatrixDims);
+    static void Create_FFT_Plan_1DX_R2C(const DimensionSizes& inMatrixDims);
     /// Create static cuFFT plan for Real-to-Complex in the Y dimension.
-    static void Create_FFT_Plan_1DY_R2C(const TDimensionSizes& inMatrixDims);
+    static void Create_FFT_Plan_1DY_R2C(const DimensionSizes& inMatrixDims);
     /// Create static cuFFT plan for Real-to-Complex in the Z dimension.
-    static void Create_FFT_Plan_1DZ_R2C(const TDimensionSizes& inMatrixDims);
+    static void Create_FFT_Plan_1DZ_R2C(const DimensionSizes& inMatrixDims);
 
     /// Create static cuFFT plan for Complex-to-Real in the X dimension.
-    static void Create_FFT_Plan_1DX_C2R(const TDimensionSizes& outMatrixDims);
+    static void Create_FFT_Plan_1DX_C2R(const DimensionSizes& outMatrixDims);
     /// Create static cuFFT plan for Complex-to-Real in the Y dimension.
-    static void Create_FFT_Plan_1DY_C2R(const TDimensionSizes& outMatrixDims);
+    static void Create_FFT_Plan_1DY_C2R(const DimensionSizes& outMatrixDims);
     /// Create static cuFFT plan for Complex-to-Real in the Z dimension.
-    static void Create_FFT_Plan_1DZ_C2R(const TDimensionSizes& outMatrixDims);
+    static void Create_FFT_Plan_1DZ_C2R(const DimensionSizes& outMatrixDims);
 
     /// Destroy all static plans and error messages.
     static void DestroyAllPlansAndStaticData();

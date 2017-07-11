@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              11 June      2017, 15:44 (revised)
+ *              11 June      2017, 16:48 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -124,7 +124,7 @@ void TBaseOutputHDF5Stream::PostProcess()
 void TBaseOutputHDF5Stream::AllocateMemory()
 {
   // Allocate memory on the CPU side (always)
-  hostBuffer = (float*) _mm_malloc(bufferSize * sizeof (float), DATA_ALIGNMENT);
+  hostBuffer = (float*) _mm_malloc(bufferSize * sizeof (float), kDataAlignment);
 
   if (!hostBuffer)
   {

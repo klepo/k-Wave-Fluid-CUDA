@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              11 June      2017, 15:44 (revised)
+ *              11 July      2017, 16:48 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -126,7 +126,7 @@ class TBaseOutputHDF5Stream
     const TReduceOperator reduceOp;
 
     /// Position in the dataset
-    TDimensionSizes position;
+    DimensionSizes position;
 
     /// Buffer size
     size_t  bufferSize;

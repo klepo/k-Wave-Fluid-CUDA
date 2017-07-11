@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2011, 10:30 (created) \n
- *              11 July      2017, 14:43 (revised)
+ *              11 July      2017, 16:45 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -48,7 +48,7 @@ class TRealMatrix : public TBaseFloatMatrix
     /// Default constructor is not allowed.
     TRealMatrix() = delete;
     /// Constructor.
-    TRealMatrix(const TDimensionSizes& dimensionSizes);
+    TRealMatrix(const DimensionSizes& dimensionSizes);
     /// Copy constructor not allowed.
     TRealMatrix(const TRealMatrix&) = delete;
     /// Destructor.
@@ -89,7 +89,7 @@ class TRealMatrix : public TBaseFloatMatrix
     };
 
     /// Init dimension sizes.
-    virtual void InitDimensions(const TDimensionSizes& dimensionSizes);
+    virtual void InitDimensions(const DimensionSizes& dimensionSizes);
 
 private:
 
