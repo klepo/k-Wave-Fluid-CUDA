@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              10 July     2017, 17:00s (revised)
+ *              11 July     2017, 13:06s (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -80,7 +80,7 @@ TKSpaceFirstOrder3DSolver::TKSpaceFirstOrder3DSolver() :
         totalTime(), preProcessingTime(), dataLoadTime(), simulationTime(),
         postProcessingTime(), iterationTime()
 {
-  totalTime.Start();
+  totalTime.start();
 
   //Switch off default HDF5 error messages
   H5Eset_auto(H5E_DEFAULT, NULL, NULL);
@@ -143,7 +143,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
   TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DATA_LOADING);
   TLogger::Flush(TLogger::TLogLevel::BASIC);
 
-  dataLoadTime.Start();
+  dataLoadTime.start();
 
   // open and load input file
   THDF5_File& inputFile      = parameters.GetInputFile(); // file is opened (in Parameters)
@@ -223,7 +223,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
     outputStreamContainer.CreateStreams();
   }
 
-  dataLoadTime.Stop();
+  dataLoadTime.stop();
 
   if (TLogger::GetLevel() != TLogger::TLogLevel::FULL)
   {
@@ -239,7 +239,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
  */
 void TKSpaceFirstOrder3DSolver::Compute()
 {
-  preProcessingTime.Start();
+  preProcessingTime.start();
 
   TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_FFT_PLANS);
   TLogger::Flush(TLogger::TLogLevel::BASIC);
@@ -259,7 +259,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
     // preprocessing is done on CPU and must pretend the CUDA configuration
     PreProcessingPhase();
 
-    preProcessingTime.Stop();
+    preProcessingTime.stop();
     // Set kernel configurations
     cudaParameters.SetKernelConfiguration();
 
@@ -278,7 +278,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
   }
 
   // Logger header for simulation
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_ELAPSED_TIME, preProcessingTime.GetElapsedTime());
+  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_ELAPSED_TIME, preProcessingTime.getElapsedTime());
   TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_COMP_RESOURCES_HEADER);
   TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CURRENT_HOST_MEMORY,   GetHostMemoryUsageInMB());
   TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CURRENT_DEVICE_MEMORY, GetDeviceMemoryUsageInMB());
@@ -299,11 +299,11 @@ void TKSpaceFirstOrder3DSolver::Compute()
   // Main loop
   try
   {
-    simulationTime.Start();
+    simulationTime.start();
 
     ComputeMainLoop();
 
-    simulationTime.Stop();
+    simulationTime.stop();
 
     TLogger::Log(TLogger::TLogLevel::BASIC,OUT_FMT_SIMULATOIN_END_SEPARATOR);
   }
@@ -314,13 +314,13 @@ void TKSpaceFirstOrder3DSolver::Compute()
   }
 
   // Post processing region
-  postProcessingTime.Start();
+  postProcessingTime.start();
 
   try
   {
     if (IsCheckpointInterruption())
     { // Checkpoint
-      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_ELAPSED_TIME, simulationTime.GetElapsedTime());
+      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_ELAPSED_TIME, simulationTime.getElapsedTime());
       TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CHECKPOINT_TIME_STEPS, parameters.Get_t_index());
       TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CHECKPOINT_HEADER);
       TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CREATING_CHECKPOINT);
@@ -341,7 +341,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
     else
     { // Finish
 
-      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_ELAPSED_TIME, simulationTime.GetElapsedTime());
+      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_ELAPSED_TIME, simulationTime.getElapsedTime());
       TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SEPARATOR);
       TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_POST_PROCESSING);
       TLogger::Flush(TLogger::TLogLevel::BASIC);
@@ -363,7 +363,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
 
     TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),ERR_FMT_PATH_DELIMITERS,9).c_str());
   }
-  postProcessingTime.Stop();
+  postProcessingTime.stop();
 
   // Final data written
   try
@@ -371,7 +371,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
     WriteOutputDataInfo();
     parameters.GetOutputFile().Close();
 
-    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_ELAPSED_TIME, postProcessingTime.GetElapsedTime());
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_ELAPSED_TIME, postProcessingTime.getElapsedTime());
     }
   catch (const std::exception &e)
   {
@@ -550,7 +550,7 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense() const
   */
 double TKSpaceFirstOrder3DSolver::GetTotalTime() const
 {
-  return totalTime.GetElapsedTime();
+  return totalTime.getElapsedTime();
 }// end of GetTotalTime()
 //--------------------------------------------------------------------------------------------------
 
@@ -561,7 +561,7 @@ double TKSpaceFirstOrder3DSolver::GetTotalTime() const
  */
 double TKSpaceFirstOrder3DSolver::GetPreProcessingTime() const
 {
-  return preProcessingTime.GetElapsedTime();
+  return preProcessingTime.getElapsedTime();
 }// end of GetPreProcessingTime
 //--------------------------------------------------------------------------------------------------
 
@@ -572,7 +572,7 @@ double TKSpaceFirstOrder3DSolver::GetPreProcessingTime() const
  */
 double TKSpaceFirstOrder3DSolver::GetDataLoadTime() const
 {
-  return dataLoadTime.GetElapsedTime();
+  return dataLoadTime.getElapsedTime();
 }// end of GetDataLoadTime
 //--------------------------------------------------------------------------------------------------
 
@@ -584,7 +584,7 @@ double TKSpaceFirstOrder3DSolver::GetDataLoadTime() const
  */
 double TKSpaceFirstOrder3DSolver::GetSimulationTime() const
 {
-  return simulationTime.GetElapsedTime();
+  return simulationTime.getElapsedTime();
 }// end of GetSimulationTime
 //--------------------------------------------------------------------------------------------------
 
@@ -595,7 +595,7 @@ double TKSpaceFirstOrder3DSolver::GetSimulationTime() const
  */
 double TKSpaceFirstOrder3DSolver::GetPostProcessingTime() const
 {
-  return postProcessingTime.GetElapsedTime();
+  return postProcessingTime.getElapsedTime();
 }// end of GetPostProcessingTime
 //--------------------------------------------------------------------------------------------------
 
@@ -605,7 +605,7 @@ double TKSpaceFirstOrder3DSolver::GetPostProcessingTime() const
  */
 double TKSpaceFirstOrder3DSolver::GetCumulatedTotalTime() const
 {
-  return totalTime.GetCumulatedElapsedTimeOverAllLegs();
+  return totalTime.getElapsedTimeOverAllLegs();
 }// end of GetCumulatedTotalTime
 //--------------------------------------------------------------------------------------------------
 
@@ -616,7 +616,7 @@ double TKSpaceFirstOrder3DSolver::GetCumulatedTotalTime() const
  */
 double TKSpaceFirstOrder3DSolver::GetCumulatedPreProcessingTime() const
 {
-  return preProcessingTime.GetCumulatedElapsedTimeOverAllLegs();
+  return preProcessingTime.getElapsedTimeOverAllLegs();
 } // end of GetCumulatedPreProcessingTime
 //--------------------------------------------------------------------------------------------------
 
@@ -627,7 +627,7 @@ double TKSpaceFirstOrder3DSolver::GetCumulatedPreProcessingTime() const
  */
 double TKSpaceFirstOrder3DSolver::GetCumulatedDataLoadTime() const
 {
-  return dataLoadTime.GetCumulatedElapsedTimeOverAllLegs();
+  return dataLoadTime.getElapsedTimeOverAllLegs();
 }// end of GetCumulatedDataLoadTime
 //--------------------------------------------------------------------------------------------------
 
@@ -638,7 +638,7 @@ double TKSpaceFirstOrder3DSolver::GetCumulatedDataLoadTime() const
  */
 double TKSpaceFirstOrder3DSolver::GetCumulatedSimulationTime() const
 {
-  return simulationTime.GetCumulatedElapsedTimeOverAllLegs();
+  return simulationTime.getElapsedTimeOverAllLegs();
 }// end of GetCumulatedSimulationTime
 //--------------------------------------------------------------------------------------------------
 
@@ -649,7 +649,7 @@ double TKSpaceFirstOrder3DSolver::GetCumulatedSimulationTime() const
  */
 double TKSpaceFirstOrder3DSolver::GetCumulatedPostProcessingTime() const
 {
-  return postProcessingTime.GetCumulatedElapsedTimeOverAllLegs();
+  return postProcessingTime.getElapsedTimeOverAllLegs();
 }// end of GetCumulatedPostProcessingTime
 //--------------------------------------------------------------------------------------------------
 
@@ -787,7 +787,7 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
   // Initial copy of data to the GPU
   matrixContainer.CopyMatricesToDevice();
 
-  iterationTime.Start();
+  iterationTime.start();
 
   // execute main loop
   while (parameters.Get_t_index() < parameters.Get_nt() && (!IsTimeToCheckpoint()))
@@ -966,7 +966,7 @@ void  TKSpaceFirstOrder3DSolver::WriteOutputDataInfo()
   fileHeader.SetMemoryConsumption(GetHostMemoryUsageInMB());
 
   // Stop total timer here
-  totalTime.Stop();
+  totalTime.stop();
   fileHeader.SetExecutionTimes(GetTotalTime(),
                                     GetDataLoadTime(),
                                     GetPreProcessingTime(),
@@ -1932,11 +1932,11 @@ void TKSpaceFirstOrder3DSolver::PrintStatistics()
   {
     actPercent += parameters.GetProgressPrintInterval();
 
-    iterationTime.Stop();
+    iterationTime.stop();
 
-    const double elTime = iterationTime.GetElapsedTime();
-    const double elTimeWithLegs = iterationTime.GetElapsedTime() +
-                                  simulationTime.GetCumulatedElapsedTimeOverPreviousLegs();
+    const double elTime = iterationTime.getElapsedTime();
+    const double elTimeWithLegs = iterationTime.getElapsedTime() +
+                                  simulationTime.getElapsedTimeOverPreviousLegs();
     const double toGo   = ((elTimeWithLegs / (float) (t_index + 1)) *  nt) - elTimeWithLegs;
 
     struct tm* current;
@@ -1965,9 +1965,9 @@ bool TKSpaceFirstOrder3DSolver::IsTimeToCheckpoint()
 {
   if (!parameters.IsCheckpointEnabled()) return false;
 
-  totalTime.Stop();
+  totalTime.stop();
 
-  return (totalTime.GetElapsedTime() > static_cast<float>(parameters.GetCheckpointInterval()));
+  return (totalTime.getElapsedTime() > static_cast<float>(parameters.GetCheckpointInterval()));
 }// end of IsTimeToCheckpoint
 //--------------------------------------------------------------------------------------------------
 
@@ -2110,11 +2110,11 @@ void TKSpaceFirstOrder3DSolver::LoadElapsedTimeFromOutputFile(THDF5_File& output
                                                simulationTime,
                                                postProcessingTime);
 
-  this->totalTime.SetCumulatedElapsedTimeOverPreviousLegs(totalTime);
-  this->dataLoadTime.SetCumulatedElapsedTimeOverPreviousLegs(dataLoadTime);
-  this->preProcessingTime.SetCumulatedElapsedTimeOverPreviousLegs(preProcessingTime);
-  this->simulationTime.SetCumulatedElapsedTimeOverPreviousLegs(simulationTime);
-  this->postProcessingTime.SetCumulatedElapsedTimeOverPreviousLegs(postProcessingTime);
+  this->totalTime.SetElapsedTimeOverPreviousLegs(totalTime);
+  this->dataLoadTime.SetElapsedTimeOverPreviousLegs(dataLoadTime);
+  this->preProcessingTime.SetElapsedTimeOverPreviousLegs(preProcessingTime);
+  this->simulationTime.SetElapsedTimeOverPreviousLegs(simulationTime);
+  this->postProcessingTime.SetElapsedTimeOverPreviousLegs(postProcessingTime);
 
 }// end of LoadElapsedTimeFromOutputFile
 //--------------------------------------------------------------------------------------------------

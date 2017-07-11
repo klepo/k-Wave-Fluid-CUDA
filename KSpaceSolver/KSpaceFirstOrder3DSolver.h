@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              07 July     2017, 18:06 (revised)
+ *              11 July     2017, 13:06 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -579,17 +579,17 @@ private:
     bool isTimestepRightAfterRestore;
 
     /// Total time of the simulation
-    TTimeMeasure totalTime;
+    TimeMeasure totalTime;
     /// Pre-processing time of the simulation
-    TTimeMeasure preProcessingTime;
+    TimeMeasure preProcessingTime;
     /// Data load time of the simulation
-    TTimeMeasure dataLoadTime;
+    TimeMeasure dataLoadTime;
     /// Simulation time of the simulation
-    TTimeMeasure simulationTime;
+    TimeMeasure simulationTime;
     /// Post-processing time of the simulation
-    TTimeMeasure postProcessingTime;
+    TimeMeasure postProcessingTime;
     /// Iteration time of the simulation
-    TTimeMeasure iterationTime;
+    TimeMeasure iterationTime;
 
 };// end of TKSpaceFirstOrder3DSolver
 //--------------------------------------------------------------------------------------------------
