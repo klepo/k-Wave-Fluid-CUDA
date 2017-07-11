@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        14 September 2012, 17:28 (created) \n
- *              25 July      2016, 10:02 (revised)
+ *              07 July      2017, 19:09 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -38,11 +38,10 @@
 //------------------------------------------------------------------------------------------------//
 
 /**
- * @typedef TMatrixName
  * @brief   Datatype for matrix names.
  * @details Datatype for matrix names.
  */
-typedef const std::string TMatrixName;
+using TMatrixName = const std::string;
 
 /// Nt variable name
 TMatrixName  Nt_NAME            = "Nt";

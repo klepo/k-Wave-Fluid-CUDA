@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        08 December 2011, 16:34 (created)      \n
- *              25 July     2016, 15:08 (revised)
+ *              07 July     2017, 19:46 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -55,13 +55,22 @@ class TParameters
      * @brief   Sensor mask type (linear indices or cuboid corners).
      * @details Sensor mask type (linear indices or cuboid corners).
      */
-    enum TSensorMaskType {INDEX = 0, CORNERS = 1};
+    enum class TSensorMaskType
+    {
+      INDEX = 0,
+      CORNERS = 1
+    };
+
+    /// Copy constructor not allowed
+    TParameters(const TParameters&) = delete;
+    /// Destructor.
+    virtual ~TParameters();
+
+    /// operator= not allowed.
+    TParameters& operator= (const TParameters&) = delete;
 
     /// Get instance of the singleton class
     static TParameters& GetInstance();
-
-    /// Destructor.
-    virtual ~TParameters();
 
     /// Parse command line and read scalar values to init the class.
     void Init(int argc, char** argv);
@@ -272,8 +281,6 @@ class TParameters
   protected:
     /// Constructor.
     TParameters();
-    /// Copy constructor,
-    TParameters(const TParameters& orig);
 
   private:
    /// Class with CUDA Parameters (runtime setup)

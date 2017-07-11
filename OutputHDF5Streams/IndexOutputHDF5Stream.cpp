@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August   2014, 10:10 (created)
- *              29 July     2016, 16:56 (revised)
+ *              28 June     2017, 14:58 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -100,7 +100,7 @@ void TIndexOutputHDF5Stream::Create()
 
   // Derive dataset dimension sizes
   TDimensionSizes datasetSize(nSampledElementsPerStep,
-                              (reduceOp == NONE) ?  params.Get_nt() - params.GetStartTimeIndex() : 1,
+                              (reduceOp == TReduceOperator::NONE) ?  params.Get_nt() - params.GetStartTimeIndex() : 1,
                               1);
 
   // Set HDF5 chunk size
@@ -119,8 +119,8 @@ void TIndexOutputHDF5Stream::Create()
                                     params.GetCompressionLevel());
 
     // Write dataset parameters
-  file.WriteMatrixDomainType(file.GetRootGroup(), rootObjectName, THDF5_File::REAL);
-  file.WriteMatrixDataType  (file.GetRootGroup(), rootObjectName, THDF5_File::FLOAT);
+  file.WriteMatrixDomainType(file.GetRootGroup(), rootObjectName, THDF5_File::TMatrixDomainType::REAL);
+  file.WriteMatrixDataType  (file.GetRootGroup(), rootObjectName, THDF5_File::TMatrixDataType::FLOAT);
 
   // Sampled time step
   sampledTimeStep = 0;
@@ -152,7 +152,7 @@ void TIndexOutputHDF5Stream::Reopen()
   dataset = file.OpenDataset(file.GetRootGroup(), rootObjectName);
 
 
-  if (reduceOp == NONE)
+  if (reduceOp == TReduceOperator::NONE)
   { // raw time series - just seek to the right place in the dataset
     sampledTimeStep = (params.Get_t_index() < params.GetStartTimeIndex()) ?
                         0 : (params.Get_t_index() - params.GetStartTimeIndex());
@@ -188,9 +188,9 @@ void TIndexOutputHDF5Stream::Sample()
 {
   switch (reduceOp)
   {
-    case NONE :
+    case TReduceOperator::NONE :
     {
-      OutputStreamsCUDAKernels::SampleIndex<NONE>
+      OutputStreamsCUDAKernels::SampleIndex<TReduceOperator::NONE>
                                            (deviceBuffer,
                                             sourceMatrix.GetDeviceData(),
                                             sensorMask.GetDeviceData(),
@@ -202,9 +202,9 @@ void TIndexOutputHDF5Stream::Sample()
       break;
     }// case NONE
 
-    case RMS :
+    case TReduceOperator::RMS :
     {
-      OutputStreamsCUDAKernels::SampleIndex<RMS>
+      OutputStreamsCUDAKernels::SampleIndex<TReduceOperator::RMS>
                                            (deviceBuffer,
                                             sourceMatrix.GetDeviceData(),
                                             sensorMask.GetDeviceData(),
@@ -213,9 +213,9 @@ void TIndexOutputHDF5Stream::Sample()
       break;
     }// case RMS
 
-    case MAX :
+    case TReduceOperator::MAX :
     {
-      OutputStreamsCUDAKernels::SampleIndex<MAX>
+      OutputStreamsCUDAKernels::SampleIndex<TReduceOperator::MAX>
                                            (deviceBuffer,
                                             sourceMatrix.GetDeviceData(),
                                             sensorMask.GetDeviceData(),
@@ -223,9 +223,9 @@ void TIndexOutputHDF5Stream::Sample()
       break;
     }// case MAX
 
-    case MIN :
+    case TReduceOperator::MIN :
     {
-      OutputStreamsCUDAKernels::SampleIndex<MIN>
+      OutputStreamsCUDAKernels::SampleIndex<TReduceOperator::MIN>
                                            (deviceBuffer,
                                             sourceMatrix.GetDeviceData(),
                                             sensorMask.GetDeviceData(),
@@ -242,7 +242,7 @@ void TIndexOutputHDF5Stream::Sample()
  */
 void TIndexOutputHDF5Stream::FlushRaw()
 {
-  if (reduceOp == NONE)
+  if (reduceOp == TReduceOperator::NONE)
   {
     // make sure the data has been copied from the GPU
     cudaEventSynchronize(eventSamplingFinished);
@@ -264,7 +264,7 @@ void TIndexOutputHDF5Stream::PostProcess()
 
   // When no reduction operator is applied, the data is flushed after every time step
   // which means it has been done before
-  if (reduceOp != NONE)
+  if (reduceOp != TReduceOperator::NONE)
   {
     // Copy data from GPU matrix
     CopyDataFromDevice();
@@ -282,7 +282,7 @@ void TIndexOutputHDF5Stream::PostProcess()
 void TIndexOutputHDF5Stream::Checkpoint()
 {
   // raw data has already been flushed, others has to be flushed here
-  if (reduceOp != NONE)
+  if (reduceOp != TReduceOperator::NONE)
   {
     // copy data from the device
     CopyDataFromDevice();

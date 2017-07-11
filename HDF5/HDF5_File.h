@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              10 August   2016, 10:49 (revised)
+ *              07 July     2017, 14:04 (revised)
  *
  *
  * @section HDF HDF5 File Structure
@@ -506,7 +506,7 @@ class THDF5_File
      * @brief   HDF5 matrix data type (float or uint64).
      * @details HDF5 matrix data type (float or uint64).
      */
-    enum TMatrixDataType
+    enum class TMatrixDataType
     {
       FLOAT = 0,
       LONG  = 1
@@ -517,7 +517,7 @@ class THDF5_File
      * @brief   HDF5 Matrix domain type (real or complex).
      * @details HDF5 Matrix domain type (real or complex).
      */
-    enum TMatrixDomainType
+    enum class TMatrixDomainType
     {
       REAL    = 0,
       COMPLEX = 1
@@ -526,8 +526,13 @@ class THDF5_File
 
     /// Constructor of the class.
     THDF5_File();
+    /// Copy constructor is not allowed.
+    THDF5_File(const THDF5_File&) = delete;
     /// Destructor.
     virtual ~THDF5_File();
+
+    /// Operator = is not allowed.
+    THDF5_File& operator=(const THDF5_File&) = delete;
 
     //----------------------- Basic file operations --------------------------//
     /// Create a file.
@@ -695,12 +700,7 @@ class THDF5_File
                                     TMatrixName& datasetName,
                                     TMatrixName& attributeName);
 
-   protected:
-
-    /// Copy constructor is not allowed for public.
-    THDF5_File(const THDF5_File& src);
-    /// Operator = is not allowed for public.
-    THDF5_File& operator= (const THDF5_File& src);
+  protected:
 
   private:
     /// String representation of the Domain type in the HDF5 file.
@@ -737,7 +737,7 @@ class THDF5_FileHeader
      * @details List of all header items.
      * @todo  In the future we should add number of GPUs, peak GPU memory.
      */
-    enum TFileHeaderItems
+    enum class TFileHeaderItems
     {
       CREATED_BY                   =  0,
       CREATION_DATA                =  1,
@@ -761,7 +761,7 @@ class THDF5_FileHeader
      * @brief   HDF5 file type.
      * @details HDF5 file type.
      */
-    enum TFileType
+    enum class TFileType
     {
       INPUT      = 0,
       OUTPUT     = 1,
@@ -774,7 +774,7 @@ class THDF5_FileHeader
      * @brief   HDF5 file version.
      * @details HDF5 file version.
      */
-    enum TFileVersion
+    enum class TFileVersion
     {
       VERSION_10      = 0,
       VERSION_11      = 1,
@@ -807,7 +807,7 @@ class THDF5_FileHeader
      */
     void SetCodeName(const std::string& codeName)
     {
-      headerValues[CREATED_BY] = codeName;
+      headerValues[TFileHeaderItems::CREATED_BY] = codeName;
     };
 
     /// Set creation time.
@@ -839,7 +839,7 @@ class THDF5_FileHeader
      */
     void SetMajorFileVersion()
     {
-      headerValues[MAJOR_VERSION] = GetCurrentHDF5_MajorVersion();
+      headerValues[TFileHeaderItems::MAJOR_VERSION] = GetCurrentHDF5_MajorVersion();
     };
 
     /**
@@ -848,7 +848,7 @@ class THDF5_FileHeader
      */
     void SetMinorFileVersion()
     {
-      headerValues[MINOR_VERSION] = GetCurrentHDF5_MinorVersion();
+      headerValues[TFileHeaderItems::MINOR_VERSION] = GetCurrentHDF5_MinorVersion();
     };
 
     /// Set major file version in a string.
@@ -861,7 +861,7 @@ class THDF5_FileHeader
      */
     bool CheckMajorFileVersion()
     {
-      return (headerValues[MAJOR_VERSION] == GetCurrentHDF5_MajorVersion());
+      return (headerValues[TFileHeaderItems::MAJOR_VERSION] == GetCurrentHDF5_MajorVersion());
     };
 
     /**
@@ -871,7 +871,7 @@ class THDF5_FileHeader
      */
     bool CheckMinorFileVersion()
     {
-      return (headerValues[MINOR_VERSION] <= GetCurrentHDF5_MinorVersion());
+      return (headerValues[TFileHeaderItems::MINOR_VERSION] <= GetCurrentHDF5_MinorVersion());
     };
 
 

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August   2014, 10:20 (created)
- *              26 July     2016, 14:03 (revised)
+ *              07 July     2017, 18:58 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -44,14 +44,19 @@
 class TWholeDomainOutputHDF5Stream : public TBaseOutputHDF5Stream
 {
   public:
+    /// Default constructor not allowed.
+    TWholeDomainOutputHDF5Stream() = delete;
     /// Constructor.
     TWholeDomainOutputHDF5Stream(THDF5_File&           file,
                                  TMatrixName&          datasetName,
                                  TRealMatrix&          sourceMatrix,
                                  const TReduceOperator reduceOp);
-
     /// Destructor.
     virtual ~TWholeDomainOutputHDF5Stream();
+
+     /// operator= is not allowed.
+    TWholeDomainOutputHDF5Stream& operator=(const TWholeDomainOutputHDF5Stream&) = delete;
+
 
     /// Create a HDF5 stream and allocate data for it.
     virtual void Create();

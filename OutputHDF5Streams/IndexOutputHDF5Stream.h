@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August   2014, 10:00 (created)
- *              26 July     2016, 13:55 (revised)
+ *              07 July     2017, 18:56 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -47,17 +47,19 @@
 class TIndexOutputHDF5Stream : public TBaseOutputHDF5Stream
 {
   public:
-
+    /// Default constructor not allowed.
+    TIndexOutputHDF5Stream() = delete;
     /// Constructor.
     TIndexOutputHDF5Stream(THDF5_File&           file,
                            TMatrixName&          datasetName,
                            const TRealMatrix&    sourceMatrix,
                            const TIndexMatrix&   sensorMask,
                            const TReduceOperator reduceOp);
-
-
     /// Destructor.
     virtual ~TIndexOutputHDF5Stream();
+
+    /// operator= is not allowed.
+    TIndexOutputHDF5Stream& operator=(const TIndexOutputHDF5Stream&) = delete;
 
     /// Create a HDF5 stream and allocate data for it.
     virtual void Create();
@@ -97,7 +99,7 @@ class TIndexOutputHDF5Stream : public TBaseOutputHDF5Stream
     /// Has the sampling finished?
     cudaEvent_t eventSamplingFinished;
 
-} ; // end of TIndexOutputHDF5Stream
+}; // end of TIndexOutputHDF5Stream
 //------------------------------------------------------------------------------
 
 #endif /* INDEX_OUTPUT_HDF5_STREAM_H */

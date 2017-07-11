@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 12:13 (created) \n
- *              29 July      2016, 16:50 (revised)
+ *              07 July      2017, 18:26 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -51,8 +51,13 @@ class TBaseFloatMatrix : public TBaseMatrix
   public:
     /// Default constructor.
     TBaseFloatMatrix();
+    /// Copy constructor is not allowed.
+    TBaseFloatMatrix(const TBaseFloatMatrix&) = delete;
     //Destructor.
     virtual ~TBaseFloatMatrix() {};
+
+    /// Operator= is not allowed.
+    TBaseFloatMatrix& operator=(const TBaseFloatMatrix&);
 
     /// Get dimension sizes of the matrix.
     virtual TDimensionSizes GetDimensionSizes() const
@@ -108,18 +113,12 @@ class TBaseFloatMatrix : public TBaseMatrix
     /// Copy data from GPU -> CPU (Device -> Host).
     virtual void CopyFromDevice();
 
-
   protected:
 
     /// Memory allocation (both on CPU and GPU).
     virtual void AllocateMemory();
     /// Memory allocation (both on CPU and GPU).
     virtual void FreeMemory();
-
-    /// Copy constructor is not directly allowed.
-    TBaseFloatMatrix(const TBaseFloatMatrix& src);
-    /// Operator =  is not directly allowed.
-    TBaseFloatMatrix& operator =(const TBaseFloatMatrix& src);
 
     /// Total number of elements.
     size_t nElements;

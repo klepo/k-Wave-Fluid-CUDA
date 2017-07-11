@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        19 April    2016, 12:52 (created) \n
- *              10 August   2016, 16:44 (revised)
+ *              07 July     2017, 18:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -57,7 +57,7 @@ class TLogger
     * @details A enum to specify at which log level the message should be displayed, or the level
     * set.
     */
-    enum TLogLevel
+    enum class TLogLevel
     {
       /// Basic (default) level of verbosity
       BASIC    = 0,
@@ -67,6 +67,15 @@ class TLogger
       FULL     = 2,
     };
 
+    /// Default constructor is not allowed, static class
+    TLogger() = delete;
+    /// Copy constructor is not allowed, static class
+    TLogger(const TLogger&) = delete;
+    /// Destructor is not allowed, static class
+    ~TLogger() = delete;
+
+    /// Operator= is not allowed, static class
+    TLogger& operator=(const TLogger&) = delete;
 
     /// Set the log level.
     static void SetLevel(const TLogLevel actualLogLevel);
@@ -125,32 +134,14 @@ class TLogger
     template<typename ... Args>
     static std::string FormatMessage(const std::string& format, Args ... args)
     {
-      // Windows build
-      #ifdef __linux__
-	  	  /// when the size is 0, the routine returns the size of the formated string
-        size_t size = snprintf(nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
+	  	/// when the size is 0, the routine returns the size of the formated string
+      size_t size = snprintf(nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
 
-        std::unique_ptr<char[]> buf( new char[ size ] );
-        snprintf(buf.get(), size, format.c_str(), args ... );
-        return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
-      #endif
-
-	   // Windows build
-      #ifdef _WIN64
-		    size_t size = _snprintf (nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
-
-		    std::unique_ptr<char[]> buf( new char[ size ] );
-		    _snprintf (buf.get(), size, format.c_str(), args ... );
-		    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
-      #endif
+      std::unique_ptr<char[]> buf(new char[size]);
+      snprintf(buf.get(), size, format.c_str(), args ... );
+      return std::string(buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
     }
   private:
-    /// Default constructor is not allowed, static class
-    TLogger();
-    /// Copy constructor is not allowed, static class
-    TLogger(const TLogger& orig);
-    /// Destructor is not allowed, static class
-    ~TLogger();
 
     /// Log level of the logger
     static TLogLevel logLevel;
@@ -161,7 +152,7 @@ class TLogger
                              const std::string&  delimiters);
 
 }; // TLogger
-
+//--------------------------------------------------------------------------------------------------
 
 
 //------------------------------------------------------------------------------------------------//

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 10:30 (created) \n
- *              10 August    2016, 11:59 (revised)
+ *              28 June      2017, 15:15 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -75,12 +75,12 @@ void TRealMatrix::ReadDataFromHDF5File(THDF5_File&  file,
                                        TMatrixName& matrixName)
 {
   // test matrix datatype
-  if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::FLOAT)
+  if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDataType::FLOAT)
   {
     throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_FLOAT, matrixName.c_str()));
   }
   // read matrix domain type
-  if (file.ReadMatrixDomainType(file.GetRootGroup(), matrixName) != THDF5_File::REAL)
+  if (file.ReadMatrixDomainType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDomainType::REAL)
   {
     throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_REAL, matrixName.c_str()));
   }
@@ -135,8 +135,8 @@ void TRealMatrix::WriteDataToHDF5File(THDF5_File&  file,
   file.CloseDataset(dataset);
 
   // Write data and domain type
-  file.WriteMatrixDataType  (file.GetRootGroup(), matrixName, THDF5_File::FLOAT);
-  file.WriteMatrixDomainType(file.GetRootGroup(), matrixName, THDF5_File::REAL);
+  file.WriteMatrixDataType  (file.GetRootGroup(), matrixName, THDF5_File::TMatrixDataType::FLOAT);
+  file.WriteMatrixDomainType(file.GetRootGroup(), matrixName, THDF5_File::TMatrixDomainType::REAL);
 }// end of WriteDataToHDF5File
 //--------------------------------------------------------------------------------------------------
 

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 February 2015, 12:51 (created)
- *              29 July     2016, 16:56 (revised)
+ *              10 July     2017, 16:11 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -139,7 +139,7 @@ void TCuboidOutputHDF5Stream::Reopen()
   const TParameters& params = TParameters::GetInstance();
 
   sampledTimeStep = 0;
-  if (reduceOp == NONE) // set correct sampled timestep for raw data series
+  if (reduceOp == TReduceOperator::NONE) // set correct sampled timestep for raw data series
   {
     sampledTimeStep = (params.Get_t_index() < params.GetStartTimeIndex()) ?
                        0 : (params.Get_t_index() - params.GetStartTimeIndex());
@@ -173,7 +173,7 @@ void TCuboidOutputHDF5Stream::Reopen()
     // read only if there is anything to read
     if (params.Get_t_index() > params.GetStartTimeIndex())
     {
-      if (reduceOp != NONE)
+      if (reduceOp != TReduceOperator::NONE)
       { // Reload data
         TDimensionSizes cuboidSize((sensorMask.GetBottomRightCorner(CuboidIdx) - sensorMask.GetTopLeftCorner(CuboidIdx)).nx,
                                    (sensorMask.GetBottomRightCorner(CuboidIdx) - sensorMask.GetTopLeftCorner(CuboidIdx)).ny,
@@ -208,20 +208,20 @@ void TCuboidOutputHDF5Stream::Sample()
 {
   size_t cuboidInBufferStart = 0;
   // dimension sizes of the matrix being sampled
-  const dim3 dimSizes (sourceMatrix.GetDimensionSizes().nx,
-                       sourceMatrix.GetDimensionSizes().ny,
-                       sourceMatrix.GetDimensionSizes().nz);
+  const dim3 dimSizes (static_cast<unsigned int>(sourceMatrix.GetDimensionSizes().nx),
+                       static_cast<unsigned int>(sourceMatrix.GetDimensionSizes().ny),
+                       static_cast<unsigned int>(sourceMatrix.GetDimensionSizes().nz));
 
   // Run over all cuboids - this is not a good solution as we need to run a distinct kernel for a cuboid
   for (size_t cuboidIdx = 0; cuboidIdx < cuboidsInfo.size(); cuboidIdx++)
   {
     // copy down dim sizes
-    const dim3 topLeftCorner(sensorMask.GetTopLeftCorner(cuboidIdx).nx,
-                             sensorMask.GetTopLeftCorner(cuboidIdx).ny,
-                             sensorMask.GetTopLeftCorner(cuboidIdx).nz);
-    const dim3 bottomRightCorner(sensorMask.GetBottomRightCorner(cuboidIdx).nx,
-                                 sensorMask.GetBottomRightCorner(cuboidIdx).ny,
-                                 sensorMask.GetBottomRightCorner(cuboidIdx).nz);
+    const dim3 topLeftCorner(static_cast<unsigned int>(sensorMask.GetTopLeftCorner(cuboidIdx).nx),
+                             static_cast<unsigned int>(sensorMask.GetTopLeftCorner(cuboidIdx).ny),
+                             static_cast<unsigned int>(sensorMask.GetTopLeftCorner(cuboidIdx).nz));
+    const dim3 bottomRightCorner(static_cast<unsigned int>(sensorMask.GetBottomRightCorner(cuboidIdx).nx),
+                                 static_cast<unsigned int>(sensorMask.GetBottomRightCorner(cuboidIdx).ny),
+                                 static_cast<unsigned int>(sensorMask.GetBottomRightCorner(cuboidIdx).nz));
 
     //get number of samples within the cuboid
     const size_t nSamples = (sensorMask.GetBottomRightCorner(cuboidIdx) -
@@ -230,10 +230,10 @@ void TCuboidOutputHDF5Stream::Sample()
 
     switch (reduceOp)
     {
-      case NONE :
+      case TReduceOperator::NONE :
       {
         // Kernel to sample raw quantities inside one cuboid
-        OutputStreamsCUDAKernels::SampleCuboid<NONE>
+        OutputStreamsCUDAKernels::SampleCuboid<TReduceOperator::NONE>
                                               (deviceBuffer + cuboidInBufferStart,
                                                sourceMatrix.GetDeviceData(),
                                                topLeftCorner,
@@ -242,9 +242,9 @@ void TCuboidOutputHDF5Stream::Sample()
                                                nSamples);
         break;
       }
-      case RMS :
+      case TReduceOperator::RMS :
       {
-        OutputStreamsCUDAKernels::SampleCuboid<RMS>
+        OutputStreamsCUDAKernels::SampleCuboid<TReduceOperator::RMS>
                                               (deviceBuffer + cuboidInBufferStart,
                                                sourceMatrix.GetDeviceData(),
                                                topLeftCorner,
@@ -253,9 +253,9 @@ void TCuboidOutputHDF5Stream::Sample()
                                                nSamples);
         break;
       }
-      case MAX :
+      case TReduceOperator::MAX :
       {
-        OutputStreamsCUDAKernels::SampleCuboid<MAX>
+        OutputStreamsCUDAKernels::SampleCuboid<TReduceOperator::MAX>
                                               (deviceBuffer + cuboidInBufferStart,
                                                sourceMatrix.GetDeviceData(),
                                                topLeftCorner,
@@ -264,9 +264,9 @@ void TCuboidOutputHDF5Stream::Sample()
                                                nSamples);
         break;
       }
-      case MIN :
+      case TReduceOperator::MIN :
       {
-        OutputStreamsCUDAKernels::SampleCuboid<MIN>
+        OutputStreamsCUDAKernels::SampleCuboid<TReduceOperator::MIN>
                                               (deviceBuffer + cuboidInBufferStart,
                                                sourceMatrix.GetDeviceData(),
                                                topLeftCorner,
@@ -280,7 +280,7 @@ void TCuboidOutputHDF5Stream::Sample()
     cuboidInBufferStart += nSamples;
   }
 
-  if (reduceOp == NONE)
+  if (reduceOp == TReduceOperator::NONE)
   {
     // Record an event when the data has been copied over.
     checkCudaErrors(cudaEventRecord(eventSamplingFinished));
@@ -293,7 +293,7 @@ void TCuboidOutputHDF5Stream::Sample()
  */
 void TCuboidOutputHDF5Stream::FlushRaw()
 {
-  if (reduceOp == NONE)
+  if (reduceOp == TReduceOperator::NONE)
   {
     // make sure the data has been copied from the GPU
     cudaEventSynchronize(eventSamplingFinished);
@@ -315,7 +315,7 @@ void TCuboidOutputHDF5Stream::PostProcess()
 
   // When no reduce operator is applied, the data is flushed after every time step
   // which means it has been done before
-  if (reduceOp != NONE)
+  if (reduceOp != TReduceOperator::NONE)
   {
     // Copy data from GPU matrix
     CopyDataFromDevice();
@@ -332,7 +332,7 @@ void TCuboidOutputHDF5Stream::PostProcess()
 void TCuboidOutputHDF5Stream::Checkpoint()
 {
   // raw data has already been flushed, others has to be flushed here
-  if (reduceOp != NONE)
+  if (reduceOp != TReduceOperator::NONE)
   {
     // copy data from the device
     CopyDataFromDevice();
@@ -380,7 +380,7 @@ hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t cuboidIdx)
   const TParameters& params = TParameters::GetInstance();
 
   // if time series then Number of steps else 1
-  const size_t nSampledTimeSteps = (reduceOp == NONE)
+  const size_t nSampledTimeSteps = (reduceOp == TReduceOperator::NONE)
                                    ? params.Get_nt() - params.GetStartTimeIndex() : 0; // will be a 3D dataset
 
   // Set cuboid dimensions (subtract two corners (add 1) and use the appropriate component)
@@ -392,7 +392,8 @@ hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t cuboidIdx)
   // Set chunk size
   // If the size of the cuboid is bigger than 32 MB per timestep, set the chunk to approx 4MB
   size_t nSlabs = 1; //at least one slab
-  TDimensionSizes cuboidChunkSize(cuboidSize.nx, cuboidSize.ny, cuboidSize.nz, (reduceOp == NONE) ? 1 : 0);
+  TDimensionSizes cuboidChunkSize(cuboidSize.nx, cuboidSize.ny, cuboidSize.nz,
+                                  (reduceOp == TReduceOperator::NONE) ? 1 : 0);
 
   if (cuboidChunkSize.GetElementCount() > (CHUNK_SIZE_4MB * 8))
   {
@@ -410,8 +411,8 @@ hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t cuboidIdx)
                                                  params.GetCompressionLevel());
 
   // Write dataset parameters
-  file.WriteMatrixDomainType(group, datasetName.c_str(), THDF5_File::REAL);
-  file.WriteMatrixDataType  (group, datasetName.c_str(), THDF5_File::FLOAT);
+  file.WriteMatrixDomainType(group, datasetName.c_str(), THDF5_File::TMatrixDomainType::REAL);
+  file.WriteMatrixDataType  (group, datasetName.c_str(), THDF5_File::TMatrixDataType::FLOAT);
 
   return dataset;
 }//end of CreateCuboidDatasets
@@ -425,7 +426,7 @@ void TCuboidOutputHDF5Stream::FlushBufferToFile()
   TDimensionSizes position (0,0,0,0);
   TDimensionSizes blockSize(0,0,0,0);
 
-  if (reduceOp == NONE) position.nt = sampledTimeStep;
+  if (reduceOp == TReduceOperator::NONE) position.nt = sampledTimeStep;
 
   for (size_t cuboidIdx = 0; cuboidIdx < cuboidsInfo.size(); cuboidIdx++)
   {

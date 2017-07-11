@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              10 August    2016, 10:42 (revised)
+ *              07 July      2017, 13:56 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -49,45 +49,6 @@
 
 
 /**
- * @enum TMatrixIdx
- * @brief Matrix identifers of all matrices in the k-space code, names based on the Matlab notation.
- */
-enum TMatrixIdx
-{
-  kappa, c2, p,
-
-  ux_sgx    , uy_sgy    , uz_sgz,
-  ux_shifted, uy_shifted, uz_shifted,
-  duxdx     , duydy     , duzdz,
-  dxudxn    , dyudyn    , dzudzn,
-  dxudxn_sgx, dyudyn_sgy, dzudzn_sgz,
-
-  rhox, rhoy , rhoz, rho0,
-  dt_rho0_sgx, dt_rho0_sgy, dt_rho0_sgz,
-
-  p0_source_input, sensor_mask_index, sensor_mask_corners,
-  ddx_k_shift_pos, ddy_k_shift_pos, ddz_k_shift_pos,
-  ddx_k_shift_neg, ddy_k_shift_neg, ddz_k_shift_neg,
-  x_shift_neg_r  , y_shift_neg_r  , z_shift_neg_r,
-  pml_x_sgx      , pml_y_sgy      , pml_z_sgz,
-  pml_x          , pml_y          , pml_z,
-
-  absorb_tau, absorb_eta, absorb_nabla1, absorb_nabla2, BonA,
-
-  ux_source_input, uy_source_input, uz_source_input,
-  p_source_input,
-
-  u_source_index, p_source_index, transducer_source_input,
-  delay_mask,
-
-  //--------------Temporary matrices -------------//
-  temp_1_real_3D, temp_2_real_3D, temp_3_real_3D,
-  cufft_x_temp, cufft_y_temp, cufft_z_temp, cufft_shift_temp
-};// end of TMatrixID
-//--------------------------------------------------------------------------------------------------
-
-
-/**
  * @class   TMatrixContainer
  * @brief   Class implementing the matrix container.
  * @details This container is responsible to maintain all the matrices in the code except the output
@@ -97,10 +58,54 @@ class TMatrixContainer
 {
   public:
 
+    /**
+     * @enum TMatrixIdx
+     * @brief Matrix identifers of all matrices in the k-space code, names based on the Matlab notation.
+     */
+    enum class TMatrixIdx
+    {
+      kappa, c2, p,
+
+      ux_sgx    , uy_sgy    , uz_sgz,
+      ux_shifted, uy_shifted, uz_shifted,
+      duxdx     , duydy     , duzdz,
+      dxudxn    , dyudyn    , dzudzn,
+      dxudxn_sgx, dyudyn_sgy, dzudzn_sgz,
+
+      rhox, rhoy , rhoz, rho0,
+      dt_rho0_sgx, dt_rho0_sgy, dt_rho0_sgz,
+
+      p0_source_input, sensor_mask_index, sensor_mask_corners,
+      ddx_k_shift_pos, ddy_k_shift_pos, ddz_k_shift_pos,
+      ddx_k_shift_neg, ddy_k_shift_neg, ddz_k_shift_neg,
+      x_shift_neg_r  , y_shift_neg_r  , z_shift_neg_r,
+      pml_x_sgx      , pml_y_sgy      , pml_z_sgz,
+      pml_x          , pml_y          , pml_z,
+
+      absorb_tau, absorb_eta, absorb_nabla1, absorb_nabla2, BonA,
+
+      ux_source_input, uy_source_input, uz_source_input,
+      p_source_input,
+
+      u_source_index, p_source_index, transducer_source_input,
+      delay_mask,
+
+      //--------------Temporary matrices -------------//
+      temp_1_real_3D, temp_2_real_3D, temp_3_real_3D,
+      cufft_x_temp, cufft_y_temp, cufft_z_temp, cufft_shift_temp
+    };// end of TMatrixID
+    //----------------------------------------------------------------------------------------------
+
+
     /// Constructor.
     TMatrixContainer();
+    /// Copy constructor is not allowed.
+    TMatrixContainer(const TMatrixContainer&) = delete;
     /// Destructor.
     ~TMatrixContainer();
+
+    /// Operator = is not allowed.
+    TMatrixContainer& operator=(const TMatrixContainer&) = delete;
 
     /**
      * @brief   Get the number of matrices in the container.
@@ -146,7 +151,6 @@ class TMatrixContainer
       return static_cast<T &> (*(matrixContainer[matrixIdx].matrixPtr));
     };
 
-
     /// Create all matrices in the container.
     void CreateMatrices();
     /// Populate the container based on the simulation type.
@@ -166,22 +170,15 @@ class TMatrixContainer
     /// Copy all matrices from device to host (GPU -> CPU).
     void CopyMatricesFromDevice();
 
-
   protected:
 
   private:
 
     /// Datatype for the map associating the matrix ID enum and matrix record.
-    typedef std::map<TMatrixIdx, TMatrixRecord> TMatrixRecordContainer;
+    using TMatrixRecordContainer = std::map<TMatrixIdx, TMatrixRecord>;
 
     /// map holding the container
     TMatrixRecordContainer matrixContainer;
-
-    /// Copy constructor is not allowed for public
-    TMatrixContainer(const TMatrixContainer& orig);
-
-    /// Operator = is not allowed for public.
-    TMatrixContainer & operator = (const TMatrixContainer& src);
 
 };// end of TMatrixContainer
 //--------------------------------------------------------------------------------------------------

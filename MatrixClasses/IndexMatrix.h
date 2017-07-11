@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              29 July     2016, 16:54 (revised)
+ *              07 July     2017, 18:45 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -46,11 +46,17 @@
 class TIndexMatrix : public TBaseIndexMatrix
 {
   public:
+    /// Default constructor not allowed.
+    TIndexMatrix() = delete;
     /// Constructor allocating memory.
     TIndexMatrix(const TDimensionSizes& dimensionSizes);
-
+    /// Copy constructor not allowed.
+    TIndexMatrix(const TIndexMatrix&);
     /// Destructor.
     virtual ~TIndexMatrix();
+
+    /// Operator= is not allowed.
+    TIndexMatrix& operator= (const TIndexMatrix&);
 
     /// Read data from the HDF5 file.
     virtual void ReadDataFromHDF5File(THDF5_File&  file,
@@ -96,20 +102,14 @@ class TIndexMatrix : public TBaseIndexMatrix
     size_t GetTotalNumberOfElementsInAllCuboids() const;
 
   protected:
-    /// Default constructor not allowed for public.
-    TIndexMatrix() {};
-    /// Copy constructor not allowed for public.
-    TIndexMatrix(const TIndexMatrix& src);
-    /// Operator =  not allowed for public.
-    TIndexMatrix& operator = (const TIndexMatrix& src);
 
   private:
     /// Number of elements to get 4MB block of data.
-    static const size_t CHUNK_SIZE_1D_4MB   = 1048576; //(4MB)
+    static constexpr size_t CHUNK_SIZE_1D_4MB   = 1048576; //(4MB)
     /// Number of elements to get 1MB block of data.
-    static const size_t CHUNK_SIZE_1D_1MB   =  262144; //(1MB)
+    static constexpr size_t CHUNK_SIZE_1D_1MB   =  262144; //(1MB)
     /// Number of elements to get 256KB block of data.
-    static const size_t CHUNK_SIZE_1D_256KB =   65536; //(256KB)
+    static constexpr size_t CHUNK_SIZE_1D_256KB =   65536; //(256KB)
 
 };// end of TIndexMatrix
 //--------------------------------------------------------------------------------------------------

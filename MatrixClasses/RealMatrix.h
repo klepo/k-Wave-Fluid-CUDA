@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2011, 10:30 (created) \n
- *              10 August    2016, 11:59 (revised)
+ *              07 July      2017, 18:45 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -45,10 +45,17 @@ class TComplexMatrix;
 class TRealMatrix : public TBaseFloatMatrix
 {
   public:
+    /// Default constructor is not allowed.
+    TRealMatrix() = delete;
     /// Constructor.
     TRealMatrix(const TDimensionSizes& dimensionSizes);
+    /// Copy constructor not allowed.
+    TRealMatrix(const TRealMatrix&) = delete;
     /// Destructor.
     virtual ~TRealMatrix();
+
+    /// Operator= is not allowed.
+    TRealMatrix& operator=(const TRealMatrix&);
 
     /// Read data from the HDF5 file - only from the root group.
     virtual void ReadDataFromHDF5File(THDF5_File&  file,
@@ -81,24 +88,17 @@ class TRealMatrix : public TBaseFloatMatrix
       return hostData[index];
     };
 
-    /// Default constructor is not allowed for public.
-    TRealMatrix() : TBaseFloatMatrix() {};
-    /// Copy constructor not allowed for public.
-    TRealMatrix(const TRealMatrix& src);
-    /// Operator = is not allowed for public.
-    TRealMatrix& operator= (const TRealMatrix& src);
-
     /// Init dimension sizes.
     virtual void InitDimensions(const TDimensionSizes& dimensionSizes);
 
 private:
 
    /// Number of elements to get 4MB block of data.
-   static const size_t CHUNK_SIZE_1D_4MB   = 1048576; //(4MB)
+   static constexpr size_t CHUNK_SIZE_1D_4MB   = 1048576; //(4MB)
    /// Number of elements to get 1MB block of data.
-   static const size_t CHUNK_SIZE_1D_1MB   =  262144; //(1MB)
+   static constexpr size_t CHUNK_SIZE_1D_1MB   =  262144; //(1MB)
    /// Number of elements to get 256KB block of data.
-   static const size_t CHUNK_SIZE_1D_256KB =   65536; //(256KB)
+   static constexpr size_t CHUNK_SIZE_1D_256KB =   65536; //(256KB)
 };// end of class TRealMatrix
 //--------------------------------------------------------------------------------------------------
 
