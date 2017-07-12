@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 January   2015, 17:21 (created) \n
- *              09 July      2017, 09:46 (revised)
+ *              12 July      2017, 13:48 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -58,7 +58,7 @@
  */
 int GetSamplerBlockSize()
 {
-  return TParameters::GetInstance().GetCudaParameters().GetSamplerBlockSize1D();
+  return TParameters::GetInstance().GetCudaParameters().getSamplerBlockSize1D();
 }// end of GetSamplerBlockSize
 //--------------------------------------------------------------------------------------------------
 
@@ -70,7 +70,7 @@ int GetSamplerBlockSize()
  */
 int GetSamplerGridSize()
 {
-  return TParameters::GetInstance().GetCudaParameters().GetSamplerGridSize1D();
+  return TParameters::GetInstance().GetCudaParameters().getSamplerGridSize1D();
 }// end of GetSamplerGridSize
 //--------------------------------------------------------------------------------------------------
 

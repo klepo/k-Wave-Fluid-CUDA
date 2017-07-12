@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              12 July     2017, 10:43 (revised)
+ *              12 July     2017, 13:47 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -65,7 +65,7 @@ extern __constant__ CudaDeviceConstants cudaDeviceConstants;
  */
 inline int GetSolverBlockSize1D()
 {
-  return TParameters::GetInstance().GetCudaParameters().GetSolverBlockSize1D();
+  return TParameters::GetInstance().GetCudaParameters().getSolverBlockSize1D();
 };// end of GetSolverBlockSize1D
 //--------------------------------------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ inline int GetSolverBlockSize1D()
  */
 inline int GetSolverGridSize1D()
 {
-  return TParameters::GetInstance().GetCudaParameters().GetSolverGridSize1D();
+  return TParameters::GetInstance().GetCudaParameters().getSolverGridSize1D();
 };// end of GetSolverGridSize1D
 //--------------------------------------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ inline int GetSolverGridSize1D()
  */
 inline dim3 GetSolverTransposeBlockSize()
 {
-  return TParameters::GetInstance().GetCudaParameters().GetSolverTransposeBlockSize();
+  return TParameters::GetInstance().GetCudaParameters().getSolverTransposeBlockSize();
 };//end of GetSolverTransposeBlockSize()
 //--------------------------------------------------------------------------------------------------
 
@@ -95,7 +95,7 @@ inline dim3 GetSolverTransposeBlockSize()
  */
 inline dim3 GetSolverTransposeGirdSize()
 {
-  return TParameters::GetInstance().GetCudaParameters().GetSolverTransposeGirdSize();
+  return TParameters::GetInstance().GetCudaParameters().getSolverTransposeGirdSize();
 };// end of GetSolverTransposeGirdSize()
 //--------------------------------------------------------------------------------------------------
 

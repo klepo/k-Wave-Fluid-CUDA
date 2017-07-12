@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              11 July     2017, 16:44 (revised)
+ *              12 July     2017, 13:46 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -244,7 +244,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
   TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_FFT_PLANS);
   TLogger::Flush(TLogger::TLogLevel::BASIC);
 
-  TCUDAParameters& cudaParameters = parameters.GetCudaParameters();
+  CudaParameters& cudaParameters = parameters.GetCudaParameters();
 
   // fft initialisation and preprocessing
   try
@@ -261,11 +261,11 @@ void TKSpaceFirstOrder3DSolver::Compute()
 
     preProcessingTime.stop();
     // Set kernel configurations
-    cudaParameters.SetKernelConfiguration();
+    cudaParameters.setKernelConfiguration();
 
     // Set up constant memory - copy over to GPU
     // Constant memory uses some variables calculated during preprocessing
-    cudaParameters.SetUpDeviceConstants();
+    cudaParameters.setUpDeviceConstants();
 
     TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DONE);
   }
@@ -285,14 +285,14 @@ void TKSpaceFirstOrder3DSolver::Compute()
 
 
   const string blockDims = TLogger::FormatMessage(OUT_FMT_CUDA_GRID_SHAPE_FORMAT,
-                                                  cudaParameters.GetSolverGridSize1D(),
-                                                  cudaParameters.GetSolverBlockSize1D());
+                                                  cudaParameters.getSolverGridSize1D(),
+                                                  cudaParameters.getSolverBlockSize1D());
 
   TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_CUDA_SOLVER_GRID_SHAPE, blockDims.c_str());
 
   const string gridDims = TLogger::FormatMessage(OUT_FMT_CUDA_GRID_SHAPE_FORMAT,
-                                                 cudaParameters.GetSamplerGridSize1D(),
-                                                 cudaParameters.GetSamplerBlockSize1D());
+                                                 cudaParameters.getSamplerGridSize1D(),
+                                                 cudaParameters.getSamplerBlockSize1D());
 
   TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_CUDA_SAMPLER_GRID_SHAPE, gridDims.c_str());
 
@@ -511,9 +511,9 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense() const
                OUT_FMT_CUDA_DRIVER,
                cudaDriverVersion/1000, (cudaDriverVersion%100)/10);
 
-  const TCUDAParameters& cudaParameters = parameters.GetCudaParameters();
+  const CudaParameters& cudaParameters = parameters.GetCudaParameters();
   // no GPU was found
-  if (cudaParameters.GetDeviceIdx() == TCUDAParameters::DEFAULT_DEVICE_IDX)
+  if (cudaParameters.getDeviceIdx() == CudaParameters::kDefaultDeviceIdx)
   {
     TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CUDA_DEVICE_INFO_NA);
   }
@@ -523,20 +523,20 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense() const
                   OUT_FMT_CUDA_CODE_ARCH,
                   SolverCUDAKernels::GetCUDACodeVersion()/10.f);
     TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SEPARATOR);
-    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CUDA_DEVICE, cudaParameters.GetDeviceIdx());
+    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CUDA_DEVICE, cudaParameters.getDeviceIdx());
 
-    const int paddingLength = static_cast<int>(65 - (22 + cudaParameters.GetDeviceName().length()));
+    const int paddingLength = static_cast<int>(65 - (22 + cudaParameters.getDeviceName().length()));
 
     TLogger::Log(TLogger::TLogLevel::BASIC,
                  OUT_FMT_CUDA_DEVICE_NAME,
-                 cudaParameters.GetDeviceName().c_str(),
+                 cudaParameters.getDeviceName().c_str(),
                  paddingLength,
                  OUT_FMT_CUDA_DEVICE_NAME_PADDING.c_str());
 
     TLogger::Log(TLogger::TLogLevel::BASIC,
                  OUT_FMT_CUDA_CAPABILITY,
-                 cudaParameters.GetDeviceProperties().major,
-                 cudaParameters.GetDeviceProperties().minor);
+                 cudaParameters.getDeviceProperties().major,
+                 cudaParameters.getDeviceProperties().minor);
   }
 
   TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_LICENCE);

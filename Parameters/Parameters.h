@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        08 December 2011, 16:34 (created)      \n
- *              11 July     2017, 16:50 (revised)
+ *              12 July     2017, 14:48 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -34,7 +34,7 @@
 
 #include <string>
 
-#include <Parameters/CUDAParameters.h>
+#include <Parameters/CudaParameters.h>
 #include <Parameters/CommandLineParameters.h>
 #include <Utils/DimensionSizes.h>
 #include <HDF5/HDF5_File.h>
@@ -82,9 +82,9 @@ class TParameters
     void PrintSimulatoinSetup();
 
     /// Get class with CUDA Parameters (runtime setup), cosnt version
-    const TCUDAParameters& GetCudaParameters() const {return cudaParameters;};
+    const CudaParameters& GetCudaParameters() const {return cudaParameters;};
     /// Get class with CUDA Parameters (runtime setup)
-    TCUDAParameters&       GetCudaParameters()       {return cudaParameters;};
+    CudaParameters&       GetCudaParameters()       {return cudaParameters;};
 
     /// Get input file handle
     THDF5_File& GetInputFile()        {return inputFile;};
@@ -284,7 +284,7 @@ class TParameters
 
   private:
    /// Class with CUDA Parameters (runtime setup)
-    TCUDAParameters cudaParameters;
+    CudaParameters cudaParameters;
     /// Class with command line parameters
     TCommandLineParameters commandLineParameters;
 

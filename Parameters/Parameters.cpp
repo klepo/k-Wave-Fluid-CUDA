@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2012, 13:39 (created) \n
- *              12 July      2017, 11:03 (revised)
+ *              12 July      2017, 13:48 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -39,7 +39,7 @@
 #include <stdexcept>
 
 #include <Parameters/Parameters.h>
-#include <Parameters/CUDAParameters.h>
+#include <Parameters/CudaParameters.h>
 #include <Utils/MatrixNames.h>
 #include <Logger/Logger.h>
 
@@ -148,15 +148,15 @@ void TParameters::SelectDevice()
   TLogger::Flush(TLogger::TLogLevel::BASIC);
 
   int deviceIdx = commandLineParameters.GetCUDADeviceIdx();
-  cudaParameters.SelectDevice(deviceIdx); // throws an exception when wrong
+  cudaParameters.selectDevice(deviceIdx); // throws an exception when wrong
 
   TLogger::Log(TLogger::TLogLevel::BASIC,
                OUT_FMT_DEVICE_ID,
-               cudaParameters.GetDeviceIdx());
+               cudaParameters.getDeviceIdx());
 
   TLogger::Log(TLogger::TLogLevel::BASIC,
                OUT_FMT_DEVICE_NAME,
-               cudaParameters.GetDeviceName().c_str());
+               cudaParameters.getDeviceName().c_str());
 }// end of SelectDevice
 //--------------------------------------------------------------------------------------------------
 

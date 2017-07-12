@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              18 June     2017, 11:30 (revised)
+ *              12 July     2017, 13:47 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -40,7 +40,7 @@
 #include <Utils/DimensionSizes.h>
 
 #include <Parameters/Parameters.h>
-#include <Parameters/CUDAParameters.h>
+#include <Parameters/CudaParameters.h>
 
 /**
  * @namespace   SolverCUDAKernels

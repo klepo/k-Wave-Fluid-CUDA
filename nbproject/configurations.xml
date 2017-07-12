@@ -67,12 +67,12 @@
       <itemPath>OutputHDF5Streams/WholeDomainOutputHDF5Stream.h</itemPath>
     </logicalFolder>
     <logicalFolder name="Parameters" displayName="Parameters" projectFiles="true">
-      <itemPath>Parameters/CUDAParameters.cpp</itemPath>
-      <itemPath>Parameters/CUDAParameters.h</itemPath>
       <itemPath>Parameters/CommandLineParameters.cpp</itemPath>
       <itemPath>Parameters/CommandLineParameters.h</itemPath>
       <itemPath>Parameters/CudaDeviceConstants.cu</itemPath>
       <itemPath>Parameters/CudaDeviceConstants.cuh</itemPath>
+      <itemPath>Parameters/CudaParameters.cpp</itemPath>
+      <itemPath>Parameters/CudaParameters.h</itemPath>
       <itemPath>Parameters/Parameters.cpp</itemPath>
       <itemPath>Parameters/Parameters.h</itemPath>
     </logicalFolder>
@@ -286,10 +286,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
             tool="1"
@@ -300,6 +296,10 @@
       <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Parameters/CudaParameters.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Parameters/CudaParameters.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -486,10 +486,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
             tool="1"
@@ -500,6 +496,10 @@
       <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Parameters/CudaParameters.cpp" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaParameters.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -686,10 +686,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
             tool="1"
@@ -700,6 +696,10 @@
       <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Parameters/CudaParameters.cpp" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaParameters.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -885,10 +885,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
             tool="1"
@@ -899,6 +895,10 @@
       <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Parameters/CudaParameters.cpp" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaParameters.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -1086,10 +1086,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
             tool="1"
@@ -1100,6 +1096,10 @@
       <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Parameters/CudaParameters.cpp" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaParameters.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -1285,10 +1285,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
             tool="1"
@@ -1299,6 +1295,10 @@
       <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Parameters/CudaParameters.cpp" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaParameters.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -1484,10 +1484,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
             tool="1"
@@ -1498,6 +1494,10 @@
       <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Parameters/CudaParameters.cpp" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaParameters.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -1682,10 +1682,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
             tool="1"
@@ -1696,6 +1692,10 @@
       <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Parameters/CudaParameters.cpp" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaParameters.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
