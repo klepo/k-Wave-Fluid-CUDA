@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2012, 13:39 (created) \n
- *              12 July      2017, 13:48 (revised)
+ *              12 July      2017, 15:43 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -105,14 +105,14 @@ TParameters::~TParameters()
  */
 void TParameters::Init(int argc, char** argv)
 {
-  commandLineParameters.ParseCommandLine(argc, argv);
+  commandLineParameters.parseCommandLine(argc, argv);
 
   if (GetGitHash() != "")
   {
     TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_GIT_HASH_LEFT, GetGitHash().c_str());
     TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_SEPARATOR);
   }
-  if (commandLineParameters.IsVersion())
+  if (commandLineParameters.isPrintVersionEnabled())
   {
     return;
   }
@@ -120,13 +120,13 @@ void TParameters::Init(int argc, char** argv)
   TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_READING_CONFIGURATION);
   ReadScalarsFromInputFile(inputFile);
 
-  if (commandLineParameters.IsBenchmarkFlag())
+  if (commandLineParameters.isBenchmarkEnabled())
   {
-    nt = commandLineParameters.GetBenchmarkTimeStepsCount();
+    nt = commandLineParameters.getBenchmarkTimeStepsCount();
   }
 
-  if ((nt <= commandLineParameters.GetStartTimeIndex()) ||
-      (0 > commandLineParameters.GetStartTimeIndex()))
+  if ((nt <= commandLineParameters.getSamplingStartTimeIndex()) ||
+      (0 > commandLineParameters.getSamplingStartTimeIndex()))
   {
     throw std::invalid_argument(TLogger::FormatMessage(ERR_FMT_ILLEGAL_START_TIME_VALUE,
                                                        1l,
@@ -147,7 +147,7 @@ void TParameters::SelectDevice()
                OUT_FMT_SELECTED_DEVICE);
   TLogger::Flush(TLogger::TLogLevel::BASIC);
 
-  int deviceIdx = commandLineParameters.GetCUDADeviceIdx();
+  int deviceIdx = commandLineParameters.getCudaDeviceIdx();
   cudaParameters.selectDevice(deviceIdx); // throws an exception when wrong
 
   TLogger::Log(TLogger::TLogLevel::BASIC,
@@ -183,7 +183,7 @@ void TParameters::PrintSimulatoinSetup()
   TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SIMULATION_LENGTH, Get_nt());
 
   // Print all command line parameters
-  commandLineParameters.PrintComandlineParamers();
+  commandLineParameters.printComandlineParamers();
 
   if (Get_sensor_mask_type() == TSensorMaskType::INDEX)
   {
@@ -211,7 +211,7 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
   if (!inputFile.IsOpen())
   {
     // Open file -- exceptions handled in main
-    inputFile.Open(commandLineParameters.GetInputFileName());
+    inputFile.Open(commandLineParameters.getInputFileName());
   }
 
   fileHeader.ReadHeaderFromInputFile(inputFile);

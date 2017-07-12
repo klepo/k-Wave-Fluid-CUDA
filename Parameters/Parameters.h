@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        08 December 2011, 16:34 (created)      \n
- *              12 July     2017, 14:48 (revised)
+ *              12 July     2017, 15:43 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -217,63 +217,63 @@ class TParameters
     float&  Get_rho0_sgz_scalar()                {return rho0_sgz_scalar; };
 
     /// Get input file name.
-    std::string GetInputFileName()      const {return commandLineParameters.GetInputFileName();};
+    std::string GetInputFileName()      const {return commandLineParameters.getInputFileName();};
     /// Get output file name.
-    std::string GetOutputFileName()     const {return commandLineParameters.GetOutputFileName();};
+    std::string GetOutputFileName()     const {return commandLineParameters.getOutputFileName();};
     /// Get checkpoint filename.
-    std::string GetCheckpointFileName() const {return commandLineParameters.GetCheckpointFileName();};
+    std::string GetCheckpointFileName() const {return commandLineParameters.getCheckpointFileName();};
 
     /// Get compression level.
-    size_t GetCompressionLevel()   const {return commandLineParameters.GetCompressionLevel();};
+    size_t GetCompressionLevel()   const {return commandLineParameters.getCompressionLevel();};
     /// Get number of threads.
-    size_t GetNumberOfThreads()    const {return commandLineParameters.GetNumberOfThreads();};
+    size_t GetNumberOfThreads()    const {return commandLineParameters.getNumberOfThreads();};
     /// Get progress print interval.
-    size_t GetProgressPrintInterval() const {return commandLineParameters.GetProgressPrintInterval();};
+    size_t GetProgressPrintInterval() const {return commandLineParameters.getProgressPrintInterval();};
 
     /// Get start time index for sensor recording.
-    size_t GetStartTimeIndex()     const {return commandLineParameters.GetStartTimeIndex();};
+    size_t GetStartTimeIndex()     const {return commandLineParameters.getSamplingStartTimeIndex();};
 
     /// Is checkpoint enabled?
-    bool   IsCheckpointEnabled()   const {return commandLineParameters.IsCheckpointEnabled();};
+    bool   IsCheckpointEnabled()   const {return commandLineParameters.isCheckpointEnabled();};
     /// Get checkpoint interval.
-    size_t GetCheckpointInterval() const {return commandLineParameters.GetCheckpointInterval();};
+    size_t GetCheckpointInterval() const {return commandLineParameters.getCheckpointInterval();};
 
     /// Is --version specified at the command line?
-    bool IsVersion()         const {return commandLineParameters.IsVersion();};
+    bool IsVersion()         const {return commandLineParameters.isPrintVersionEnabled();};
     /// Is  -p or --p_raw specified at the command line?
-    bool IsStore_p_raw()     const {return commandLineParameters.IsStore_p_raw();};
+    bool IsStore_p_raw()     const {return commandLineParameters.storePressureRaw();};
     /// Is --p_rms specified at the command line?
-    bool IsStore_p_rms()     const {return commandLineParameters.IsStore_p_rms();};
+    bool IsStore_p_rms()     const {return commandLineParameters.storePressureRms();};
     /// Is --p_max specified at the command line?
-    bool IsStore_p_max()     const {return commandLineParameters.IsStore_p_max();};
+    bool IsStore_p_max()     const {return commandLineParameters.storePressureMax();};
     /// Is --p_min specified at the command line?
-    bool IsStore_p_min()     const {return commandLineParameters.IsStore_p_min();};
+    bool IsStore_p_min()     const {return commandLineParameters.storePressureMin();};
     /// Is --p_max_all specified at the command line?
-    bool IsStore_p_max_all() const {return commandLineParameters.IsStore_p_max_all();};
+    bool IsStore_p_max_all() const {return commandLineParameters.storePressureMaxAllDomain();};
     /// Is --p_min_all specified at the command line?
-    bool IsStore_p_min_all() const {return commandLineParameters.IsStore_p_min_all();};
+    bool IsStore_p_min_all() const {return commandLineParameters.storePressureMinAllDomain();};
     /// Is  --p_final specified at the command line?
-    bool IsStore_p_final()   const {return commandLineParameters.IsStore_p_final();};
+    bool IsStore_p_final()   const {return commandLineParameters.storePressureFinalAllDomain();};
 
     /// Is -u or --u_raw specified at the command line?
-    bool IsStore_u_raw()               const {return commandLineParameters.IsStore_u_raw();};
+    bool IsStore_u_raw()               const {return commandLineParameters.storeVelocityRaw();};
     /// Is --u_non_staggered_raw set?
-    bool IsStore_u_non_staggered_raw() const {return commandLineParameters.IsStore_u_non_staggered_raw();};
+    bool IsStore_u_non_staggered_raw() const {return commandLineParameters.storeVelocityNonStaggeredRaw();};
     /// Is --u_raw specified at the command line?
-    bool IsStore_u_rms()               const {return commandLineParameters.IsStore_u_rms();};
+    bool IsStore_u_rms()               const {return commandLineParameters.storeVelocityRms();};
     /// Is --u_max specified at the command line?
-    bool IsStore_u_max()               const {return commandLineParameters.IsStore_u_max();};
+    bool IsStore_u_max()               const {return commandLineParameters.storeVelocityMax();};
     /// Is --u_min specified at the command line?
-    bool IsStore_u_min()               const {return commandLineParameters.IsStore_u_min();};
+    bool IsStore_u_min()               const {return commandLineParameters.StoreVelocityMin();};
     /// Is --u_max_all specified at the command line?
-    bool IsStore_u_max_all()           const {return commandLineParameters.IsStore_u_max_all();};
+    bool IsStore_u_max_all()           const {return commandLineParameters.storeVelocityMaxAllDomain();};
     /// Is --u_min_all specified at the command line?
-    bool IsStore_u_min_all()           const {return commandLineParameters.IsStore_u_min_all();};
+    bool IsStore_u_min_all()           const {return commandLineParameters.storeVelocityMinAllDomain();};
     /// Is --u_final specified at the command line
-    bool IsStore_u_final()             const {return commandLineParameters.IsStore_u_final();};
+    bool IsStore_u_final()             const {return commandLineParameters.storeVelocityFinalAllDomain();};
 
     /// is --copy_mask set
-    bool IsCopySensorMask()            const {return commandLineParameters.IsCopySensorMask();};
+    bool IsCopySensorMask()            const {return commandLineParameters.copySensorMask();};
 
     /// Get Git hash of the code
     std::string GetGitHash()  const;
@@ -286,7 +286,7 @@ class TParameters
    /// Class with CUDA Parameters (runtime setup)
     CudaParameters cudaParameters;
     /// Class with command line parameters
-    TCommandLineParameters commandLineParameters;
+    CommandLineParameters commandLineParameters;
 
     /// Handle to the input HDF5 file.
     THDF5_File inputFile;
