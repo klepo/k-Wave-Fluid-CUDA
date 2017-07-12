@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 November 2015, 16:49 (created) \n
- *              11 July     2017, 16:50 (revised)
+ *              12 July     2017, 10:41 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -33,7 +33,7 @@
 #include <cuda_runtime.h>
 
 #include <Parameters/CUDAParameters.h>
-#include <Parameters/CUDADeviceConstants.cuh>
+#include <Parameters/CudaDeviceConstants.cuh>
 #include <Parameters/Parameters.h>
 
 #include <Logger/Logger.h>
@@ -211,9 +211,9 @@ void TCUDAParameters::SetKernelConfiguration()
   solverGridSize1D  = deviceProperties.multiProcessorCount * 8;
 
   // the grid size is to small, get 1 gridpoint per thread
-  if ((size_t(solverGridSize1D) * size_t(solverBlockSize1D)) > fullDims.size())
+  if ((size_t(solverGridSize1D) * size_t(solverBlockSize1D)) > fullDims.nElements())
   {
-    solverGridSize1D  = int((fullDims.size()  + size_t(solverBlockSize1D) - 1 ) / size_t(solverBlockSize1D));
+    solverGridSize1D  = int((fullDims.nElements()  + size_t(solverBlockSize1D) - 1 ) / size_t(solverBlockSize1D));
   }
 
   // Transposition works by processing for tiles of 32x32 by 4 warps. Every block
@@ -253,7 +253,7 @@ void TCUDAParameters::SetKernelConfiguration()
  */
 void TCUDAParameters::SetUpDeviceConstants() const
 {
-  TCUDADeviceConstants constantsToTransfer;
+  CudaDeviceConstants constantsToTransfer;
 
   TParameters& params = TParameters::GetInstance();
   DimensionSizes  fullDimSizes = params.GetFullDimensionSizes();
@@ -263,45 +263,43 @@ void TCUDAParameters::SetUpDeviceConstants() const
   constantsToTransfer.nx  = static_cast<unsigned int>(fullDimSizes.nx);
   constantsToTransfer.ny  = static_cast<unsigned int>(fullDimSizes.ny);
   constantsToTransfer.nz  = static_cast<unsigned int>(fullDimSizes.nz);
-  constantsToTransfer.nElements = static_cast<unsigned int>(fullDimSizes.size());
-  constantsToTransfer.slabSize  = static_cast<unsigned int>(fullDimSizes.nx * fullDimSizes.ny);
+  constantsToTransfer.nElements = static_cast<unsigned int>(fullDimSizes.nElements());
 
   constantsToTransfer.nxComplex = static_cast<unsigned int>(reducedDimSizes.nx);
   constantsToTransfer.nyComplex = static_cast<unsigned int>(reducedDimSizes.ny);
   constantsToTransfer.nzComplex = static_cast<unsigned int>(reducedDimSizes.nz);
-  constantsToTransfer.nElementsComplex = static_cast<unsigned int>(reducedDimSizes.size());
-  constantsToTransfer.slabSizeComplex  = static_cast<unsigned int>(reducedDimSizes.nx * reducedDimSizes.ny);
+  constantsToTransfer.nElementsComplex = static_cast<unsigned int>(reducedDimSizes.nElements());
 
-  constantsToTransfer.fftDivider  = 1.0f / fullDimSizes.size();
+  constantsToTransfer.fftDivider  = 1.0f / fullDimSizes.nElements();
   constantsToTransfer.fftDividerX = 1.0f / fullDimSizes.nx;
   constantsToTransfer.fftDividerY = 1.0f / fullDimSizes.ny;
   constantsToTransfer.fftDividerZ = 1.0f / fullDimSizes.nz;
 
   constantsToTransfer.dt  = params.Get_dt();
-  constantsToTransfer.dt2 = params.Get_dt() * 2.0f;
-  constantsToTransfer.c2  = params.Get_c0_scalar();
+  constantsToTransfer.dtBy2 = params.Get_dt() * 2.0f;
+  constantsToTransfer.cSquare  = params.Get_c0_scalar();
 
-  constantsToTransfer.rho0_scalar     = params.Get_rho0_scalar();
-  constantsToTransfer.dt_rho0_scalar  = params.Get_rho0_scalar() * params.Get_dt();
-  constantsToTransfer.rho0_sgx_scalar = params.Get_rho0_sgx_scalar();
-  constantsToTransfer.rho0_sgy_scalar = params.Get_rho0_sgy_scalar(),
-  constantsToTransfer.rho0_sgz_scalar = params.Get_rho0_sgz_scalar(),
+  constantsToTransfer.rho0     = params.Get_rho0_scalar();
+  constantsToTransfer.dtRho0  = params.Get_rho0_scalar() * params.Get_dt();
+  constantsToTransfer.dtRho0Sgx = params.Get_rho0_sgx_scalar();
+  constantsToTransfer.dtRho0Sgy = params.Get_rho0_sgy_scalar(),
+  constantsToTransfer.dtRho0Sgz = params.Get_rho0_sgz_scalar(),
 
-  constantsToTransfer.BonA_scalar       = params.Get_BonA_scalar();
-  constantsToTransfer.absorb_tau_scalar = params.Get_absorb_tau_scalar();
-  constantsToTransfer.absorb_eta_scalar = params.Get_absorb_eta_scalar();
+  constantsToTransfer.bOnA       = params.Get_BonA_scalar();
+  constantsToTransfer.absorbTau = params.Get_absorb_tau_scalar();
+  constantsToTransfer.absorbEta = params.Get_absorb_eta_scalar();
 
 
   // source masks
-  constantsToTransfer.p_source_index_size = static_cast<unsigned int>(params.Get_p_source_index_size());
-  constantsToTransfer.p_source_mode       = static_cast<unsigned int>(params.Get_p_source_mode());
-  constantsToTransfer.p_source_many       = static_cast<unsigned int>(params.Get_p_source_many());
+  constantsToTransfer.presureSourceSize = static_cast<unsigned int>(params.Get_p_source_index_size());
+  constantsToTransfer.presureSourceMode       = static_cast<unsigned int>(params.Get_p_source_mode());
+  constantsToTransfer.presureSourceMany       = static_cast<unsigned int>(params.Get_p_source_many());
 
-  constantsToTransfer.u_source_index_size = static_cast<unsigned int>(params.Get_u_source_index_size());
-  constantsToTransfer.u_source_mode       = static_cast<unsigned int>(params.Get_u_source_mode());
-  constantsToTransfer.u_source_many       = static_cast<unsigned int>(params.Get_u_source_many());
+  constantsToTransfer.velocitySourceSize = static_cast<unsigned int>(params.Get_u_source_index_size());
+  constantsToTransfer.velocitySourceMode       = static_cast<unsigned int>(params.Get_u_source_mode());
+  constantsToTransfer.velocitySourceMany       = static_cast<unsigned int>(params.Get_u_source_many());
 
-  constantsToTransfer.SetUpCUDADeviceConstatns();
+  constantsToTransfer.uploadDeviceConstants();
 }// end of SetUpDeviceConstants
 //--------------------------------------------------------------------------------------------------
 

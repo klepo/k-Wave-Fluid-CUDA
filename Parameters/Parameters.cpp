@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2012, 13:39 (created) \n
- *              11 July      2017, 16:50 (revised)
+ *              12 July      2017, 11:03 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -332,7 +332,7 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
   inputFile.ReadScalarValue(rootGroup, kUzSourceFlagName, uz_source_flag);
   inputFile.ReadScalarValue(rootGroup, kTransducerSourceFlagName, transducer_source_flag);
 
-  inputFile.ReadScalarValue(rootGroup, kPSourceFlagName, p_source_flag);
+  inputFile.ReadScalarValue(rootGroup, kPressureSourceFlagName, p_source_flag);
   inputFile.ReadScalarValue(rootGroup, kP0SourceFlagName,p0_source_flag);
 
   inputFile.ReadScalarValue(rootGroup, kNonUniformGridFlagName, nonuniform_grid_flag);
@@ -351,14 +351,14 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
 
   if ((transducer_source_flag > 0) || (ux_source_flag > 0) || (uy_source_flag > 0) || (uz_source_flag > 0))
   {
-    u_source_index_size = inputFile.GetDatasetElementCount(rootGroup, kUSourceIndexName);
+    u_source_index_size = inputFile.GetDatasetElementCount(rootGroup, kVelocitySourceIndexName);
   }
 
   // uxyz_source_flags.
   if ((ux_source_flag > 0) || (uy_source_flag > 0) || (uz_source_flag > 0))
   {
-    inputFile.ReadScalarValue(rootGroup, kUSourceManyName, u_source_many);
-    inputFile.ReadScalarValue(rootGroup, kUSourceModeName, u_source_mode);
+    inputFile.ReadScalarValue(rootGroup, kVelocitySourceManyName, u_source_many);
+    inputFile.ReadScalarValue(rootGroup, kVelocitySourceModeName, u_source_mode);
   }
   else
   {
@@ -369,10 +369,10 @@ void TParameters::ReadScalarsFromInputFile(THDF5_File& inputFile)
   // p_source_flag
   if (p_source_flag != 0)
   {
-    inputFile.ReadScalarValue(rootGroup, kPSourceManyName, p_source_many);
-    inputFile.ReadScalarValue(rootGroup, kPSourceModeName, p_source_mode);
+    inputFile.ReadScalarValue(rootGroup, kPressureSourceManyName, p_source_many);
+    inputFile.ReadScalarValue(rootGroup, kPressureSourceModeName, p_source_mode);
 
-    p_source_index_size = inputFile.GetDatasetElementCount(rootGroup, kPSourceIndexName);
+    p_source_index_size = inputFile.GetDatasetElementCount(rootGroup, kPressureSourceIndexName);
   }
   else
   {
@@ -460,7 +460,7 @@ void TParameters::SaveScalarsToFile(THDF5_File& outputFile)
   outputFile.WriteScalarValue(HDF5RootGroup, kUzSourceFlagName, uz_source_flag);
   outputFile.WriteScalarValue(HDF5RootGroup, kTransducerSourceFlagName, transducer_source_flag);
 
-  outputFile.WriteScalarValue(HDF5RootGroup, kPSourceFlagName,  p_source_flag);
+  outputFile.WriteScalarValue(HDF5RootGroup, kPressureSourceFlagName,  p_source_flag);
   outputFile.WriteScalarValue(HDF5RootGroup, kP0SourceFlagName, p0_source_flag);
 
   outputFile.WriteScalarValue(HDF5RootGroup, kNonUniformGridFlagName, nonuniform_grid_flag);
@@ -470,15 +470,15 @@ void TParameters::SaveScalarsToFile(THDF5_File& outputFile)
   // uxyz_source_flags.
   if ((ux_source_flag > 0) || (uy_source_flag > 0) || (uz_source_flag > 0))
   {
-    outputFile.WriteScalarValue(HDF5RootGroup, kUSourceManyName, u_source_many);
-      outputFile.WriteScalarValue(HDF5RootGroup, kUSourceModeName, u_source_mode);
+    outputFile.WriteScalarValue(HDF5RootGroup, kVelocitySourceManyName, u_source_many);
+      outputFile.WriteScalarValue(HDF5RootGroup, kVelocitySourceModeName, u_source_mode);
   }
 
   // p_source_flag.
   if (p_source_flag != 0)
   {
-    outputFile.WriteScalarValue(HDF5RootGroup, kPSourceManyName, p_source_many);
-    outputFile.WriteScalarValue(HDF5RootGroup, kPSourceModeName, p_source_mode);
+    outputFile.WriteScalarValue(HDF5RootGroup, kPressureSourceManyName, p_source_many);
+    outputFile.WriteScalarValue(HDF5RootGroup, kPressureSourceModeName, p_source_mode);
 
     }
 

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              11 July     2017, 09:45 (revised)
+ *              12 July     2017, 10:43 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -32,7 +32,7 @@
 #include <cuComplex.h>
 
 #include <KSpaceSolver/SolverCUDAKernels.cuh>
-#include <Parameters/CUDADeviceConstants.cuh>
+#include <Parameters/CudaDeviceConstants.cuh>
 
 #include <Logger/Logger.h>
 #include <Utils/CudaUtils.cuh>
@@ -52,7 +52,7 @@
  * @details  This variable holds necessary simulation constants in the CUDA GPU memory.
  *           The variable is defined in TCUDADeviceConstants.cu
  */
-extern __constant__ TCUDADeviceConstants cudaDeviceConstants;
+extern __constant__ CudaDeviceConstants cudaDeviceConstants;
 
 
 //------------------------------------------------------------------------------------------------//
@@ -288,9 +288,9 @@ __global__ void CUDAComputeVelocityScalarUniform(float*       ux_sgx,
                                                  const float* pml_y,
                                                  const float* pml_z)
 {
-  const float Divider_X = cudaDeviceConstants.rho0_sgx_scalar * cudaDeviceConstants.fftDivider;
-  const float Divider_Y = cudaDeviceConstants.rho0_sgy_scalar * cudaDeviceConstants.fftDivider;
-  const float Divider_Z = cudaDeviceConstants.rho0_sgz_scalar * cudaDeviceConstants.fftDivider;
+  const float Divider_X = cudaDeviceConstants.dtRho0Sgx * cudaDeviceConstants.fftDivider;
+  const float Divider_Y = cudaDeviceConstants.dtRho0Sgy * cudaDeviceConstants.fftDivider;
+  const float Divider_Z = cudaDeviceConstants.dtRho0Sgz * cudaDeviceConstants.fftDivider;
 
   for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
@@ -377,9 +377,9 @@ __global__ void CUDAComputeVelocityScalarNonuniform(float*       ux_sgx,
                                                     const float* pml_y,
                                                     const float* pml_z)
 {
-  const float Divider_X = cudaDeviceConstants.rho0_sgx_scalar * cudaDeviceConstants.fftDivider;
-  const float Divider_Y = cudaDeviceConstants.rho0_sgy_scalar * cudaDeviceConstants.fftDivider;;
-  const float Divider_Z = cudaDeviceConstants.rho0_sgz_scalar * cudaDeviceConstants.fftDivider;
+  const float Divider_X = cudaDeviceConstants.dtRho0Sgx * cudaDeviceConstants.fftDivider;
+  const float Divider_Y = cudaDeviceConstants.dtRho0Sgy * cudaDeviceConstants.fftDivider;;
+  const float Divider_Z = cudaDeviceConstants.dtRho0Sgz * cudaDeviceConstants.fftDivider;
 
   for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
@@ -462,7 +462,7 @@ __global__ void CUDAAddTransducerSource(float*        ux_sgx,
                                         size_t*       delay_mask,
                                         const float*  transducer_signal)
 {
-  for (auto i = getIndex(); i < cudaDeviceConstants.u_source_index_size; i += getStride())
+  for (auto i = getIndex(); i < cudaDeviceConstants.velocitySourceSize; i += getStride())
   {
     ux_sgx[u_source_index[i]] += transducer_signal[delay_mask[i]];
     delay_mask[i]++;
@@ -516,22 +516,22 @@ __global__ void CUDAAddVelocitySource(float*        uxyz_sgxyz,
                                       const size_t  t_index)
 {
   // Set 1D or 2D step for source
-  auto index2D = (cudaDeviceConstants.u_source_many == 0) ? t_index : t_index * cudaDeviceConstants.u_source_index_size;
+  auto index2D = (cudaDeviceConstants.velocitySourceMany == 0) ? t_index : t_index * cudaDeviceConstants.velocitySourceSize;
 
-  if (cudaDeviceConstants.u_source_mode == 0)
+  if (cudaDeviceConstants.velocitySourceMode == 0)
   {
-    for (auto i = getIndex(); i < cudaDeviceConstants.u_source_index_size; i += getStride())
+    for (auto i = getIndex(); i < cudaDeviceConstants.velocitySourceSize; i += getStride())
     {
-      uxyz_sgxyz[u_source_index[i]]  = (cudaDeviceConstants.u_source_many == 0) ? u_source_input[index2D] :
+      uxyz_sgxyz[u_source_index[i]]  = (cudaDeviceConstants.velocitySourceMany == 0) ? u_source_input[index2D] :
                                                                                   u_source_input[index2D + i];
     }// for
   }// end of Dirichlet
 
-  if (cudaDeviceConstants.u_source_mode == 1)
+  if (cudaDeviceConstants.velocitySourceMode == 1)
   {
-    for (auto i  = getIndex(); i < cudaDeviceConstants.u_source_index_size; i += getStride())
+    for (auto i  = getIndex(); i < cudaDeviceConstants.velocitySourceSize; i += getStride())
     {
-      uxyz_sgxyz[u_source_index[i]] += (cudaDeviceConstants.u_source_many == 0) ? u_source_input[index2D] :
+      uxyz_sgxyz[u_source_index[i]] += (cudaDeviceConstants.velocitySourceMany == 0) ? u_source_input[index2D] :
                                                                                   u_source_input[index2D + i];
     }
   }
@@ -592,13 +592,13 @@ __global__ void CUDAAddPressureSource(float*        rhox,
                                       const size_t  t_index)
 {
   // Set 1D or 2D step for source
-  auto index2D = (cudaDeviceConstants.p_source_many == 0) ? t_index : t_index * cudaDeviceConstants.p_source_index_size;
+  auto index2D = (cudaDeviceConstants.presureSourceMany == 0) ? t_index : t_index * cudaDeviceConstants.presureSourceSize;
 
-  if (cudaDeviceConstants.p_source_mode == 0)
+  if (cudaDeviceConstants.presureSourceMode == 0)
   {
-    if (cudaDeviceConstants.p_source_many == 0)
+    if (cudaDeviceConstants.presureSourceMany == 0)
     { // single signal
-      for (auto i = getIndex(); i < cudaDeviceConstants.p_source_index_size; i += getStride())
+      for (auto i = getIndex(); i < cudaDeviceConstants.presureSourceSize; i += getStride())
       {
         rhox[p_source_index[i]] = p_source_input[index2D];
         rhoy[p_source_index[i]] = p_source_input[index2D];
@@ -607,7 +607,7 @@ __global__ void CUDAAddPressureSource(float*        rhox,
     }
     else
     { // multiple signals
-      for (auto i = getIndex(); i < cudaDeviceConstants.p_source_index_size; i += getStride())
+      for (auto i = getIndex(); i < cudaDeviceConstants.presureSourceSize; i += getStride())
       {
         rhox[p_source_index[i]] = p_source_input[index2D + i];
         rhoy[p_source_index[i]] = p_source_input[index2D + i];
@@ -616,11 +616,11 @@ __global__ void CUDAAddPressureSource(float*        rhox,
     }
   }// end mode == 0 (Cauchy)
 
-  if (cudaDeviceConstants.p_source_mode == 1)
+  if (cudaDeviceConstants.presureSourceMode == 1)
   {
-    if (cudaDeviceConstants.p_source_many == 0)
+    if (cudaDeviceConstants.presureSourceMany == 0)
     { // single signal
-      for (auto i = getIndex(); i < cudaDeviceConstants.p_source_index_size; i += getStride())
+      for (auto i = getIndex(); i < cudaDeviceConstants.presureSourceSize; i += getStride())
       {
         rhox[p_source_index[i]] += p_source_input[index2D];
         rhoy[p_source_index[i]] += p_source_input[index2D];
@@ -629,7 +629,7 @@ __global__ void CUDAAddPressureSource(float*        rhox,
     }
     else
     { // multiple signals
-      for (auto i = getIndex(); i < cudaDeviceConstants.p_source_index_size; i += getStride())
+      for (auto i = getIndex(); i < cudaDeviceConstants.presureSourceSize; i += getStride())
       {
         rhox[p_source_index[i]] += p_source_input[index2D + i];
         rhoy[p_source_index[i]] += p_source_input[index2D + i];
@@ -698,9 +698,9 @@ __global__  void CUDACompute_p0_Velocity(float*       ux_sgx,
 {
   if (Is_rho0_scalar)
   {
-    const float dividerX = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.rho0_sgx_scalar;
-    const float dividerY = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.rho0_sgy_scalar;
-    const float dividerZ = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.rho0_sgz_scalar;
+    const float dividerX = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgx;
+    const float dividerY = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgy;
+    const float dividerZ = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgz;
 
     for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
     {
@@ -798,9 +798,9 @@ __global__ void CUDACompute_p0_VelocityScalarNonUniform(float*       ux_sgx,
                                                         const float* dyudyn_sgy,
                                                         const float* dzudzn_sgz)
 {
-  const float dividerX = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.rho0_sgx_scalar;
-  const float dividerY = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.rho0_sgy_scalar;
-  const float dividerZ = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.rho0_sgz_scalar;
+  const float dividerX = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgx;
+  const float dividerY = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgy;
+  const float dividerZ = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgz;
 
   for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
@@ -1074,7 +1074,7 @@ __global__ void CUDACompute_p0_AddInitialPressure(float*       p,
   {
     float tmp = p[i] = p0[i];
 
-    tmp = (Is_c0_scalar) ? tmp / (3.0f * cudaDeviceConstants.c2): tmp / (3.0f * c2[i]);
+    tmp = (Is_c0_scalar) ? tmp / (3.0f * cudaDeviceConstants.cSquare): tmp / (3.0f * c2[i]);
 
     rhox[i] = tmp;
     rhoy[i] = tmp;
@@ -1164,7 +1164,7 @@ __global__ void CUDAComputeDensityNonlinearHomogeneous(float*       rhox,
     const float rhoyEl = rhoy[i];
     const float rhozEl = rhoz[i];
 
-    const float sumRhosDt = (2.0f * (rhoxEl + rhoyEl + rhozEl) + cudaDeviceConstants.rho0_scalar) *
+    const float sumRhosDt = (2.0f * (rhoxEl + rhoyEl + rhozEl) + cudaDeviceConstants.rho0) *
                             cudaDeviceConstants.dt;
 
     rhox[i] = pmlxEl * ((pmlxEl * rhoxEl) - sumRhosDt * duxdx[i]);
@@ -1334,9 +1334,9 @@ __global__ void CUDAComputeDensityLinearHomogeneous(float*       rhox,
     const float pml_y_el = pml_y[coords.y];
     const float pml_z_el = pml_z[coords.z];
 
-    rhox[i] = pml_x_el * (pml_x_el * rhox[i] - cudaDeviceConstants.dt_rho0_scalar * duxdx[i]);
-    rhoy[i] = pml_y_el * (pml_y_el * rhoy[i] - cudaDeviceConstants.dt_rho0_scalar * duydy[i]);
-    rhoz[i] = pml_z_el * (pml_z_el * rhoz[i] - cudaDeviceConstants.dt_rho0_scalar * duzdz[i]);
+    rhox[i] = pml_x_el * (pml_x_el * rhox[i] - cudaDeviceConstants.dtRho0 * duxdx[i]);
+    rhoy[i] = pml_y_el * (pml_y_el * rhoy[i] - cudaDeviceConstants.dtRho0 * duydy[i]);
+    rhoz[i] = pml_z_el * (pml_z_el * rhoz[i] - cudaDeviceConstants.dtRho0 * duzdz[i]);
   }
 }// end of CUDAComputeDensityLinearHomogeneous
 //--------------------------------------------------------------------------------------------------
@@ -1499,8 +1499,8 @@ __global__ void CUDAComputePressurePartsNonLinear(float*       rho_sum,
 {
   for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const float BonA = (is_BonA_scalar) ? cudaDeviceConstants.BonA_scalar : BonA_matrix[i];
-    const float rho0 = (is_rho0_scalar) ? cudaDeviceConstants.rho0_scalar : rho0_matrix[i];
+    const float BonA = (is_BonA_scalar) ? cudaDeviceConstants.bOnA : BonA_matrix[i];
+    const float rho0 = (is_rho0_scalar) ? cudaDeviceConstants.rho0 : rho0_matrix[i];
 
     const float rho_xyz_el = rhox[i] + rhoy[i] + rhoz[i];
 
@@ -1692,9 +1692,9 @@ __global__ void CUDASumPressureTermsNonlinear(float*       p,
 {
   for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const float c2  = (is_c2_scalar)      ? cudaDeviceConstants.c2  : c2_matrix[i];
-    const float tau = (is_tau_eta_scalar) ? cudaDeviceConstants.absorb_tau_scalar : tau_matrix[i];
-    const float eta = (is_tau_eta_scalar) ? cudaDeviceConstants.absorb_eta_scalar : eta_matrix[i];
+    const float c2  = (is_c2_scalar)      ? cudaDeviceConstants.cSquare  : c2_matrix[i];
+    const float tau = (is_tau_eta_scalar) ? cudaDeviceConstants.absorbTau : tau_matrix[i];
+    const float eta = (is_tau_eta_scalar) ? cudaDeviceConstants.absorbEta : eta_matrix[i];
 
     p[i] = c2 * (BonA_temp[i] + (cudaDeviceConstants.fftDivider *
                 ((absorb_tau[i] * tau) - (absorb_eta[i] * eta))));
@@ -1806,9 +1806,9 @@ __global__ void CUDASumPressureTermsLinear(float*       p,
 {
   for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const float c2  = (is_c2_scalar)      ? cudaDeviceConstants.c2                : c2_matrix[i];
-    const float tau = (is_tau_eta_scalar) ? cudaDeviceConstants.absorb_tau_scalar : tau_matrix[i];
-    const float eta = (is_tau_eta_scalar) ? cudaDeviceConstants.absorb_eta_scalar : eta_matrix[i];
+    const float c2  = (is_c2_scalar)      ? cudaDeviceConstants.cSquare                : c2_matrix[i];
+    const float tau = (is_tau_eta_scalar) ? cudaDeviceConstants.absorbTau : tau_matrix[i];
+    const float eta = (is_tau_eta_scalar) ? cudaDeviceConstants.absorbEta : eta_matrix[i];
 
     p[i] = c2 * (sum_rhoxyz[i] + (cudaDeviceConstants.fftDivider *
                 (absorb_tau_temp[i] * tau - absorb_eta_temp[i] * eta)));
@@ -1921,9 +1921,9 @@ __global__ void CUDASumPressureNonlinearLossless(float*       p,
 {
   for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const float c2   = (is_c2_scalar)   ? cudaDeviceConstants.c2          : c2_matrix[i];
-    const float BonA = (is_BonA_scalar) ? cudaDeviceConstants.BonA_scalar : BonA_matrix[i];
-    const float rho0 = (is_rho0_scalar) ? cudaDeviceConstants.rho0_scalar : rho0_matrix[i];
+    const float c2   = (is_c2_scalar)   ? cudaDeviceConstants.cSquare          : c2_matrix[i];
+    const float BonA = (is_BonA_scalar) ? cudaDeviceConstants.bOnA : BonA_matrix[i];
+    const float rho0 = (is_rho0_scalar) ? cudaDeviceConstants.rho0 : rho0_matrix[i];
 
     const float sum_rho = rhox[i] + rhoy[i] + rhoz[i];
 
@@ -2104,7 +2104,7 @@ __global__ void CUDAComputePressurePartsLinear(float*       sum_rhoxyz,
 {
   for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const float rho0 = (is_rho0_scalar) ? cudaDeviceConstants.rho0_scalar : rho0_matrix[i];
+    const float rho0 = (is_rho0_scalar) ? cudaDeviceConstants.rho0 : rho0_matrix[i];
 
     sum_rhoxyz[i]  = rhox[i] + rhoy[i] + rhoz[i];
     sum_rho0_du[i] = rho0 * (dux[i] + duy[i] + duz[i]);
@@ -2189,7 +2189,7 @@ __global__ void CUDASum_new_p_linear_lossless(float*       p,
 {
   for(auto  i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const float c2 = (is_c2_scalar) ? cudaDeviceConstants.c2 : c2_matrix[i];
+    const float c2 = (is_c2_scalar) ? cudaDeviceConstants.cSquare : c2_matrix[i];
     p[i] = c2 * (rhox[i] + rhoy[i] + rhoz[i]);
   }
 }// end of CUDASum_new_p_linear_lossless

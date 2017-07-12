@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 February  2015, 12:51 (created)
- *              11 July      2017, 16:48 (revised)
+ *              12 July      2017, 11:02 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -114,7 +114,7 @@ void TCuboidOutputHDF5Stream::Create()
 
     actualPositionInBuffer += (sensorMask.GetBottomRightCorner(cuboidIdx) -
                                sensorMask.GetTopLeftCorner(cuboidIdx)
-                              ).size();
+                              ).nElements();
   }
 
   //we're at the beginning
@@ -187,7 +187,7 @@ void TCuboidOutputHDF5Stream::Reopen()
     }
     // move the pointer for the next cuboid beginning (this inits the locations)
     actualPositionInBuffer += (sensorMask.GetBottomRightCorner(CuboidIdx) -
-                               sensorMask.GetTopLeftCorner(CuboidIdx)).size();
+                               sensorMask.GetTopLeftCorner(CuboidIdx)).nElements();
   }
 
   // copy data over to the GPU only if there is anything to read
@@ -226,7 +226,7 @@ void TCuboidOutputHDF5Stream::Sample()
     //get number of samples within the cuboid
     const size_t nSamples = (sensorMask.GetBottomRightCorner(cuboidIdx) -
                              sensorMask.GetTopLeftCorner(cuboidIdx)
-                            ).size();
+                            ).nElements();
 
     switch (reduceOp)
     {
@@ -395,7 +395,7 @@ hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t cuboidIdx)
   DimensionSizes cuboidChunkSize(cuboidSize.nx, cuboidSize.ny, cuboidSize.nz,
                                   (reduceOp == TReduceOperator::NONE) ? 1 : 0);
 
-  if (cuboidChunkSize.size() > (CHUNK_SIZE_4MB * 8))
+  if (cuboidChunkSize.nElements() > (CHUNK_SIZE_4MB * 8))
   {
     while (nSlabs * cuboidSize.nx * cuboidSize.ny < CHUNK_SIZE_4MB) nSlabs++;
     cuboidChunkSize.nz = nSlabs;

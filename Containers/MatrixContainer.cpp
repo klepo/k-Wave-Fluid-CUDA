@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              11 July      2017, 16:40 (revised)
+ *              12 July      2017, 11:00 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -235,7 +235,7 @@ void TMatrixContainer::AddMatrices()
   {
     matrixContainer[MatrixId::u_source_index].Set(MatrixType::INDEX,
                                                   DimensionSizes(1, 1, params.Get_u_source_index_size()),
-                                                  LOAD, NOCHECKPOINT, kUSourceIndexName);
+                                                  LOAD, NOCHECKPOINT, kVelocitySourceIndexName);
   }
 
   //transducer source flag defined
@@ -257,18 +257,18 @@ void TMatrixContainer::AddMatrices()
     { // 1D case
       matrixContainer[MatrixId::p_source_input].Set(MatrixType::REAL,
                                                     DimensionSizes(1, 1, params.Get_p_source_flag()),
-                                                    LOAD, NOCHECKPOINT, kPSourceInputName);
+                                                    LOAD, NOCHECKPOINT, kPressureSourceInputName);
     }
     else
     { // 2D case
       matrixContainer[MatrixId::p_source_input].Set(MatrixType::REAL,
                                                     DimensionSizes(1, params.Get_p_source_index_size(),params.Get_p_source_flag()),
-                                                    LOAD, NOCHECKPOINT, kPSourceInputName);
+                                                    LOAD, NOCHECKPOINT, kPressureSourceInputName);
     }
 
     matrixContainer[MatrixId::p_source_index].Set(MatrixType::INDEX,
                                                   DimensionSizes(1, 1, params.Get_p_source_index_size()),
-                                                  LOAD, NOCHECKPOINT, kPSourceIndexName);
+                                                  LOAD, NOCHECKPOINT, kPressureSourceIndexName);
   }
 
   //------------------------------------ uxyz source flags ---------------------------------------//
@@ -375,7 +375,7 @@ void TMatrixContainer::AddMatrices()
     matrixContainer[MatrixId::uz_shifted].Set(MatrixType::REAL, fullDims, NOLOAD, NOCHECKPOINT, kUzShiftedName);
 
     // shifts from the input file
-    matrixContainer[MatrixId::x_shift_neg_r].Set(MatrixType::COMPLEX, DimensionSizes(nx_2, 1, 1), LOAD,NOCHECKPOINT, kXShifyNegRName);
+    matrixContainer[MatrixId::x_shift_neg_r].Set(MatrixType::COMPLEX, DimensionSizes(nx_2, 1, 1), LOAD,NOCHECKPOINT, kXShiftNegRName);
     matrixContainer[MatrixId::y_shift_neg_r].Set(MatrixType::COMPLEX, DimensionSizes(1, ny_2, 1), LOAD,NOCHECKPOINT, kYShiftNegRName);
     matrixContainer[MatrixId::z_shift_neg_r].Set(MatrixType::COMPLEX, DimensionSizes(1, 1, nz_2), LOAD,NOCHECKPOINT, kZShiftNegRName);
   }// u_non_staggered

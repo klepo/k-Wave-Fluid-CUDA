@@ -33,7 +33,7 @@
 #ifndef CudaUtilsCuh
 #define CudaUtilsCuh
 
-#include <Parameters/CUDADeviceConstants.cuh>
+#include <Parameters/CudaDeviceConstants.cuh>
 
 //--------------------------------------------------------------------------------------------------------------------//
 //--------------------------------------------------- Variables ------------------------------------------------------//
@@ -42,7 +42,7 @@
  * This variable holds necessary simulation constants in the CUDA GPU memory. The variable is
  * defined in CUDADeviceConstants.cu
  */
-extern __constant__ TCUDADeviceConstants cudaDeviceConstants;
+extern __constant__ CudaDeviceConstants cudaDeviceConstants;
 
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------- Index routines ---------------------------------------------------//

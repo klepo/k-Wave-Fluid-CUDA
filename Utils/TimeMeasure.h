@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        15 August   2012, 09:35 (created) \n
- *              11 July     2017, 11:59 (revised)
+ *              12 July     2017, 11:56 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -48,9 +48,9 @@
 #endif
 
 /**
- * @class  TimeMeasure
- * @brief  Class measuring elapsed time.
- * @brief  Class measuring elapsed time, even over multiple simulation legs.
+ * @class   TimeMeasure
+ * @brief   Class measuring elapsed time.
+ * @details Class measuring elapsed time, even over multiple simulation legs.
  */
 class TimeMeasure
 {
@@ -151,9 +151,9 @@ class TimeMeasure
     };
 
     /**
-     * @brief Get time spent in previous legs.
-     * @detail Get time spent in previous legs.
-     * @return elapsed time over previous legs.
+     * @brief   Get time spent in previous legs.
+     * @details Get time spent in previous legs.
+     * @return  elapsed time over previous legs.
      */
     inline double getElapsedTimeOverPreviousLegs() const
     {

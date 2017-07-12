@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              11 July     2017, 16:42 (revised)
+ *              12 July     2017, 10:40 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -891,8 +891,8 @@ void THDF5_File::ReadCompleteDataset (const hid_t            parentGroup,
 {
   const char* cDatasetName = datasetName.c_str();
   // Check Dimensions sizes
-  if (GetDatasetDimensionSizes(parentGroup, datasetName).size() !=
-      dimensionSizes.size())
+  if (GetDatasetDimensionSizes(parentGroup, datasetName).nElements() !=
+      dimensionSizes.nElements())
   {
     throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_DIMENSION_SIZES, cDatasetName));
   }
@@ -922,8 +922,8 @@ void THDF5_File::ReadCompleteDataset(const hid_t            parentGroup,
                                      size_t*                data)
 {
   const char* cDatasetName = datasetName.c_str();
-  if (GetDatasetDimensionSizes(parentGroup, datasetName).size() !=
-      dimensionSizes.size())
+  if (GetDatasetDimensionSizes(parentGroup, datasetName).nElements() !=
+      dimensionSizes.nElements())
   {
     throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_DIMENSION_SIZES, cDatasetName));
   }

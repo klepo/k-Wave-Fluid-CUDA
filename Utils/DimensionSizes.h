@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August     2011, 12:34 (created) \n
- *              11 July       2017, 16:40 (revised)
+ *              11 July       2017, 10:25 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -83,7 +83,7 @@ struct DimensionSizes
    * @details Get element count, in 3D only spatial domain, in 4D with time.
    * @return the number of elements the domain holds.
    */
-  inline size_t size() const
+  inline size_t nElements() const
   {
     return (is3D()) ? nx * ny * nz : nx * ny * nz * nt;
   };

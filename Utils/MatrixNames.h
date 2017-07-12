@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        14 September 2012, 17:28 (created) \n
- *              11 July      2017, 14:32 (revised)
+ *              12 July      2017, 10:50 (revised)
  *
  * @section License
  * This file is part of the C++ extension of thq-Wave Toolbox
@@ -74,7 +74,7 @@ MatrixName kNyName         = "Ny";
 MatrixName kNzName         = "Nz";
 
 /// x_shift_neg_r variable name
-MatrixName kXShifyNegRName = "x_shift_neg_r";
+MatrixName kXShiftNegRName = "x_shift_neg_r";
 /// y_shift_neg_r variable name
 MatrixName kYShiftNegRName = "y_shift_neg_r";
 /// z_shift_neg_r variable name
@@ -99,7 +99,7 @@ MatrixName kPmlXSgxName    = "pml_x_sgx";
 /// pml_y_sgy variable name
 MatrixName kPmlYSgyName    = "pml_y_sgy";
 /// pml_z_sgz variable name
-MatrixName  kPmlZSgzName   = "pml_z_sgz";
+MatrixName kPmlZSgzName    = "pml_z_sgz";
 
 /// pml_x variable name
 MatrixName kPmlXName       = "pml_x";
@@ -124,33 +124,33 @@ MatrixName kUySourceFlagName = "uy_source_flag";
 MatrixName kUzSourceFlagName = "uz_source_flag";
 
 /// u_source_many variable name
-MatrixName kUSourceManyName  = "u_source_many";
+MatrixName kVelocitySourceManyName  = "u_source_many";
 /// p_source_many variable name
-MatrixName kPSourceManyName  = "p_source_many";
+MatrixName kPressureSourceManyName  = "p_source_many";
 
 /// p_source_flag variable name
-MatrixName kPSourceFlagName  = "p_source_flag";
+MatrixName kPressureSourceFlagName  = "p_source_flag";
 /// p0_source_flag variable name
-MatrixName kP0SourceFlagName = "p0_source_flag";
+MatrixName kP0SourceFlagName        = "p0_source_flag";
 
 /// u_source_mode variable name
-MatrixName kUSourceModeName  = "u_source_mode";
+MatrixName kVelocitySourceModeName  = "u_source_mode";
 /// p_source_mode variable name
-MatrixName kPSourceModeName  = "p_source_mode";
+MatrixName kPressureSourceModeName  = "p_source_mode";
 
 /// p_source_input variable name
-MatrixName kPSourceInputName = "p_source_input";
+MatrixName kPressureSourceInputName = "p_source_input";
 /// p_source_index variable name
-MatrixName kPSourceIndexName = "p_source_index";
+MatrixName kPressureSourceIndexName = "p_source_index";
 
 /// u_source_index variable name
-MatrixName kUSourceIndexName  = "u_source_index";
+MatrixName kVelocitySourceIndexName  = "u_source_index";
 /// ux_source_input variable name
-MatrixName kUxSourceInputName = "ux_source_input";
+MatrixName kUxSourceInputName        = "ux_source_input";
 /// uy_source_input variable name
-MatrixName kUySourceInputName = "uy_source_input";
+MatrixName kUySourceInputName        = "uy_source_input";
 /// uz_source_input variable name
-MatrixName kUzSourceInputName = "uz_source_input";
+MatrixName kUzSourceInputName        = "uz_source_input";
 
 /// nonuniform_grid_flag variable name
 MatrixName kNonUniformGridFlagName   = "nonuniform_grid_flag";

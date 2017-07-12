@@ -67,12 +67,12 @@
       <itemPath>OutputHDF5Streams/WholeDomainOutputHDF5Stream.h</itemPath>
     </logicalFolder>
     <logicalFolder name="Parameters" displayName="Parameters" projectFiles="true">
-      <itemPath>Parameters/CUDADeviceConstants.cu</itemPath>
-      <itemPath>Parameters/CUDADeviceConstants.cuh</itemPath>
       <itemPath>Parameters/CUDAParameters.cpp</itemPath>
       <itemPath>Parameters/CUDAParameters.h</itemPath>
       <itemPath>Parameters/CommandLineParameters.cpp</itemPath>
       <itemPath>Parameters/CommandLineParameters.h</itemPath>
+      <itemPath>Parameters/CudaDeviceConstants.cu</itemPath>
+      <itemPath>Parameters/CudaDeviceConstants.cuh</itemPath>
       <itemPath>Parameters/Parameters.cpp</itemPath>
       <itemPath>Parameters/Parameters.h</itemPath>
     </logicalFolder>
@@ -158,8 +158,6 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2  -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 -lineinfo</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Utils/CudaUtils.cuh" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -288,10 +286,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDADeviceConstants.cu" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="Parameters/CUDADeviceConstants.cuh" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
@@ -303,9 +297,15 @@
       </item>
       <item path="Parameters/CommandLineParameters.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Parameters/Parameters.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/CudaUtils.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -358,11 +358,6 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 -lineinfo</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Utils/CudaUtils.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -491,10 +486,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDADeviceConstants.cu" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDADeviceConstants.cuh" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
@@ -506,9 +497,15 @@
       </item>
       <item path="Parameters/CommandLineParameters.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/Parameters.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/CudaUtils.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -561,11 +558,6 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp" -G -lineinfo</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Utils/CudaUtils.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -694,10 +686,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDADeviceConstants.cu" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDADeviceConstants.cuh" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
@@ -709,9 +697,15 @@
       </item>
       <item path="Parameters/CommandLineParameters.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/Parameters.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/CudaUtils.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -763,11 +757,6 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2  -Wall -fopenmp" -G -lineinfo</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Utils/CudaUtils.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -896,10 +885,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDADeviceConstants.cu" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDADeviceConstants.cuh" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
@@ -911,9 +896,15 @@
       </item>
       <item path="Parameters/CommandLineParameters.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/Parameters.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/CudaUtils.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -967,11 +958,6 @@
           <commandLine>-Xcompiler="-Wall -fopenmp -mavx" -arch=compute_52 -code=sm_52</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Utils/CudaUtils.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -1100,10 +1086,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDADeviceConstants.cu" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDADeviceConstants.cuh" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
@@ -1115,9 +1097,15 @@
       </item>
       <item path="Parameters/CommandLineParameters.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/Parameters.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/CudaUtils.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -1169,11 +1157,6 @@
           <commandLine>-Xcompiler="-Wall -O3 -fopenmp -mavx" -arch=compute_52 -code=sm_52</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Utils/CudaUtils.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -1302,10 +1285,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDADeviceConstants.cu" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDADeviceConstants.cuh" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
@@ -1317,9 +1296,15 @@
       </item>
       <item path="Parameters/CommandLineParameters.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/Parameters.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/CudaUtils.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -1371,11 +1356,6 @@
           <commandLine>-Xcompiler="-Wall -fopenmp "</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Utils/CudaUtils.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -1504,10 +1484,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDADeviceConstants.cu" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDADeviceConstants.cuh" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
@@ -1519,9 +1495,15 @@
       </item>
       <item path="Parameters/CommandLineParameters.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/Parameters.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/CudaUtils.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -1572,11 +1554,6 @@
           <commandLine>-Xcompiler="-Wall -O3 -fopenmp"</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Utils/CudaUtils.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -1705,10 +1682,6 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="Parameters/CUDADeviceConstants.cu" ex="false" tool="1" flavor2="8">
-      </item>
-      <item path="Parameters/CUDADeviceConstants.cuh" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="Parameters/CUDAParameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/CUDAParameters.h" ex="false" tool="3" flavor2="0">
@@ -1720,9 +1693,15 @@
       </item>
       <item path="Parameters/CommandLineParameters.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Parameters/CudaDeviceConstants.cu" ex="false" tool="1" flavor2="8">
+      </item>
+      <item path="Parameters/CudaDeviceConstants.cuh" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Parameters/Parameters.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Parameters/Parameters.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Utils/CudaUtils.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Utils/DimensionSizes.h" ex="false" tool="3" flavor2="0">
       </item>

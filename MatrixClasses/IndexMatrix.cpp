@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              11 July     2017, 16:45 (revised)
+ *              12 July     2017, 11:01 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -219,7 +219,7 @@ size_t TIndexMatrix::GetTotalNumberOfElementsInAllCuboids() const
   size_t elementSum = 0;
   for (size_t cuboidIdx = 0; cuboidIdx < dimensionSizes.ny; cuboidIdx++)
   {
-    elementSum += (GetBottomRightCorner(cuboidIdx) - GetTopLeftCorner(cuboidIdx)).size();
+    elementSum += (GetBottomRightCorner(cuboidIdx) - GetTopLeftCorner(cuboidIdx)).nElements();
   }
 
   return elementSum;
