@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 January   2015, 17:21 (created) \n
- *              10 August    2016, 12:03 (revised)
+ *              09 July      2017, 09:46 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -38,7 +38,7 @@
 
 #include <Parameters/Parameters.h>
 #include <Logger/Logger.h>
-#include <Utils/CUDAUtils.cuh>
+#include <Utils/CudaUtils.cuh>
 
 
 
@@ -94,7 +94,7 @@ __global__ void CUDASampleIndex(float*        samplingBuffer,
                                 const size_t* sensorData,
                                 const size_t  nSamples)
 {
-  for (auto i = GetIndex(); i < nSamples; i += GetStride())
+  for (auto i = getIndex(); i < nSamples; i += getStride())
   {
     switch (reduceOp)
     {
@@ -241,7 +241,7 @@ __global__ void CUDASampleCuboid(float*       samplingBuffer,
                                  const size_t nSamples)
 {
   // iterate over all grid points
-  for (auto i = GetIndex(); i < nSamples; i += GetStride())
+  for (auto i = getIndex(); i < nSamples; i += getStride())
   {
     auto Position = TransformCoordinates(i, topLeftCorner, bottomRightCorner, matrixSize);
     switch (reduceOp)
@@ -356,7 +356,7 @@ __global__ void CUDASampleAll(float*       samplingBuffer,
                               const float* sourceData,
                               const size_t nSamples)
 {
-  for (size_t i = GetIndex(); i < nSamples; i += GetStride())
+  for (size_t i = getIndex(); i < nSamples; i += getStride())
   {
     switch (reduceOp)
     {
@@ -437,7 +437,7 @@ __global__ void CUDAPostProcessingRMS(float*       samplingBuffer,
                                       const float  scalingCoeff,
                                       const size_t nSamples)
 {
-  for (size_t i = GetIndex(); i < nSamples; i += GetStride())
+  for (size_t i = getIndex(); i < nSamples; i += getStride())
   {
     samplingBuffer[i] = sqrt(samplingBuffer[i] * scalingCoeff);
   }
