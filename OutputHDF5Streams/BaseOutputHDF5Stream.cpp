@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              11 June      2017, 16:48 (revised)
+ *              16 June      2017, 16:53 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -89,8 +89,8 @@ void TBaseOutputHDF5Stream::PostProcess()
 
     case TReduceOperator::RMS:
     {
-      const float scalingCoeff = 1.0f / (TParameters::GetInstance().Get_nt() -
-                                         TParameters::GetInstance().GetStartTimeIndex());
+      const float scalingCoeff = 1.0f / (Parameters::getInstance().getNt() -
+                                         Parameters::getInstance().getSamplingStartTimeIndex());
 
       OutputStreamsCUDAKernels::PostProcessingRMS(deviceBuffer, scalingCoeff, bufferSize);
       break;

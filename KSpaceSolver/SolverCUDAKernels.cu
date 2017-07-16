@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              12 July     2017, 13:47 (revised)
+ *              16 July     2017, 16:51 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -65,7 +65,7 @@ extern __constant__ CudaDeviceConstants cudaDeviceConstants;
  */
 inline int GetSolverBlockSize1D()
 {
-  return TParameters::GetInstance().GetCudaParameters().getSolverBlockSize1D();
+  return Parameters::getInstance().getCudaParameters().getSolverBlockSize1D();
 };// end of GetSolverBlockSize1D
 //--------------------------------------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ inline int GetSolverBlockSize1D()
  */
 inline int GetSolverGridSize1D()
 {
-  return TParameters::GetInstance().GetCudaParameters().getSolverGridSize1D();
+  return Parameters::getInstance().getCudaParameters().getSolverGridSize1D();
 };// end of GetSolverGridSize1D
 //--------------------------------------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ inline int GetSolverGridSize1D()
  */
 inline dim3 GetSolverTransposeBlockSize()
 {
-  return TParameters::GetInstance().GetCudaParameters().getSolverTransposeBlockSize();
+  return Parameters::getInstance().getCudaParameters().getSolverTransposeBlockSize();
 };//end of GetSolverTransposeBlockSize()
 //--------------------------------------------------------------------------------------------------
 
@@ -95,7 +95,7 @@ inline dim3 GetSolverTransposeBlockSize()
  */
 inline dim3 GetSolverTransposeGirdSize()
 {
-  return TParameters::GetInstance().GetCudaParameters().getSolverTransposeGirdSize();
+  return Parameters::getInstance().getCudaParameters().getSolverTransposeGirdSize();
 };// end of GetSolverTransposeGirdSize()
 //--------------------------------------------------------------------------------------------------
 
@@ -1074,7 +1074,7 @@ __global__ void CUDACompute_p0_AddInitialPressure(float*       p,
   {
     float tmp = p[i] = p0[i];
 
-    tmp = (Is_c0_scalar) ? tmp / (3.0f * cudaDeviceConstants.cSquare): tmp / (3.0f * c2[i]);
+    tmp = (Is_c0_scalar) ? tmp / (3.0f * cudaDeviceConstants.c2): tmp / (3.0f * c2[i]);
 
     rhox[i] = tmp;
     rhoy[i] = tmp;
@@ -1692,7 +1692,7 @@ __global__ void CUDASumPressureTermsNonlinear(float*       p,
 {
   for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const float c2  = (is_c2_scalar)      ? cudaDeviceConstants.cSquare  : c2_matrix[i];
+    const float c2  = (is_c2_scalar)      ? cudaDeviceConstants.c2  : c2_matrix[i];
     const float tau = (is_tau_eta_scalar) ? cudaDeviceConstants.absorbTau : tau_matrix[i];
     const float eta = (is_tau_eta_scalar) ? cudaDeviceConstants.absorbEta : eta_matrix[i];
 
@@ -1806,7 +1806,7 @@ __global__ void CUDASumPressureTermsLinear(float*       p,
 {
   for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const float c2  = (is_c2_scalar)      ? cudaDeviceConstants.cSquare                : c2_matrix[i];
+    const float c2  = (is_c2_scalar)      ? cudaDeviceConstants.c2                : c2_matrix[i];
     const float tau = (is_tau_eta_scalar) ? cudaDeviceConstants.absorbTau : tau_matrix[i];
     const float eta = (is_tau_eta_scalar) ? cudaDeviceConstants.absorbEta : eta_matrix[i];
 
@@ -1921,7 +1921,7 @@ __global__ void CUDASumPressureNonlinearLossless(float*       p,
 {
   for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const float c2   = (is_c2_scalar)   ? cudaDeviceConstants.cSquare          : c2_matrix[i];
+    const float c2   = (is_c2_scalar)   ? cudaDeviceConstants.c2          : c2_matrix[i];
     const float BonA = (is_BonA_scalar) ? cudaDeviceConstants.bOnA : BonA_matrix[i];
     const float rho0 = (is_rho0_scalar) ? cudaDeviceConstants.rho0 : rho0_matrix[i];
 
@@ -2189,7 +2189,7 @@ __global__ void CUDASum_new_p_linear_lossless(float*       p,
 {
   for(auto  i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const float c2 = (is_c2_scalar) ? cudaDeviceConstants.cSquare : c2_matrix[i];
+    const float c2 = (is_c2_scalar) ? cudaDeviceConstants.c2 : c2_matrix[i];
     p[i] = c2 * (rhox[i] + rhoy[i] + rhoz[i]);
   }
 }// end of CUDASum_new_p_linear_lossless

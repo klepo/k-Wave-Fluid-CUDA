@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 November 2015, 16:49 (created) \n
- *              12 July     2017, 10:41 (revised)
+ *              16 July     2017, 16:58 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -203,9 +203,9 @@ void CudaParameters::selectDevice(const int deviceIdx)
  */
 void CudaParameters::setKernelConfiguration()
 {
-  const TParameters& params = TParameters::GetInstance();
+  const Parameters& params = Parameters::getInstance();
 
-  DimensionSizes fullDims(params.GetFullDimensionSizes());
+  DimensionSizes fullDims(params.getFullDimensionSizes());
 
   // Set kernel configuration for 1D kernels
   mSolverBlockSize1D = 256;
@@ -230,12 +230,12 @@ void CudaParameters::setKernelConfiguration()
   mSamplerGridSize1D  = mDeviceProperties.multiProcessorCount * 8;
 
   // tune number of blocks for index based sensor mask
-  if (params.Get_sensor_mask_type() == TParameters::TSensorMaskType::INDEX)
+  if (params.getSensorMaskType() == Parameters::SensorMaskType::kIndex)
   {
     // the sensor mask is smaller than 2048 * SMs than use a smaller number of blocks
-    if ((size_t(mSamplerGridSize1D) * size_t(mSamplerBlockSize1D)) > params.Get_sensor_mask_index_size())
+    if ((size_t(mSamplerGridSize1D) * size_t(mSamplerBlockSize1D)) > params.getSensorMaskIndexSize())
     {
-      mSamplerGridSize1D  = int((params.Get_sensor_mask_index_size()  + size_t(mSamplerBlockSize1D) - 1)
+      mSamplerGridSize1D  = int((params.getSensorMaskIndexSize()  + size_t(mSamplerBlockSize1D) - 1)
                                 / size_t(mSamplerBlockSize1D));
     }
   }
@@ -250,9 +250,9 @@ void CudaParameters::setUpDeviceConstants() const
 {
   CudaDeviceConstants constantsToTransfer;
 
-  TParameters& params = TParameters::GetInstance();
-  DimensionSizes fullDimSizes    = params.GetFullDimensionSizes();
-  DimensionSizes reducedDimSizes = params.GetReducedDimensionSizes();
+  Parameters& params = Parameters::getInstance();
+  DimensionSizes fullDimSizes    = params.getFullDimensionSizes();
+  DimensionSizes reducedDimSizes = params.getReducedDimensionSizes();
 
   // Set values for constant memory
   constantsToTransfer.nx  = static_cast<unsigned int>(fullDimSizes.nx);
@@ -270,28 +270,28 @@ void CudaParameters::setUpDeviceConstants() const
   constantsToTransfer.fftDividerY = 1.0f / fullDimSizes.ny;
   constantsToTransfer.fftDividerZ = 1.0f / fullDimSizes.nz;
 
-  constantsToTransfer.dt      = params.Get_dt();
-  constantsToTransfer.dtBy2   = params.Get_dt() * 2.0f;
-  constantsToTransfer.cSquare = params.Get_c0_scalar();
+  constantsToTransfer.dt      = params.getDt();
+  constantsToTransfer.dtBy2   = params.getDt() * 2.0f;
+  constantsToTransfer.c2      = params.getC2Scalar();
 
-  constantsToTransfer.rho0      = params.Get_rho0_scalar();
-  constantsToTransfer.dtRho0    = params.Get_rho0_scalar() * params.Get_dt();
-  constantsToTransfer.dtRho0Sgx = params.Get_rho0_sgx_scalar();
-  constantsToTransfer.dtRho0Sgy = params.Get_rho0_sgy_scalar(),
-  constantsToTransfer.dtRho0Sgz = params.Get_rho0_sgz_scalar(),
+  constantsToTransfer.rho0      = params.getRho0Scalar();
+  constantsToTransfer.dtRho0    = params.getRho0Scalar() * params.getDt();
+  constantsToTransfer.dtRho0Sgx = params.getDtRho0SgxScalar();
+  constantsToTransfer.dtRho0Sgy = params.getDtRho0SgyScalar(),
+  constantsToTransfer.dtRho0Sgz = params.getDtRho0SgzScalar(),
 
-  constantsToTransfer.bOnA      = params.Get_BonA_scalar();
-  constantsToTransfer.absorbTau = params.Get_absorb_tau_scalar();
-  constantsToTransfer.absorbEta = params.Get_absorb_eta_scalar();
+  constantsToTransfer.bOnA      = params.getBOnAScalar();
+  constantsToTransfer.absorbTau = params.getAbsorbTauScalar();
+  constantsToTransfer.absorbEta = params.getAbsorbEtaScalar();
 
   // source masks
-  constantsToTransfer.presureSourceSize = static_cast<unsigned int>(params.Get_p_source_index_size());
-  constantsToTransfer.presureSourceMode = static_cast<unsigned int>(params.Get_p_source_mode());
-  constantsToTransfer.presureSourceMany = static_cast<unsigned int>(params.Get_p_source_many());
+  constantsToTransfer.presureSourceSize = static_cast<unsigned int>(params.getPressureSourceIndexSize());
+  constantsToTransfer.presureSourceMode = static_cast<unsigned int>(params.getPressureSourceMode());
+  constantsToTransfer.presureSourceMany = static_cast<unsigned int>(params.getPressureSourceMany());
 
-  constantsToTransfer.velocitySourceSize = static_cast<unsigned int>(params.Get_u_source_index_size());
-  constantsToTransfer.velocitySourceMode = static_cast<unsigned int>(params.Get_u_source_mode());
-  constantsToTransfer.velocitySourceMany = static_cast<unsigned int>(params.Get_u_source_many());
+  constantsToTransfer.velocitySourceSize = static_cast<unsigned int>(params.getVelocitySourceIndexSize());
+  constantsToTransfer.velocitySourceMode = static_cast<unsigned int>(params.getVelocitySourceMode());
+  constantsToTransfer.velocitySourceMany = static_cast<unsigned int>(params.getVelocitySourceMany());
 
   constantsToTransfer.uploadDeviceConstants();
 }// end of setUpDeviceConstants

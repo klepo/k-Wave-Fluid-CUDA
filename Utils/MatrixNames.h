@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        14 September 2012, 17:28 (created) \n
- *              12 July      2017, 10:50 (revised)
+ *              16 July      2017, 17:00 (revised)
  *
  * @section License
  * This file is part of the C++ extension of thq-Wave Toolbox
@@ -46,7 +46,7 @@ using MatrixName = const std::string;
 /// Nt variable name
 MatrixName kNtName         = "Nt";
 /// t_index name
-MatrixName kTIndexName     = "t_index";
+MatrixName kTimeIndexName  = "t_index";
 /// dt variable name
 MatrixName kDtName         = "dt";
 /// dx variable name
@@ -117,11 +117,11 @@ MatrixName kPmlYAlphaName    = "pml_y_alpha";
 MatrixName kPmlZAlphaName    = "pml_z_alpha";
 
 /// ux_source_flag variable name
-MatrixName kUxSourceFlagName = "ux_source_flag";
+MatrixName kVelocityXSourceFlagName = "ux_source_flag";
 /// uy_source_flag variable name
-MatrixName kUySourceFlagName = "uy_source_flag";
+MatrixName kVelocityYSourceFlagName = "uy_source_flag";
 /// uz_source_flag variable name
-MatrixName kUzSourceFlagName = "uz_source_flag";
+MatrixName kVelocityZSourceFlagName = "uz_source_flag";
 
 /// u_source_many variable name
 MatrixName kVelocitySourceManyName  = "u_source_many";
@@ -129,9 +129,9 @@ MatrixName kVelocitySourceManyName  = "u_source_many";
 MatrixName kPressureSourceManyName  = "p_source_many";
 
 /// p_source_flag variable name
-MatrixName kPressureSourceFlagName  = "p_source_flag";
+MatrixName kPressureSourceFlagName        = "p_source_flag";
 /// p0_source_flag variable name
-MatrixName kP0SourceFlagName        = "p0_source_flag";
+MatrixName kInitialPressureSourceFlagName = "p0_source_flag";
 
 /// u_source_mode variable name
 MatrixName kVelocitySourceModeName  = "u_source_mode";
@@ -146,11 +146,11 @@ MatrixName kPressureSourceIndexName = "p_source_index";
 /// u_source_index variable name
 MatrixName kVelocitySourceIndexName  = "u_source_index";
 /// ux_source_input variable name
-MatrixName kUxSourceInputName        = "ux_source_input";
+MatrixName kVelocityXSourceInputName = "ux_source_input";
 /// uy_source_input variable name
-MatrixName kUySourceInputName        = "uy_source_input";
+MatrixName kVelocityYSourceInputName = "uy_source_input";
 /// uz_source_input variable name
-MatrixName kUzSourceInputName        = "uz_source_input";
+MatrixName kVelocityZSourceInputName = "uz_source_input";
 
 /// nonuniform_grid_flag variable name
 MatrixName kNonUniformGridFlagName   = "nonuniform_grid_flag";

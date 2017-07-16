@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August    2014, 10:10 (created)
- *              11 July      2017, 16:48 (revised)
+ *              16 July      2017, 16:54 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -96,11 +96,11 @@ void TIndexOutputHDF5Stream::Create()
 
   size_t nSampledElementsPerStep = sensorMask.GetElementCount();
 
-  const TParameters& params = TParameters::GetInstance();
+  const Parameters& params = Parameters::getInstance();
 
   // Derive dataset dimension sizes
   DimensionSizes datasetSize(nSampledElementsPerStep,
-                              (reduceOp == TReduceOperator::NONE) ?  params.Get_nt() - params.GetStartTimeIndex() : 1,
+                              (reduceOp == TReduceOperator::NONE) ?  params.getNt() - params.getSamplingStartTimeIndex() : 1,
                               1);
 
   // Set HDF5 chunk size
@@ -116,7 +116,7 @@ void TIndexOutputHDF5Stream::Create()
                                     rootObjectName,
                                     datasetSize,
                                     chunkSize,
-                                    params.GetCompressionLevel());
+                                    params.getCompressionLevel());
 
     // Write dataset parameters
   file.WriteMatrixDomainType(file.GetRootGroup(), rootObjectName, THDF5_File::TMatrixDomainType::REAL);
@@ -140,7 +140,7 @@ void TIndexOutputHDF5Stream::Create()
 void TIndexOutputHDF5Stream::Reopen()
 {
   // Get parameters
-  const TParameters& params = TParameters::GetInstance();
+  const Parameters& params = Parameters::getInstance();
 
   // Set buffer size
   bufferSize = sensorMask.GetElementCount();
@@ -154,8 +154,8 @@ void TIndexOutputHDF5Stream::Reopen()
 
   if (reduceOp == TReduceOperator::NONE)
   { // raw time series - just seek to the right place in the dataset
-    sampledTimeStep = (params.Get_t_index() < params.GetStartTimeIndex()) ?
-                        0 : (params.Get_t_index() - params.GetStartTimeIndex());
+    sampledTimeStep = (params.getTimeIndex() < params.getSamplingStartTimeIndex()) ?
+                        0 : (params.getTimeIndex() - params.getSamplingStartTimeIndex());
 
   }
   else
@@ -163,7 +163,7 @@ void TIndexOutputHDF5Stream::Reopen()
     sampledTimeStep = 0;
 
     // Read data from disk only if there were anything stored there (t_index >= start_index)
-    if (TParameters::GetInstance().Get_t_index() > TParameters::GetInstance().GetStartTimeIndex())
+    if (Parameters::getInstance().getTimeIndex() > Parameters::getInstance().getSamplingStartTimeIndex())
     {
       // Since there is only a single timestep in the dataset, I can read the whole dataset
       file.ReadCompleteDataset(file.GetRootGroup(),

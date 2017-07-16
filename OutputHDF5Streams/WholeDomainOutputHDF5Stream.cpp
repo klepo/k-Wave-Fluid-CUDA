@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August    2014, 11:15 (created)
- *              11 July      2017, 16:49 (revised)
+ *              16 July      2017, 16:54 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -92,7 +92,7 @@ void TWholeDomainOutputHDF5Stream::Create()
                                     rootObjectName,
                                     sourceMatrix.GetDimensionSizes(),
                                     chunkSize,
-                                    TParameters::GetInstance().GetCompressionLevel());
+                                    Parameters::getInstance().getCompressionLevel());
 
   // Write dataset parameters
   file.WriteMatrixDomainType(file.GetRootGroup(), rootObjectName, THDF5_File::TMatrixDomainType::REAL);
@@ -112,7 +112,7 @@ void TWholeDomainOutputHDF5Stream::Create()
  */
 void TWholeDomainOutputHDF5Stream::Reopen()
 {
-  const TParameters& params = TParameters::GetInstance();
+  const Parameters& params = Parameters::getInstance();
 
   // Set buffer size
   bufferSize = sourceMatrix.GetElementCount();
@@ -126,14 +126,14 @@ void TWholeDomainOutputHDF5Stream::Reopen()
   sampledTimeStep = 0;
   if (reduceOp == TReduceOperator::NONE)
   { // seek in the dataset
-    sampledTimeStep = (params.Get_t_index() < params.GetStartTimeIndex()) ?
-                       0 : (params.Get_t_index() - params.GetStartTimeIndex());
+    sampledTimeStep = (params.getTimeIndex() < params.getSamplingStartTimeIndex()) ?
+                       0 : (params.getTimeIndex() - params.getSamplingStartTimeIndex());
   }
   else
   { // reload data
     // Read data from disk only if there were anything stored there (t_index > start_index)
     //(one step ahead)
-    if (params.Get_t_index() > params.GetStartTimeIndex())
+    if (params.getTimeIndex() > params.getSamplingStartTimeIndex())
     {
       file.ReadCompleteDataset(file.GetRootGroup(),
                                     rootObjectName,

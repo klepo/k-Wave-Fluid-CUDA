@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              11 July     2017, 13:06 (revised)
+ *              16 July     2017, 16:51 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -570,7 +570,7 @@ private:
     TOutputStreamContainer outputStreamContainer;
 
     /// Global parameters of the simulation
-    TParameters& parameters;
+    Parameters& parameters;
 
     /// Percentage of the simulation done
     size_t actPercent;

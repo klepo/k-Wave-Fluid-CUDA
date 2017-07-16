@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2012, 10:57 (created) \n
- *              28 June     2017, 14:22 (revised)
+ *              16 July     2017, 17:01 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -752,18 +752,18 @@ int main(int argc, char** argv)
   TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SEPARATOR);
 
   // Create parameters and parse command line
-  TParameters& params = TParameters::GetInstance();
+  Parameters& params = Parameters::getInstance();
 
   //-------------- Init simulation ----------------//
   try
   {
     // Initialise Parameters by parsing the command line and reading input file scalars
-    params.Init(argc, argv);
+    params.init(argc, argv);
     // Select GPU
-    params.SelectDevice();
+    params.selectDevice();
 
     // When we know the GPU, we can print out the code version
-    if (params.IsVersion())
+    if (params.isPrintVersionOnly())
     {
       KSpaceSolver.PrintFullNameCodeAndLicense();
       return EXIT_SUCCESS;
@@ -774,12 +774,12 @@ int main(int argc, char** argv)
      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_FAILED);
     // must be repeated in case the GPU we want to printout the code version
     // and all GPUs are busy
-    if (params.IsVersion())
+    if (params.isPrintVersionOnly())
     {
       KSpaceSolver.PrintFullNameCodeAndLicense();
     }
 
-    if (!params.IsVersion())
+    if (!params.isPrintVersionOnly())
     {
       TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_LAST_SEPARATOR);
     }
@@ -788,11 +788,11 @@ int main(int argc, char** argv)
 
   // set number of threads and bind them to cores
   #ifdef _OPENMP
-    omp_set_num_threads(params.GetNumberOfThreads());
+    omp_set_num_threads(params.getNumberOfThreads());
   #endif
 
   // Print simulation setup
-  params.PrintSimulatoinSetup();
+  params.printSimulatoinSetup();
 
   TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_INIT_HEADER);
 
@@ -845,12 +845,12 @@ int main(int argc, char** argv)
                KSpaceSolver.GetDataLoadTime());
 
 
-  if (params.Get_t_index() > 0)
+  if (params.getTimeIndex() > 0)
   {
     TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SEPARATOR);
     TLogger::Log(TLogger::TLogLevel::BASIC,
                  OUT_FMT_RECOVER_FROM,
-                 params.Get_t_index());
+                 params.getTimeIndex());
   }
 
 

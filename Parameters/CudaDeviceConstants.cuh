@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        17 February 2016, 10:53 (created) \n
- *              12 July     2017, 10:13 (revised)
+ *              16 July     2017, 16:57 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -74,7 +74,7 @@ struct CudaDeviceConstants
   /// 2.0 * dt
   float dtBy2;
   /// c^2
-  float cSquare;
+  float c2;
 
   /// rho0 in homogeneous case
   float rho0;

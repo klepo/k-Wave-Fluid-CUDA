@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 November 2015, 16:49 (created) \n
- *              07 July     2017, 19:03 (revised)
+ *              16 July     2017, 16:58 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -48,7 +48,7 @@ class CudaParameters
 {
   public:
     /// Only TParameters can create this class.
-    friend class TParameters;
+    friend class Parameters;
 
     /// Copy constructor not allowed.
     CudaParameters(const CudaParameters&) = delete;
@@ -112,7 +112,8 @@ class CudaParameters
      *
      * @throw std::runtime_error - If there is no free CUDA devices.
      * @throw std::runtime_error - If there is no device of such and deviceIdx.
-     * @throw std::runtime_error - If the GPU chosen is not supported (i.e., the code was not compiled for its architecture]
+     * @throw std::runtime_error - If the GPU chosen is not supported (i.e., the code was not compiled for its
+     *                             architecture).
      */
     void selectDevice(const int deviceIdx = kDefaultDeviceIdx);
 

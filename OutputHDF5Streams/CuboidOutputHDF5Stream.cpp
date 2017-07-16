@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 February  2015, 12:51 (created)
- *              12 July      2017, 11:02 (revised)
+ *              16 July      2017, 16:54 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -136,13 +136,13 @@ void TCuboidOutputHDF5Stream::Create()
 void TCuboidOutputHDF5Stream::Reopen()
 {
   // Get parameters
-  const TParameters& params = TParameters::GetInstance();
+  const Parameters& params = Parameters::getInstance();
 
   sampledTimeStep = 0;
   if (reduceOp == TReduceOperator::NONE) // set correct sampled timestep for raw data series
   {
-    sampledTimeStep = (params.Get_t_index() < params.GetStartTimeIndex()) ?
-                       0 : (params.Get_t_index() - params.GetStartTimeIndex());
+    sampledTimeStep = (params.getTimeIndex() < params.getSamplingStartTimeIndex()) ?
+                       0 : (params.getTimeIndex() - params.getSamplingStartTimeIndex());
   }
 
   // Create the memory buffer if necessary and set starting address
@@ -171,7 +171,7 @@ void TCuboidOutputHDF5Stream::Reopen()
     cuboidsInfo.push_back(cuboidInfo);
 
     // read only if there is anything to read
-    if (params.Get_t_index() > params.GetStartTimeIndex())
+    if (params.getTimeIndex() > params.getSamplingStartTimeIndex())
     {
       if (reduceOp != TReduceOperator::NONE)
       { // Reload data
@@ -191,7 +191,7 @@ void TCuboidOutputHDF5Stream::Reopen()
   }
 
   // copy data over to the GPU only if there is anything to read
-  if (params.Get_t_index() > params.GetStartTimeIndex())
+  if (params.getTimeIndex() > params.getSamplingStartTimeIndex())
   {
     CopyDataToDevice();
   }
@@ -377,11 +377,11 @@ void TCuboidOutputHDF5Stream::Close()
  */
 hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t cuboidIdx)
 {
-  const TParameters& params = TParameters::GetInstance();
+  const Parameters& params = Parameters::getInstance();
 
   // if time series then Number of steps else 1
   const size_t nSampledTimeSteps = (reduceOp == TReduceOperator::NONE)
-                                   ? params.Get_nt() - params.GetStartTimeIndex() : 0; // will be a 3D dataset
+                                   ? params.getNt() - params.getSamplingStartTimeIndex() : 0; // will be a 3D dataset
 
   // Set cuboid dimensions (subtract two corners (add 1) and use the appropriate component)
   DimensionSizes cuboidSize((sensorMask.GetBottomRightCorner(cuboidIdx) - sensorMask.GetTopLeftCorner(cuboidIdx)).nx,
@@ -408,7 +408,7 @@ hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t cuboidIdx)
                                                  datasetName.c_str(),
                                                  cuboidSize,
                                                  cuboidChunkSize,
-                                                 params.GetCompressionLevel());
+                                                 params.getCompressionLevel());
 
   // Write dataset parameters
   file.WriteMatrixDomainType(group, datasetName.c_str(), THDF5_File::TMatrixDomainType::REAL);

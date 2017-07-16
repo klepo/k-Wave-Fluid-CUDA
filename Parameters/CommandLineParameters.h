@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August   2012, 11:25 (created) \n
- *              12 July     2017, 15:18 (revised)
+ *              16 July     2017, 16:57 (revised)
  *
  * @section Params Command Line Parameters
  *
@@ -214,7 +214,7 @@ class CommandLineParameters
 {
   public:
     /// Only TParameters can create this class.
-    friend class TParameters;
+    friend class Parameters;
 
     /// Copy constructor not allowed.
     CommandLineParameters(const CommandLineParameters&) = delete;
@@ -296,111 +296,111 @@ class CommandLineParameters
      * @brief  Is --version set?
      * @return true if the flag is set.
      */
-    bool   isPrintVersionEnabled()      const {return mPrintVersionFlag;};
+    bool   isPrintVersionOnly()         const {return mPrintVersionFlag;};
 
 
     /**
      * @brief Is --p_raw set?
      * @return true if the flag is set.
      */
-    bool storePressureRaw()            const {return mStorePressureRaw;};
+    bool   getStorePressureRawFlag()      const {return mStorePressureRawFlag;};
 
     /**
      * @brief  Is --p_rms set?
      * @return true if the flag is set.
      */
-    bool storePressureRms()            const {return mStorePressureRms;};
+    bool   getStorePressureRmsFlag()      const {return mStorePressureRmsFlag;};
 
     /**
      * @brief  Is --p_max set?
      * @return true if the flag is set.
      */
-    bool storePressureMax()            const {return mStorePressureMax;};
+    bool   getStorePressureMaxFlag()      const {return mStorePressureMaxFlag;};
 
     /**
      * @brief  Is --p_min set?
      * @return true if the flag is set.
      */
-    bool storePressureMin()            const {return mStorePressureMin;};
+    bool   getStorePressureMinFlag()      const {return mStorePressureMinFlag;};
 
     /**
-     * @brief  Is --p_raw set?
+     * @brief  Is --p_max_all set?
      * @return true if the flag is set.
      */
-    bool storePressureMaxAllDomain()   const {return mStorePressureMaxAllDomain;};
+    bool   getStorePressureMaxAllFlag()   const {return mStorePressureMaxAllFlag;};
 
     /**
      * @brief  Is --p_min_all set?
      * @return true if the flag is set.
      */
-    bool storePressureMinAllDomain()   const {return mStorePressureMinAllDomain;};
+    bool   getStorePressureMinAllFlag()   const {return mStorePressureMinAllFlag;};
 
     /**
      * @brief  Is --p_final set?
      * @return true if the flag is set.
      */
-    bool storePressureFinalAllDomain() const {return mStorePressureFinalAllDomain;};
+    bool   getStorePressureFinalAllFlag() const {return mStorePressureFinalAllFlag;};
 
 
     /**
      * @brief  Is --u_raw set?
      * @return true if the flag is set.
      */
-    bool storeVelocityRaw()             const {return mStoreVelocityRaw;};
+    bool   getStoreVelocityRawFlag()             const {return mStoreVelocityRawFlag;};
 
     /**
      * @brief  Is --u_non_staggered_raw set?
      * @return true if the flag is set.
      */
-    bool storeVelocityNonStaggeredRaw() const {return mStoreVelocityNonStaggeredRaw;};
+    bool   getStoreVelocityNonStaggeredRawFlag() const {return mStoreVelocityNonStaggeredRawFlag;};
 
     /**
      * @brief  Is --u_rms set?
      * @return true if the flag is set.
      */
-    bool storeVelocityRms()             const {return mStoreVelocityRms;};
+    bool   getStoreVelocityRmsFlag()             const {return mStoreVelocityRmsFlag;};
 
     /**
      * @brief  Is --u_max set?
      * @return true if the flag is set.
      */
-    bool storeVelocityMax()             const {return mStoreVelocityMax;};
-    ///
+    bool   getStoreVelocityMaxFlag()             const {return mStoreVelocityMaxFlag;};
+
     /**
      * @brief  Is --u_min set?
      * @return true if the flag is set.
      */
-    bool StoreVelocityMin()             const {return mStoreVelocityMin;};
+    bool   getStoreVelocityMinFlag()             const {return mStoreVelocityMinFlag;};
 
     /**
      * @brief  Is --u_max_all set?
      * @return true if the flag is set.
      */
-    bool storeVelocityMaxAllDomain()    const {return mStoreVelocityMaxAllDomain;};
+    bool   getStoreVelocityMaxAllFlag()          const {return mStoreVelocityMaxAllFlag;};
 
     /**
      * @brief  Is --u_min set?
      * @return true if the flag is set.
      */
-    bool storeVelocityMinAllDomain()    const {return mStoreVelocityMinAllDomain;};
+    bool getStoreVelocityMinAllFlag()            const {return mStoreVelocityMinAllFlag;};
 
     /**
      * @brief  Is --u_final set?
      * @return true if the flag is set.
      */
-    bool storeVelocityFinalAllDomain()  const {return mStoreVelocityFinalAllDomain;};
+    bool   getStoreVelocityFinalAllFlag()        const {return mStoreVelocityFinalAllFlag;};
 
     /**
      * @brief  Is --copy_mask set set?
      * @return true if the flag is set.
      */
-    bool copySensorMask()               const {return mCopySensorMask;};
+    bool   getCopySensorMaskFlag()               const {return mCopySensorMaskFlag;};
 
     /**
      * @brief  Get start time index when sensor data collection begins.
      * @return When to start sampling data.
      */
-    size_t getSamplingStartTimeIndex()  const {return mSamplingStartTimeStep;};
+    size_t getSamplingStartTimeIndex()           const {return mSamplingStartTimeStep;};
 
 
     /// Print usage of the code
@@ -451,39 +451,39 @@ class CommandLineParameters
     bool mPrintVersionFlag;
 
     /// Store raw time-series of pressure over the sensor mask?
-    bool mStorePressureRaw;
+    bool mStorePressureRawFlag;
     /// Store RMS of pressure over the the sensor mask?
-    bool mStorePressureRms;
+    bool mStorePressureRmsFlag;
     /// Store maximum of pressure over the sensor mask?
-    bool mStorePressureMax;
+    bool mStorePressureMaxFlag;
     /// Store minimum of pressure over the sensor mask?
-    bool mStorePressureMin;
+    bool mStorePressureMinFlag;
     /// Store maximum of pressure over the whole domain?
-    bool mStorePressureMaxAllDomain;
+    bool mStorePressureMaxAllFlag;
     /// Store minimum of pressure over the whole domain?
-    bool mStorePressureMinAllDomain;
+    bool mStorePressureMinAllFlag;
     /// Store pressure in the final time step over the whole domain?
-    bool mStorePressureFinalAllDomain;
+    bool mStorePressureFinalAllFlag;
 
     /// Store raw time-series of velocity over the sensor mask?
-    bool mStoreVelocityRaw;
+    bool mStoreVelocityRawFlag;
     /// Store un staggered raw time-series of velocity over the sensor mask?
-    bool mStoreVelocityNonStaggeredRaw;
+    bool mStoreVelocityNonStaggeredRawFlag;
     /// Store RMS of velocity over the the sensor mask?
-    bool mStoreVelocityRms;
+    bool mStoreVelocityRmsFlag;
     /// Store maximum of velocity over the sensor mask?
-    bool mStoreVelocityMax;
+    bool mStoreVelocityMaxFlag;
     /// Store minimum of velocity over the sensor mask?
-    bool mStoreVelocityMin;
+    bool mStoreVelocityMinFlag;
     /// Store maximum of velocity over the whole domain?
-    bool mStoreVelocityMaxAllDomain;
+    bool mStoreVelocityMaxAllFlag;
     /// Store minimum of velocity over the whole domain?
-    bool mStoreVelocityMinAllDomain;
+    bool mStoreVelocityMinAllFlag;
     /// Store velocity in the final time step over the whole domain?
-    bool mStoreVelocityFinalAllDomain;
+    bool mStoreVelocityFinalAllFlag;
 
     /// Copy sensor mask to the output file?
-    bool mCopySensorMask;
+    bool mCopySensorMaskFlag;
 
     /// When to start sampling data.
     size_t mSamplingStartTimeStep;
@@ -492,7 +492,7 @@ class CommandLineParameters
     static constexpr size_t kDefaultCompressionLevel      = 0;
     /// Default progress print interval.
     static constexpr size_t kDefaultProgressPrintInterval = 5;
-};// end of class TCommandLineParameters
+};// end of class CommandLineParameters
 //----------------------------------------------------------------------------------------------------------------------
 
 #endif /* CommandLineParamettersH */

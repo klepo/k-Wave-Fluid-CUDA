@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August   2012, 11:25 (created) \n
- *              12 July     2017, 15:34 (revised)
+ *              16 July     2017, 16:56 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -132,66 +132,66 @@ void CommandLineParameters::printComandlineParamers()
   string sampledQuantitiesList = "";
   // Sampled p quantities
 
-  if (mStorePressureRaw)
+  if (mStorePressureRawFlag)
   {
     sampledQuantitiesList += "p_raw, ";
   }
-  if (mStorePressureRms)
+  if (mStorePressureRmsFlag)
   {
     sampledQuantitiesList += "p_rms, ";
   }
-  if (mStorePressureMax)
+  if (mStorePressureMaxFlag)
   {
     sampledQuantitiesList += "p_max, ";
   }
-  if (mStorePressureMin)
+  if (mStorePressureMinFlag)
   {
     sampledQuantitiesList += "p_min, ";
   }
-  if (mStorePressureMaxAllDomain)
+  if (mStorePressureMaxAllFlag)
   {
     sampledQuantitiesList += "p_max_all, ";
   }
-  if (mStorePressureMinAllDomain)
+  if (mStorePressureMinAllFlag)
   {
     sampledQuantitiesList += "p_min_all, ";
   }
-  if (mStorePressureFinalAllDomain)
+  if (mStorePressureFinalAllFlag)
   {
     sampledQuantitiesList += "p_final, ";
   }
 
   // Sampled u quantities
-  if (mStoreVelocityRaw)
+  if (mStoreVelocityRawFlag)
   {
     sampledQuantitiesList += "u_raw, ";
   }
-  if (mStoreVelocityRms)
+  if (mStoreVelocityRmsFlag)
   {
     sampledQuantitiesList += "u_rms, ";
   }
-  if (mStoreVelocityMax)
+  if (mStoreVelocityMaxFlag)
   {
     sampledQuantitiesList += "u_max, ";
   }
-  if (mStoreVelocityMin)
+  if (mStoreVelocityMinFlag)
   {
     sampledQuantitiesList += "u_min, ";
   }
-  if (mStoreVelocityMaxAllDomain)
+  if (mStoreVelocityMaxAllFlag)
   {
     sampledQuantitiesList += "u_max_all, ";
   }
-  if (mStoreVelocityMinAllDomain)
+  if (mStoreVelocityMinAllFlag)
   {
     sampledQuantitiesList += "u_min_all, ";
   }
-  if (mStoreVelocityFinalAllDomain)
+  if (mStoreVelocityFinalAllFlag)
   {
     sampledQuantitiesList += "u_final, ";
   }
 
-  if (mStoreVelocityNonStaggeredRaw)
+  if (mStoreVelocityNonStaggeredRawFlag)
   {
     sampledQuantitiesList += "u_non_staggered_raw, ";
   }
@@ -211,7 +211,7 @@ void CommandLineParameters::printComandlineParamers()
 
   TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SAMPLING_BEGINS_AT, mSamplingStartTimeStep + 1);
 
-  if (mCopySensorMask)
+  if (mCopySensorMaskFlag)
   {
     TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_COPY_SENSOR_MASK);
   }
@@ -446,7 +446,7 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
 
       case 2: // copy_sensor_mask
       {
-        mCopySensorMask = true;
+        mCopySensorMaskFlag = true;
         break;
       }
 
@@ -520,91 +520,91 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
 
       case 'p':
       {
-        mStorePressureRaw = true;
+        mStorePressureRawFlag = true;
         break;
       }
 
       case 10: // p_rms
       {
-        mStorePressureRms = true;
+        mStorePressureRmsFlag = true;
         break;
       }
 
       case 11: // p_max
       {
-        mStorePressureMax = true;
+        mStorePressureMaxFlag = true;
         break;
       }
 
       case 12: // p_min
       {
-        mStorePressureMin = true;
+        mStorePressureMinFlag = true;
         break;
       }
 
       case 13: // p_max_all
       {
-        mStorePressureMaxAllDomain = true;
+        mStorePressureMaxAllFlag = true;
         break;
       }
 
       case 14: // p_min_all
       {
-        mStorePressureMinAllDomain = true;
+        mStorePressureMinAllFlag = true;
         break;
       }
 
       case 15: // p_final
       {
-        mStorePressureFinalAllDomain = true;
+        mStorePressureFinalAllFlag = true;
         break;
       }
 
       case 'u':
       {
-        mStoreVelocityRaw = true;
+        mStoreVelocityRawFlag = true;
         break;
       }
 
       case 20: // u_rms
       {
-        mStoreVelocityRms = true;
+        mStoreVelocityRmsFlag = true;
         break;
       }
 
       case 21: // u_max
       {
-        mStoreVelocityMax = true;
+        mStoreVelocityMaxFlag = true;
         break;
       }
 
       case 22: // u_min
       {
-        mStoreVelocityMin = true;
+        mStoreVelocityMinFlag = true;
         break;
       }
 
       case 23: // u_max_all
       {
-        mStoreVelocityMaxAllDomain = true;
+        mStoreVelocityMaxAllFlag = true;
         break;
       }
 
       case 24: // u_min_all
       {
-        mStoreVelocityMinAllDomain = true;
+        mStoreVelocityMinAllFlag = true;
         break;
       }
 
       case 25: // u_final
       {
-        mStoreVelocityFinalAllDomain = true;
+        mStoreVelocityFinalAllFlag = true;
         break;
       }
 
       case 26: // u_non_staggered_raw
       {
-        mStoreVelocityNonStaggeredRaw = true;
+        mStoreVelocityNonStaggeredRawFlag = true;
         break;
       }
 
@@ -775,13 +775,13 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
   }
 
   // set a default flag if necessary
-  if (!(mStorePressureRaw     || mStorePressureRms     || mStorePressureMax   || mStorePressureMin ||
-        mStorePressureMaxAllDomain || mStorePressureMinAllDomain || mStorePressureFinalAllDomain ||
-        mStoreVelocityRaw     || mStoreVelocityNonStaggeredRaw        ||
-        mStoreVelocityRms     || mStoreVelocityMax     || mStoreVelocityMin   ||
-        mStoreVelocityMaxAllDomain || mStoreVelocityMinAllDomain || mStoreVelocityFinalAllDomain ))
+  if (!(mStorePressureRawFlag    || mStorePressureRmsFlag    || mStorePressureMaxFlag      || mStorePressureMinFlag ||
+        mStorePressureMaxAllFlag || mStorePressureMinAllFlag || mStorePressureFinalAllFlag ||
+        mStoreVelocityRawFlag    || mStoreVelocityNonStaggeredRawFlag                      ||
+        mStoreVelocityRmsFlag    || mStoreVelocityMaxFlag    || mStoreVelocityMinFlag      ||
+        mStoreVelocityMaxAllFlag || mStoreVelocityMinAllFlag || mStoreVelocityFinalAllFlag ))
   {
-    mStorePressureRaw = true;
+    mStorePressureRawFlag = true;
   }
 }// end of parseCommandLine
 //----------------------------------------------------------------------------------------------------------------------
@@ -810,12 +810,13 @@ CommandLineParameters::CommandLineParameters() :
   mPrintVersionFlag (false),
 
   // output flags
-  mStorePressureRaw(false), mStorePressureRms(false), mStorePressureMax(false), mStorePressureMin(false),
-  mStorePressureMaxAllDomain(false), mStorePressureMinAllDomain(false), mStorePressureFinalAllDomain(false),
-  mStoreVelocityRaw(false), mStoreVelocityNonStaggeredRaw(false),
-  mStoreVelocityRms(false), mStoreVelocityMax(false), mStoreVelocityMin(false),
-  mStoreVelocityMaxAllDomain(false), mStoreVelocityMinAllDomain(false), mStoreVelocityFinalAllDomain(false),
-  mCopySensorMask(false),
+  mStorePressureRawFlag(false), mStorePressureRmsFlag(false),
+  mStorePressureMaxFlag(false), mStorePressureMinFlag(false),
+  mStorePressureMaxAllFlag(false), mStorePressureMinAllFlag(false), mStorePressureFinalAllFlag(false),
+  mStoreVelocityRawFlag(false), mStoreVelocityNonStaggeredRawFlag(false),
+  mStoreVelocityRmsFlag(false), mStoreVelocityMaxFlag(false), mStoreVelocityMinFlag(false),
+  mStoreVelocityMaxAllFlag(false), mStoreVelocityMinAllFlag(false), mStoreVelocityFinalAllFlag(false),
+  mCopySensorMaskFlag(false),
   mSamplingStartTimeStep(0)
 {
 

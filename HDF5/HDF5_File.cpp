@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              12 July     2017, 10:40 (revised)
+ *              16 July     2017, 16:51 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -1536,7 +1536,7 @@ void THDF5_FileHeader::SetMemoryConsumption(const size_t totalMemory)
 
   headerValues[TFileHeaderItems::PEAK_CORE_MEMORY_CONSUMPTION]
           = TLogger::FormatMessage("%ld MB",
-                                   totalMemory / TParameters::GetInstance().GetNumberOfThreads());
+                                   totalMemory / Parameters::getInstance().getNumberOfThreads());
 
 }// end of SetMemoryConsumption
 //--------------------------------------------------------------------------------------------------
@@ -1595,7 +1595,7 @@ void THDF5_FileHeader::GetExecutionTimes(double& totalTime,
 void THDF5_FileHeader::SetNumberOfCores()
 {
   headerValues[TFileHeaderItems::NUMBER_OF_CORES]
-          = TLogger::FormatMessage("%ld", TParameters::GetInstance().GetNumberOfThreads());
+          = TLogger::FormatMessage("%ld", Parameters::getInstance().getNumberOfThreads());
 }// end of SetNumberOfCores
 //--------------------------------------------------------------------------------------------------
 
