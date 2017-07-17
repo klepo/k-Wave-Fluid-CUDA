@@ -1,6 +1,6 @@
 /**
  * @file        OutputMessages.h
- * 
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -29,8 +29,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef OUTPUT_MESSAGES_H
-#define OUTPUT_MESSAGES_H
+#ifndef OutputMessagesH
+#define OutputMessagesH
 
 #ifdef __linux__
   #include <Logger/OutputMessagesLinux.h>
@@ -41,5 +41,5 @@
   #include <Logger/OutputMessagesWindows.h>
 #endif
 
-#endif /* OUTPUT_MESSAGES_H */
+#endif /* OutputMessagesH */
 

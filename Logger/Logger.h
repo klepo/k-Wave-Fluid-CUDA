@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        19 April    2016, 12:52 (created) \n
- *              07 July     2017, 18:22 (revised)
+ *              17 July     2017, 15:21 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -31,8 +31,8 @@
  */
 
 
-#ifndef TLOGGER_H
-#define TLOGGER_H
+#ifndef LoggerH
+#define LoggerH
 
 #include <memory>
 #include <iostream>
@@ -42,117 +42,147 @@
 #include <Logger/ErrorMessages.h>
 
 /**
- * @class TLogger
- * @brief Static class implementing the user interface by info messages.
- * @details StaticClass used for printing out info and error message based on the
- *          verbose level. This is a static class.
+ * @class   Logger
+ * @brief   Static class implementing the user interface by info messages.
+ * @details StaticClass used for printing out info and error message based on the verbose level. \n
+ *          This is a static class.
  */
-class TLogger
+class Logger
 {
   public:
 
    /**
-    * @enum  TLogLevel
-    * @brief Log level of the message.
-    * @details A enum to specify at which log level the message should be displayed, or the level
-    * set.
+    * @enum    LogLevel
+    * @brief   Log level of the message.
+    * @details A enum to specify at which log level the message should be displayed, or the level setd.
     */
-    enum class TLogLevel
+    enum class LogLevel
     {
       /// Basic (default) level of verbosity
-      BASIC    = 0,
+      kBasic    = 0,
       /// Advanced level of verbosity
-      ADVANCED = 1,
+      kAdvanced = 1,
       /// Full level of verbosity
-      FULL     = 2,
+      kFull     = 2,
     };
 
-    /// Default constructor is not allowed, static class
-    TLogger() = delete;
-    /// Copy constructor is not allowed, static class
-    TLogger(const TLogger&) = delete;
-    /// Destructor is not allowed, static class
-    ~TLogger() = delete;
+    /// Default constructor is not allowed, static class.
+    Logger() = delete;
+    /// Copy constructor is not allowed, static class.
+    Logger(const Logger&) = delete;
+    /// Destructor is not allowed, static class.
+    ~Logger() = delete;
 
-    /// Operator= is not allowed, static class
-    TLogger& operator=(const TLogger&) = delete;
+    /// Operator= is not allowed, static class.
+    Logger& operator=(const Logger&) = delete;
 
-    /// Set the log level.
-    static void SetLevel(const TLogLevel actualLogLevel);
-    /// Get the log level.
-    static TLogLevel GetLevel() {return logLevel;};
+    /**
+     * @brief Set the log level.
+     * @param [in] actualLogLevel - Log level for the logger.
+     */
+    static void setLevel(const LogLevel actualLogLevel);
+    /**
+     * Get current log level.
+     * @return Current log level.
+     */
+    static LogLevel getLevel()  {return slogLevel;};
 
     /**
      * @brief   Log desired activity for a given log level, version with string format.
-     * @details Log desired activity and format it using format message.
      *
      * @param [in] queryLevel - What level to use
      * @param [in] format     - Format string
      * @param [in] args       - Arguments, std::string is not accepted
      */
     template<typename... Args>
-    static void Log(const TLogLevel queryLevel,
+    static void log(const LogLevel queryLevel,
                     const std::string& format,
                     Args ... args)
     {
-      if (queryLevel <= TLogger::logLevel)
+      if (queryLevel <= Logger::slogLevel)
       {
-        std::cout << FormatMessage(format, args ...);
+        std::cout << formatMessage(format, args ...);
       }
-     }// end of Log
+     }// end of log
 
-
-    /// Log desired activity for a given log level.
-    static void Log(const TLogLevel    queryLevel,
+    /**
+     * @brief Log desired activity for a given log level.
+     * @param [in] queryLevel - Log level of the message
+     * @param [in] message    - Message to log
+     */
+    static void log(const LogLevel     queryLevel,
                     const std::string& message);
+    /**
+     * @brief Log an error.
+     * @param [in] errorMessage - Error message to be printed out.
+     */
+    static void error(const std::string& errorMessage);
+    /**
+     * @brief Log an error and terminate the execution.
+     * @param [in] errorMessage - error message to be printed to stderr.
+     */
+    static void errorAndTerminate(const std::string& errorMessage);
+    /**
+     * @brief Flush output messages.
+     * @param [in] queryLevel - Log level of the flush.
+     */
+    static void flush(const LogLevel queryLevel);
 
-    /// Log an error.
-    static void Error(const std::string& errorMessage);
-
-    /// Log an error and terminate the execution
-    static void ErrorAndTerminate(const std::string& errorMessage);
-
-    /// Flush output messages.
-    static void Flush(const TLogLevel queryLevel);
-
-    /// Wrap the line based on logger conventions
-    static std::string WordWrapString(const std::string& inputString,
+    /**
+     * Wrap the line based on delimiters and align it with the rest of the logger output.
+     *
+     * @param [in] inputString - Input string
+     * @param [in] delimiters  - String of delimiters, every char is a delimiter
+     * @param [in] indentation - Indentation from the beginning
+     * @param [in] lineSize    - Line size
+     * @return Wrapped string
+     *
+     * @note The string must not contain tabulator and end-of-line characters.
+     */
+    static std::string wordWrapString(const std::string& inputString,
                                       const std::string& delimiters,
                                       const int          indentation = 0,
                                       const int          lineSize    = 65);
 
     /**
-     * @brief   C++-11 replacement for sprintf that works with std::string instead of char *
+     * @brief   C++-11 replacement for sprintf that works with std::string instead of char*
      * @details The routine was proposed at
      *          http://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
-     *          and should work with both Linux and VS 2013.
+     *          and should work with both Linux and VS 2015.
      *          However it still does not support string in formated arguments
      * @param [in] format - Format string
      * @param [in] args   - Arguments, std::string is not accepted
-     * @return formated string
+     * @return Formated string
      */
     template<typename ... Args>
-    static std::string FormatMessage(const std::string& format, Args ... args)
+    static std::string formatMessage(const std::string& format,
+                                     Args ... args)
     {
-	  	/// when the size is 0, the routine returns the size of the formated string
+	  	// when the size is 0, the routine returns the size of the formated string
       size_t size = snprintf(nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
 
       std::unique_ptr<char[]> buf(new char[size]);
       snprintf(buf.get(), size, format.c_str(), args ... );
       return std::string(buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
     }
+
   private:
+    /**
+     * @brief Extract a word from a string stream based on delimiters.
+     *
+     * @param [in,out] textStream - Input text stream
+     * @param [in]     delimiters - List of delimiters as a single string
+     * @return         A word from the string
+     */
+    static std::string getWord(std::istringstream& textStream,
+                               const std::string&  delimiters);
+
 
     /// Log level of the logger
-    static TLogLevel logLevel;
+    static LogLevel slogLevel;
 
- private:
-  /// Extract a word (string between two delimiters)
-  static std::string GetWord(std::istringstream& textStream,
-                             const std::string&  delimiters);
-
-}; // TLogger
-//--------------------------------------------------------------------------------------------------
+}; // Logger
+//----------------------------------------------------------------------------------------------------------------------
 
 
 //------------------------------------------------------------------------------------------------//
@@ -160,18 +190,19 @@ class TLogger
 //------------------------------------------------------------------------------------------------//
 
 /**
- *@brief  Checks CUDA errors, create an error message and throw an exception.
- *@details Checks CUDA errors, create an error message and throw an exception. The template
- * parameter should be set to true for the whole code when debugging  kernel related errors.
- * Setting it to true for production run will cause IO sampling and storing not to be overlapped.
+ * @brief  Checks CUDA errors, create an error message and throw an exception.
+ * @details Checks CUDA errors, create an error message and throw an exception. The template parameter should be set
+ * to true for the whole code when debugging  kernel related errors. Setting it to true for production run will
+ * cause IO sampling and storing not to be overlapped.
  *
- * @param [in] errorCode   - Error produced by a cuda routine
- * @param [in] routineName - Function where the error happened
- * @param [in] fileName    - File where the error happened
- * @param [in] lineNumber  - Line where the error happened
+ * @tparam forceSynchronisation - Force CUDA device to synchronize with CPU.
+ * @param [in] errorCode        - Error produced by a cuda routine.
+ * @param [in] routineName      - Function where the error happened.
+ * @param [in] fileName         - File where the error happened.
+ * @param [in] lineNumber       - Line where the error happened.
  */
 template <bool forceSynchronisation = false>
-inline void CheckErrors(const cudaError_t errorCode,
+inline void checkErrors(const cudaError_t errorCode,
                         const char*       routineName,
                         const char*       fileName,
                         const int         lineNumber)
@@ -184,21 +215,21 @@ inline void CheckErrors(const cudaError_t errorCode,
   if (errorCode != cudaSuccess)
   {
     // Throw exception
-     throw std::runtime_error(TLogger::FormatMessage(ERR_FMT_GPU_ERROR,
-                                                     cudaGetErrorString(errorCode),
-                                                     routineName,
-                                                     fileName,
-                                                     lineNumber));
+     throw std::runtime_error(Logger::formatMessage(kErrFmtDeviceError,
+                                                    cudaGetErrorString(errorCode),
+                                                    routineName,
+                                                    fileName,
+                                                    lineNumber));
   }
 }// end of cudaCheckErrors
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * @brief Macro checking cuda errors and printing the file name and line. Inspired by CUDA common
  *        checking routines.
  */
-#define checkCudaErrors(val) CheckErrors ( (val), #val, __FILE__, __LINE__ )
+#define cudaCheckErrors(val) checkErrors ( (val), #val, __FILE__, __LINE__ )
 
 
-#endif /* TLOGGER_H */
+#endif /* LoggerH */
 

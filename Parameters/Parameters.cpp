@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2012, 13:39 (created) \n
- *              16 July      2017, 16:59 (revised)
+ *              17 July      2017, 16:16 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -107,15 +107,15 @@ void Parameters::init(int argc, char** argv)
 
   if (getGitHash() != "")
   {
-    TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_GIT_HASH_LEFT, getGitHash().c_str());
-    TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_SEPARATOR);
+    Logger::log(Logger::LogLevel::kFull, kOutFmtGitHashLeft, getGitHash().c_str());
+    Logger::log(Logger::LogLevel::kFull, kOutFmtSeparator);
   }
   if (mCommandLineParameters.isPrintVersionOnly())
   {
     return;
   }
 
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_READING_CONFIGURATION);
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtReadingConfiguration);
   readScalarsFromInputFile();
 
   if (mCommandLineParameters.isBenchmarkEnabled())
@@ -126,10 +126,10 @@ void Parameters::init(int argc, char** argv)
   if ((mNt <= mCommandLineParameters.getSamplingStartTimeIndex()) ||
       (0 > mCommandLineParameters.getSamplingStartTimeIndex()))
   {
-    throw std::invalid_argument(TLogger::FormatMessage(ERR_FMT_ILLEGAL_START_TIME_VALUE, 1l, mNt));
+    throw std::invalid_argument(Logger::formatMessage(kErrFmtIllegalSamplingStartTimeStep, 1l, mNt));
   }
 
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DONE);
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtDone);
 }// end of parseCommandLine
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -139,15 +139,15 @@ void Parameters::init(int argc, char** argv)
  */
 void Parameters::selectDevice()
 {
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SELECTED_DEVICE);
-  TLogger::Flush(TLogger::TLogLevel::BASIC);
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtSelectedDevice);
+  Logger::flush(Logger::LogLevel::kBasic);
 
   int deviceIdx = mCommandLineParameters.getCudaDeviceIdx();
   mCudaParameters.selectDevice(deviceIdx); // throws an exception when wrong
 
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DEVICE_ID, mCudaParameters.getDeviceIdx());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceId, mCudaParameters.getDeviceIdx());
 
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DEVICE_NAME, mCudaParameters.getDeviceName().c_str());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceName, mCudaParameters.getDeviceName().c_str());
 }// end of selectDevice
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -157,30 +157,30 @@ void Parameters::selectDevice()
  */
 void Parameters::printSimulatoinSetup()
 {
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_NUMBER_OF_THREADS, getNumberOfThreads());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtNumberOfThreads, getNumberOfThreads());
 
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SIMULATION_DETAIL_TITLE);
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtSimulationDetailsTitle);
 
 
-  const string domainsSizes = TLogger::FormatMessage(OUT_FMT_DOMAIN_SIZE_FORMAT,
-                                                     getFullDimensionSizes().nx,
-                                                     getFullDimensionSizes().ny,
-                                                     getFullDimensionSizes().nz);
+  const string domainsSizes = Logger::formatMessage(kOutFmtDomainSizeFormat,
+                                                    getFullDimensionSizes().nx,
+                                                    getFullDimensionSizes().ny,
+                                                    getFullDimensionSizes().nz);
   // Print simulation size
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_DOMAIN_SIZE, domainsSizes.c_str());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtDomainSize, domainsSizes.c_str());
 
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SIMULATION_LENGTH, getNt());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtSimulatoinLenght, getNt());
 
   // Print all command line parameters
   mCommandLineParameters.printComandlineParamers();
 
   if (getSensorMaskType() == SensorMaskType::kIndex)
   {
-    TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SENSOR_MASK_INDEX);
+    Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSensorMaskIndex);
   }
   if (getSensorMaskType() == SensorMaskType::kCorners)
   {
-    TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SENSOR_MASK_CUBOID);
+    Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSensorMaskCuboid);
   }
 }// end of printParametersOfTask
 //----------------------------------------------------------------------------------------------------------------------
@@ -204,22 +204,22 @@ void Parameters::readScalarsFromInputFile()
   // check file type
   if (mFileHeader.GetFileType() != THDF5_FileHeader::TFileType::INPUT)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_INPUT_FILE_FORMAT, getInputFileName().c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtBadInputFileFormat, getInputFileName().c_str()));
   }
 
   // check version
   if (!mFileHeader.CheckMajorFileVersion())
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_MAJOR_File_Version,
-                                              getInputFileName().c_str(),
-                                              mFileHeader.GetCurrentHDF5_MajorVersion().c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtBadMajorFileVersion,
+                                             getInputFileName().c_str(),
+                                             mFileHeader.GetCurrentHDF5_MajorVersion().c_str()));
   }
 
   if (!mFileHeader.CheckMinorFileVersion())
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_MINOR_FILE_VERSION,
-                                              getInputFileName().c_str(),
-                                              mFileHeader.GetCurrentHDF5_MinorVersion().c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtBadMinorFileVersion,
+                                             getInputFileName().c_str(),
+                                             mFileHeader.GetCurrentHDF5_MinorVersion().c_str()));
   }
 
   const hid_t rootGroup = mInputFile.GetRootGroup();
@@ -262,7 +262,7 @@ void Parameters::readScalarsFromInputFile()
     //if -u_non_staggered_raw enabled, throw an error - not supported
     if (getStoreVelocityNonStaggeredRaw())
     {
-      throw ios::failure(ERR_FMT_U_NON_STAGGERED_NOT_SUPPORTED_FILE_VERSION);
+      throw ios::failure(kErrFmtNonStaggeredVelocityNotSupportedFileVersion);
     }
   }// version 1.0
 
@@ -288,7 +288,7 @@ void Parameters::readScalarsFromInputFile()
       }
       default:
       {
-        throw ios::failure(ERR_FMT_BAD_SENSOR_MASK_TYPE);
+        throw ios::failure(kErrFmtBadSensorMaskType);
         break;
       }
     }//case
@@ -371,7 +371,7 @@ void Parameters::readScalarsFromInputFile()
     mInputFile.ReadScalarValue(rootGroup, kAlphaPowerName, mAlphaPower);
     if (mAlphaPower == 1.0f)
     {
-      throw std::invalid_argument(ERR_FMT_ILLEGAL_ALPHA_POWER_VALUE);
+      throw std::invalid_argument(kErrFmtIllegalAlphaPowerValue);
     }
 
     mAlphaCoeffScalarFlag = mInputFile.GetDatasetDimensionSizes(rootGroup, kAlphaCoeffName) == scalarSizes;

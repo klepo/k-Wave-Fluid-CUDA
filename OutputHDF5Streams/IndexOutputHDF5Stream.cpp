@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August    2014, 10:10 (created)
- *              16 July      2017, 16:54 (revised)
+ *              17 July      2017, 16:16 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -68,7 +68,7 @@ TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File&           file,
           eventSamplingFinished()
 {
   // Create event for sampling
-  checkCudaErrors(cudaEventCreate(&eventSamplingFinished));
+  cudaCheckErrors(cudaEventCreate(&eventSamplingFinished));
 }// end of TIndexOutputHDF5Stream
 //--------------------------------------------------------------------------------------------------
 
@@ -80,7 +80,7 @@ TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File&           file,
 TIndexOutputHDF5Stream::~TIndexOutputHDF5Stream()
 {
   // Destroy sampling event
-  checkCudaErrors(cudaEventDestroy(eventSamplingFinished));
+  cudaCheckErrors(cudaEventDestroy(eventSamplingFinished));
 
   Close();
   // free memory
@@ -197,7 +197,7 @@ void TIndexOutputHDF5Stream::Sample()
                                             sensorMask.GetElementCount());
 
       // Record an event when the data has been copied over.
-      checkCudaErrors(cudaEventRecord(eventSamplingFinished));
+      cudaCheckErrors(cudaEventRecord(eventSamplingFinished));
 
       break;
     }// case NONE

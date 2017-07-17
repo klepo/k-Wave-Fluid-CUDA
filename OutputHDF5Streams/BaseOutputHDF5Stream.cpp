@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              16 June      2017, 16:53 (revised)
+ *              17 June      2017, 16:16 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -177,7 +177,7 @@ void TBaseOutputHDF5Stream::AllocateMemory()
   }// switch
 
   // Register Host memory (pin in memory only - no mapped data)
-  checkCudaErrors(cudaHostRegister(hostBuffer,
+  cudaCheckErrors(cudaHostRegister(hostBuffer,
                                    bufferSize * sizeof (float),
                                    cudaHostRegisterPortable | cudaHostRegisterMapped));
   // cudaHostAllocWriteCombined - cannot be used since GPU writes and CPU reads
@@ -186,7 +186,7 @@ void TBaseOutputHDF5Stream::AllocateMemory()
   if (reduceOp == TReduceOperator::NONE)
   {
     // Register CPU memory for zero-copy
-    checkCudaErrors(cudaHostGetDevicePointer<float>(&deviceBuffer, hostBuffer, 0));
+    cudaCheckErrors(cudaHostGetDevicePointer<float>(&deviceBuffer, hostBuffer, 0));
   }
   else
   {
@@ -219,7 +219,7 @@ void TBaseOutputHDF5Stream::FreeMemory()
   // Free GPU memory
   if (reduceOp != TReduceOperator::NONE)
   {
-    checkCudaErrors(cudaFree(deviceBuffer));
+    cudaCheckErrors(cudaFree(deviceBuffer));
   }
   deviceBuffer = nullptr;
 }// end of FreeMemory
@@ -231,7 +231,7 @@ void TBaseOutputHDF5Stream::FreeMemory()
 void TBaseOutputHDF5Stream::CopyDataToDevice()
 {
 
-  checkCudaErrors(cudaMemcpy(deviceBuffer,
+  cudaCheckErrors(cudaMemcpy(deviceBuffer,
                              hostBuffer,
                              bufferSize * sizeof(float),
                              cudaMemcpyHostToDevice));
@@ -244,7 +244,7 @@ void TBaseOutputHDF5Stream::CopyDataToDevice()
  */
 void TBaseOutputHDF5Stream::CopyDataFromDevice()
 {
-  checkCudaErrors(cudaMemcpy(hostBuffer,
+  cudaCheckErrors(cudaMemcpy(hostBuffer,
                              deviceBuffer,
                              bufferSize * sizeof(float),
                              cudaMemcpyDeviceToHost));

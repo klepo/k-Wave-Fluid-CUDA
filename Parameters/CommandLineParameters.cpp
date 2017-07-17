@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August   2012, 11:25 (created) \n
- *              16 July     2017, 16:56 (revised)
+ *              17 July     2017, 16:15 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -68,16 +68,16 @@ using std::string;
  */
 void CommandLineParameters::printUsage()
 {
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_USAGE_PART_1);
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtUsagePart1);
 
   #ifdef _OPENMP
-    TLogger::Log(TLogger::TLogLevel::BASIC,
-                 OUT_FMT_USAGE_THREADS,
+    Logger::log(Logger::LogLevel::kBasic,
+                 kOutFmtUsageThreads,
                  omp_get_num_procs());
   #endif
 
-  TLogger::Log(TLogger::TLogLevel::BASIC,
-               OUT_FMT_USAGE_PART_2,
+  Logger::log(Logger::LogLevel::kBasic,
+               kOutFmtUsagePart2,
                kDefaultProgressPrintInterval,
                kDefaultCompressionLevel);
 }// end of printUsage
@@ -88,45 +88,39 @@ void CommandLineParameters::printUsage()
  */
 void CommandLineParameters::printComandlineParamers()
 {
-  TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SEPARATOR);
+  Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSeparator);
 
-  TLogger::Log(TLogger::TLogLevel::ADVANCED,
-               TLogger::WordWrapString(OUT_FMT_INPUT_FILE + mInputFileName,
-                                       ERR_FMT_PATH_DELIMITERS,
-                                       15).c_str());
+  Logger::log(Logger::LogLevel::kAdvanced,
+              Logger::wordWrapString(kOutFmtInputFile + mInputFileName, kErrFmtPathDelimiters, 15).c_str());
 
-  TLogger::Log(TLogger::TLogLevel::ADVANCED,
-               TLogger::WordWrapString(OUT_FMT_OUTPUT_FILE + mOutputFileName,
-                                       ERR_FMT_PATH_DELIMITERS,
-                                       15).c_str());
+  Logger::log(Logger::LogLevel::kAdvanced,
+              Logger::wordWrapString(kOutFmtOutputFile + mOutputFileName,kErrFmtPathDelimiters, 15).c_str());
 
   if (isCheckpointEnabled())
   {
-    TLogger::Log(TLogger::TLogLevel::ADVANCED,
-                 TLogger::WordWrapString(OUT_FMT_CHECKPOINT_FILE + mCheckpointFileName,
-                                         ERR_FMT_PATH_DELIMITERS,
-                                         15).c_str());
+    Logger::log(Logger::LogLevel::kAdvanced,
+                Logger::wordWrapString(kOutFmtCheckpointFile + mCheckpointFileName,kErrFmtPathDelimiters, 15).c_str());
 
-    TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SEPARATOR);
+    Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSeparator);
 
-    TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_CHECKPOINT_INTERVAL, mCheckpointInterval);
+    Logger::log(Logger::LogLevel::kAdvanced, kOutFmtCheckpointInterval, mCheckpointInterval);
   }
   else
   {
-    TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SEPARATOR);
+    Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSeparator);
   }
 
 
-  TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_COMPRESSION_LEVEL, mCompressionLevel);
+  Logger::log(Logger::LogLevel::kAdvanced, kOutFmtCompressionLevel, mCompressionLevel);
 
-  TLogger::Log(TLogger::TLogLevel::FULL,     OUT_FMT_PRINT_PROGRESS_INTERVAL, mProgressPrintInterval);
+  Logger::log(Logger::LogLevel::kFull,     kOutFmtPrintProgressIntrerval, mProgressPrintInterval);
 
   if (mBenchmarkFlag)
   {
-    TLogger::Log(TLogger::TLogLevel::FULL, OUT_FMT_BENCHMARK_TIME_STEP, mBenchmarkTimeStepCount);
+    Logger::log(Logger::LogLevel::kFull, kOutFmtBenchmarkTimeStep, mBenchmarkTimeStepCount);
   }
 
-  TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SAMPLING_FLAGS);
+  Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSamplingFlags);
 
 
   string sampledQuantitiesList = "";
@@ -203,17 +197,16 @@ void CommandLineParameters::printComandlineParamers()
     sampledQuantitiesList.pop_back();
   }
 
-  TLogger::Log(TLogger::TLogLevel::ADVANCED,
-               TLogger::WordWrapString(sampledQuantitiesList,
-                                       " ",2).c_str());
+  Logger::log(Logger::LogLevel::kAdvanced,
+              Logger::wordWrapString(sampledQuantitiesList," ",2).c_str());
 
-  TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SEPARATOR);
+  Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSeparator);
 
-  TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_SAMPLING_BEGINS_AT, mSamplingStartTimeStep + 1);
+  Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSamplingStartsAt, mSamplingStartTimeStep + 1);
 
   if (mCopySensorMaskFlag)
   {
-    TLogger::Log(TLogger::TLogLevel::ADVANCED, OUT_FMT_COPY_SENSOR_MASK);
+    Logger::log(Logger::LogLevel::kAdvanced, kOutFmtCopySensorMask);
   }
 }// end of printComandlineParamers
 //----------------------------------------------------------------------------------------------------------------------
@@ -227,7 +220,7 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
   int  longIndex = -1;
   bool checkpointFlag = false;
 
-  constexpr int errorLineIndentation = 9;
+  constexpr int errorLineIndent = 9;
 
   // all optional arguments are in fact requested. This was chosen to prevent
   // getopt error messages and provide custom error handling.
@@ -288,9 +281,7 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         else
         {
           printUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_INPUT_FILE,
-                                                             " ",
-                                                             errorLineIndentation).c_str());
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoInputFile, " ", errorLineIndent).c_str());
         }
         break;
       }
@@ -307,9 +298,7 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         else
         {
           printUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_OUTPUT_FILE,
-                                                             " ",
-                                                             errorLineIndentation).c_str());
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoOutputFile, " ", errorLineIndent).c_str());
         }
         break;
       }
@@ -328,9 +317,9 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         catch (...)
         {
           printUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(FMT_NO_PROGRESS_PRINT_INTERVAL,
-                                                             " ",
-                                                             errorLineIndentation).c_str());
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoProgressPrintInterval,
+                                                           " ",
+                                                           errorLineIndent).c_str());
         }
         break;
       }
@@ -349,9 +338,9 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         catch (...)
         {
           printUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_THREAD_NUMBER,
-                                                             " ",
-                                                             errorLineIndentation).c_str());
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtInvalidNumberOfThreads,
+                                                           " ",
+                                                           errorLineIndent).c_str());
         }
         break;
       }
@@ -369,9 +358,7 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         catch (...)
         {
           printUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_GPU_NUMBER,
-                                                             " ",
-                                                             errorLineIndentation).c_str());
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoDeviceIndex, " ", errorLineIndent).c_str());
         }
         break;
       }
@@ -390,9 +377,7 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         catch (...)
         {
           printUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_COMPRESSION_LEVEL,
-                                                             " ",
-                                                             errorLineIndentation).c_str());
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoCompressionLevel, " ", errorLineIndent).c_str());
         }
         break;
       }
@@ -416,9 +401,9 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         catch (...)
         {
           printUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_START_TIME_STEP,
-                                                             " ",
-                                                             errorLineIndentation).c_str());
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoSamplingStartTimeStep,
+                                                           " ",
+                                                           errorLineIndent).c_str());
         }
         break;
       }
@@ -437,9 +422,7 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         catch (...)
         {
           printUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_BENCHMARK_STEP_SET,
-                                                             " ",
-                                                             errorLineIndentation).c_str());
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoBenchmarkTimeStep, " ", errorLineIndent).c_str());
         }
         break;
       }
@@ -463,9 +446,7 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         else
         {
           printUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_FILE,
-                                                             " ",
-                                                             errorLineIndentation).c_str());
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoCheckpointFile, " ", errorLineIndent).c_str());
         }
         break;
       }
@@ -484,9 +465,7 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         catch (...)
         {
           printUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_INTERVAL,
-                                                             " ",
-                                                             errorLineIndentation).c_str());
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoCheckpointInterval, " ", errorLineIndent).c_str());
         }
         break;
       }
@@ -500,14 +479,12 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
           {
             throw std::invalid_argument("verbose");
           }
-          TLogger::SetLevel(static_cast<TLogger::TLogLevel> (verboseLevel));
+          Logger::setLevel(static_cast<Logger::LogLevel> (verboseLevel));
         }
         catch (...)
         {
           printUsage();
-          TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_VERBOSE_LEVEL,
-                                                             " ",
-                                                             errorLineIndentation).c_str());
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoVerboseLevel, " ", errorLineIndent).c_str());
         }
         break;
       }
@@ -617,35 +594,29 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
           case 'i':
           {
             printUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_INPUT_FILE,
-                                                               " ",
-                                                               errorLineIndentation).c_str());
+            Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoInputFile, " ", errorLineIndent).c_str());
             break;
           }
           case 'o':
           {
             printUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_OUTPUT_FILE,
-                                                               " ",
-                                                               errorLineIndentation).c_str());
+            Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoOutputFile, " ", errorLineIndent).c_str());
             break;
           }
 
           case 'r':
           {
             printUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(FMT_NO_PROGRESS_PRINT_INTERVAL,
-                                                               " ",
-                                                               errorLineIndentation).c_str());
+            Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoProgressPrintInterval,
+                                                             " ",
+                                                             errorLineIndent).c_str());
             break;
           }
 
           case 'c':
           {
             printUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_COMPRESSION_LEVEL,
-                                                               " ",
-                                                               errorLineIndentation).c_str());
+            Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoCompressionLevel, " ", errorLineIndent).c_str());
             break;
           }
 
@@ -653,9 +624,9 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
           case 't':
           {
             printUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_THREAD_NUMBER,
-                                                               " ",
-                                                               errorLineIndentation).c_str());
+            Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtInvalidNumberOfThreads,
+                                                             " ",
+                                                             errorLineIndent).c_str());
             break;
           }
         #endif
@@ -663,63 +634,55 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
           case 'g':
           {
             printUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_GPU_NUMBER,
-                                                               " ",
-                                                               errorLineIndentation).c_str());
+            Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoDeviceIndex, " ", errorLineIndent).c_str());
             break;
           }
 
           case 's':
           {
             printUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_START_TIME_STEP,
-                                                               " ",
-                                                               errorLineIndentation).c_str());
+            Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoSamplingStartTimeStep,
+                                                             " ",
+                                                             errorLineIndent).c_str());
             break;
           }
 
           case 1: // benchmark
           {
             printUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_BENCHMARK_STEP_SET,
-                                                               " ",
-                                                               errorLineIndentation).c_str());
+            Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoBenchmarkTimeStep, " ", errorLineIndent).c_str());
             break;
           }
 
           case 3: // checkpoint_file
           {
             printUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_FILE,
-                                                               " ",
-                                                               errorLineIndentation).c_str());
+            Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoCheckpointFile, " ", errorLineIndent).c_str());
             break;
           }
 
           case 4: // checkpoint_interval
           {
             printUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_INTERVAL,
-                                                               " ",
-                                                               errorLineIndentation).c_str());
+            Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoCheckpointInterval,
+                                                             " ",
+                                                             errorLineIndent).c_str());
             break;
           }
 
           case 5: // verbose
           {
             printUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_VERBOSE_LEVEL,
-                                                               " ",
-                                                               errorLineIndentation).c_str());
+            Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoVerboseLevel, " ", errorLineIndent).c_str());
             break;
           }
 
           default :
           {
             printUsage();
-            TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_UNKNOW_PARAMETER_OR_ARGUMENT,
-                                                               " ",
-                                                               errorLineIndentation).c_str());
+            Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtUnknownParameterOrArgument,
+                                                             " ",
+                                                             errorLineIndent).c_str());
             break;
           }
         }
@@ -728,9 +691,7 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
       default:
       {
         printUsage();
-        TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_UNKNOWN_PARAMETER,
-                                                           " ",
-                                                           errorLineIndentation).c_str());
+        Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtUnknownParameter, " ", errorLineIndent).c_str());
         break;
       }
     }
@@ -742,17 +703,13 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
   if (mInputFileName == "")
   {
     printUsage();
-    TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_INPUT_FILE,
-                                                       " ",
-                                                       errorLineIndentation).c_str());
+    Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoInputFile, " ", errorLineIndent).c_str());
   }
 
   if (mOutputFileName == "")
   {
     printUsage();
-    TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_OUTPUT_FILE,
-                                                       " ",
-                                                       errorLineIndentation).c_str());
+    Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoOutputFile, " ", errorLineIndent).c_str());
   }
 
   if (checkpointFlag)
@@ -760,17 +717,13 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
     if (mCheckpointFileName == "")
     {
       printUsage();
-      TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_FILE,
-                                                         " ",
-                                                         errorLineIndentation).c_str());
+      Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoCheckpointFile, " ", errorLineIndent).c_str());
     }
 
     if (mCheckpointInterval <= 0)
     {
       printUsage();
-      TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_NO_CHECKPOINT_INTERVAL,
-                                                         " ",
-                                                         errorLineIndentation).c_str());
+      Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoCheckpointInterval, " ", errorLineIndent).c_str());
     }
   }
 

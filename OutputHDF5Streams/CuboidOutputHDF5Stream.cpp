@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 February  2015, 12:51 (created)
- *              16 July      2017, 16:54 (revised)
+ *              17 July      2017, 16:16 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -70,7 +70,7 @@ TCuboidOutputHDF5Stream::TCuboidOutputHDF5Stream(THDF5_File&           file,
           eventSamplingFinished()
 {
   // Create event for sampling
-  checkCudaErrors(cudaEventCreate(&eventSamplingFinished));
+  cudaCheckErrors(cudaEventCreate(&eventSamplingFinished));
 }// end of TCubodidOutputHDF5Stream
 //--------------------------------------------------------------------------------------------------
 
@@ -82,7 +82,7 @@ TCuboidOutputHDF5Stream::TCuboidOutputHDF5Stream(THDF5_File&           file,
 TCuboidOutputHDF5Stream::~TCuboidOutputHDF5Stream()
 {
   // Destroy sampling event
-  checkCudaErrors(cudaEventDestroy(eventSamplingFinished));
+  cudaCheckErrors(cudaEventDestroy(eventSamplingFinished));
   // Close the stream
   Close();
   // free memory
@@ -283,7 +283,7 @@ void TCuboidOutputHDF5Stream::Sample()
   if (reduceOp == TReduceOperator::NONE)
   {
     // Record an event when the data has been copied over.
-    checkCudaErrors(cudaEventRecord(eventSamplingFinished));
+    cudaCheckErrors(cudaEventRecord(eventSamplingFinished));
   }
 }// end of Sample
 //-------------------------------------------------------------------------------------------------

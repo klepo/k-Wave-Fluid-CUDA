@@ -13,7 +13,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August   2011, 12:34 (created) \n
- *              18 June     2017, 11:30 (revised)
+ *              17 July     2017, 16:09 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -32,8 +32,8 @@
  */
 
 
-#ifndef ERROR_MESSAGES_H
-#define	ERROR_MESSAGES_H
+#ifndef ErrorMessagesH
+#define ErrorMessagesH
 
 #ifdef __linux__
   #include <Logger/ErrorMessagesLinux.h>
@@ -44,282 +44,280 @@
   #include <Logger/ErrorMessagesWindows.h>
 #endif
 
-//------------------------------------------------------------------------------------------------//
-//---------------------- Common error messages for both Linux and Windows ------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//-------------------------------- Common error messages for both Linux and Windows ----------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /// delimiters for linux paths
-TErrorMessage ERR_FMT_PATH_DELIMITERS = "/\\_,.:-| ()[]{}";
-
+ErrorMessage kErrFmtPathDelimiters
+        = "/\\_,.:-| ()[]{}";
 /// error message - out of memory
-TErrorMessage  ERR_FMT_OUT_OF_MEMORY =
-        "Error: Not enough CPU or GPU memory to run this simulation.";
+ErrorMessage  kErrFmtOutOfMemory
+        = "Error: Not enough CPU or GPU memory to run this simulation.";
 /// Unknown error - unknown error
-TErrorMessage  ERR_FMT_UNKNOWN_ERROR
+ErrorMessage  kErrFmtUnknownError
         = "Error: An unknown error happened. ";
 
-//------------------------------------- HDF5 error messages --------------------------------------//
+//----------------------------------------------- HDF5 error messages ------------------------------------------------//
 
 /// HDF5 error message
-TErrorMessage ERR_FMT_CANNOT_CREATE_FILE
+ErrorMessage kErrFmtCannotCreateFile
         = "Error: File \"%s\" could not be created.";
 /// HDF5 error message
-TErrorMessage ERR_FMT_CANNOT_RECREATE_FILE
+ErrorMessage kErrFmtCannotRecreateFile
         = "Error: Cannot recreate an opened file \"%s\".";
 /// HDF5 error message
-TErrorMessage ERR_FMT_CANNOT_REOPEN_FILE
+ErrorMessage kErrFmtCannotReopenFile
         = "Error: Cannot reopen an opened file \"%s\".";
 /// HDF5 error message
-TErrorMessage ERR_FMT_CANNOT_CLOSE_FILE
+ErrorMessage kErrFmtCannotCloseFile
         = "Error: File \"%s\" could not be closed.";
 /// HDF5 error message
-TErrorMessage ERR_FMT_CANNOT_WRITE_DATASET
+ErrorMessage kErrFmtCannotWriteDataset
         = "Error: Could not write into \"%s\" dataset.";
 /// HDF5 error message
-TErrorMessage ERR_FMT_CANNOT_READ_DATASET
+ErrorMessage kErrFmtCannotReadDataset
         = "Error: Could not read from \"%s\" dataset.";
 /// HDF5 error message
-TErrorMessage ERR_FMT_BAD_DIMENSION_SIZES
+ErrorMessage kErrFmtBadDimensionSizes
         =  "Error: Dataset \"%s\"  has wrong dimension sizes.";
 /// HDF5 error message
-TErrorMessage ERR_FMT_FILE_NOT_OPEN
+ErrorMessage kErrFmtFileNotOpen
         = "Error: File \"%s\" was not found or could not be opened.";
 /// HDF5 error message
-TErrorMessage ERR_FMT_NOT_HDF5_FILE
+ErrorMessage kErrFmtNOtHdf5File
         = "Error: File \"%s\" is not a valid HDF5 file.";
 /// HDF5 error message
-TErrorMessage ERR_FMT_CANNOT_OPEN_DATASET
+ErrorMessage kErrFmtCannotOpenDataset
         = "Error: File \"%s\" could not open dataset \"%s\".";
 /// HDF5 error message
-TErrorMessage ERR_FMT_CANNOT_SET_COMPRESSION
+ErrorMessage kErrFmtCannotSetCompression
         = "Error: File \"%s\", dataset \"%s\" could set compression level [%ld].";
 /// HDF5 error message
-TErrorMessage ERR_FMT_BAD_ATTRIBUTE_VALUE
+ErrorMessage kErrFmtBadAttributeValue
         = "Error: Bad attribute value: [%s,%s] = %s.";
 /// HDF5 error message
-TErrorMessage ERR_FMT_CANNOT_WRITE_ATTRIBUTE
+ErrorMessage kErrFmtCannotWriteAttribute
         = "Error: Could not write into \"%s\" attribute of \"%s\" dataset.";
 /// HDF5 error message
-TErrorMessage ERR_FMT_CANNOT_READ_ATTRIBUTE
+ErrorMessage kErrFmtCannotReadAttribute
         = "Error: Could not read from \"%s\" attribute of \"%s\" dataset.";
 /// HDF5 error message
-TErrorMessage ERR_FMT_CANNOT_CREATE_GROUP
+ErrorMessage kErrFmtCannotCreateGroup
         = "Error: Could not create group \"%s\" in file \"%s\".";
 /// HDF5 error message
-TErrorMessage ERR_FMT_CANNOT_OPEN_GROUP
+ErrorMessage kErrFmtCannotOpenGroup
         = "Error: Could not open group \"%s\" in file \"%s\".";
 /// HDF5 error message
-TErrorMessage ERR_FMT_BAD_INPUT_FILE_TYPE
+ErrorMessage kErrFmtBadInputFileType
         = "Error: The input file has not a valid format.";
 /// HDF5 error message
-TErrorMessage ERR_FMT_BAD_OUTPUT_FILE_TYPE
+ErrorMessage kErrFmtBadOutputFIleType
         = "Error: The output file has not a valid format.";
 /// HDF5 error message
-TErrorMessage ERR_FMT_BAD_CHECKPOINT_FILE_TYPE
+ErrorMessage kErrFmtBadCheckpointFileType
         = "Error: The checkpoint file has not a valid format.";
 
 
-//--------------------------------------- Matrix Classes  ----------------------------------------//
+//------------------------------------------------- Matrix Classes ---------------------------------------------------//
 
 /// Matrix class error message
-TErrorMessage  ERR_FMT_MATRIX_NOT_FLOAT
+ErrorMessage  kErrFmtMatrixNotFloat
         = "Error: Matrix [%s] data type is not of single precision floating point.";
 /// Matrix class error message
-TErrorMessage  ERR_FMT_MATRIX_NOT_REAL
+ErrorMessage  kErrFmtMatrixNotReal
         = "Error: Matrix [%s] domain is not real.";
 /// Matrix class error message
-TErrorMessage  ERR_FMT_MATRIX_NOT_COMPLEX
+ErrorMessage  kErrFmtMatrixNotComplex
         = "Error: Matrix [%s] domain is not complex.";
 /// Matrix class error message
-TErrorMessage  ERR_FMT_MATRIX_NOT_INDEX
+ErrorMessage  kErrFmtMatrixNotIndex
         = "Error: Matrix [%s] data type is not unsigned long.";
 
 
-//-------------------------------------- Matrix Container ----------------------------------------//
+//------------------------------------------------ Matrix Container --------------------------------------------------//
 
 /// Matrix container error message
-TErrorMessage  ERR_FMT_BAD_MATRIX_DISTRIBUTION_TYPE =
-        "Error: Matrix [%s] has unknown distribution type in the C++ code. "
-        "[File, Line] : [%s,%d].";
+ErrorMessage  kErrFmtBadMatrixDistributionType =
+        "Error: Matrix [%s] has unknown distribution type in the C++ code. [File, Line] : [%s,%d].";
 
 /// Matrix container error message
-TErrorMessage  ERR_FMT_RELOCATION_ERROR =
+ErrorMessage  kErrFmtRelocationError =
         "Error: Matrix [%s] is being reallocated in matrix container.";
 
 
-//---------------------------------- Command line Parameters  ------------------------------------//
+//-------------------------------------------- Command line Parameters -----------------------------------------------//
 
 /// Command line parameters error message
-TErrorMessage FMT_NO_PROGRESS_PRINT_INTERVAL
+ErrorMessage kErrFmtNoProgressPrintInterval
         = "Error: No or invalid progress print interval.";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_NO_THREAD_NUMBER
+ErrorMessage kErrFmtInvalidNumberOfThreads
         = "Error: No or invalid number of CPU threads.";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_NO_GPU_NUMBER
+ErrorMessage kErrFmtNoDeviceIndex
         = "Error: No or invalid id of the GPU device.";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_NO_COMPRESSION_LEVEL
+ErrorMessage kErrFmtNoCompressionLevel
         = "Error: No or invalid compression level.";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_NO_START_TIME_STEP
+ErrorMessage kErrFmtNoSamplingStartTimeStep
         = "Error: No or invalid collection start time step.";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_NO_BENCHMARK_STEP_SET
+ErrorMessage kErrFmtNoBenchmarkTimeStep
         = "Error: No or invalid number of time step to benchmark.";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_NO_VERBOSE_LEVEL
+ErrorMessage kErrFmtNoVerboseLevel
         = "Error: No or invalid verbose level.";
 
 /// Error message - input file was not specified
-TErrorMessage ERR_FMT_NO_INPUT_FILE
+ErrorMessage kErrFmtNoInputFile
         = "Error: The input file was not specified.";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_NO_OUTPUT_FILE
+ErrorMessage kErrFmtNoOutputFile
         = "Error: The output file was not specified.";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_NO_CHECKPOINT_FILE
+ErrorMessage kErrFmtNoCheckpointFile
         = "Error: The checkpoint file was not specified.";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_NO_CHECKPOINT_INTERVAL
+ErrorMessage kErrFmtNoCheckpointInterval
         = "Error: The checkpoint interval was not specified.";
 /// Command line parameter error message
-TErrorMessage ERR_FMT_UNKNOWN_PARAMETER
+ErrorMessage kErrFmtUnknownParameter
         = "Error: Unknown command line parameter.";
 /// Command line parameter error message
-TErrorMessage ERR_FMT_UNKNOW_PARAMETER_OR_ARGUMENT
+ErrorMessage kErrFmtUnknownParameterOrArgument
         = "Error: Unknown command line parameter or missing argument.";
 
 /// Command line parameters error message
-TErrorMessage ERR_FMT_ILLEGAL_ALPHA_POWER_VALUE
+ErrorMessage kErrFmtIllegalAlphaPowerValue
         = "Error: Illegal value of alpha_power (must not equal to 1.0).";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_ILLEGAL_START_TIME_VALUE
+ErrorMessage kErrFmtIllegalSamplingStartTimeStep
         = "Error: The beginning of data sampling is out of the simulation time span <%zu, %zu>.";
 
 /// Command line parameters error message
-TErrorMessage ERR_FMT_BAD_INPUT_FILE_FORMAT
+ErrorMessage kErrFmtBadInputFileFormat
         = "Error: Incorrect input file\"%s\" format.";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_BAD_MAJOR_File_Version
+ErrorMessage kErrFmtBadMajorFileVersion
         = "Error: Incorrect major version of the HDF5 file %s (expected is %s).";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_BAD_MINOR_FILE_VERSION
+ErrorMessage kErrFmtBadMinorFileVersion
         = "Error: Incorrect minor version of the HDF5 file %s (expected is %s).";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_BAD_SENSOR_MASK_TYPE
+ErrorMessage kErrFmtBadSensorMaskType
         = "Error: The sensor mask type specified in the input file is not supported.";
 /// Command line parameters error message
-TErrorMessage ERR_FMT_U_NON_STAGGERED_NOT_SUPPORTED_FILE_VERSION
+ErrorMessage kErrFmtNonStaggeredVelocityNotSupportedFileVersion
         = "Error: --u_non_staggered_raw is not supported along with the input file of the version 1.0.";
 
 
-//---------------------------------- KSpaceFirstOrder3DSolver ------------------------------------//
+//-------------------------------------------- KSpaceFirstOrder3DSolver ----------------------------------------------//
 
 /// KSpaceFirstOrder3DSolver error message
-TErrorMessage ERR_FMT_BAD_CHECKPOINT_FILE_FORMAT
+ErrorMessage kErrFmtBadCheckpointFileFormat
         = "Error: Incorrect checkpoint file \"%s\" format.";
 
 /// KSpaceFirstOrder3DSolver error message
-TErrorMessage ERR_FMT_BAD_OUTPUT_FILE_FORMAT
+ErrorMessage kErrFmtBadOutputFileFormat
         = "Error: Incorrect output file \"%s\" format.";
 
 /// KSpaceFirstOrder3DSolver error message
-TErrorMessage ERR_FMT_CHECKPOINT_DIMENSIONS_NOT_MATCH
+ErrorMessage kErrFmtCheckpointDimensionsNotMatch
         = "Error: The dimensions [%ld, %ld, %ld] of the checkpoint file don't match the simulation "
           "dimensions [%ld, %ld, %ld].";
 
 /// KSpaceFirstOrder3DSolver error message
-TErrorMessage ERR_FMT_OUTPUT_DIMENSIONS_NOT_MATCH
+ErrorMessage kErrFmtOutputDimensionsNotMatch
         = "Error: The dimensions [%ld, %ld, %ld] of the output file don't match the simulation "
           "dimensions [%ld, %ld, %ld].";
 
 
 
-//-------------------------------------- CUDA FFT Errors -----------------------------------------//
+//------------------------------------------------ CUDA FFT Errors ---------------------------------------------------//
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_INVALID_PLAN
+ErrorMessage kErrFmtCufftInvalidPlan
         = "Error: cuFFT was passed an invalid plan handle for %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_ALLOC_FAILED
+ErrorMessage kErrFmtCufftAllocFailed
         = "Error: cuFFT failed to allocate GPU or CPU memory for %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_INVALID_TYPE
+ErrorMessage kErrFmtCufftInvalidType
         = "Error: cuFFT invalid type for of the transform for %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_INVALID_VALUE
+ErrorMessage kErrFmtCufftInvalidValue
         = "Error: cuFFT was given an invalid pointer or parameter for %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_INTERNAL_ERROR
+ErrorMessage kErrFmtCuFFTInternalError
         = "Error: Driver or internal cuFFT library error for %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_EXEC_FAILED
+ErrorMessage kErrFmtCufftExecFailed
         = "Error: Failed to execute an cuFFT on the GPU for %s.";
 /// CUDA FFT error message.
-TErrorMessage eRR_FMT_CUFFT_SETUP_FAILED
+ErrorMessage kErrFmtCufftSetupFailed
         = "Error: The cuFFT library failed to initialize for %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_INVALID_SIZE
+ErrorMessage kErrFmtCufftInvalidSize
         = "Error: cuFFT was given an invalid transform size for %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_UNALIGNED_DATA
+ErrorMessage kErrFmtCufftUnalignedData
         = "Error: Arrays for cuFFT was not properly aligned for %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_INCOMPLETE_PARAMETER_LIST
+ErrorMessage kErrFmtCufftIncompleteParaterList
         = "Error: Missing parameters in the cuFFT call for %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_INVALID_DEVICE
+ErrorMessage kErrFmtCufftInvalidDevice
         = "Error: cuFFT execution of the plan was performed on a different GPU than plan was "
           "created for %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_PARSE_ERROR
+ErrorMessage kErrFmtCufftParseError
         = "Error: cuFFT internal plan database error for %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_NO_WORKSPACE
+ErrorMessage kErrFmtCufftNoWorkspace
         = "Error: No workspace has been provided prior to cuFFT plan execution for %s.";
 /// CUDA FFT error message.
-TErrorMessage eRR_FMT_CUFFT_NOT_IMPLEMENTED
+ErrorMessage kErrFmtCufftNotImplemented
         = "Error: cuFFT feature is not implemented for %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_LICENSE_ERROR
+ErrorMessage kErrFmtCufftLicenseError
         = "Error: cuFFT license error for %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_NOT_SUPPORTED
+ErrorMessage kErrFmtCufftNotSupported
         = "Error: cuFFT operation is not supported for parameters given. %s.";
 /// CUDA FFT error message.
-TErrorMessage ERR_FMT_CUFFT_UNKNOWN_ERROR
+ErrorMessage kErrFmtCufftUnknownError
         = "Error: cuFFT failed with unknown error for %s.";
 
 
 
-//------------------------------------ CUDAParameters Class --------------------------------------//
+//---------------------------------------------- CUDAParameters Class ------------------------------------------------//
 /// CUDATuner error message
-TErrorMessage ERR_FMT_BAD_DEVICE_IDX
+ErrorMessage kErrFmtBadDeviceIndex
         = "Error: Wrong CUDA device id %d. Allowed devices <0, %d>.";
 /// CUDATuner error message
-TErrorMessage ERR_FMT_NO_FREE_DEVICE
+ErrorMessage kErrFmtNoFreeDevice
         = "Error: All CUDA-capable devices are busy or unavailable.";
 /// CUDATuner error message
-TErrorMessage ERR_FMT_DEVICE_IS_BUSY
+ErrorMessage kErrFmtDeviceIsBusy
         = "Error: CUDA device id %d is busy or unavailable.";
 
 /// CUDAParameters error message
-TErrorMessage ERR_FMT_INSUFFICIENT_CUDA_DRIVER
+ErrorMessage kErrFmtInsufficientCudaDriver
         = "Error: Insufficient CUDA driver version. The code needs CUDA version "
           "%d.%d but %d.%d is installed.";
 /// CUDAParameters error message
-TErrorMessage ERR_FM_CANNOT_READ_CUDA_VERSION
+ErrorMessage kErrFmtCannotReadCudaVersion
         = "Error: Insufficient CUDA driver version. Install the latest drivers.";
 /// CUDAParameters error message
-TErrorMessage ERR_FMT_GPU_NOT_SUPPORTED
+ErrorMessage kErrFmtDeviceNotSupported
         = "Error: CUDA device id %d is not supported by this k-Wave build.";
 
 
-//------------------------------------- CheckErrors header ---------------------------------------//
-
-        /// CUDAParameters error message
-TErrorMessage ERR_FMT_GPU_ERROR
+//----------------------------------------------- CheckErrors header -------------------------------------------------//
+/// CUDAParameters error message
+ErrorMessage kErrFmtDeviceError
         = "GPU error: %s routine name: %s in file %s, line %d.";
 
 
-#endif	/* ERROR_MESSAGES_H */
+#endif	/* ErrorMessagesH */

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 14:17 (created) \n
- *              11 July     2017, 16:44 (revised)
+ *              17 July     2017, 16:13 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -80,7 +80,7 @@ void TBaseIndexMatrix::ZeroMatrix()
  */
 void TBaseIndexMatrix::CopyToDevice()
 {
-  checkCudaErrors(cudaMemcpy(deviceData,
+  cudaCheckErrors(cudaMemcpy(deviceData,
                              hostData,
                              nAllocatedElements * sizeof(size_t),
                              cudaMemcpyHostToDevice));
@@ -93,7 +93,7 @@ void TBaseIndexMatrix::CopyToDevice()
  */
 void TBaseIndexMatrix::CopyFromDevice()
 {
-  checkCudaErrors(cudaMemcpy(hostData,
+  cudaCheckErrors(cudaMemcpy(hostData,
                              deviceData,
                              nAllocatedElements * sizeof(size_t),
                              cudaMemcpyDeviceToHost));
@@ -123,7 +123,7 @@ void TBaseIndexMatrix::AllocateMemory()
   }
 
   // Register Host memory (pin in memory)
-  checkCudaErrors(cudaHostRegister(hostData, sizeInBytes, cudaHostRegisterPortable));
+  cudaCheckErrors(cudaHostRegister(hostData, sizeInBytes, cudaHostRegisterPortable));
 
   if ((cudaMalloc<size_t>(&deviceData, sizeInBytes) != cudaSuccess) || (!deviceData))
   {
@@ -147,7 +147,7 @@ void TBaseIndexMatrix::FreeMemory()
   // Free GPU memory
   if (deviceData)
   {
-    checkCudaErrors(cudaFree(deviceData));
+    cudaCheckErrors(cudaFree(deviceData));
   }
   deviceData = nullptr;
 }// end of FreeMemory

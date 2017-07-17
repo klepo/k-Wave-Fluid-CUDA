@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        17 February 2016, 10:53 (created) \n
- *              12 July     2017, 10:37 (revised)
+ *              17 July     2017, 16:16 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -64,6 +64,6 @@ __constant__ CudaDeviceConstants cudaDeviceConstants;
  */
 __host__ void CudaDeviceConstants::uploadDeviceConstants()
 {
-  checkCudaErrors(cudaMemcpyToSymbol(cudaDeviceConstants, this, sizeof(CudaDeviceConstants)));
+  cudaCheckErrors(cudaMemcpyToSymbol(cudaDeviceConstants, this, sizeof(CudaDeviceConstants)));
 }// end of uploadDeviceConstants
 //----------------------------------------------------------------------------------------------------------------------

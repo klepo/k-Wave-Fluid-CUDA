@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 November 2015, 16:49 (created) \n
- *              16 July     2017, 16:58 (revised)
+ *              17 July     2017, 16:16 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -95,7 +95,7 @@ void CudaParameters::selectDevice(const int deviceIdx)
 
   //choose the GPU device with the most global memory
   int nDevices;
-  checkCudaErrors(cudaGetDeviceCount(&nDevices));
+  cudaCheckErrors(cudaGetDeviceCount(&nDevices));
   cudaGetLastError();
 
   cudaError_t lastError;
@@ -135,7 +135,7 @@ void CudaParameters::selectDevice(const int deviceIdx)
 
     if (!deviceFound)
     {
-      throw std::runtime_error(ERR_FMT_NO_FREE_DEVICE);
+      throw std::runtime_error(kErrFmtNoFreeDevice);
     }
   }
   else // select a device the user wants
@@ -144,7 +144,7 @@ void CudaParameters::selectDevice(const int deviceIdx)
     // not busy, input parameter not out of bounds
     if ((mDeviceIdx > nDevices - 1) || (mDeviceIdx < 0))
     {
-      throw std::runtime_error(TLogger::FormatMessage(ERR_FMT_BAD_DEVICE_IDX, mDeviceIdx, nDevices-1));
+      throw std::runtime_error(Logger::formatMessage(kErrFmtBadDeviceIndex, mDeviceIdx, nDevices-1));
      }
 
     // set the device and copy it's properties
@@ -159,28 +159,28 @@ void CudaParameters::selectDevice(const int deviceIdx)
     {
       lastError = cudaDeviceReset();
 
-      throw std::runtime_error(TLogger::FormatMessage(ERR_FMT_DEVICE_IS_BUSY, mDeviceIdx));
+      throw std::runtime_error(Logger::formatMessage(kErrFmtDeviceIsBusy, mDeviceIdx));
     }
   }
 
   // Read the device that was allocated
-  checkCudaErrors(cudaGetDevice(&mDeviceIdx));
-  checkCudaErrors(cudaGetLastError());
+  cudaCheckErrors(cudaGetDevice(&mDeviceIdx));
+  cudaCheckErrors(cudaGetLastError());
 
   // Reset the device to be able to set the flags
-  checkCudaErrors(cudaDeviceReset());
-  checkCudaErrors(cudaGetLastError());
+  cudaCheckErrors(cudaDeviceReset());
+  cudaCheckErrors(cudaGetLastError());
 
   // Enable mapped memory
-  checkCudaErrors(cudaSetDeviceFlags(cudaDeviceMapHost));
+  cudaCheckErrors(cudaSetDeviceFlags(cudaDeviceMapHost));
 
     // Get Device name
-  checkCudaErrors(cudaGetDeviceProperties(&mDeviceProperties, mDeviceIdx));
+  cudaCheckErrors(cudaGetDeviceProperties(&mDeviceProperties, mDeviceIdx));
 
   // Check the GPU version
   if (!checkCudaCodeVersion())
   {
-    throw std::runtime_error(TLogger::FormatMessage(ERR_FMT_GPU_NOT_SUPPORTED, mDeviceIdx));
+    throw std::runtime_error(Logger::formatMessage(kErrFmtDeviceNotSupported, mDeviceIdx));
   }
 }// end of selectDevice
 //----------------------------------------------------------------------------------------------------------------------
@@ -313,19 +313,19 @@ void CudaParameters::checkCudaVersion()
 
   if (cudaRuntimeGetVersion(&cudaRuntimeVersion) != cudaSuccess)
   {
-    throw std::runtime_error(ERR_FM_CANNOT_READ_CUDA_VERSION);
+    throw std::runtime_error(kErrFmtCannotReadCudaVersion);
   }
 
   if (cudaDriverGetVersion(&cudaDriverVersion) != cudaSuccess)
   {
-    throw std::runtime_error(ERR_FM_CANNOT_READ_CUDA_VERSION);
+    throw std::runtime_error(kErrFmtCannotReadCudaVersion);
   }
 
   if (cudaDriverVersion < cudaRuntimeVersion)
   {
-    throw std::runtime_error(TLogger::FormatMessage(ERR_FMT_INSUFFICIENT_CUDA_DRIVER,
-                                                    cudaRuntimeVersion / 1000, (cudaRuntimeVersion % 100) / 10,
-                                                    cudaDriverVersion  / 1000, (cudaDriverVersion  % 100) / 10));
+    throw std::runtime_error(Logger::formatMessage(kErrFmtInsufficientCudaDriver,
+                                                  cudaRuntimeVersion / 1000, (cudaRuntimeVersion % 100) / 10,
+                                                  cudaDriverVersion  / 1000, (cudaDriverVersion  % 100) / 10));
   }
 }// end of checkCudaVersion
 //----------------------------------------------------------------------------------------------------------------------

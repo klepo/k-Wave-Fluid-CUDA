@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2012, 10:57 (created) \n
- *              16 July     2017, 17:01 (revised)
+ *              17 July     2017, 16:28 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -747,9 +747,9 @@ int main(int argc, char** argv)
   TKSpaceFirstOrder3DSolver KSpaceSolver;
 
   // print header
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_FIRST_SEPARATOR);
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_CODE_NAME, KSpaceSolver.GetCodeName().c_str());
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SEPARATOR);
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtFirstSeparator);
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtCodeName, KSpaceSolver.GetCodeName().c_str());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
 
   // Create parameters and parse command line
   Parameters& params = Parameters::getInstance();
@@ -771,7 +771,7 @@ int main(int argc, char** argv)
   }
   catch (const std::exception &e)
   {
-     TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_FAILED);
+     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     // must be repeated in case the GPU we want to printout the code version
     // and all GPUs are busy
     if (params.isPrintVersionOnly())
@@ -781,9 +781,9 @@ int main(int argc, char** argv)
 
     if (!params.isPrintVersionOnly())
     {
-      TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_LAST_SEPARATOR);
+      Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
     }
-    TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),ERR_FMT_PATH_DELIMITERS, 9).c_str());
+    Logger::errorAndTerminate(Logger::wordWrapString(e.what(),kErrFmtPathDelimiters, 9).c_str());
   }
 
   // set number of threads and bind them to cores
@@ -794,7 +794,7 @@ int main(int argc, char** argv)
   // Print simulation setup
   params.printSimulatoinSetup();
 
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_INIT_HEADER);
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtInitializationHeader);
 
   //-------------- Allocate memory----------------//
   try
@@ -803,17 +803,15 @@ int main(int argc, char** argv)
   }
   catch (const std::bad_alloc& e)
   {
-    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_FAILED);
-    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_LAST_SEPARATOR);
-    TLogger::ErrorAndTerminate(TLogger::WordWrapString(ERR_FMT_OUT_OF_MEMORY," ", 9).c_str());
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
+    Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtOutOfMemory," ", 9).c_str());
   }
   catch (const std::exception& e)
   {
-    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_FAILED);
-    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_LAST_SEPARATOR);
-    TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),
-                                                       ERR_FMT_PATH_DELIMITERS,
-                                                       13).c_str());
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
+    Logger::errorAndTerminate(Logger::wordWrapString(e.what(), kErrFmtPathDelimiters, 13).c_str());
   }
 
   //-------------- Load input data ----------------//
@@ -823,72 +821,53 @@ int main(int argc, char** argv)
   }
   catch (const std::ios::failure& e)
   {
-    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_FAILED);
-    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_LAST_SEPARATOR);
-    TLogger::ErrorAndTerminate(TLogger::WordWrapString(e.what(),
-                                                       ERR_FMT_PATH_DELIMITERS,
-                                                       9).c_str());
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
+    Logger::errorAndTerminate(Logger::wordWrapString(e.what(), kErrFmtPathDelimiters, 9).c_str());
   }
   catch (const std::exception& e)
   {
-    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_FAILED);
-    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_LAST_SEPARATOR);
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
 
-    const string ErrorMessage = string(ERR_FMT_UNKNOWN_ERROR) + e.what();
-    TLogger::ErrorAndTerminate(TLogger::WordWrapString(ErrorMessage,
-                                                       ERR_FMT_PATH_DELIMITERS,
-                                                       13).c_str());
+    const string ErrorMessage = string(kErrFmtUnknownError) + e.what();
+    Logger::errorAndTerminate(Logger::wordWrapString(ErrorMessage, kErrFmtPathDelimiters, 13).c_str());
   }
 
-  TLogger::Log(TLogger::TLogLevel::BASIC,
-               OUT_FMT_ELAPSED_TIME,
-               KSpaceSolver.GetDataLoadTime());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, KSpaceSolver.GetDataLoadTime());
 
 
   if (params.getTimeIndex() > 0)
   {
-    TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SEPARATOR);
-    TLogger::Log(TLogger::TLogLevel::BASIC,
-                 OUT_FMT_RECOVER_FROM,
-                 params.getTimeIndex());
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtRecoveredFrom, params.getTimeIndex());
   }
 
 
   // start computation
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SEPARATOR);
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
   // exception are caught inside due to different log formats
   KSpaceSolver.Compute();
 
 
 
   // summary
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SUMMARY_HEADER);
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtSummaryHeader);
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtHostMemoryUsage,   KSpaceSolver.GetHostMemoryUsageInMB());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceMemoryUsage, KSpaceSolver.GetDeviceMemoryUsageInMB());
 
-  TLogger::Log(TLogger::TLogLevel::BASIC,
-               OUT_FMT_HOST_MEMORY_USAGE,
-               KSpaceSolver.GetHostMemoryUsageInMB());
-
-  TLogger::Log(TLogger::TLogLevel::BASIC,
-               OUT_FMT_DEVICE_MEMORY_USAGE,
-               KSpaceSolver.GetDeviceMemoryUsageInMB());
-
-TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_SEPARATOR);
+Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
 
 // Elapsed Time time
 if (KSpaceSolver.GetCumulatedTotalTime() != KSpaceSolver.GetTotalTime())
   {
-    TLogger::Log(TLogger::TLogLevel::BASIC,
-                 OUT_FMT_LEG_EXECUTION_TIME,
-                 KSpaceSolver.GetTotalTime());
-
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtLegExecutionTime, KSpaceSolver.GetTotalTime());
   }
-  TLogger::Log(TLogger::TLogLevel::BASIC,
-               OUT_FMT_TOTAL_EXECUTION_TIME,
-               KSpaceSolver.GetCumulatedTotalTime());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtTotalExecutionTime, KSpaceSolver.GetCumulatedTotalTime());
 
 
   // end of computation
-  TLogger::Log(TLogger::TLogLevel::BASIC, OUT_FMT_END_OF_SIMULATION);
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtEndOfSimulation);
 
   return EXIT_SUCCESS;
 }// end of main

@@ -1,5 +1,6 @@
 /**
  * @file        ErrorMessagesLinux.h
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -10,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 July     2016, 11:26 (created) \n
- *              07 July     2017, 18:20 (revised)
+ *              17 July     2017, 15:24 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,26 +30,26 @@
  */
 
 
-#ifndef ERROR_MESSAGES_LINUX_H
-#define	ERROR_MESSAGES_LINUX_H
+#ifndef ErrorMessagesLinuxH
+#define ErrorMessagesLinuxH
 
 
 /**
  * @brief   Datatype for error messages.
  * @details Datatype for error messages.
  */
-using TErrorMessage = const std::string;
+using ErrorMessage = const std::string;
 
 /// Error message header
-TErrorMessage ERR_FMT_HEAD =
+ErrorMessage kErrFmtHead =
         "┌───────────────────────────────────────────────────────────────┐\n"
         "│            !!! K-Wave experienced a fatal error !!!           │\n"
         "├───────────────────────────────────────────────────────────────┤\n";
 
-        /// Error message tailer
-TErrorMessage ERR_FMT_TAIL =
+/// Error message tailer
+ErrorMessage kErrFmtTail =
         "├───────────────────────────────────────────────────────────────┤\n"
         "│                      Execution terminated                     │\n"
         "└───────────────────────────────────────────────────────────────┘\n";
 
-#endif	/* ERROR_MESSAGES_LINUX_H */
+#endif	/* ErrorMessagesLinuxH */

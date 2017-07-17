@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              16 July     2017, 16:51 (revised)
+ *              17 July     2017, 16:06 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -100,7 +100,7 @@ void THDF5_File::Create(const string& fileName,
   // file is opened
   if (IsOpen())
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_RECREATE_FILE, fileName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotRecreateFile, fileName.c_str()));
   }
 
   // Create a new file using default properties.
@@ -110,7 +110,7 @@ void THDF5_File::Create(const string& fileName,
 
   if (file < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_CREATE_FILE, fileName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotCreateFile, fileName.c_str()));
   }
 }// end of Create
 //--------------------------------------------------------------------------------------------------
@@ -131,21 +131,21 @@ void THDF5_File::Open(const string& fileName,
 
   if (IsOpen())
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_REOPEN_FILE, cFileName));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotReopenFile, cFileName));
   };
 
   this->fileName = fileName;
 
   if (H5Fis_hdf5(cFileName) == 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_NOT_HDF5_FILE, cFileName));
+    throw ios::failure(Logger::formatMessage(kErrFmtNOtHdf5File, cFileName));
   }
 
   file = H5Fopen(cFileName, flags, H5P_DEFAULT);
 
   if (file < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_FILE_NOT_OPEN, cFileName));
+    throw ios::failure(Logger::formatMessage(kErrFmtFileNotOpen, cFileName));
   }
 }// end of Open
 //--------------------------------------------------------------------------------------------------
@@ -179,7 +179,7 @@ void THDF5_File::Close()
 
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_CLOSE_FILE, fileName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotCloseFile, fileName.c_str()));
   }
 
   fileName = "";
@@ -212,7 +212,7 @@ hid_t THDF5_File::CreateGroup(const hid_t  parentGroup,
 
   if (group == H5I_INVALID_HID)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_CREATE_GROUP,
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotCreateGroup,
                                               groupName.c_str(),
                                               fileName.c_str()));
   }
@@ -236,7 +236,7 @@ hid_t THDF5_File::OpenGroup(const hid_t  parentGroup,
 
   if (group == H5I_INVALID_HID)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_OPEN_GROUP,
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenGroup,
                                               groupName.c_str(),
                                               fileName.c_str()));
   }
@@ -273,7 +273,7 @@ hid_t THDF5_File::OpenDataset(const hid_t  parentGroup,
 
   if (dataset == H5I_INVALID_HID)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_OPEN_DATASET,
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset,
                                               fileName.c_str(),
                                               datasetName.c_str()));
   }
@@ -340,7 +340,7 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
   status = H5Pset_chunk(propertyList, rank, chunk);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_OPEN_DATASET,
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset,
                                               fileName.c_str(),
                                               datasetName.c_str()));
   }
@@ -349,7 +349,7 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
   status = H5Pset_deflate(propertyList, static_cast<unsigned int>(compressionLevel));
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_SET_COMPRESSION,
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotSetCompression,
                                               fileName.c_str(),
                                               datasetName.c_str(),
                                               compressionLevel));
@@ -366,7 +366,7 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
 
   if (dataset == H5I_INVALID_HID)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_OPEN_DATASET,
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset,
                                               fileName.c_str(),
                                               datasetName.c_str()));
   }
@@ -411,7 +411,7 @@ hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
   status = H5Pset_chunk(propertyList, rank, chunk);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_OPEN_DATASET,
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset,
                                               fileName.c_str(),
                                               datasetName.c_str()));
   }
@@ -420,7 +420,7 @@ hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
   status = H5Pset_deflate(propertyList, static_cast<unsigned int>(compressionLevel));
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_SET_COMPRESSION,
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotSetCompression,
                                               fileName.c_str(),
                                               datasetName.c_str(),
                                               compressionLevel));
@@ -437,7 +437,7 @@ hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
 
   if (dataset == H5I_INVALID_HID)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_OPEN_DATASET,
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset,
                                               fileName.c_str(),
                                               datasetName.c_str()));
   }
@@ -514,7 +514,7 @@ void THDF5_File::WriteHyperSlab(const hid_t            dataset,
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, nElement, NULL);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, ""));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, ""));
   }
 
   // assign memspace
@@ -523,7 +523,7 @@ void THDF5_File::WriteHyperSlab(const hid_t            dataset,
   status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, memspace, filespace, H5P_DEFAULT, data);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, ""));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, ""));
   }
 
   H5Sclose(memspace);
@@ -585,7 +585,7 @@ void THDF5_File::WriteHyperSlab(const hid_t            dataset,
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, nElement, NULL);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, ""));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, ""));
   }
 
   // assign memspace
@@ -594,7 +594,7 @@ void THDF5_File::WriteHyperSlab(const hid_t            dataset,
   status = H5Dwrite(dataset, H5T_STD_U64LE, memspace, filespace, H5P_DEFAULT, data);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, ""));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, ""));
   }
 
   H5Sclose(memspace);
@@ -640,7 +640,7 @@ void THDF5_File::WriteCuboidToHyperSlab(const hid_t            dataset,
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offsetInDataset, NULL, slabSize, NULL);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, ""));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, ""));
   }
 
   // assign memspace and select the cuboid in the sampled matrix
@@ -653,14 +653,14 @@ void THDF5_File::WriteCuboidToHyperSlab(const hid_t            dataset,
                                NULL);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, ""));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, ""));
   }
 
   // Write the data
   status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, memspace, filespace, H5P_DEFAULT, matrixData);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, ""));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, ""));
   }
 
   // close memspace and filespace
@@ -709,7 +709,7 @@ void THDF5_File::WriteDataByMaskToHyperSlab(const hid_t            dataset,
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offsetInDataset, NULL,  slabSize, NULL);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, ""));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, ""));
   }
 
   // assign 1D memspace and select the elements within the array
@@ -720,14 +720,14 @@ void THDF5_File::WriteDataByMaskToHyperSlab(const hid_t            dataset,
                               (hsize_t*) (indexSensorData));
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, ""));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, ""));
   }
 
   // Write the data
   status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, memspace, filespace, H5P_DEFAULT, matrixData);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, ""));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, ""));
   }
 
   // close memspace and filespace
@@ -777,13 +777,13 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
   // was created correctly?
   if (dataset == H5I_INVALID_HID)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, cDatasetName));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, cDatasetName));
   }
 
   status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &value);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, cDatasetName));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, cDatasetName));
   }
 
   WriteMatrixDataType(parentGroup, datasetName, TMatrixDataType::FLOAT);
@@ -831,13 +831,13 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
     // was created correctly?
   if (dataset == H5I_INVALID_HID)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, cDatasetName));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, cDatasetName));
   }
 
   status = H5Dwrite(dataset, H5T_STD_U64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &value);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_DATASET, cDatasetName));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, cDatasetName));
   }
 
   WriteMatrixDataType(parentGroup, datasetName, TMatrixDataType::LONG);
@@ -894,14 +894,14 @@ void THDF5_File::ReadCompleteDataset (const hid_t            parentGroup,
   if (GetDatasetDimensionSizes(parentGroup, datasetName).nElements() !=
       dimensionSizes.nElements())
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_DIMENSION_SIZES, cDatasetName));
+    throw ios::failure(Logger::formatMessage(kErrFmtBadDimensionSizes, cDatasetName));
   }
 
   // read dataset
   herr_t status = H5LTread_dataset_float(parentGroup, cDatasetName, data);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_READ_DATASET, cDatasetName));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, cDatasetName));
   }
 }// end of ReadDataset (float)
 //-------------------------------------------------------------------------------------------------
@@ -925,14 +925,14 @@ void THDF5_File::ReadCompleteDataset(const hid_t            parentGroup,
   if (GetDatasetDimensionSizes(parentGroup, datasetName).nElements() !=
       dimensionSizes.nElements())
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_DIMENSION_SIZES, cDatasetName));
+    throw ios::failure(Logger::formatMessage(kErrFmtBadDimensionSizes, cDatasetName));
   }
 
   // read dataset
   herr_t status = H5LTread_dataset(parentGroup, cDatasetName, H5T_STD_U64LE, data);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_READ_DATASET, cDatasetName));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, cDatasetName));
   }
 }// end of ReadCompleteDataset
 //--------------------------------------------------------------------------------------------------
@@ -957,7 +957,7 @@ DimensionSizes THDF5_File::GetDatasetDimensionSizes(const hid_t parentGroup,
   if (status < 0)
   {
 
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_READ_DATASET, datasetName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, datasetName.c_str()));
   }
 
   if (ndims == 3)
@@ -987,7 +987,7 @@ size_t THDF5_File::GetDatasetNumberOfDimensions(const hid_t  parentGroup,
   herr_t status = H5LTget_dataset_ndims(parentGroup, datasetName.c_str(), &dims);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_READ_DATASET, datasetName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, datasetName.c_str()));
   }
 
   return dims;
@@ -1011,7 +1011,7 @@ size_t THDF5_File::GetDatasetElementCount(const hid_t  parentGroup,
   herr_t status = H5LTget_dataset_info(parentGroup, datasetName.c_str(), dims, NULL, NULL);
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_READ_DATASET, datasetName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, datasetName.c_str()));
   }
 
   return dims[0] * dims[1] * dims[2];
@@ -1079,7 +1079,7 @@ THDF5_File::TMatrixDataType THDF5_File::ReadMatrixDataType(const hid_t parentGro
     return static_cast<TMatrixDataType>(1);
   }
 
-  throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_ATTRIBUTE_VALUE,
+  throw ios::failure(Logger::formatMessage(kErrFmtBadAttributeValue,
                                             datasetName.c_str(),
                                             matrixDataTypeName.c_str(),
                                             paramValue.c_str()));
@@ -1112,7 +1112,7 @@ THDF5_File::TMatrixDomainType THDF5_File::ReadMatrixDomainType(const hid_t  pare
     return static_cast<TMatrixDomainType> (1);
   }
 
-  throw ios::failure(TLogger::FormatMessage(ERR_FMT_BAD_ATTRIBUTE_VALUE,
+  throw ios::failure(Logger::formatMessage(kErrFmtBadAttributeValue,
                                             datasetName.c_str(),
                                             matrixDomainTypeName.c_str(),
                                             paramValue.c_str()));
@@ -1143,7 +1143,7 @@ inline void THDF5_File::WriteStringAttribute(const hid_t   parentGroup,
                                            value.c_str());
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_WRITE_ATTRIBUTE,
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteAttribute,
                                               attributeName.c_str(),
                                               datasetName.c_str()));
   }
@@ -1172,7 +1172,7 @@ inline string THDF5_File::ReadStringAttribute(const hid_t  parentGroup,
 
   if (status < 0)
   {
-    throw ios::failure(TLogger::FormatMessage(ERR_FMT_CANNOT_READ_ATTRIBUTE,
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotReadAttribute,
                                               attributeName.c_str(),
                                               datasetName.c_str()));
   }
@@ -1275,7 +1275,7 @@ void THDF5_FileHeader::ReadHeaderFromInputFile(THDF5_File& inputFile)
   }
   else
   {
-    throw ios::failure(ERR_FMT_BAD_INPUT_FILE_TYPE);
+    throw ios::failure(kErrFmtBadInputFileType);
   }
 }// end of ReadHeaderFromInputFile
 //--------------------------------------------------------------------------------------------------
@@ -1324,7 +1324,7 @@ void THDF5_FileHeader::ReadHeaderFromOutputFile(THDF5_File& outputFile)
   }
   else
   {
-    throw ios::failure(ERR_FMT_BAD_OUTPUT_FILE_TYPE);
+    throw ios::failure(kErrFmtBadOutputFIleType);
   }
 }// end of ReadHeaderFromOutputFile
 //--------------------------------------------------------------------------------------------------
@@ -1358,7 +1358,7 @@ void THDF5_FileHeader::ReadHeaderFromCheckpointFile(THDF5_File& checkpointFile)
   }
   else
   {
-    throw ios::failure(ERR_FMT_BAD_CHECKPOINT_FILE_TYPE);
+    throw ios::failure(kErrFmtBadCheckpointFileType);
   }
 }// end of ReadHeaderFromCheckpointFile
 //--------------------------------------------------------------------------------------------------
@@ -1435,7 +1435,7 @@ void THDF5_FileHeader::SetActualCreationTime()
   time(&now);
   current = localtime(&now);
 
-  headerValues[TFileHeaderItems::CREATION_DATA] = TLogger::FormatMessage("%02i/%02i/%02i, %02i:%02i:%02i",
+  headerValues[TFileHeaderItems::CREATION_DATA] = Logger::formatMessage("%02i/%02i/%02i, %02i:%02i:%02i",
                                                   current->tm_mday, current->tm_mon + 1, current->tm_year - 100,
                                                   current->tm_hour, current->tm_min, current->tm_sec);
 
@@ -1532,10 +1532,10 @@ void THDF5_FileHeader::SetHostName()
  */
 void THDF5_FileHeader::SetMemoryConsumption(const size_t totalMemory)
 {
-  headerValues[TFileHeaderItems::TOTAL_MEMORY_CONSUMPTION] = TLogger::FormatMessage("%ld MB", totalMemory);
+  headerValues[TFileHeaderItems::TOTAL_MEMORY_CONSUMPTION] = Logger::formatMessage("%ld MB", totalMemory);
 
   headerValues[TFileHeaderItems::PEAK_CORE_MEMORY_CONSUMPTION]
-          = TLogger::FormatMessage("%ld MB",
+          = Logger::formatMessage("%ld MB",
                                    totalMemory / Parameters::getInstance().getNumberOfThreads());
 
 }// end of SetMemoryConsumption
@@ -1557,11 +1557,11 @@ void THDF5_FileHeader::SetExecutionTimes(const double totalTime,
                                          const double simulationTime,
                                          const double postprocessingTime)
 {
-  headerValues[TFileHeaderItems::TOTAL_EXECUTION_TIME] = TLogger::FormatMessage("%8.2fs", totalTime);
-  headerValues[TFileHeaderItems::DATA_LOAD_TIME]       = TLogger::FormatMessage("%8.2fs", loadTime);
-  headerValues[TFileHeaderItems::PREPROCESSING_TIME]   = TLogger::FormatMessage("%8.2fs", preProcessingTime);
-  headerValues[TFileHeaderItems::SIMULATION_TIME]      = TLogger::FormatMessage("%8.2fs", simulationTime);
-  headerValues[TFileHeaderItems::POST_PROCESSING_TIME] = TLogger::FormatMessage("%8.2fs", postprocessingTime);
+  headerValues[TFileHeaderItems::TOTAL_EXECUTION_TIME] = Logger::formatMessage("%8.2fs", totalTime);
+  headerValues[TFileHeaderItems::DATA_LOAD_TIME]       = Logger::formatMessage("%8.2fs", loadTime);
+  headerValues[TFileHeaderItems::PREPROCESSING_TIME]   = Logger::formatMessage("%8.2fs", preProcessingTime);
+  headerValues[TFileHeaderItems::SIMULATION_TIME]      = Logger::formatMessage("%8.2fs", simulationTime);
+  headerValues[TFileHeaderItems::POST_PROCESSING_TIME] = Logger::formatMessage("%8.2fs", postprocessingTime);
 }// end of SetExecutionTimes
 //--------------------------------------------------------------------------------------------------
 
@@ -1595,7 +1595,7 @@ void THDF5_FileHeader::GetExecutionTimes(double& totalTime,
 void THDF5_FileHeader::SetNumberOfCores()
 {
   headerValues[TFileHeaderItems::NUMBER_OF_CORES]
-          = TLogger::FormatMessage("%ld", Parameters::getInstance().getNumberOfThreads());
+          = Logger::formatMessage("%ld", Parameters::getInstance().getNumberOfThreads());
 }// end of SetNumberOfCores
 //--------------------------------------------------------------------------------------------------
 

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 January   2015, 17:21 (created) \n
- *              16 July      2017, 16:54 (revised)
+ *              17 July      2017, 16:16 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -145,7 +145,7 @@ void OutputStreamsCUDAKernels::SampleIndex(float*        samplingBuffer,
                   nSamples);
 
   // check for errors
-  checkCudaErrors(cudaGetLastError());
+  cudaCheckErrors(cudaGetLastError());
 }// end of SampleIndex
 //--------------------------------------------------------------------------------------------------
 
@@ -300,7 +300,7 @@ void OutputStreamsCUDAKernels::SampleCuboid(float*       samplingBuffer,
                    matrixSize,
                    nSamples);
   // check for errors
-  checkCudaErrors(cudaGetLastError());
+  cudaCheckErrors(cudaGetLastError());
 }// end of SampleCuboid
 //--------------------------------------------------------------------------------------------------
 
@@ -399,7 +399,7 @@ void OutputStreamsCUDAKernels::SampleAll(float*       samplingBuffer,
                 sourceData,
                 nSamples);
   // check for errors
-  checkCudaErrors(cudaGetLastError());
+  cudaCheckErrors(cudaGetLastError());
 }// end of SampleMaxAll
 //--------------------------------------------------------------------------------------------------
 
@@ -460,6 +460,6 @@ void OutputStreamsCUDAKernels::PostProcessingRMS(float*       samplingBuffer,
                        (samplingBuffer, scalingCoeff, nSamples);
 
   // check for errors
-  checkCudaErrors(cudaGetLastError());
+  cudaCheckErrors(cudaGetLastError());
 }// end of PostProcessingRMS
 //--------------------------------------------------------------------------------------------------

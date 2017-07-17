@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              12 July     2017, 11:01 (revised)
+ *              17 July     2017, 16:14 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -83,12 +83,12 @@ void TIndexMatrix::ReadDataFromHDF5File(THDF5_File&  file,
 {
   if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDataType::LONG)
   {
-    throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_INDEX, matrixName.c_str()));
+    throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotIndex, matrixName.c_str()));
   }
 
   if (file.ReadMatrixDomainType(file.GetRootGroup(),matrixName) != THDF5_File::TMatrixDomainType::REAL)
   {
-    throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_REAL,matrixName.c_str()));
+    throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotReal,matrixName.c_str()));
   }
 
   file.ReadCompleteDataset(file.GetRootGroup(), matrixName, dimensionSizes, hostData);

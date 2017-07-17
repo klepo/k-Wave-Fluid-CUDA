@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 July     2016, 12:33 (created) \n
- *              07 July     2017, 18:22 (revised)
+ *              17 July     2017, 15:49 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,251 +29,251 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef OUTPUT_MESSAGES_LINUX_H
-#define OUTPUT_MESSAGES_LINUX_H
+#ifndef OutputMessagesLinuxH
+#define OutputMessagesLinuxH
 
 /**
  * @brief   Datatype for output messages.
  * @details Datatype for output messages.
  */
-using TOutputMessage = const std::string;
+using OutputMessage = const std::string;
 
 
-//--------------------------------------- Common outputs -----------------------------------------//
+//------------------------------------------------- Common outputs ---------------------------------------------------//
 /// Output message - first separator
-TOutputMessage OUT_FMT_FIRST_SEPARATOR
+OutputMessage kOutFmtFirstSeparator
         = "┌───────────────────────────────────────────────────────────────┐\n";
 /// Output message  - separator
-TOutputMessage OUT_FMT_SEPARATOR
+OutputMessage kOutFmtSeparator
         = "├───────────────────────────────────────────────────────────────┤\n";
 /// Output message -last separator
-TOutputMessage OUT_FMT_LAST_SEPARATOR
+OutputMessage kOutFmtLastSeparator
         = "└───────────────────────────────────────────────────────────────┘\n";
 
 /// Output message - new line
-TOutputMessage OUT_FMT_NEW_LINE
+OutputMessage kOutFmtNewLine
         = "\n";
 /// Output message - Done with two spaces.
-TOutputMessage OUT_FMT_DONE
+OutputMessage kOutFmtDone
         = "  Done │\n";
 /// Output message - finish line without done
-TOutputMessage OUT_FMT_FINSIH_NO_DONE
+OutputMessage kOutFmtNoDone
         = "       │\n";
 /// Output message - failed message
-TOutputMessage OUT_FMT_FAILED
+OutputMessage kOutFmtFailed
         = "Failed │\n" ;
 /// Output message - vertical line
-TOutputMessage OUT_FMT_VERTICAL_LINE
+OutputMessage kOutFmtVerticalLine
         = "│";
 
 /// Output message
-TOutputMessage OUT_FMT_CODE_NAME
+OutputMessage kOutFmtCodeName
         = "│                 %s                  │\n";
 /// Output message
-TOutputMessage OUT_FMT_NUMBER_OF_THREADS
+OutputMessage kOutFmtNumberOfThreads
         = "│ Number of CPU threads:                              %9lu │\n";
 /// Output message
-TOutputMessage OUT_FMT_SIMULATION_DETAIL_TITLE
+OutputMessage kOutFmtSimulationDetailsTitle
         = "├───────────────────────────────────────────────────────────────┤\n"
           "│                      Simulation details                       │\n"
           "├───────────────────────────────────────────────────────────────┤\n";
 /// Output message
-TOutputMessage OUT_FMT_INIT_HEADER
+OutputMessage kOutFmtInitializationHeader
         = "├───────────────────────────────────────────────────────────────┤\n"
           "│                        Initialization                         │\n"
           "├───────────────────────────────────────────────────────────────┤\n";
 
 /// Output message
-TOutputMessage OUT_FMT_COMP_RESOURCES_HEADER
+OutputMessage kOutFmtCompResourcesHeader
         = "├───────────────────────────────────────────────────────────────┤\n"
           "│                    Computational resources                    │\n"
           "├───────────────────────────────────────────────────────────────┤\n";
 /// Output message
-TOutputMessage OUT_FMT_SIMULATION_HEADER
+OutputMessage kOutFmtSimulationHeader
         = "├───────────────────────────────────────────────────────────────┤\n"
           "│                          Simulation                           │\n"
           "├──────────┬────────────────┬──────────────┬────────────────────┤\n"
           "│ Progress │  Elapsed time  │  Time to go  │  Est. finish time  │\n"
           "├──────────┼────────────────┼──────────────┼────────────────────┤\n";
 /// Output message
-TOutputMessage OUT_FMT_CHECKPOINT_HEADER
+OutputMessage kOutFmtCheckpointHeader
         = "├───────────────────────────────────────────────────────────────┤\n"
           "│                         Checkpointing                         │\n"
           "├───────────────────────────────────────────────────────────────┤\n";
 
 /// Output message
-TOutputMessage OUT_FMT_SUMMARY_HEADER
+OutputMessage kOutFmtSummaryHeader
         = "├───────────────────────────────────────────────────────────────┤\n"
           "│                            Summary                            │\n"
           "├───────────────────────────────────────────────────────────────┤\n";
 ///Output message
-TOutputMessage OUT_FMT_END_OF_SIMULATION
+OutputMessage kOutFmtEndOfSimulation
         = "├───────────────────────────────────────────────────────────────┤\n"
           "│                       End of computation                      │\n"
           "└───────────────────────────────────────────────────────────────┘\n";
 
 ///Output message
-TOutputMessage OUT_FMT_ELAPSED_TIME
+OutputMessage kOutFmtElapsedTime
         = "│ Elapsed time:                                    %11.2fs │\n";
 ///Output message
-TOutputMessage OUT_FMT_RECOVER_FROM
+OutputMessage kOutFmtRecoveredFrom
         = "│ Recovered from time step:                            %8ld │\n";
 ///Output message
-TOutputMessage OUT_FMT_HOST_MEMORY_USAGE
+OutputMessage kOutFmtHostMemoryUsage
         = "│ Peak host memory in use:                           %8luMB │\n";
 ///Output message
-TOutputMessage OUT_FMT_DEVICE_MEMORY_USAGE
+OutputMessage kOutFmtDeviceMemoryUsage
         = "│ Peak device memory in use:                         %8luMB │\n";
 ///Output message
-TOutputMessage OUT_FMT_TOTAL_EXECUTION_TIME
+OutputMessage kOutFmtTotalExecutionTime
         = "│ Total execution time:                               %8.2fs │\n";
 ///Output message
-TOutputMessage OUT_FMT_LEG_EXECUTION_TIME
+OutputMessage kOutFmtLegExecutionTime
         = "│ This leg execution time:                            %8.2fs │\n";
 
 
 ///Output message
-TOutputMessage OUT_FMT_READING_CONFIGURATION
+OutputMessage kOutFmtReadingConfiguration
         = "│ Reading simulation configuration:                      ";
 ///Output message
-TOutputMessage OUT_FMT_SELECTED_DEVICE
+OutputMessage kOutFmtSelectedDevice
         = "│ Selected GPU device id:                                ";
 ///Output message
-TOutputMessage OUT_FMT_DEVICE_ID
+OutputMessage kOutFmtDeviceId
         = "%6d │\n";
 ///Output message
-TOutputMessage OUT_FMT_DEVICE_NAME
+OutputMessage kOutFmtDeviceName
         = "│ GPU device name: %44s │\n";
 ///Output message
-TOutputMessage OUT_FMT_DOMAIN_SIZE
+OutputMessage kOutFmtDomainSize
         = "│ Domain dimensions: %42s │\n";
 ///Output message
-TOutputMessage OUT_FMT_DOMAIN_SIZE_FORMAT
+OutputMessage kOutFmtDomainSizeFormat
         = "%lu x %lu x %lu";
 
 
 ///Output message
-TOutputMessage OUT_FMT_SIMULATION_LENGTH
+OutputMessage kOutFmtSimulatoinLenght
         = "│ Simulation time steps:                              %9lu │\n";
 ///Output message
-TOutputMessage OUT_FMT_SENSOR_MASK_INDEX
+OutputMessage kOutFmtSensorMaskIndex
         = "│ Sensor mask type:                                       Index │\n";
 ///Output message
-TOutputMessage OUT_FMT_SENSOR_MASK_CUBOID
+OutputMessage kOutFmtSensorMaskCuboid
         = "│ Sensor mask type:                                      Cuboid │\n";
 ///Output message
-TOutputMessage OUT_FMT_GIT_HASH_LEFT
+OutputMessage kOutFmtGitHashLeft
         = "│ Git hash:            %s │\n";
 
 ///Output message
-TOutputMessage OUT_FMT_KWAVE_VERSION
+OutputMessage kOutFmtKWaveVersion
         = "kspaceFirstOrder3D-CUDA v1.1";
 
 ///Output message
-TOutputMessage OUT_FMT_FFT_PLANS
+OutputMessage kOutFmtFftPlans
         = "│ FFT plans creation:                                    ";
 ///Output message
-TOutputMessage OUT_FMT_PRE_PROCESSING
+OutputMessage kOutFmtPreProcessing
         = "│ Pre-processing phase:                                  ";
 ///Output message
-TOutputMessage OUT_FMT_DATA_LOADING
+OutputMessage kOutFmtDataLoading
         = "│ Data loading:                                          ";
 ///Output message
-TOutputMessage OUT_FMT_MEMORY_ALLOCATION
+OutputMessage kOutFmtMemoryAllocation
         = "│ Memory allocation:                                     ";
 ///Output message
-TOutputMessage OUT_FMT_CURRENT_HOST_MEMORY
+OutputMessage kOutFmtCurrentHostMemory
         = "│ Current host memory in use:                        %8luMB │\n";
 ///Output message
-TOutputMessage OUT_FMT_CURRENT_DEVICE_MEMORY
+OutputMessage kOutFmtCurrentDeviceMemory
         = "│ Current device memory in use:                      %8luMB │\n";
 
 ///Output message
-TOutputMessage OUT_FMT_CUDA_GRID_SHAPE_FORMAT
+OutputMessage kOutFmtCudaGridShapeFormat
         = "%d x %d";
 ///Output message
-TOutputMessage OUT_FMT_CUDA_SOLVER_GRID_SHAPE
+OutputMessage kOutFmtCudaSolverGridShape
         = "│ CUDA solver grid size [blocks x threads]: %19s │\n";
 ///Output message
-TOutputMessage OUT_FMT_CUDA_SAMPLER_GRID_SHAPE
+OutputMessage kOutFmtCudaSamplerGridShape
         = "│ CUDA sampler grid size [blocks x threads]: %18s │\n";
 
 ///Output message
-TOutputMessage OUT_FMT_SIMULATION_PROGRESS
+OutputMessage kOutFmtSimulationProgress
         ="│    %2li%c   │    %9.3fs  │  %9.3fs  │  %02i/%02i/%02i %02i:%02i:%02i │\n";
 ///Output message
-TOutputMessage OUT_FMT_SIMULATOIN_END_SEPARATOR
+OutputMessage kOutFmtSimulationEndSeparator
         = "├──────────┴────────────────┴──────────────┴────────────────────┤\n";
 ///Output message
-TOutputMessage OUT_FMT_SIMULATION_FINAL_SEPARATOR
+OutputMessage kOutFmtSimulatoinFinalSeparator
         = "└──────────┴────────────────┴──────────────┴────────────────────┘\n";
 
 ///Output message
-TOutputMessage OUT_FMT_CHECKPOINT_TIME_STEPS
+OutputMessage kOutFmtCheckpointTimeSteps
         = "│ Number of time steps completed:                    %10u │\n";
 ///Output message
-TOutputMessage OUT_FMT_CREATING_CHECKPOINT
+OutputMessage kOutFmtCreatingCheckpoint
         = "│ Creating checkpoint:                                   ";
 ///Output message
-TOutputMessage OUT_FMT_POST_PROCESSING
+OutputMessage kOutFmtPostProcessing
         = "│ Sampled data post-processing:                          ";
 ///Output message
-TOutputMessage OUT_FMT_STORING_CHECKPOINT_DATA
+OutputMessage kOutFmtStoringCheckpointData
         = "│ + Storing checkpoint data:                             ";
 ///Output message
-TOutputMessage OUT_FMT_STORING_SENSOR_DATA
+OutputMessage kOutFmtStoringSensorData
         = "│ + Storing sensor data:                                 ";
 ///Output message
-TOutputMessage OUT_FMT_READING_INPUT_FILE
+OutputMessage kOutFmtReadingInputFile
         = "│ + Reading input file:                                  ";
 ///Output message
-TOutputMessage OUT_FMT_READING_CHECKPOINT_FILE
+OutputMessage kOutFmtReadingCheckpointFile
         = "│ + Reading checkpoint file:                             ";
 ///Output message
-TOutputMessage OUT_FMT_READING_OUTPUT_FILE
+OutputMessage kOutFmtReadingOutputFile
         = "│ + Reading output file:                                 ";
 ///Output message
-TOutputMessage OUT_FMT_CREATING_OUTPUT_FILE
+OutputMessage kOutFmtCreatingOutputFile
         = "│ + Creating output file:                                ";
 
 ///Output message
-TOutputMessage OUT_FMT_INPUT_FILE
+OutputMessage kOutFmtInputFile
         = "Input file:  ";
 ///Output message
-TOutputMessage OUT_FMT_OUTPUT_FILE
+OutputMessage kOutFmtOutputFile
         = "Output file: ";
 ///Output message
-TOutputMessage OUT_FMT_CHECKPOINT_FILE
+OutputMessage kOutFmtCheckpointFile
         = "Check file:  ";
 ///Output message
-TOutputMessage OUT_FMT_CHECKPOINT_INTERVAL
+OutputMessage kOutFmtCheckpointInterval
         = "│ Checkpoint interval:                                %8lus │\n";
 ///Output message
-TOutputMessage OUT_FMT_COMPRESSION_LEVEL
+OutputMessage kOutFmtCompressionLevel
         = "│ Compression level:                                   %8lu │\n";
 ///Output message
-TOutputMessage OUT_FMT_PRINT_PROGRESS_INTERVAL
+OutputMessage kOutFmtPrintProgressIntrerval
         = "│ Print progress interval:                            %8lu%% │\n";
 ///Output message
-TOutputMessage OUT_FMT_BENCHMARK_TIME_STEP
+OutputMessage kOutFmtBenchmarkTimeStep
         = "│ Benchmark time steps:                                %8lu │\n";
 ///Output message
-TOutputMessage OUT_FMT_SAMPLING_FLAGS
+OutputMessage kOutFmtSamplingFlags
         = "├───────────────────────────────────────────────────────────────┤\n"
           "│                        Sampling flags                         │\n"
           "├───────────────────────────────────────────────────────────────┤\n";
 ///Output message
-TOutputMessage OUT_FMT_SAMPLING_BEGINS_AT
+OutputMessage kOutFmtSamplingStartsAt
         = "│ Sampling begins at time step:                        %8lu │\n";
 ///Output message
-TOutputMessage OUT_FMT_COPY_SENSOR_MASK
+OutputMessage kOutFmtCopySensorMask
         = "│ Copy sensor mask to output file:                          Yes │\n";
 
 
 
-//-------------------------------------- Print code version --------------------------------------//
+//------------------------------------------------ Print code version ------------------------------------------------//
 /// Print version output message
-TOutputMessage OUT_FMT_BUILD_NO_DATE_TIME
+OutputMessage kOutFmtBuildNoDataTime
         = "├───────────────────────────────────────────────────────────────┤\n"
           "│                       Build information                       │\n"
           "├───────────────────────────────────────────────────────────────┤\n"
@@ -282,60 +282,60 @@ TOutputMessage OUT_FMT_BUILD_NO_DATE_TIME
           "│ Build time:       %*.*s                                    │\n";
 
 /// Print version output message
-TOutputMessage OUT_FMT_VERSION_GIT_HASH
+OutputMessage kOutFmtVersionGitHash
         = "│ Git hash:         %s    │\n";
 
 /// Print version output message
-TOutputMessage OUT_FMT_LINUX_BUILD
+OutputMessage kOutFmtLinuxBuild
         = "│ Operating system: Linux x64                                   │\n";
 /// Print version output message
-TOutputMessage OUT_FMT_WINDOWS_BUILD
+OutputMessage kOutFmtWindowsBuild
         = "│ Operating system: Windows x64                                 │\n";
 /// Print version output message
-TOutputMessage OUT_FMT_MAC_OS_BUILD
+OutputMessage kOutFmtMacOsBuild
         = "│ Operating system: Mac OS X x64                                │\n";
 
 /// Print version output message
-TOutputMessage OUT_FMT_GNU_COMPILER
+OutputMessage kOutFmtGnuCompiler
         = "│ Compiler name:    GNU C++ %.19s                               │\n";
 /// Print version output message
-TOutputMessage OUT_FMT_INTEL_COMPILER
+OutputMessage kOutFmtIntelCompiler
         = "│ Compiler name:    Intel C++ %d                              │\n";
 /// Print version output message
-TOutputMessage OUT_FMT_VISUAL_STUDIO_COMPILER
+OutputMessage kOutFmtVisualStudioCompiler
         = "│ Compiler name:    Visual Studio C++ %d                      │\n";
 
 /// Print version output message
-TOutputMessage OUT_FMT_AVX2
+OutputMessage kOutFmtAVX2
         = "│ Instruction set:  Intel AVX 2                                 │\n";
 /// Print version output message
-TOutputMessage OUT_FMT_AVX
+OutputMessage kOutFmtAVX
         = "│ Instruction set:  Intel AVX                                   │\n";
 /// Print version output message
-TOutputMessage OUT_FMT_SSE42
+OutputMessage kOutFmtSSE42
         = "│ Instruction set:  Intel SSE 4.2                               │\n";
 /// Print version output message
-TOutputMessage OUT_FMT_SSE41
+OutputMessage kOutFmtSSE41
         = "│ Instruction set:  Intel SSE 4.1                               │\n";
 /// Print version output message
-TOutputMessage OUT_FMT_SSE3
+OutputMessage kOutFmtSSE3
         = "│ Instruction set:  Intel SSE 3                                 │\n";
 /// Print version output message
-TOutputMessage OUT_FMT_SSE2
+OutputMessage kOutFmtSSE2
         = "│ Instruction set:  Intel SSE 2                                 │\n";
 
 /// Print version output message
-TOutputMessage OUT_FMT_CUDA_RUNTIME_NA
+OutputMessage kOutFmtCudaRuntimeNA
         = "│ CUDA runtime:     N/A                                         │\n";
 /// Print version output message
-TOutputMessage OUT_FMT_CUDA_RUNTIME
+OutputMessage kOutFmtCudaRuntime
         = "│ CUDA runtime:     %d.%d                                         │\n";
 /// Print version output message
-TOutputMessage OUT_FMT_CUDA_DRIVER
+OutputMessage kOutFmtCudaDriver
         = "│ CUDA driver:      %d.%d                                         │\n";
 
 /// Print version output message
-TOutputMessage OUT_FMT_CUDA_DEVICE_INFO_NA
+OutputMessage kOutFmtCudaDeviceInfoNA
         = "│ CUDA code arch:   N/A                                         │\n"
           "├───────────────────────────────────────────────────────────────┤\n"
           "│ CUDA device id:   N/A                                         │\n"
@@ -343,23 +343,23 @@ TOutputMessage OUT_FMT_CUDA_DEVICE_INFO_NA
           "│ CUDA capability:  N/A                                         │\n";
 
 /// Print version output message
-TOutputMessage OUT_FMT_CUDA_CODE_ARCH
+OutputMessage kOutFmtCudaCodeArch
         = "│ CUDA code arch:   %1.1f                                         │\n";
 /// Print version output message
-TOutputMessage OUT_FMT_CUDA_DEVICE
+OutputMessage kOutFmtCudaDevice
         = "│ CUDA device id:   %d                                           │\n";
 /// Print version output message
-TOutputMessage OUT_FMT_CUDA_DEVICE_NAME
+OutputMessage kOutFmtCudaDeviceName
         = "│ CUDA device name: %s %.*s│\n";
 /// Print version output message
-TOutputMessage OUT_FMT_CUDA_DEVICE_NAME_PADDING
+OutputMessage kOutFmtCudaDeviceNamePadding
         =  "                                        ";
 /// Print version output message
-TOutputMessage OUT_FMT_CUDA_CAPABILITY
+OutputMessage kOutFmtCudaCapability
         = "│ CUDA capability:  %d.%d                                         │\n";
 
 /// Print version output message
-TOutputMessage OUT_FMT_LICENCE
+OutputMessage kOutFmtLicense
         = "├───────────────────────────────────────────────────────────────┤\n"
           "│ Contact email:    jarosjir@fit.vutbr.cz                       │\n"
           "│ Contact web:      http://www.k-wave.org                       │\n"
@@ -369,9 +369,9 @@ TOutputMessage OUT_FMT_LICENCE
 
 
 
-//------------------------------------------- Usage ----------------------------------------------//
+//----------------------------------------------------- Usage --------------------------------------------------------//
 /// Usage massage
-TOutputMessage OUT_FMT_USAGE_PART_1
+OutputMessage kOutFmtUsagePart1
         = "│                             Usage                             │\n"
           "├───────────────────────────────────────────────────────────────┤\n"
           "│                     Mandatory parameters                      │\n"
@@ -383,7 +383,7 @@ TOutputMessage OUT_FMT_USAGE_PART_1
           "├───────────────────────────────┬───────────────────────────────┤\n";
 
 /// Usage massage
-TOutputMessage OUT_FMT_USAGE_PART_2
+OutputMessage kOutFmtUsagePart2
         = "│ -g <device_number>            │ GPU device to run on          │\n"
           "│                               │   (default = the first free)  │\n"
           "│ -r <interval_in_%%>            │ Progress print interval       │\n"
@@ -436,9 +436,8 @@ TOutputMessage OUT_FMT_USAGE_PART_2
           "└───────────────────────────────┴───────────────────────────────┘\n";
 
 /// Usage massage
-TOutputMessage OUT_FMT_USAGE_THREADS
+OutputMessage kOutFmtUsageThreads
         = "│ -t <num_threads>              │ Number of CPU threads         │\n"
           "│                               │  (default = %2d)               │\n";
 
-#endif /* OUTPUT_MESSAGES_LINUX_H */
-
+#endif /* OutputMessagesLinuxH */

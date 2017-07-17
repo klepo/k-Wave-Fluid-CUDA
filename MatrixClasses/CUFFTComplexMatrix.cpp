@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2011, 13:10 (created) \n
- *              11 July      2017, 16:45 (revised)
+ *              17 July      2017, 16:14 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -66,24 +66,24 @@ cufftHandle TCUFFTComplexMatrix::cufftPlan_1DZ_C2R = cufftHandle();
 /**
  * Error message for the CUFFT class.
  */
-std::map<cufftResult, TErrorMessage> TCUFFTComplexMatrix::cuFFTErrorMessages
+std::map<cufftResult, ErrorMessage> TCUFFTComplexMatrix::cuFFTErrorMessages
 {
-  {CUFFT_INVALID_PLAN             , ERR_FMT_CUFFT_INVALID_PLAN},
-  {CUFFT_ALLOC_FAILED             , ERR_FMT_CUFFT_ALLOC_FAILED},
-  {CUFFT_INVALID_TYPE             , ERR_FMT_CUFFT_INVALID_TYPE},
-  {CUFFT_INVALID_VALUE            , ERR_FMT_CUFFT_INVALID_VALUE},
-  {CUFFT_INTERNAL_ERROR           , ERR_FMT_CUFFT_INVALID_VALUE},
-  {CUFFT_EXEC_FAILED              , ERR_FMT_CUFFT_EXEC_FAILED},
-  {CUFFT_SETUP_FAILED             , eRR_FMT_CUFFT_SETUP_FAILED},
-  {CUFFT_INVALID_SIZE             , ERR_FMT_CUFFT_INVALID_SIZE},
-  {CUFFT_UNALIGNED_DATA           , ERR_FMT_CUFFT_UNALIGNED_DATA},
-  {CUFFT_INCOMPLETE_PARAMETER_LIST, ERR_FMT_CUFFT_INCOMPLETE_PARAMETER_LIST},
-  {CUFFT_INVALID_DEVICE           , ERR_FMT_CUFFT_INVALID_DEVICE},
-  {CUFFT_PARSE_ERROR              , ERR_FMT_CUFFT_PARSE_ERROR},
-  {CUFFT_NO_WORKSPACE             , ERR_FMT_CUFFT_NO_WORKSPACE},
-  {CUFFT_NOT_IMPLEMENTED          , eRR_FMT_CUFFT_NOT_IMPLEMENTED},
-  {CUFFT_LICENSE_ERROR            , ERR_FMT_CUFFT_LICENSE_ERROR},
-  {CUFFT_NOT_SUPPORTED            , ERR_FMT_CUFFT_NOT_SUPPORTED}
+  {CUFFT_INVALID_PLAN             , kErrFmtCufftInvalidPlan},
+  {CUFFT_ALLOC_FAILED             , kErrFmtCufftAllocFailed},
+  {CUFFT_INVALID_TYPE             , kErrFmtCufftInvalidType},
+  {CUFFT_INVALID_VALUE            , kErrFmtCufftInvalidValue},
+  {CUFFT_INTERNAL_ERROR           , kErrFmtCufftInvalidValue},
+  {CUFFT_EXEC_FAILED              , kErrFmtCufftExecFailed},
+  {CUFFT_SETUP_FAILED             , kErrFmtCufftSetupFailed},
+  {CUFFT_INVALID_SIZE             , kErrFmtCufftInvalidSize},
+  {CUFFT_UNALIGNED_DATA           , kErrFmtCufftUnalignedData},
+  {CUFFT_INCOMPLETE_PARAMETER_LIST, kErrFmtCufftIncompleteParaterList},
+  {CUFFT_INVALID_DEVICE           , kErrFmtCufftInvalidDevice},
+  {CUFFT_PARSE_ERROR              , kErrFmtCufftParseError},
+  {CUFFT_NO_WORKSPACE             , kErrFmtCufftNoWorkspace},
+  {CUFFT_NOT_IMPLEMENTED          , kErrFmtCufftNotImplemented},
+  {CUFFT_LICENSE_ERROR            , kErrFmtCufftLicenseError},
+  {CUFFT_NOT_SUPPORTED            , kErrFmtCufftNotSupported}
 };
 //--------------------------------------------------------------------------------------------------
 
@@ -682,11 +682,11 @@ void TCUFFTComplexMatrix::ThrowCUFFTException(const cufftResult  cufftError,
   std::string errMsg;
   if (cuFFTErrorMessages.find(cufftError) != cuFFTErrorMessages.end())
   {
-    errMsg = TLogger::FormatMessage(cuFFTErrorMessages[cufftError], transformTypeName.c_str());
+    errMsg = Logger::formatMessage(cuFFTErrorMessages[cufftError], transformTypeName.c_str());
   }
   else // unknown error
   {
-    errMsg = TLogger::FormatMessage(ERR_FMT_CUFFT_UNKNOWN_ERROR, transformTypeName.c_str());
+    errMsg = Logger::formatMessage(kErrFmtCufftUnknownError, transformTypeName.c_str());
   }
 
   // Throw exception

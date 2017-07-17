@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2011, 13:10 (created) \n
- *              11 July      2017, 16:45 (revised)
+ *              17 July      2017, 16:14 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -130,7 +130,7 @@ class TCUFFTComplexMatrix : public TComplexMatrix
    static void ThrowCUFFTException(const cufftResult   cufftError,
                                    const std::string&  transformTypeName);
 
-   static  std::map<cufftResult, TErrorMessage> cuFFTErrorMessages;
+   static  std::map<cufftResult, ErrorMessage> cuFFTErrorMessages;
 
 };// TCUFFTComplexMatrix
 

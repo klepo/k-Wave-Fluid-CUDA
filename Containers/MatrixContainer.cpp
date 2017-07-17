@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              16 July      2017, 16:50 (revised)
+ *              17 July      2017, 16:05 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -77,7 +77,7 @@ void TMatrixContainer::CreateMatrices()
   {
     if (it.second.matrixPtr != nullptr)
     { // the data is already allocated
-      throw std::invalid_argument(TLogger::FormatMessage(ERR_FMT_RELOCATION_ERROR,
+      throw std::invalid_argument(Logger::formatMessage(kErrFmtRelocationError,
                                                          it.second.matrixName.c_str()));
     }
 
@@ -109,7 +109,7 @@ void TMatrixContainer::CreateMatrices()
 
       default: // unknown matrix type
       {
-        throw std::invalid_argument(TLogger::FormatMessage(ERR_FMT_BAD_MATRIX_DISTRIBUTION_TYPE,
+        throw std::invalid_argument(Logger::formatMessage(kErrFmtBadMatrixDistributionType,
                                                            it.second.matrixName.c_str()));
         break;
       }
