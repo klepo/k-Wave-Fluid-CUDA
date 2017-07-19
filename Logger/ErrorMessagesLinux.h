@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 July     2016, 11:26 (created) \n
- *              17 July     2017, 15:24 (revised)
+ *              19 July     2017, 12:10 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -42,14 +42,14 @@ using ErrorMessage = const std::string;
 
 /// Error message header
 ErrorMessage kErrFmtHead =
-        "┌───────────────────────────────────────────────────────────────┐\n"
-        "│            !!! K-Wave experienced a fatal error !!!           │\n"
-        "├───────────────────────────────────────────────────────────────┤\n";
+  "┌───────────────────────────────────────────────────────────────┐\n"
+  "│            !!! K-Wave experienced a fatal error !!!           │\n"
+  "├───────────────────────────────────────────────────────────────┤\n";
 
 /// Error message tailer
 ErrorMessage kErrFmtTail =
-        "├───────────────────────────────────────────────────────────────┤\n"
-        "│                      Execution terminated                     │\n"
-        "└───────────────────────────────────────────────────────────────┘\n";
+  "├───────────────────────────────────────────────────────────────┤\n"
+  "│                      Execution terminated                     │\n"
+  "└───────────────────────────────────────────────────────────────┘\n";
 
 #endif	/* ErrorMessagesLinuxH */

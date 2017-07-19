@@ -44,8 +44,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/Logger/Logger.o \
 	${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o \
 	${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o \
-	${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/ComplexMatrix.o \
+	${OBJECTDIR}/MatrixClasses/CufftComplexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/IndexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/RealMatrix.o \
 	${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o \
@@ -53,9 +53,9 @@ OBJECTFILES= \
 	${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o \
 	${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o \
 	${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o \
-	${OBJECTDIR}/Parameters/CUDADeviceConstants.o \
-	${OBJECTDIR}/Parameters/CUDAParameters.o \
 	${OBJECTDIR}/Parameters/CommandLineParameters.o \
+	${OBJECTDIR}/Parameters/CudaDeviceConstants.o \
+	${OBJECTDIR}/Parameters/CudaParameters.o \
 	${OBJECTDIR}/Parameters/Parameters.o \
 	${OBJECTDIR}/main.o
 
@@ -120,13 +120,13 @@ ${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o: MatrixClasses/BaseIndexMatrix.cpp
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
 	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o MatrixClasses/BaseIndexMatrix.cpp
 
-${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o: MatrixClasses/CUFFTComplexMatrix.cpp
-	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o MatrixClasses/CUFFTComplexMatrix.cpp
-
 ${OBJECTDIR}/MatrixClasses/ComplexMatrix.o: MatrixClasses/ComplexMatrix.cpp
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
 	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/ComplexMatrix.o MatrixClasses/ComplexMatrix.cpp
+
+${OBJECTDIR}/MatrixClasses/CufftComplexMatrix.o: MatrixClasses/CufftComplexMatrix.cpp
+	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
+	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/CufftComplexMatrix.o MatrixClasses/CufftComplexMatrix.cpp
 
 ${OBJECTDIR}/MatrixClasses/IndexMatrix.o: MatrixClasses/IndexMatrix.cpp
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
@@ -156,17 +156,17 @@ ${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o: OutputHDF5Streams/
 	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
 	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp
 
-${OBJECTDIR}/Parameters/CUDADeviceConstants.o: Parameters/CUDADeviceConstants.cu
-	${MKDIR} -p ${OBJECTDIR}/Parameters
-	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Parameters/CUDADeviceConstants.o Parameters/CUDADeviceConstants.cu
-
-${OBJECTDIR}/Parameters/CUDAParameters.o: Parameters/CUDAParameters.cpp
-	${MKDIR} -p ${OBJECTDIR}/Parameters
-	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Parameters/CUDAParameters.o Parameters/CUDAParameters.cpp
-
 ${OBJECTDIR}/Parameters/CommandLineParameters.o: Parameters/CommandLineParameters.cpp
 	${MKDIR} -p ${OBJECTDIR}/Parameters
 	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Parameters/CommandLineParameters.o Parameters/CommandLineParameters.cpp
+
+${OBJECTDIR}/Parameters/CudaDeviceConstants.o: Parameters/CudaDeviceConstants.cu
+	${MKDIR} -p ${OBJECTDIR}/Parameters
+	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Parameters/CudaDeviceConstants.o Parameters/CudaDeviceConstants.cu
+
+${OBJECTDIR}/Parameters/CudaParameters.o: Parameters/CudaParameters.cpp
+	${MKDIR} -p ${OBJECTDIR}/Parameters
+	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Parameters/CudaParameters.o Parameters/CudaParameters.cpp
 
 ${OBJECTDIR}/Parameters/Parameters.o: Parameters/Parameters.cpp
 	${MKDIR} -p ${OBJECTDIR}/Parameters

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 February  2015, 12:51 (created)
- *              17 July      2017, 16:16 (revised)
+ *              19 July      2017, 12:12 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -60,8 +60,8 @@ using std::string;
  */
 TCuboidOutputHDF5Stream::TCuboidOutputHDF5Stream(THDF5_File&           file,
                                                  MatrixName&          groupName,
-                                                 const TRealMatrix&    sourceMatrix,
-                                                 const TIndexMatrix&   sensorMask,
+                                                 const RealMatrix&    sourceMatrix,
+                                                 const IndexMatrix&   sensorMask,
                                                  const TReduceOperator reduceOp)
         : TBaseOutputHDF5Stream(file, groupName, sourceMatrix, reduceOp),
           sensorMask(sensorMask),
@@ -100,7 +100,7 @@ void TCuboidOutputHDF5Stream::Create()
   group = file.CreateGroup(file.GetRootGroup(), rootObjectName);
 
   // Create all datasets (sizes, chunks, and attributes)
-  size_t nCuboids = sensorMask.GetDimensionSizes().ny;
+  size_t nCuboids = sensorMask.getDimensionSizes().ny;
   cuboidsInfo.reserve(nCuboids);
   size_t actualPositionInBuffer = 0;
 
@@ -112,8 +112,8 @@ void TCuboidOutputHDF5Stream::Create()
     cuboidInfo.startingPossitionInBuffer = actualPositionInBuffer;
     cuboidsInfo.push_back(cuboidInfo);
 
-    actualPositionInBuffer += (sensorMask.GetBottomRightCorner(cuboidIdx) -
-                               sensorMask.GetTopLeftCorner(cuboidIdx)
+    actualPositionInBuffer += (sensorMask.getBottomRightCorner(cuboidIdx) -
+                               sensorMask.getTopLeftCorner(cuboidIdx)
                               ).nElements();
   }
 
@@ -121,7 +121,7 @@ void TCuboidOutputHDF5Stream::Create()
   sampledTimeStep = 0;
 
   // Create the memory buffer if necessary and set starting address
-  bufferSize = sensorMask.GetTotalNumberOfElementsInAllCuboids();
+  bufferSize = sensorMask.getSizeOfAllCuboids();
 
   // Allocate memory
   AllocateMemory();
@@ -146,13 +146,13 @@ void TCuboidOutputHDF5Stream::Reopen()
   }
 
   // Create the memory buffer if necessary and set starting address
-  bufferSize = sensorMask.GetTotalNumberOfElementsInAllCuboids();
+  bufferSize = sensorMask.getSizeOfAllCuboids();
 
   // Allocate memory if needed
   AllocateMemory();
 
   // Open all datasets (sizes, chunks, and attributes)
-  size_t nCuboids = sensorMask.GetDimensionSizes().ny;
+  size_t nCuboids = sensorMask.getDimensionSizes().ny;
   cuboidsInfo.reserve(nCuboids);
   size_t actualPositionInBuffer = 0;
 
@@ -175,9 +175,9 @@ void TCuboidOutputHDF5Stream::Reopen()
     {
       if (reduceOp != TReduceOperator::NONE)
       { // Reload data
-        DimensionSizes cuboidSize((sensorMask.GetBottomRightCorner(CuboidIdx) - sensorMask.GetTopLeftCorner(CuboidIdx)).nx,
-                                   (sensorMask.GetBottomRightCorner(CuboidIdx) - sensorMask.GetTopLeftCorner(CuboidIdx)).ny,
-                                   (sensorMask.GetBottomRightCorner(CuboidIdx) - sensorMask.GetTopLeftCorner(CuboidIdx)).nz);
+        DimensionSizes cuboidSize((sensorMask.getBottomRightCorner(CuboidIdx) - sensorMask.getTopLeftCorner(CuboidIdx)).nx,
+                                   (sensorMask.getBottomRightCorner(CuboidIdx) - sensorMask.getTopLeftCorner(CuboidIdx)).ny,
+                                   (sensorMask.getBottomRightCorner(CuboidIdx) - sensorMask.getTopLeftCorner(CuboidIdx)).nz);
 
         file.ReadCompleteDataset(group,
                                  datasetName.c_str(),
@@ -186,8 +186,8 @@ void TCuboidOutputHDF5Stream::Reopen()
       }
     }
     // move the pointer for the next cuboid beginning (this inits the locations)
-    actualPositionInBuffer += (sensorMask.GetBottomRightCorner(CuboidIdx) -
-                               sensorMask.GetTopLeftCorner(CuboidIdx)).nElements();
+    actualPositionInBuffer += (sensorMask.getBottomRightCorner(CuboidIdx) -
+                               sensorMask.getTopLeftCorner(CuboidIdx)).nElements();
   }
 
   // copy data over to the GPU only if there is anything to read
@@ -208,24 +208,24 @@ void TCuboidOutputHDF5Stream::Sample()
 {
   size_t cuboidInBufferStart = 0;
   // dimension sizes of the matrix being sampled
-  const dim3 dimSizes (static_cast<unsigned int>(sourceMatrix.GetDimensionSizes().nx),
-                       static_cast<unsigned int>(sourceMatrix.GetDimensionSizes().ny),
-                       static_cast<unsigned int>(sourceMatrix.GetDimensionSizes().nz));
+  const dim3 dimSizes (static_cast<unsigned int>(sourceMatrix.getDimensionSizes().nx),
+                       static_cast<unsigned int>(sourceMatrix.getDimensionSizes().ny),
+                       static_cast<unsigned int>(sourceMatrix.getDimensionSizes().nz));
 
   // Run over all cuboids - this is not a good solution as we need to run a distinct kernel for a cuboid
   for (size_t cuboidIdx = 0; cuboidIdx < cuboidsInfo.size(); cuboidIdx++)
   {
     // copy down dim sizes
-    const dim3 topLeftCorner(static_cast<unsigned int>(sensorMask.GetTopLeftCorner(cuboidIdx).nx),
-                             static_cast<unsigned int>(sensorMask.GetTopLeftCorner(cuboidIdx).ny),
-                             static_cast<unsigned int>(sensorMask.GetTopLeftCorner(cuboidIdx).nz));
-    const dim3 bottomRightCorner(static_cast<unsigned int>(sensorMask.GetBottomRightCorner(cuboidIdx).nx),
-                                 static_cast<unsigned int>(sensorMask.GetBottomRightCorner(cuboidIdx).ny),
-                                 static_cast<unsigned int>(sensorMask.GetBottomRightCorner(cuboidIdx).nz));
+    const dim3 topLeftCorner(static_cast<unsigned int>(sensorMask.getTopLeftCorner(cuboidIdx).nx),
+                             static_cast<unsigned int>(sensorMask.getTopLeftCorner(cuboidIdx).ny),
+                             static_cast<unsigned int>(sensorMask.getTopLeftCorner(cuboidIdx).nz));
+    const dim3 bottomRightCorner(static_cast<unsigned int>(sensorMask.getBottomRightCorner(cuboidIdx).nx),
+                                 static_cast<unsigned int>(sensorMask.getBottomRightCorner(cuboidIdx).ny),
+                                 static_cast<unsigned int>(sensorMask.getBottomRightCorner(cuboidIdx).nz));
 
     //get number of samples within the cuboid
-    const size_t nSamples = (sensorMask.GetBottomRightCorner(cuboidIdx) -
-                             sensorMask.GetTopLeftCorner(cuboidIdx)
+    const size_t nSamples = (sensorMask.getBottomRightCorner(cuboidIdx) -
+                             sensorMask.getTopLeftCorner(cuboidIdx)
                             ).nElements();
 
     switch (reduceOp)
@@ -235,7 +235,7 @@ void TCuboidOutputHDF5Stream::Sample()
         // Kernel to sample raw quantities inside one cuboid
         OutputStreamsCUDAKernels::SampleCuboid<TReduceOperator::NONE>
                                               (deviceBuffer + cuboidInBufferStart,
-                                               sourceMatrix.GetDeviceData(),
+                                               sourceMatrix.getDeviceData(),
                                                topLeftCorner,
                                                bottomRightCorner,
                                                dimSizes,
@@ -246,7 +246,7 @@ void TCuboidOutputHDF5Stream::Sample()
       {
         OutputStreamsCUDAKernels::SampleCuboid<TReduceOperator::RMS>
                                               (deviceBuffer + cuboidInBufferStart,
-                                               sourceMatrix.GetDeviceData(),
+                                               sourceMatrix.getDeviceData(),
                                                topLeftCorner,
                                                bottomRightCorner,
                                                dimSizes,
@@ -257,7 +257,7 @@ void TCuboidOutputHDF5Stream::Sample()
       {
         OutputStreamsCUDAKernels::SampleCuboid<TReduceOperator::MAX>
                                               (deviceBuffer + cuboidInBufferStart,
-                                               sourceMatrix.GetDeviceData(),
+                                               sourceMatrix.getDeviceData(),
                                                topLeftCorner,
                                                bottomRightCorner,
                                                dimSizes,
@@ -268,7 +268,7 @@ void TCuboidOutputHDF5Stream::Sample()
       {
         OutputStreamsCUDAKernels::SampleCuboid<TReduceOperator::MIN>
                                               (deviceBuffer + cuboidInBufferStart,
-                                               sourceMatrix.GetDeviceData(),
+                                               sourceMatrix.getDeviceData(),
                                                topLeftCorner,
                                                bottomRightCorner,
                                                dimSizes,
@@ -384,9 +384,9 @@ hid_t TCuboidOutputHDF5Stream::CreateCuboidDataset(const size_t cuboidIdx)
                                    ? params.getNt() - params.getSamplingStartTimeIndex() : 0; // will be a 3D dataset
 
   // Set cuboid dimensions (subtract two corners (add 1) and use the appropriate component)
-  DimensionSizes cuboidSize((sensorMask.GetBottomRightCorner(cuboidIdx) - sensorMask.GetTopLeftCorner(cuboidIdx)).nx,
-                             (sensorMask.GetBottomRightCorner(cuboidIdx) - sensorMask.GetTopLeftCorner(cuboidIdx)).ny,
-                             (sensorMask.GetBottomRightCorner(cuboidIdx) - sensorMask.GetTopLeftCorner(cuboidIdx)).nz,
+  DimensionSizes cuboidSize((sensorMask.getBottomRightCorner(cuboidIdx) - sensorMask.getTopLeftCorner(cuboidIdx)).nx,
+                             (sensorMask.getBottomRightCorner(cuboidIdx) - sensorMask.getTopLeftCorner(cuboidIdx)).ny,
+                             (sensorMask.getBottomRightCorner(cuboidIdx) - sensorMask.getTopLeftCorner(cuboidIdx)).nz,
                              nSampledTimeSteps);
 
   // Set chunk size
@@ -430,7 +430,7 @@ void TCuboidOutputHDF5Stream::FlushBufferToFile()
 
   for (size_t cuboidIdx = 0; cuboidIdx < cuboidsInfo.size(); cuboidIdx++)
   {
-    blockSize = sensorMask.GetBottomRightCorner(cuboidIdx) - sensorMask.GetTopLeftCorner(cuboidIdx);
+    blockSize = sensorMask.getBottomRightCorner(cuboidIdx) - sensorMask.getTopLeftCorner(cuboidIdx);
     blockSize.nt = 1;
 
     file.WriteHyperSlab(cuboidsInfo[cuboidIdx].cuboidIdx,

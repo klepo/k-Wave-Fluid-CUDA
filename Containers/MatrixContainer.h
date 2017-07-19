@@ -40,7 +40,7 @@
 #include <MatrixClasses/RealMatrix.h>
 #include <MatrixClasses/ComplexMatrix.h>
 #include <MatrixClasses/IndexMatrix.h>
-#include <MatrixClasses/CUFFTComplexMatrix.h>
+#include <MatrixClasses/CufftComplexMatrix.h>
 
 #include <Utils/MatrixNames.h>
 #include <Utils/DimensionSizes.h>

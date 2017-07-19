@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 12:13 (created) \n
- *              17 July      2017, 16:13 (revised)
+ *              18 July      2017, 11:41 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -41,144 +41,132 @@
 
 using std::string;
 
-//------------------------------------------------------------------------------------------------//
-//------------------------------------------ Constants -------------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------- Constants -----------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Public methods -----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Public methods ---------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
- * Default constructor
+ * Default constructor.
  */
-TBaseFloatMatrix::TBaseFloatMatrix(): TBaseMatrix(),
-                                      nElements(0),
-                                      nAllocatedElements(0),
-                                      dimensionSizes(),
-                                      dataRowSize(0),
-                                      dataSlabSize(0),
-                                      hostData(nullptr),
-                                      deviceData(nullptr)
+BaseFloatMatrix::BaseFloatMatrix():
+  BaseMatrix(),
+  mSize(0), mCapacity(0),
+  mDimensionSizes(),
+  mRowSize(0), mSlabSize(0),
+  mHostData(nullptr), mDeviceData(nullptr)
 {
 
-}// end of TBaseFloatMatrix
-//--------------------------------------------------------------------------------------------------
+}// end of BaseFloatMatrix
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Zero all allocated elements in parallel. \n
  * Also work as the first touch strategy on NUMA machines.
  */
-void TBaseFloatMatrix::ZeroMatrix()
+void BaseFloatMatrix::zeroMatrix()
 {
   #pragma omp parallel for schedule (static)
-  for (size_t i = 0; i < nAllocatedElements; i++)
+  for (size_t i = 0; i < mCapacity; i++)
   {
-    hostData[i] = 0.0f;
+    mHostData[i] = 0.0f;
   }
-}// end of ZeroMatrix
-//--------------------------------------------------------------------------------------------------
+}// end of zeroMatrix
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Divide a scalar by the elements of matrix.
- *
- * @param [in] scalar - Scalar to be divided by evey element of the array
+ * Calculate matrix = scalar / matrix.
  */
-void TBaseFloatMatrix::ScalarDividedBy(const float scalar)
+void BaseFloatMatrix::scalarDividedBy(const float scalar)
 {
   #pragma omp parallel for schedule (static)
-  for (size_t i = 0; i < nAllocatedElements; i++)
+  for (size_t i = 0; i < mCapacity; i++)
   {
-    hostData[i] = scalar / hostData[i];
+    mHostData[i] = scalar / mHostData[i];
   }
-}// end of ScalarDividedBy
-//-------------------------------------------------------------------------------------------------
+}// end of scalarDividedBy
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Copy data from CPU -> GPU (Host -> Device).
  * The transfer is synchronous (there is nothing to overlap with in the code)
  */
-void TBaseFloatMatrix::CopyToDevice()
+void BaseFloatMatrix::copyToDevice()
 {
-  cudaCheckErrors(cudaMemcpy(deviceData,
-                             hostData,
-                             nAllocatedElements * sizeof(float),
-                             cudaMemcpyHostToDevice));
-}// end of CopyToDevice
-//--------------------------------------------------------------------------------------------------
+  cudaCheckErrors(cudaMemcpy(mDeviceData, mHostData, mCapacity * sizeof(float), cudaMemcpyHostToDevice));
+}// end of copyToDevice
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Copy data from GPU -> CPU (Device -> Host).
  * The transfer is synchronous (there is nothing to overlap with in the code)
  */
-void TBaseFloatMatrix::CopyFromDevice()
+void BaseFloatMatrix::copyFromDevice()
 {
-  cudaCheckErrors(cudaMemcpy(hostData,
-                             deviceData,
-                             nAllocatedElements * sizeof(float),
-                             cudaMemcpyDeviceToHost));
-}// end of CopyFromDevice
-//--------------------------------------------------------------------------------------------------
+  cudaCheckErrors(cudaMemcpy(mHostData, mDeviceData, mCapacity * sizeof(float), cudaMemcpyDeviceToHost));
+}// end of copyFromDevice
+//----------------------------------------------------------------------------------------------------------------------
 
 
-//------------------------------------------------------------------------------------------------//
-//-------------------------------------- Protected methods ---------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------ Protected methods -------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
  * Memory allocation based on the total number of elements. \n
- * CPU memory is aligned by the DATA_ALIGNMENT and then registered as pinned and zeroed.
+ * CPU memory is aligned by the kDataAlignment and then registered as pinned and zeroed.
  */
-void TBaseFloatMatrix::AllocateMemory()
+void BaseFloatMatrix::allocateMemory()
 {
   // Size of memory to allocate
-  size_t sizeInBytes = nAllocatedElements * sizeof(float);
+  size_t sizeInBytes = mCapacity * sizeof(float);
 
   // Allocate CPU memory
-  hostData = static_cast<float*> (_mm_malloc(sizeInBytes, kDataAlignment));
-  if (!hostData)
+  mHostData = static_cast<float*>(_mm_malloc(sizeInBytes, kDataAlignment));
+  if (!mHostData)
   {
     throw std::bad_alloc();
   }
 
   // Register Host memory (pin in memory)
-  cudaCheckErrors(cudaHostRegister(hostData, sizeInBytes, cudaHostRegisterPortable));
+  cudaCheckErrors(cudaHostRegister(mHostData, sizeInBytes, cudaHostRegisterPortable));
 
   // Allocate memory on the GPU
-  if ((cudaMalloc<float>(&deviceData, sizeInBytes) != cudaSuccess) || (!deviceData))
+  if ((cudaMalloc<float>(&mDeviceData, sizeInBytes) != cudaSuccess) || (!mDeviceData))
   {
     throw std::bad_alloc();
   }
   // This has to be done for simulations based on input sources
-  ZeroMatrix();
-}//end of AllocateMemory
-//--------------------------------------------------------------------------------------------------
+  zeroMatrix();
+}//end of allocateMemory
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Free memory.
- * Both on the CPU and GPU side
  */
-void TBaseFloatMatrix::FreeMemory()
+void BaseFloatMatrix::freeMemory()
 {
   // Free CPU memory
-  if (hostData)
+  if (mHostData)
   {
-    cudaHostUnregister(hostData);
-    _mm_free(hostData);
+    cudaHostUnregister(mHostData);
+    _mm_free(mHostData);
   }
-  hostData = nullptr;
+  mHostData = nullptr;
 
   // Free GPU memory
-  if (deviceData)
+  if (mDeviceData)
   {
-    cudaCheckErrors(cudaFree(deviceData));
+    cudaCheckErrors(cudaFree(mDeviceData));
   }
-  deviceData = nullptr;
-}//end of FreeMemory
-//--------------------------------------------------------------------------------------------------
+  mDeviceData = nullptr;
+}//end of freeMemory
+//----------------------------------------------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Private methods ----------------------------------------//
-//------------------------------------------------------------------------------------------------//
-
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Private methods --------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//

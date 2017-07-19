@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 14:17 (created) \n
- *              17 July     2017, 16:13 (revised)
+ *              19 July     2017, 12:15 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -37,122 +37,114 @@
 #include <Logger/Logger.h>
 
 
-//------------------------------------------------------------------------------------------------//
-//------------------------------------------ Constants -------------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------- Constants -----------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Public methods -----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Public methods ---------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 
 /**
  * Default constructor
  */
-TBaseIndexMatrix::TBaseIndexMatrix() : TBaseMatrix(),
-                                       nElements(0),
-                                       nAllocatedElements(0),
-                                       dimensionSizes(),
-                                       rowSize(0),
-                                       slabSize(0),
-                                       hostData(nullptr),
-                                       deviceData(nullptr)
+BaseIndexMatrix::BaseIndexMatrix() :
+  BaseMatrix(),
+  mSize(0), mCapacity(0),
+  mDimensionSizes(),
+  mRowSize(0), mSlabSize(0),
+  mHostData(nullptr), mDeviceData(nullptr)
 {
 
-}// end of TBaseIndexMatrix
-//--------------------------------------------------------------------------------------------------
+}// end of BaseIndexMatrix
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- *  Zero all allocated elements.
+ * Zero all allocated elements.
  */
-void TBaseIndexMatrix::ZeroMatrix()
+void BaseIndexMatrix::zeroMatrix()
 {
   #pragma omp parallel for schedule (static)
-  for (size_t i = 0; i < nAllocatedElements; i++)
+  for (size_t i = 0; i < mCapacity; i++)
   {
-    hostData[i] = size_t(0);
+    mHostData[i] = size_t(0);
   }
-}// end of ZeroMatrix
-//--------------------------------------------------------------------------------------------------
+}// end of zeroMatrix
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Copy data from CPU -> GPU (Host -> Device).
  */
-void TBaseIndexMatrix::CopyToDevice()
+void BaseIndexMatrix::copyToDevice()
 {
-  cudaCheckErrors(cudaMemcpy(deviceData,
-                             hostData,
-                             nAllocatedElements * sizeof(size_t),
-                             cudaMemcpyHostToDevice));
-
-}// end of CopyToDevice
-//--------------------------------------------------------------------------------------------------
+  cudaCheckErrors(cudaMemcpy(mDeviceData, mHostData, mCapacity * sizeof(size_t), cudaMemcpyHostToDevice));
+}// end of copyToDevice
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Copy data from GPU -> CPU (Device -> Host).
  */
-void TBaseIndexMatrix::CopyFromDevice()
+void BaseIndexMatrix::copyFromDevice()
 {
-  cudaCheckErrors(cudaMemcpy(hostData,
-                             deviceData,
-                             nAllocatedElements * sizeof(size_t),
-                             cudaMemcpyDeviceToHost));
-}// end of CopyFromDevice
-//--------------------------------------------------------------------------------------------------
+  cudaCheckErrors(cudaMemcpy(mHostData, mDeviceData, mCapacity * sizeof(size_t), cudaMemcpyDeviceToHost));
+}// end of copyFromDevice
+//----------------------------------------------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------------------------//
-//-------------------------------------- Protected methods ---------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------ Protected methods -------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
  * Memory allocation based on the total number of elements. \n
  *
- * CPU memory is aligned by the DATA_ALIGNMENT and then registered as pinned and zeroed.
+ * CPU memory is aligned by the kDataAlignment and then registered as pinned and zeroed.
  * The GPU memory is allocated on GPU but not zeroed (no reason).
  */
-void TBaseIndexMatrix::AllocateMemory()
+void BaseIndexMatrix::allocateMemory()
 {
   //size of memory to allocate
-  size_t sizeInBytes = nAllocatedElements * sizeof(size_t);
+  size_t sizeInBytes = mCapacity * sizeof(size_t);
 
-  hostData = static_cast<size_t*>(_mm_malloc(sizeInBytes, kDataAlignment));
+  mHostData = static_cast<size_t*>(_mm_malloc(sizeInBytes, kDataAlignment));
 
-  if (!hostData)
+  if (!mHostData)
   {
     throw std::bad_alloc();
   }
 
   // Register Host memory (pin in memory)
-  cudaCheckErrors(cudaHostRegister(hostData, sizeInBytes, cudaHostRegisterPortable));
+  cudaCheckErrors(cudaHostRegister(mHostData, sizeInBytes, cudaHostRegisterPortable));
 
-  if ((cudaMalloc<size_t>(&deviceData, sizeInBytes) != cudaSuccess) || (!deviceData))
+  if ((cudaMalloc<size_t>(&mDeviceData, sizeInBytes) != cudaSuccess) || (!mDeviceData))
   {
     throw std::bad_alloc();
   }
-}// end of AllocateMemory
-//--------------------------------------------------------------------------------------------------
+}// end of allocateMemory
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Free memory.
  */
-void TBaseIndexMatrix::FreeMemory()
+void BaseIndexMatrix::freeMemory()
 {
-  if (hostData)
+  if (mHostData)
   {
-    cudaHostUnregister(hostData);
-    _mm_free(hostData);
+    cudaHostUnregister(mHostData);
+    _mm_free(mHostData);
   }
-  hostData = nullptr;
+  mHostData = nullptr;
 
   // Free GPU memory
-  if (deviceData)
+  if (mDeviceData)
   {
-    cudaCheckErrors(cudaFree(deviceData));
+    cudaCheckErrors(cudaFree(mDeviceData));
   }
-  deviceData = nullptr;
-}// end of FreeMemory
-//--------------------------------------------------------------------------------------------------
+  mDeviceData = nullptr;
+}// end of freeMemory
+//----------------------------------------------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Private methods ----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------ Private methods ---------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//

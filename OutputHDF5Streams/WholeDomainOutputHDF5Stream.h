@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August    2014, 10:20 (created)
- *              11 June      2017, 15:44 (revised)
+ *              19 July      2017, 12:12 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -49,7 +49,7 @@ class TWholeDomainOutputHDF5Stream : public TBaseOutputHDF5Stream
     /// Constructor.
     TWholeDomainOutputHDF5Stream(THDF5_File&           file,
                                  MatrixName&          datasetName,
-                                 TRealMatrix&          sourceMatrix,
+                                 RealMatrix&          sourceMatrix,
                                  const TReduceOperator reduceOp);
     /// Destructor.
     virtual ~TWholeDomainOutputHDF5Stream();

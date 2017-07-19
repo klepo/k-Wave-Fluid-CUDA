@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 February  2015, 12:51 (created)
- *              11 June      2017, 15:44 (revised)
+ *              19 July      2017, 12:12 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -54,8 +54,8 @@ class TCuboidOutputHDF5Stream : public TBaseOutputHDF5Stream
     /// Constructor.
     TCuboidOutputHDF5Stream(THDF5_File&           file,
                             MatrixName&          groupName,
-                            const TRealMatrix&    sourceMatrix,
-                            const TIndexMatrix&   sensorMask,
+                            const RealMatrix&    sourceMatrix,
+                            const IndexMatrix&   sensorMask,
                             const TReduceOperator reduceOp);
     /// Destructor.
     virtual ~TCuboidOutputHDF5Stream();
@@ -107,7 +107,7 @@ class TCuboidOutputHDF5Stream : public TBaseOutputHDF5Stream
     virtual void FlushBufferToFile();
 
     /// Sensor mask to sample data.
-    const TIndexMatrix& sensorMask;
+    const IndexMatrix& sensorMask;
 
     /// Handle to a HDF5 dataset.
     hid_t group;

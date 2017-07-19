@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2012, 11:34 (created) \n
- *              11 July     2017, 16:44 (revised)
+ *              19 July     2017, 12:15 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,72 +30,79 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef BASE_MATRIX_H
-#define BASE_MATRIX_H
+#ifndef BaseMatrixH
+#define BaseMatrixH
 
 #include <Utils/DimensionSizes.h>
 #include <HDF5/HDF5_File.h>
 
 /**
- * @class TBaseMatrix
- * @brief Abstract base class. The common ancestor defining the common interface and allowing
- *        derived classes to be allocated, freed and loaded from the file using the Matrix container.
+ * @class BaseMatrix
+ * @brief Abstract base class. The common ancestor defining the common interface and allowing derived classes to be
+ *        allocated, freed and loaded from the file using the Matrix container.
  *
- * @details Abstract base class. The common ancestor defining the common interface and allowing
- *          derived classes to be allocated, freed and loaded from the file using the Matrix
- *          container. In this version of the code, It allocates memory both on the CPU and GPU side.
+ * @details Abstract base class. The common ancestor defining the common interface and allowing derived classes to be
+ *          allocated, freed and loaded from the file using the Matrix container. In this version of the code, It
+ *          allocates memory both on the CPU and GPU side. The I/O is done via HDF5 files.
  */
-class TBaseMatrix
+class BaseMatrix
 {
   public:
     /// Default constructor.
-    TBaseMatrix() {};
-      /// Copy constructor is not allowed.
-    TBaseMatrix(const TBaseMatrix&) = delete;
+    BaseMatrix() {};
+    /// Copy constructor is not allowed.
+    BaseMatrix(const BaseMatrix&) = delete;
     /// Destructor
-    virtual ~TBaseMatrix() {};
+    virtual ~BaseMatrix() {};
 
     /// Operator= is not allowed.
-    TBaseMatrix& operator=(const TBaseMatrix&) = delete;
-
-    /// Get dimension sizes of the matrix.
-    virtual struct DimensionSizes GetDimensionSizes() const  = 0;
-
-    /// Get total element count of the matrix.
-    virtual size_t GetElementCount()              const = 0;
-    /// Get total allocated element count (might differ from the total element count used for the simulation because of e.g. padding).
-    virtual size_t GetAllocatedElementCount()     const  = 0;
+    BaseMatrix& operator=(const BaseMatrix&) = delete;
 
     /**
-     * @brief   Read matrix from the HDF5 file.
-     * @details Read matrix from the HDF5 file.
-     * @param [in] file       - Handle to the HDF5 file
-     * @param [in] matrixName - HDF5 dataset name to read from
+     * @brief  Get dimension sizes of the matrix.
+     * @return Dimension sizes of the matrix.
      */
-    virtual void ReadDataFromHDF5File(THDF5_File&  file,
-                                      MatrixName& matrixName) = 0;
+    virtual const DimensionSizes& getDimensionSizes() const  = 0;
+    /**
+     * @brief Size of the matrix.
+     * @return Number of elements.
+     */
+    virtual size_t size()     const = 0;
+    /**
+     * @brief  The capacity of the matrix (this may differ from size due to padding, etc.).
+     * @return Capacity of the currently allocated storage.
+     */
+    virtual size_t capacity() const  = 0;
 
     /**
-     * @brief   Write data into the HDF5 file.
-     * @details Write data into the HDF5 file.
-     * @param [in] file             - Handle to the HDF5 file
-     * @param [in] matrixName       - HDF5 dataset name to write to
-     * @param [in] compressionLevel - Compression level for the HDF5 dataset
+     * @brief   Read matrix from HDF5 file.
+     * @details Read matrix from HDF5 file.
+     * @param [in] file       - Handle to the HDF5 file.
+     * @param [in] matrixName - HDF5 dataset name to read from.
      */
-    virtual void WriteDataToHDF5File(THDF5_File&  file,
-                                     MatrixName& matrixName,
-                                     const size_t compressionLevel) = 0;
+    virtual void readData(THDF5_File&  file,
+                          MatrixName& matrixName) = 0;
+    /**
+     * @brief   Write data into HDF5 file.
+     * @details Write data into HDF5 file.
+     * @param [in] file             - Handle to the HDF5 file.
+     * @param [in] matrixName       - HDF5 dataset name to write to.
+     * @param [in] compressionLevel - Compression level for the HDF5 dataset.
+     */
+    virtual void writeData(THDF5_File&  file,
+                           MatrixName&  matrixName,
+                           const size_t compressionLevel) = 0;
 
     /// Copy data from CPU -> GPU (Host -> Device).
-    virtual void CopyToDevice()   = 0;
+    virtual void copyToDevice()   = 0;
 
     /// Copy data from GPU -> CPU (Device -> Host).
-    virtual void CopyFromDevice() = 0;
+    virtual void copyFromDevice() = 0;
 
   protected:
 
-};// end of TBaseMatrix
-//--------------------------------------------------------------------------------------------------
+};// end of BaseMatrix
+//----------------------------------------------------------------------------------------------------------------------
 
-#endif /* BASE_MATRIX_H */
+#endif /* BaseMatrixH */
 

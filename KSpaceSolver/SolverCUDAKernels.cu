@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              17 July     2017, 16:07 (revised)
+ *              19 July     2017, 12:08 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -230,32 +230,32 @@ __global__ void CUDAComputeVelocity(float*       ux_sgx,
  * @param [in] pml_y
  * @param [in] pml_z
  */
-void SolverCUDAKernels::ComputeVelocity(TRealMatrix&       ux_sgx,
-                                        TRealMatrix&       uy_sgy,
-                                        TRealMatrix&       uz_sgz,
-                                        const TRealMatrix& ifft_x,
-                                        const TRealMatrix& ifft_y,
-                                        const TRealMatrix& ifft_z,
-                                        const TRealMatrix& dt_rho0_sgx,
-                                        const TRealMatrix& dt_rho0_sgy,
-                                        const TRealMatrix& dt_rho0_sgz,
-                                        const TRealMatrix& pml_x,
-                                        const TRealMatrix& pml_y,
-                                        const TRealMatrix& pml_z)
+void SolverCUDAKernels::ComputeVelocity(RealMatrix&       ux_sgx,
+                                        RealMatrix&       uy_sgy,
+                                        RealMatrix&       uz_sgz,
+                                        const RealMatrix& ifft_x,
+                                        const RealMatrix& ifft_y,
+                                        const RealMatrix& ifft_z,
+                                        const RealMatrix& dt_rho0_sgx,
+                                        const RealMatrix& dt_rho0_sgy,
+                                        const RealMatrix& dt_rho0_sgz,
+                                        const RealMatrix& pml_x,
+                                        const RealMatrix& pml_y,
+                                        const RealMatrix& pml_z)
   {
     CUDAComputeVelocity<<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                       (ux_sgx.GetDeviceData(),
-                        uy_sgy.GetDeviceData(),
-                        uz_sgz.GetDeviceData(),
-                        ifft_x.GetDeviceData(),
-                        ifft_y.GetDeviceData(),
-                        ifft_z.GetDeviceData(),
-                        dt_rho0_sgx.GetDeviceData(),
-                        dt_rho0_sgy.GetDeviceData(),
-                        dt_rho0_sgz.GetDeviceData(),
-                        pml_x.GetDeviceData(),
-                        pml_y.GetDeviceData(),
-                        pml_z.GetDeviceData());
+                       (ux_sgx.getDeviceData(),
+                        uy_sgy.getDeviceData(),
+                        uz_sgz.getDeviceData(),
+                        ifft_x.getDeviceData(),
+                        ifft_y.getDeviceData(),
+                        ifft_z.getDeviceData(),
+                        dt_rho0_sgx.getDeviceData(),
+                        dt_rho0_sgy.getDeviceData(),
+                        dt_rho0_sgz.getDeviceData(),
+                        pml_x.getDeviceData(),
+                        pml_y.getDeviceData(),
+                        pml_z.getDeviceData());
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
@@ -321,26 +321,26 @@ __global__ void CUDAComputeVelocityScalarUniform(float*       ux_sgx,
  * @param [in] pml_y
  * @param [in] pml_z
  */
-void SolverCUDAKernels::ComputeVelocityScalarUniform(TRealMatrix&       ux_sgx,
-                                                     TRealMatrix&       uy_sgy,
-                                                     TRealMatrix&       uz_sgz,
-                                                     const TRealMatrix& ifft_x,
-                                                     const TRealMatrix& ifft_y,
-                                                     const TRealMatrix& ifft_z,
-                                                     const TRealMatrix& pml_x,
-                                                     const TRealMatrix& pml_y,
-                                                     const TRealMatrix& pml_z)
+void SolverCUDAKernels::ComputeVelocityScalarUniform(RealMatrix&       ux_sgx,
+                                                     RealMatrix&       uy_sgy,
+                                                     RealMatrix&       uz_sgz,
+                                                     const RealMatrix& ifft_x,
+                                                     const RealMatrix& ifft_y,
+                                                     const RealMatrix& ifft_z,
+                                                     const RealMatrix& pml_x,
+                                                     const RealMatrix& pml_y,
+                                                     const RealMatrix& pml_z)
 {
   CUDAComputeVelocityScalarUniform<<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                  (ux_sgx.GetDeviceData(),
-                                   uy_sgy.GetDeviceData(),
-                                   uz_sgz.GetDeviceData(),
-                                   ifft_x.GetDeviceData(),
-                                   ifft_y.GetDeviceData(),
-                                   ifft_z.GetDeviceData(),
-                                   pml_x.GetDeviceData(),
-                                   pml_y.GetDeviceData(),
-                                   pml_z.GetDeviceData());
+                                  (ux_sgx.getDeviceData(),
+                                   uy_sgy.getDeviceData(),
+                                   uz_sgz.getDeviceData(),
+                                   ifft_x.getDeviceData(),
+                                   ifft_y.getDeviceData(),
+                                   ifft_z.getDeviceData(),
+                                   pml_x.getDeviceData(),
+                                   pml_y.getDeviceData(),
+                                   pml_z.getDeviceData());
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of ComputeVelocityScalarUniform
@@ -416,32 +416,32 @@ __global__ void CUDAComputeVelocityScalarNonuniform(float*       ux_sgx,
  * @param [in]     pml_y       - matrix of pml_x
  * @param [in]     pml_z       - matrix of pml_x
  */
-void SolverCUDAKernels::ComputeVelocityScalarNonuniform(TRealMatrix&       ux_sgx,
-                                                        TRealMatrix&       uy_sgy,
-                                                        TRealMatrix&       uz_sgz,
-                                                        const TRealMatrix& ifft_x,
-                                                        const TRealMatrix& ifft_y,
-                                                        const TRealMatrix& ifft_z,
-                                                        const TRealMatrix& dxudxn_sgx,
-                                                        const TRealMatrix& dyudyn_sgy,
-                                                        const TRealMatrix& dzudzn_sgz,
-                                                        const TRealMatrix& pml_x,
-                                                        const TRealMatrix& pml_y,
-                                                        const TRealMatrix& pml_z)
+void SolverCUDAKernels::ComputeVelocityScalarNonuniform(RealMatrix&       ux_sgx,
+                                                        RealMatrix&       uy_sgy,
+                                                        RealMatrix&       uz_sgz,
+                                                        const RealMatrix& ifft_x,
+                                                        const RealMatrix& ifft_y,
+                                                        const RealMatrix& ifft_z,
+                                                        const RealMatrix& dxudxn_sgx,
+                                                        const RealMatrix& dyudyn_sgy,
+                                                        const RealMatrix& dzudzn_sgz,
+                                                        const RealMatrix& pml_x,
+                                                        const RealMatrix& pml_y,
+                                                        const RealMatrix& pml_z)
 {
   CUDAComputeVelocityScalarNonuniform<<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                     (ux_sgx.GetDeviceData(),
-                                      uy_sgy.GetDeviceData(),
-                                      uz_sgz.GetDeviceData(),
-                                      ifft_x.GetDeviceData(),
-                                      ifft_y.GetDeviceData(),
-                                      ifft_z.GetDeviceData(),
-                                      dxudxn_sgx.GetDeviceData(),
-                                      dyudyn_sgy.GetDeviceData(),
-                                      dzudzn_sgz.GetDeviceData(),
-                                      pml_x.GetDeviceData(),
-                                      pml_y.GetDeviceData(),
-                                      pml_z.GetDeviceData());
+                                     (ux_sgx.getDeviceData(),
+                                      uy_sgy.getDeviceData(),
+                                      uz_sgz.getDeviceData(),
+                                      ifft_x.getDeviceData(),
+                                      ifft_y.getDeviceData(),
+                                      ifft_z.getDeviceData(),
+                                      dxudxn_sgx.getDeviceData(),
+                                      dyudyn_sgy.getDeviceData(),
+                                      dzudzn_sgz.getDeviceData(),
+                                      pml_x.getDeviceData(),
+                                      pml_y.getDeviceData(),
+                                      pml_z.getDeviceData());
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
@@ -478,13 +478,13 @@ __global__ void CUDAAddTransducerSource(float*        ux_sgx,
  * @param [in, out] delay_mask         - Delay mask to push the signal in the domain (incremented per invocation)
  * @param [in]      transducer_signal  - Transducer signal
  */
-void SolverCUDAKernels::AddTransducerSource(TRealMatrix&        ux_sgx,
-                                            const TIndexMatrix& u_source_index,
-                                            TIndexMatrix&       delay_mask,
-                                            const TRealMatrix&  transducer_signal)
+void SolverCUDAKernels::AddTransducerSource(RealMatrix&        ux_sgx,
+                                            const IndexMatrix& u_source_index,
+                                            IndexMatrix&       delay_mask,
+                                            const RealMatrix&  transducer_signal)
 {
   // cuda only supports 32bits anyway
-  const int u_source_index_size = static_cast<int>(u_source_index.GetElementCount());
+  const int u_source_index_size = static_cast<int>(u_source_index.size());
 
   // Grid size is calculated based on the source size
   const int gridSize  = (u_source_index_size < (GetSolverGridSize1D() *  GetSolverBlockSize1D()))
@@ -492,10 +492,10 @@ void SolverCUDAKernels::AddTransducerSource(TRealMatrix&        ux_sgx,
                         : GetSolverGridSize1D();
 
   CUDAAddTransducerSource<<<gridSize, GetSolverBlockSize1D()>>>
-                         (ux_sgx.GetDeviceData(),
-                          u_source_index.GetDeviceData(),
-                          delay_mask.GetDeviceData(),
-                          transducer_signal.GetDeviceData());
+                         (ux_sgx.getDeviceData(),
+                          u_source_index.getDeviceData(),
+                          delay_mask.getDeviceData(),
+                          transducer_signal.getDeviceData());
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of AddTransducerSource
@@ -547,12 +547,12 @@ __global__ void CUDAAddVelocitySource(float*        uxyz_sgxyz,
  * @param [in] u_source_index  - Index matrix
  * @param [in] t_index         - Actual time step
  */
-void SolverCUDAKernels::AddVelocitySource(TRealMatrix&        uxyz_sgxyz,
-                                          const TRealMatrix&  u_source_input,
-                                          const TIndexMatrix& u_source_index,
+void SolverCUDAKernels::AddVelocitySource(RealMatrix&        uxyz_sgxyz,
+                                          const RealMatrix&  u_source_input,
+                                          const IndexMatrix& u_source_index,
                                           const size_t        t_index)
 {
-  const int u_source_index_size = static_cast<int>(u_source_index.GetElementCount());
+  const int u_source_index_size = static_cast<int>(u_source_index.size());
 
   // Grid size is calculated based on the source size
   // for small sources, a custom number of thread blocks is created,
@@ -563,9 +563,9 @@ void SolverCUDAKernels::AddVelocitySource(TRealMatrix&        uxyz_sgxyz,
                        :  GetSolverGridSize1D();
 
   CUDAAddVelocitySource<<< gridSize, GetSolverBlockSize1D()>>>
-                       (uxyz_sgxyz.GetDeviceData(),
-                        u_source_input.GetDeviceData(),
-                        u_source_index.GetDeviceData(),
+                       (uxyz_sgxyz.getDeviceData(),
+                        u_source_input.getDeviceData(),
+                        u_source_index.getDeviceData(),
                         t_index);
 
   // check for errors
@@ -650,25 +650,25 @@ __global__ void CUDAAddPressureSource(float*        rhox,
  * @param [in]  p_source_index - Index matrix with source
  * @param [in]  t_index        - Actual timestep
  */
-void SolverCUDAKernels::AddPressureSource(TRealMatrix&        rhox,
-                                          TRealMatrix&        rhoy,
-                                          TRealMatrix&        rhoz,
-                                          const TRealMatrix&  p_source_input,
-                                          const TIndexMatrix& p_source_index,
+void SolverCUDAKernels::AddPressureSource(RealMatrix&        rhox,
+                                          RealMatrix&        rhoy,
+                                          RealMatrix&        rhoz,
+                                          const RealMatrix&  p_source_input,
+                                          const IndexMatrix& p_source_index,
                                           const size_t        t_index)
 {
-  const int p_source_index_size = static_cast<int>(p_source_index.GetElementCount());
+  const int p_source_index_size = static_cast<int>(p_source_index.size());
   // Grid size is calculated based on the source size
   const int gridSize  = (p_source_index_size < (GetSolverGridSize1D() *  GetSolverBlockSize1D()))
                         ? (p_source_index_size  + GetSolverBlockSize1D() - 1 ) / GetSolverBlockSize1D()
                         :  GetSolverGridSize1D();
 
   CUDAAddPressureSource<<<gridSize,GetSolverBlockSize1D()>>>
-                       (rhox.GetDeviceData(),
-                        rhoy.GetDeviceData(),
-                        rhoz.GetDeviceData(),
-                        p_source_input.GetDeviceData(),
-                        p_source_index.GetDeviceData(),
+                       (rhox.getDeviceData(),
+                        rhoy.getDeviceData(),
+                        rhoz.getDeviceData(),
+                        p_source_input.getDeviceData(),
+                        p_source_index.getDeviceData(),
                         t_index);
 
   // check for errors
@@ -734,21 +734,21 @@ __global__  void CUDACompute_p0_Velocity(float*       ux_sgx,
  * @param [in]      dt_rho0_sgz - inner member of the equation
  *
  */
-void SolverCUDAKernels::Compute_p0_Velocity(TRealMatrix&       ux_sgx,
-                                            TRealMatrix&       uy_sgy,
-                                            TRealMatrix&       uz_sgz,
-                                            const TRealMatrix& dt_rho0_sgx,
-                                            const TRealMatrix& dt_rho0_sgy,
-                                            const TRealMatrix& dt_rho0_sgz)
+void SolverCUDAKernels::Compute_p0_Velocity(RealMatrix&       ux_sgx,
+                                            RealMatrix&       uy_sgy,
+                                            RealMatrix&       uz_sgz,
+                                            const RealMatrix& dt_rho0_sgx,
+                                            const RealMatrix& dt_rho0_sgy,
+                                            const RealMatrix& dt_rho0_sgz)
 {
   CUDACompute_p0_Velocity<false>
                          <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                         (ux_sgx.GetDeviceData(),
-                         uy_sgy.GetDeviceData(),
-                         uz_sgz.GetDeviceData(),
-                         dt_rho0_sgx.GetDeviceData(),
-                         dt_rho0_sgy.GetDeviceData(),
-                         dt_rho0_sgz.GetDeviceData());
+                         (ux_sgx.getDeviceData(),
+                         uy_sgy.getDeviceData(),
+                         uz_sgz.getDeviceData(),
+                         dt_rho0_sgx.getDeviceData(),
+                         dt_rho0_sgy.getDeviceData(),
+                         dt_rho0_sgz.getDeviceData());
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
@@ -763,15 +763,15 @@ void SolverCUDAKernels::Compute_p0_Velocity(TRealMatrix&       ux_sgx,
  * @param [in, out] uy_sgy   - Data stored in u matrix
  * @param [in, out] uz_sgz   - Data stored in u matrix
  */
-void SolverCUDAKernels::Compute_p0_Velocity(TRealMatrix& ux_sgx,
-                                            TRealMatrix& uy_sgy,
-                                            TRealMatrix& uz_sgz)
+void SolverCUDAKernels::Compute_p0_Velocity(RealMatrix& ux_sgx,
+                                            RealMatrix& uy_sgy,
+                                            RealMatrix& uz_sgz)
 {
   CUDACompute_p0_Velocity<true>
                          <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                         (ux_sgx.GetDeviceData(),
-                          uy_sgy.GetDeviceData(),
-                          uz_sgz.GetDeviceData());
+                         (ux_sgx.getDeviceData(),
+                          uy_sgy.getDeviceData(),
+                          uz_sgz.getDeviceData());
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
@@ -825,20 +825,20 @@ __global__ void CUDACompute_p0_VelocityScalarNonUniform(float*       ux_sgx,
  * @param [in] dyudyn_sgy
  * @param [in] dzudzn_sgz
  */
-  void SolverCUDAKernels::Compute_p0_VelocityScalarNonUniform(TRealMatrix&       ux_sgx,
-                                                              TRealMatrix&       uy_sgy,
-                                                              TRealMatrix&       uz_sgz,
-                                                              const TRealMatrix& dxudxn_sgx,
-                                                              const TRealMatrix& dyudyn_sgy,
-                                                              const TRealMatrix& dzudzn_sgz)
+  void SolverCUDAKernels::Compute_p0_VelocityScalarNonUniform(RealMatrix&       ux_sgx,
+                                                              RealMatrix&       uy_sgy,
+                                                              RealMatrix&       uz_sgz,
+                                                              const RealMatrix& dxudxn_sgx,
+                                                              const RealMatrix& dyudyn_sgy,
+                                                              const RealMatrix& dzudzn_sgz)
 {
   CUDACompute_p0_VelocityScalarNonUniform<<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                         (ux_sgx.GetDeviceData(),
-                                          uy_sgy.GetDeviceData(),
-                                          uz_sgz.GetDeviceData(),
-                                          dxudxn_sgx.GetDeviceData(),
-                                          dxudxn_sgx.GetDeviceData(),
-                                          dxudxn_sgx.GetDeviceData());
+                                         (ux_sgx.getDeviceData(),
+                                          uy_sgy.getDeviceData(),
+                                          uz_sgz.getDeviceData(),
+                                          dxudxn_sgx.getDeviceData(),
+                                          dxudxn_sgx.getDeviceData(),
+                                          dxudxn_sgx.getDeviceData());
 // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of Compute_p0_VelocityScalarNonUniform
@@ -896,22 +896,22 @@ __global__ void CUDAComputePressurelGradient(cuFloatComplex*       fft_x,
  * @param [in]     ddy - precomputed value of ddy_k_shift_pos
  * @param [in]     ddz - precomputed value of ddz_k_shift_pos
  */
-void SolverCUDAKernels::ComputePressurelGradient(TCUFFTComplexMatrix& fft_x,
-                                                 TCUFFTComplexMatrix& fft_y,
-                                                 TCUFFTComplexMatrix& fft_z,
-                                                 const TRealMatrix&    kappa,
-                                                 const TComplexMatrix& ddx,
-                                                 const TComplexMatrix& ddy,
-                                                 const TComplexMatrix& ddz)
+void SolverCUDAKernels::ComputePressurelGradient(CufftComplexMatrix& fft_x,
+                                                 CufftComplexMatrix& fft_y,
+                                                 CufftComplexMatrix& fft_z,
+                                                 const RealMatrix&    kappa,
+                                                 const ComplexMatrix& ddx,
+                                                 const ComplexMatrix& ddy,
+                                                 const ComplexMatrix& ddz)
 {
   CUDAComputePressurelGradient<<<GetSolverGridSize1D(),GetSolverBlockSize1D()>>>
-                              (reinterpret_cast<cuFloatComplex*>(fft_x.GetDeviceData()),
-                               reinterpret_cast<cuFloatComplex*>(fft_y.GetDeviceData()),
-                               reinterpret_cast<cuFloatComplex*>(fft_z.GetDeviceData()),
-                               kappa.GetDeviceData(),
-                               reinterpret_cast<const cuFloatComplex*>(ddx.GetDeviceData()),
-                               reinterpret_cast<const cuFloatComplex*>(ddy.GetDeviceData()),
-                               reinterpret_cast<const cuFloatComplex*>(ddz.GetDeviceData()));
+                              (reinterpret_cast<cuFloatComplex*>(fft_x.getDeviceData()),
+                               reinterpret_cast<cuFloatComplex*>(fft_y.getDeviceData()),
+                               reinterpret_cast<cuFloatComplex*>(fft_z.getDeviceData()),
+                               kappa.getDeviceData(),
+                               reinterpret_cast<const cuFloatComplex*>(ddx.getDeviceData()),
+                               reinterpret_cast<const cuFloatComplex*>(ddy.getDeviceData()),
+                               reinterpret_cast<const cuFloatComplex*>(ddz.getDeviceData()));
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
@@ -970,22 +970,22 @@ __global__  void CUDAComputeVelocityGradient(cuFloatComplex*       fft_x,
  * @param [in] ddy_k_shift_neg
  * @param [in] ddz_k_shift_neg
  */
-void SolverCUDAKernels::ComputeVelocityGradient(TCUFFTComplexMatrix&  fft_x,
-                                                TCUFFTComplexMatrix&  fft_y,
-                                                TCUFFTComplexMatrix&  fft_z,
-                                                const TRealMatrix&    kappa,
-                                                const TComplexMatrix& ddx_k_shift_neg,
-                                                const TComplexMatrix& ddy_k_shift_neg,
-                                                const TComplexMatrix& ddz_k_shift_neg)
+void SolverCUDAKernels::ComputeVelocityGradient(CufftComplexMatrix&  fft_x,
+                                                CufftComplexMatrix&  fft_y,
+                                                CufftComplexMatrix&  fft_z,
+                                                const RealMatrix&    kappa,
+                                                const ComplexMatrix& ddx_k_shift_neg,
+                                                const ComplexMatrix& ddy_k_shift_neg,
+                                                const ComplexMatrix& ddz_k_shift_neg)
 {
   CUDAComputeVelocityGradient<<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                        (reinterpret_cast<cuFloatComplex *>(fft_x.GetDeviceData()),
-                         reinterpret_cast<cuFloatComplex *>(fft_y.GetDeviceData()),
-                         reinterpret_cast<cuFloatComplex *>(fft_z.GetDeviceData()),
-                         kappa.GetDeviceData(),
-                         reinterpret_cast<const cuFloatComplex *>(ddx_k_shift_neg.GetDeviceData()),
-                         reinterpret_cast<const cuFloatComplex *>(ddy_k_shift_neg.GetDeviceData()),
-                         reinterpret_cast<const cuFloatComplex *>(ddz_k_shift_neg.GetDeviceData()));
+                        (reinterpret_cast<cuFloatComplex *>(fft_x.getDeviceData()),
+                         reinterpret_cast<cuFloatComplex *>(fft_y.getDeviceData()),
+                         reinterpret_cast<cuFloatComplex *>(fft_z.getDeviceData()),
+                         kappa.getDeviceData(),
+                         reinterpret_cast<const cuFloatComplex *>(ddx_k_shift_neg.getDeviceData()),
+                         reinterpret_cast<const cuFloatComplex *>(ddy_k_shift_neg.getDeviceData()),
+                         reinterpret_cast<const cuFloatComplex *>(ddz_k_shift_neg.getDeviceData()));
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
@@ -1031,20 +1031,20 @@ __global__  void CUDAComputeVelocityGradientNonuniform(float*       duxdx,
  * @param [in]     dyudyn
  * @param [in]     dzudzn
  */
-void SolverCUDAKernels::ComputeVelocityGradientNonuniform(TRealMatrix&       duxdx,
-                                                          TRealMatrix&       duydy,
-                                                          TRealMatrix&       duzdz,
-                                                          const TRealMatrix& dxudxn,
-                                                          const TRealMatrix& dyudyn,
-                                                          const TRealMatrix& dzudzn)
+void SolverCUDAKernels::ComputeVelocityGradientNonuniform(RealMatrix&       duxdx,
+                                                          RealMatrix&       duydy,
+                                                          RealMatrix&       duzdz,
+                                                          const RealMatrix& dxudxn,
+                                                          const RealMatrix& dyudyn,
+                                                          const RealMatrix& dzudzn)
 {
   CUDAComputeVelocityGradientNonuniform<<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                       (duxdx.GetDeviceData(),
-                                        duydy.GetDeviceData(),
-                                        duzdz.GetDeviceData(),
-                                        dxudxn.GetDeviceData(),
-                                        dyudyn.GetDeviceData(),
-                                        dzudzn.GetDeviceData());
+                                       (duxdx.getDeviceData(),
+                                        duydy.getDeviceData(),
+                                        duzdz.getDeviceData(),
+                                        dxudxn.getDeviceData(),
+                                        dyudyn.getDeviceData(),
+                                        dzudzn.getDeviceData());
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
@@ -1095,11 +1095,11 @@ __global__ void CUDACompute_p0_AddInitialPressure(float*       p,
  * @param [in]  Is_c2_scalar - Scalar or vector?
  * @param [in]  c2           - Sound speed
  */
-void SolverCUDAKernels::Compute_p0_AddInitialPressure(TRealMatrix&       p,
-                                                      TRealMatrix&       rhox,
-                                                      TRealMatrix&       rhoy,
-                                                      TRealMatrix&       rhoz,
-                                                      const TRealMatrix& p0,
+void SolverCUDAKernels::Compute_p0_AddInitialPressure(RealMatrix&       p,
+                                                      RealMatrix&       rhox,
+                                                      RealMatrix&       rhoy,
+                                                      RealMatrix&       rhoz,
+                                                      const RealMatrix& p0,
                                                       const bool         Is_c2_scalar,
                                                       const float*       c2)
 {
@@ -1107,21 +1107,21 @@ void SolverCUDAKernels::Compute_p0_AddInitialPressure(TRealMatrix&       p,
   {
     CUDACompute_p0_AddInitialPressure<true>
                                      <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                     (p.GetDeviceData(),
-                                      rhox.GetDeviceData(),
-                                      rhoy.GetDeviceData(),
-                                      rhoz.GetDeviceData(),
-                                      p0.GetDeviceData());
+                                     (p.getDeviceData(),
+                                      rhox.getDeviceData(),
+                                      rhoy.getDeviceData(),
+                                      rhoz.getDeviceData(),
+                                      p0.getDeviceData());
   }
   else
   {
       CUDACompute_p0_AddInitialPressure<false>
                                        <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                       (p.GetDeviceData(),
-                                        rhox.GetDeviceData(),
-                                        rhoy.GetDeviceData(),
-                                        rhoz.GetDeviceData(),
-                                        p0.GetDeviceData(),
+                                       (p.getDeviceData(),
+                                        rhox.getDeviceData(),
+                                        rhoy.getDeviceData(),
+                                        rhoz.getDeviceData(),
+                                        p0.getDeviceData(),
                                         c2);
   }
   // check for errors
@@ -1188,26 +1188,26 @@ __global__ void CUDAComputeDensityNonlinearHomogeneous(float*       rhox,
  * @param [in]  duydy - gradient of velocity x
  * @param [in]  duzdz - gradient of velocity z
  */
-void SolverCUDAKernels::ComputeDensityNonlinearHomogeneous(TRealMatrix&       rhox,
-                                                           TRealMatrix&       rhoy,
-                                                           TRealMatrix&       rhoz,
-                                                           const TRealMatrix& pml_x,
-                                                           const TRealMatrix& pml_y,
-                                                           const TRealMatrix& pml_z,
-                                                           const TRealMatrix& duxdx,
-                                                           const TRealMatrix& duydy,
-                                                           const TRealMatrix& duzdz)
+void SolverCUDAKernels::ComputeDensityNonlinearHomogeneous(RealMatrix&       rhox,
+                                                           RealMatrix&       rhoy,
+                                                           RealMatrix&       rhoz,
+                                                           const RealMatrix& pml_x,
+                                                           const RealMatrix& pml_y,
+                                                           const RealMatrix& pml_z,
+                                                           const RealMatrix& duxdx,
+                                                           const RealMatrix& duydy,
+                                                           const RealMatrix& duzdz)
 {
   CUDAComputeDensityNonlinearHomogeneous<<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                        (rhox.GetDeviceData(),
-                                         rhoy.GetDeviceData(),
-                                         rhoz.GetDeviceData(),
-                                         pml_x.GetDeviceData(),
-                                         pml_y.GetDeviceData(),
-                                         pml_z.GetDeviceData(),
-                                         duxdx.GetDeviceData(),
-                                         duydy.GetDeviceData(),
-                                         duzdz.GetDeviceData());
+                                        (rhox.getDeviceData(),
+                                         rhoy.getDeviceData(),
+                                         rhoz.getDeviceData(),
+                                         pml_x.getDeviceData(),
+                                         pml_y.getDeviceData(),
+                                         pml_z.getDeviceData(),
+                                         duxdx.getDeviceData(),
+                                         duydy.getDeviceData(),
+                                         duzdz.getDeviceData());
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of ComputeDensityNonlinearHomogeneous
@@ -1274,28 +1274,28 @@ __global__ void CUDAComputeDensityNonlinearHeterogeneous(float*       rhox,
  * @param [in]  duzdz - gradient of velocity z
  * @param [in]  rho0  - initial density (matrix here)
  */
-void SolverCUDAKernels::ComputeDensityNonlinearHeterogeneous(TRealMatrix&       rhox,
-                                                             TRealMatrix&       rhoy,
-                                                             TRealMatrix&       rhoz,
-                                                             const TRealMatrix& pml_x,
-                                                             const TRealMatrix& pml_y,
-                                                             const TRealMatrix& pml_z,
-                                                             const TRealMatrix& duxdx,
-                                                             const TRealMatrix& duydy,
-                                                             const TRealMatrix& duzdz,
-                                                             const TRealMatrix& rho0)
+void SolverCUDAKernels::ComputeDensityNonlinearHeterogeneous(RealMatrix&       rhox,
+                                                             RealMatrix&       rhoy,
+                                                             RealMatrix&       rhoz,
+                                                             const RealMatrix& pml_x,
+                                                             const RealMatrix& pml_y,
+                                                             const RealMatrix& pml_z,
+                                                             const RealMatrix& duxdx,
+                                                             const RealMatrix& duydy,
+                                                             const RealMatrix& duzdz,
+                                                             const RealMatrix& rho0)
 {
   CUDAComputeDensityNonlinearHeterogeneous<<<GetSolverGridSize1D(), GetSolverBlockSize1D() >>>
-                                          (rhox.GetDeviceData(),
-                                           rhoy.GetDeviceData(),
-                                           rhoz.GetDeviceData(),
-                                           pml_x.GetDeviceData(),
-                                           pml_y.GetDeviceData(),
-                                           pml_z.GetDeviceData(),
-                                           duxdx.GetDeviceData(),
-                                           duydy.GetDeviceData(),
-                                           duzdz.GetDeviceData(),
-                                           rho0.GetDeviceData());
+                                          (rhox.getDeviceData(),
+                                           rhoy.getDeviceData(),
+                                           rhoz.getDeviceData(),
+                                           pml_x.getDeviceData(),
+                                           pml_y.getDeviceData(),
+                                           pml_z.getDeviceData(),
+                                           duxdx.getDeviceData(),
+                                           duydy.getDeviceData(),
+                                           duzdz.getDeviceData(),
+                                           rho0.getDeviceData());
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
@@ -1354,26 +1354,26 @@ __global__ void CUDAComputeDensityLinearHomogeneous(float*       rhox,
  * @param [in]  duydy - gradient of velocity x
  * @param [in]  duzdz - gradient of velocity z
  */
-void SolverCUDAKernels::ComputeDensityLinearHomogeneous(TRealMatrix&       rhox,
-                                                        TRealMatrix&       rhoy,
-                                                        TRealMatrix&       rhoz,
-                                                        const TRealMatrix& pml_x,
-                                                        const TRealMatrix& pml_y,
-                                                        const TRealMatrix& pml_z,
-                                                        const TRealMatrix& duxdx,
-                                                        const TRealMatrix& duydy,
-                                                        const TRealMatrix& duzdz)
+void SolverCUDAKernels::ComputeDensityLinearHomogeneous(RealMatrix&       rhox,
+                                                        RealMatrix&       rhoy,
+                                                        RealMatrix&       rhoz,
+                                                        const RealMatrix& pml_x,
+                                                        const RealMatrix& pml_y,
+                                                        const RealMatrix& pml_z,
+                                                        const RealMatrix& duxdx,
+                                                        const RealMatrix& duydy,
+                                                        const RealMatrix& duzdz)
 {
   CUDAComputeDensityLinearHomogeneous<<<GetSolverGridSize1D(), GetSolverBlockSize1D() >>>
-                                     (rhox.GetDeviceData(),
-                                      rhoy.GetDeviceData(),
-                                      rhoz.GetDeviceData(),
-                                      pml_x.GetDeviceData(),
-                                      pml_y.GetDeviceData(),
-                                      pml_z.GetDeviceData(),
-                                      duxdx.GetDeviceData(),
-                                      duydy.GetDeviceData(),
-                                      duzdz.GetDeviceData());
+                                     (rhox.getDeviceData(),
+                                      rhoy.getDeviceData(),
+                                      rhoz.getDeviceData(),
+                                      pml_x.getDeviceData(),
+                                      pml_y.getDeviceData(),
+                                      pml_z.getDeviceData(),
+                                      duxdx.getDeviceData(),
+                                      duydy.getDeviceData(),
+                                      duzdz.getDeviceData());
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of ComputeDensityLinearHomogeneous
@@ -1436,28 +1436,28 @@ __global__ void CUDAComputeDensityLinearHeterogeneous(float*       rhox,
  * @param [in]  duzdz - Gradient of velocity z
  * @param [in]  rho0  - initial density (matrix here)
  */
-void SolverCUDAKernels::ComputeDensityLinearHeterogeneous(TRealMatrix&       rhox,
-                                                          TRealMatrix&       rhoy,
-                                                          TRealMatrix&       rhoz,
-                                                          const TRealMatrix& pml_x,
-                                                          const TRealMatrix& pml_y,
-                                                          const TRealMatrix& pml_z,
-                                                          const TRealMatrix& duxdx,
-                                                          const TRealMatrix& duydy,
-                                                          const TRealMatrix& duzdz,
-                                                          const TRealMatrix& rho0)
+void SolverCUDAKernels::ComputeDensityLinearHeterogeneous(RealMatrix&       rhox,
+                                                          RealMatrix&       rhoy,
+                                                          RealMatrix&       rhoz,
+                                                          const RealMatrix& pml_x,
+                                                          const RealMatrix& pml_y,
+                                                          const RealMatrix& pml_z,
+                                                          const RealMatrix& duxdx,
+                                                          const RealMatrix& duydy,
+                                                          const RealMatrix& duzdz,
+                                                          const RealMatrix& rho0)
 {
   CUDAComputeDensityLinearHeterogeneous<<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                       (rhox.GetDeviceData(),
-                                        rhoy.GetDeviceData(),
-                                        rhoz.GetDeviceData(),
-                                        pml_x.GetDeviceData(),
-                                        pml_y.GetDeviceData(),
-                                        pml_z.GetDeviceData(),
-                                        duxdx.GetDeviceData(),
-                                        duydy.GetDeviceData(),
-                                        duzdz.GetDeviceData(),
-                                        rho0.GetDeviceData());
+                                       (rhox.getDeviceData(),
+                                        rhoy.getDeviceData(),
+                                        rhoz.getDeviceData(),
+                                        pml_x.getDeviceData(),
+                                        pml_y.getDeviceData(),
+                                        pml_z.getDeviceData(),
+                                        duxdx.getDeviceData(),
+                                        duydy.getDeviceData(),
+                                        duzdz.getDeviceData(),
+                                        rho0.getDeviceData());
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
@@ -1529,15 +1529,15 @@ __global__ void CUDAComputePressurePartsNonLinear(float*       rho_sum,
  * @param [in]  is_rho0_scalar - Is rho0 a scalar value (homogeneous)
  * @param [in]  rho0_matrix    - Heterogeneous value for rho0
  */
-void SolverCUDAKernels::ComputePressurePartsNonLinear(TRealMatrix&       rho_sum,
-                                                      TRealMatrix&       BonA_sum,
-                                                      TRealMatrix&       du_sum,
-                                                      const TRealMatrix& rhox,
-                                                      const TRealMatrix& rhoy,
-                                                      const TRealMatrix& rhoz,
-                                                      const TRealMatrix& duxdx,
-                                                      const TRealMatrix& duydy,
-                                                      const TRealMatrix& duzdz,
+void SolverCUDAKernels::ComputePressurePartsNonLinear(RealMatrix&       rho_sum,
+                                                      RealMatrix&       BonA_sum,
+                                                      RealMatrix&       du_sum,
+                                                      const RealMatrix& rhox,
+                                                      const RealMatrix& rhoy,
+                                                      const RealMatrix& rhoz,
+                                                      const RealMatrix& duxdx,
+                                                      const RealMatrix& duydy,
+                                                      const RealMatrix& duzdz,
                                                       const bool         is_BonA_scalar,
                                                       const float*       BonA_matrix,
                                                       const bool         is_rho0_scalar,
@@ -1550,15 +1550,15 @@ void SolverCUDAKernels::ComputePressurePartsNonLinear(TRealMatrix&       rho_sum
     {
       CUDAComputePressurePartsNonLinear<true, true>
                                      <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                     (rho_sum.GetDeviceData(),
-                                      BonA_sum.GetDeviceData(),
-                                      du_sum.GetDeviceData(),
-                                      rhox.GetDeviceData(),
-                                      rhoy.GetDeviceData(),
-                                      rhoz.GetDeviceData(),
-                                      duxdx.GetDeviceData(),
-                                      duydy.GetDeviceData(),
-                                      duzdz.GetDeviceData(),
+                                     (rho_sum.getDeviceData(),
+                                      BonA_sum.getDeviceData(),
+                                      du_sum.getDeviceData(),
+                                      rhox.getDeviceData(),
+                                      rhoy.getDeviceData(),
+                                      rhoz.getDeviceData(),
+                                      duxdx.getDeviceData(),
+                                      duydy.getDeviceData(),
+                                      duzdz.getDeviceData(),
                                       BonA_matrix,
                                       rho0_matrix);
     }
@@ -1566,15 +1566,15 @@ void SolverCUDAKernels::ComputePressurePartsNonLinear(TRealMatrix&       rho_sum
     {
       CUDAComputePressurePartsNonLinear<true, false>
                                        <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                       (rho_sum.GetDeviceData(),
-                                        BonA_sum.GetDeviceData(),
-                                        du_sum.GetDeviceData(),
-                                        rhox.GetDeviceData(),
-                                        rhoy.GetDeviceData(),
-                                        rhoz.GetDeviceData(),
-                                        duxdx.GetDeviceData(),
-                                        duydy.GetDeviceData(),
-                                        duzdz.GetDeviceData(),
+                                       (rho_sum.getDeviceData(),
+                                        BonA_sum.getDeviceData(),
+                                        du_sum.getDeviceData(),
+                                        rhox.getDeviceData(),
+                                        rhoy.getDeviceData(),
+                                        rhoz.getDeviceData(),
+                                        duxdx.getDeviceData(),
+                                        duydy.getDeviceData(),
+                                        duzdz.getDeviceData(),
                                         BonA_matrix,
                                         rho0_matrix);
     }
@@ -1585,15 +1585,15 @@ void SolverCUDAKernels::ComputePressurePartsNonLinear(TRealMatrix&       rho_sum
     {
     CUDAComputePressurePartsNonLinear<false, true>
                                      <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                     (rho_sum.GetDeviceData(),
-                                      BonA_sum.GetDeviceData(),
-                                      du_sum.GetDeviceData(),
-                                      rhox.GetDeviceData(),
-                                      rhoy.GetDeviceData(),
-                                      rhoz.GetDeviceData(),
-                                      duxdx.GetDeviceData(),
-                                      duydy.GetDeviceData(),
-                                      duzdz.GetDeviceData(),
+                                     (rho_sum.getDeviceData(),
+                                      BonA_sum.getDeviceData(),
+                                      du_sum.getDeviceData(),
+                                      rhox.getDeviceData(),
+                                      rhoy.getDeviceData(),
+                                      rhoz.getDeviceData(),
+                                      duxdx.getDeviceData(),
+                                      duydy.getDeviceData(),
+                                      duzdz.getDeviceData(),
                                       BonA_matrix,
                                       rho0_matrix);
     }
@@ -1601,15 +1601,15 @@ void SolverCUDAKernels::ComputePressurePartsNonLinear(TRealMatrix&       rho_sum
     {
     CUDAComputePressurePartsNonLinear<false, false>
                                      <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                     (rho_sum.GetDeviceData(),
-                                      BonA_sum.GetDeviceData(),
-                                      du_sum.GetDeviceData(),
-                                      rhox.GetDeviceData(),
-                                      rhoy.GetDeviceData(),
-                                      rhoz.GetDeviceData(),
-                                      duxdx.GetDeviceData(),
-                                      duydy.GetDeviceData(),
-                                      duzdz.GetDeviceData(),
+                                     (rho_sum.getDeviceData(),
+                                      BonA_sum.getDeviceData(),
+                                      du_sum.getDeviceData(),
+                                      rhox.getDeviceData(),
+                                      rhoy.getDeviceData(),
+                                      rhoz.getDeviceData(),
+                                      duxdx.getDeviceData(),
+                                      duydy.getDeviceData(),
+                                      duzdz.getDeviceData(),
                                       BonA_matrix,
                                       rho0_matrix);
     }
@@ -1653,16 +1653,16 @@ __global__ void CUDACompute_Absorb_nabla1_2(cuFloatComplex* fft1,
  * @param [in]     absorb_nabla1
  * @param [in]     absorb_nabla2
  */
-void SolverCUDAKernels::ComputeAbsorbtionTerm(TCUFFTComplexMatrix& fft1,
-                                              TCUFFTComplexMatrix& fft2,
-                                              const TRealMatrix&   absorb_nabla1,
-                                              const TRealMatrix&   absorb_nabla2)
+void SolverCUDAKernels::ComputeAbsorbtionTerm(CufftComplexMatrix& fft1,
+                                              CufftComplexMatrix& fft2,
+                                              const RealMatrix&   absorb_nabla1,
+                                              const RealMatrix&   absorb_nabla2)
 {
   CUDACompute_Absorb_nabla1_2<<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                             (reinterpret_cast<cuFloatComplex*> (fft1.GetDeviceData()),
-                              reinterpret_cast<cuFloatComplex*> (fft2.GetDeviceData()),
-                              absorb_nabla1.GetDeviceData(),
-                              absorb_nabla2.GetDeviceData());
+                             (reinterpret_cast<cuFloatComplex*> (fft1.getDeviceData()),
+                              reinterpret_cast<cuFloatComplex*> (fft2.getDeviceData()),
+                              absorb_nabla1.getDeviceData(),
+                              absorb_nabla2.getDeviceData());
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
@@ -1714,8 +1714,8 @@ __global__ void CUDASumPressureTermsNonlinear(float*       p,
  * @param [in] absorb_eta   - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
  * @param [in] eta_matrix
  */
-void SolverCUDAKernels::SumPressureTermsNonlinear(TRealMatrix&       p,
-                                                  const TRealMatrix& BonA_temp,
+void SolverCUDAKernels::SumPressureTermsNonlinear(RealMatrix&       p,
+                                                  const RealMatrix& BonA_temp,
                                                   const bool         is_c2_scalar,
                                                   const float*       c2_matrix,
                                                   const bool         is_tau_eta_scalar,
@@ -1730,8 +1730,8 @@ void SolverCUDAKernels::SumPressureTermsNonlinear(TRealMatrix&       p,
     {
       CUDASumPressureTermsNonlinear<true, true>
                                    <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                   (p.GetDeviceData(),
-                                    BonA_temp.GetDeviceData(),
+                                   (p.getDeviceData(),
+                                    BonA_temp.getDeviceData(),
                                     c2_matrix,
                                     absorb_tau,
                                     tau_matrix,
@@ -1742,8 +1742,8 @@ void SolverCUDAKernels::SumPressureTermsNonlinear(TRealMatrix&       p,
     {
       CUDASumPressureTermsNonlinear<true, false>
                                    <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                   (p.GetDeviceData(),
-                                    BonA_temp.GetDeviceData(),
+                                   (p.getDeviceData(),
+                                    BonA_temp.getDeviceData(),
                                     c2_matrix,
                                     absorb_tau,
                                     tau_matrix,
@@ -1757,8 +1757,8 @@ void SolverCUDAKernels::SumPressureTermsNonlinear(TRealMatrix&       p,
     {
       CUDASumPressureTermsNonlinear<false, true>
                                    <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                   (p.GetDeviceData(),
-                                    BonA_temp.GetDeviceData(),
+                                   (p.getDeviceData(),
+                                    BonA_temp.getDeviceData(),
                                     c2_matrix,
                                     absorb_tau,
                                     tau_matrix,
@@ -1769,8 +1769,8 @@ void SolverCUDAKernels::SumPressureTermsNonlinear(TRealMatrix&       p,
     {
       CUDASumPressureTermsNonlinear<false, false>
                                    <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                   (p.GetDeviceData(),
-                                    BonA_temp.GetDeviceData(),
+                                   (p.getDeviceData(),
+                                    BonA_temp.getDeviceData(),
                                     c2_matrix,
                                     absorb_tau,
                                     tau_matrix,
@@ -1829,10 +1829,10 @@ __global__ void CUDASumPressureTermsLinear(float*       p,
  * @param [in] tau_matrix
  * @param [in] eta_matrix
  */
-void SolverCUDAKernels::SumPressureTermsLinear(TRealMatrix&       p,
-                                               const TRealMatrix& absorb_tau_temp,
-                                               const TRealMatrix& absorb_eta_temp,
-                                               const TRealMatrix& sum_rhoxyz,
+void SolverCUDAKernels::SumPressureTermsLinear(RealMatrix&       p,
+                                               const RealMatrix& absorb_tau_temp,
+                                               const RealMatrix& absorb_eta_temp,
+                                               const RealMatrix& sum_rhoxyz,
                                                const bool         is_c2_scalar,
                                                const float*       c2_matrix,
                                                const bool         is_tau_eta_scalar,
@@ -1845,10 +1845,10 @@ void SolverCUDAKernels::SumPressureTermsLinear(TRealMatrix&       p,
     {
       CUDASumPressureTermsLinear<true,true>
                                 <<<GetSolverGridSize1D(), GetSolverBlockSize1D() >>>
-                                (p.GetDeviceData(),
-                                 absorb_tau_temp.GetDeviceData(),
-                                 absorb_eta_temp.GetDeviceData(),
-                                 sum_rhoxyz.GetDeviceData(),
+                                (p.getDeviceData(),
+                                 absorb_tau_temp.getDeviceData(),
+                                 absorb_eta_temp.getDeviceData(),
+                                 sum_rhoxyz.getDeviceData(),
                                  c2_matrix,
                                  tau_matrix,
                                  eta_matrix);
@@ -1857,10 +1857,10 @@ void SolverCUDAKernels::SumPressureTermsLinear(TRealMatrix&       p,
     {
       CUDASumPressureTermsLinear<true,false>
                                 <<<GetSolverGridSize1D(), GetSolverBlockSize1D() >>>
-                                (p.GetDeviceData(),
-                                 absorb_tau_temp.GetDeviceData(),
-                                 absorb_eta_temp.GetDeviceData(),
-                                 sum_rhoxyz.GetDeviceData(),
+                                (p.getDeviceData(),
+                                 absorb_tau_temp.getDeviceData(),
+                                 absorb_eta_temp.getDeviceData(),
+                                 sum_rhoxyz.getDeviceData(),
                                  c2_matrix,
                                  tau_matrix,
                                  eta_matrix);
@@ -1872,10 +1872,10 @@ void SolverCUDAKernels::SumPressureTermsLinear(TRealMatrix&       p,
     {
       CUDASumPressureTermsLinear<false,true>
                                 <<<GetSolverGridSize1D(), GetSolverBlockSize1D() >>>
-                                (p.GetDeviceData(),
-                                 absorb_tau_temp.GetDeviceData(),
-                                 absorb_eta_temp.GetDeviceData(),
-                                 sum_rhoxyz.GetDeviceData(),
+                                (p.getDeviceData(),
+                                 absorb_tau_temp.getDeviceData(),
+                                 absorb_eta_temp.getDeviceData(),
+                                 sum_rhoxyz.getDeviceData(),
                                  c2_matrix,
                                  tau_matrix,
                                  eta_matrix);
@@ -1884,10 +1884,10 @@ void SolverCUDAKernels::SumPressureTermsLinear(TRealMatrix&       p,
     {
       CUDASumPressureTermsLinear<false,false>
                                 <<<GetSolverGridSize1D(), GetSolverBlockSize1D() >>>
-                                (p.GetDeviceData(),
-                                 absorb_tau_temp.GetDeviceData(),
-                                 absorb_eta_temp.GetDeviceData(),
-                                 sum_rhoxyz.GetDeviceData(),
+                                (p.getDeviceData(),
+                                 absorb_tau_temp.getDeviceData(),
+                                 absorb_eta_temp.getDeviceData(),
+                                 sum_rhoxyz.getDeviceData(),
                                  c2_matrix,
                                  tau_matrix,
                                  eta_matrix);
@@ -1945,10 +1945,10 @@ __global__ void CUDASumPressureNonlinearLossless(float*       p,
  * @param [in]  is_rho0_scalar
  * @param [in]  rho0_matrix
  */
-void SolverCUDAKernels::SumPressureNonlinearLossless(TRealMatrix&       p,
-                                                     const TRealMatrix& rhox,
-                                                     const TRealMatrix& rhoy,
-                                                     const TRealMatrix& rhoz,
+void SolverCUDAKernels::SumPressureNonlinearLossless(RealMatrix&       p,
+                                                     const RealMatrix& rhox,
+                                                     const RealMatrix& rhoy,
+                                                     const RealMatrix& rhoz,
                                                      const bool         is_c2_scalar,
                                                      const float*       c2_matrix,
                                                      const bool         is_BonA_scalar,
@@ -1964,10 +1964,10 @@ void SolverCUDAKernels::SumPressureNonlinearLossless(TRealMatrix&       p,
       {
         CUDASumPressureNonlinearLossless<true, true, true>
                                         <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                        (p.GetDeviceData(),
-                                         rhox.GetDeviceData(),
-                                         rhoy.GetDeviceData(),
-                                         rhoz.GetDeviceData(),
+                                        (p.getDeviceData(),
+                                         rhox.getDeviceData(),
+                                         rhoy.getDeviceData(),
+                                         rhoz.getDeviceData(),
                                          c2_matrix,
                                          BonA_matrix,
                                          rho0_matrix);
@@ -1976,10 +1976,10 @@ void SolverCUDAKernels::SumPressureNonlinearLossless(TRealMatrix&       p,
       {
         CUDASumPressureNonlinearLossless<true, true, false>
                                         <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                        (p.GetDeviceData(),
-                                         rhox.GetDeviceData(),
-                                         rhoy.GetDeviceData(),
-                                         rhoz.GetDeviceData(),
+                                        (p.getDeviceData(),
+                                         rhox.getDeviceData(),
+                                         rhoy.getDeviceData(),
+                                         rhoz.getDeviceData(),
                                          c2_matrix,
                                          BonA_matrix,
                                          rho0_matrix);
@@ -1991,10 +1991,10 @@ void SolverCUDAKernels::SumPressureNonlinearLossless(TRealMatrix&       p,
       {
         CUDASumPressureNonlinearLossless<true, false, true>
                                         <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                        (p.GetDeviceData(),
-                                         rhox.GetDeviceData(),
-                                         rhoy.GetDeviceData(),
-                                         rhoz.GetDeviceData(),
+                                        (p.getDeviceData(),
+                                         rhox.getDeviceData(),
+                                         rhoy.getDeviceData(),
+                                         rhoz.getDeviceData(),
                                          c2_matrix,
                                          BonA_matrix,
                                          rho0_matrix);
@@ -2003,10 +2003,10 @@ void SolverCUDAKernels::SumPressureNonlinearLossless(TRealMatrix&       p,
       {
         CUDASumPressureNonlinearLossless<true, false, false>
                                         <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                        (p.GetDeviceData(),
-                                         rhox.GetDeviceData(),
-                                         rhoy.GetDeviceData(),
-                                         rhoz.GetDeviceData(),
+                                        (p.getDeviceData(),
+                                         rhox.getDeviceData(),
+                                         rhoy.getDeviceData(),
+                                         rhoz.getDeviceData(),
                                          c2_matrix,
                                          BonA_matrix,
                                          rho0_matrix);
@@ -2021,10 +2021,10 @@ void SolverCUDAKernels::SumPressureNonlinearLossless(TRealMatrix&       p,
       {
         CUDASumPressureNonlinearLossless<false, true, true>
                                         <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                        (p.GetDeviceData(),
-                                         rhox.GetDeviceData(),
-                                         rhoy.GetDeviceData(),
-                                         rhoz.GetDeviceData(),
+                                        (p.getDeviceData(),
+                                         rhox.getDeviceData(),
+                                         rhoy.getDeviceData(),
+                                         rhoz.getDeviceData(),
                                          c2_matrix,
                                          BonA_matrix,
                                          rho0_matrix);
@@ -2033,10 +2033,10 @@ void SolverCUDAKernels::SumPressureNonlinearLossless(TRealMatrix&       p,
       {
         CUDASumPressureNonlinearLossless<false, true, false>
                                         <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                        (p.GetDeviceData(),
-                                         rhox.GetDeviceData(),
-                                         rhoy.GetDeviceData(),
-                                         rhoz.GetDeviceData(),
+                                        (p.getDeviceData(),
+                                         rhox.getDeviceData(),
+                                         rhoy.getDeviceData(),
+                                         rhoz.getDeviceData(),
                                          c2_matrix,
                                          BonA_matrix,
                                          rho0_matrix);
@@ -2048,10 +2048,10 @@ void SolverCUDAKernels::SumPressureNonlinearLossless(TRealMatrix&       p,
       {
         CUDASumPressureNonlinearLossless<false, false, true>
                                         <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                        (p.GetDeviceData(),
-                                         rhox.GetDeviceData(),
-                                         rhoy.GetDeviceData(),
-                                         rhoz.GetDeviceData(),
+                                        (p.getDeviceData(),
+                                         rhox.getDeviceData(),
+                                         rhoy.getDeviceData(),
+                                         rhoz.getDeviceData(),
                                          c2_matrix,
                                          BonA_matrix,
                                          rho0_matrix);
@@ -2060,10 +2060,10 @@ void SolverCUDAKernels::SumPressureNonlinearLossless(TRealMatrix&       p,
       {
         CUDASumPressureNonlinearLossless<false, false, false>
                                         <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                        (p.GetDeviceData(),
-                                         rhox.GetDeviceData(),
-                                         rhoy.GetDeviceData(),
-                                         rhoz.GetDeviceData(),
+                                        (p.getDeviceData(),
+                                         rhox.getDeviceData(),
+                                         rhoy.getDeviceData(),
+                                         rhoz.getDeviceData(),
                                          c2_matrix,
                                          BonA_matrix,
                                          rho0_matrix);
@@ -2126,14 +2126,14 @@ __global__ void CUDAComputePressurePartsLinear(float*       sum_rhoxyz,
  * @param [in]  is_rho0_scalar
  * @param [in]  rho0_matrix
  */
-void SolverCUDAKernels::ComputePressurePartsLinear(TRealMatrix&       sum_rhoxyz,
-                                                   TRealMatrix&       sum_rho0_du,
-                                                   const TRealMatrix& rhox,
-                                                   const TRealMatrix& rhoy,
-                                                   const TRealMatrix& rhoz,
-                                                   const TRealMatrix& duxdx,
-                                                   const TRealMatrix& duydy,
-                                                   const TRealMatrix& duzdz,
+void SolverCUDAKernels::ComputePressurePartsLinear(RealMatrix&       sum_rhoxyz,
+                                                   RealMatrix&       sum_rho0_du,
+                                                   const RealMatrix& rhox,
+                                                   const RealMatrix& rhoy,
+                                                   const RealMatrix& rhoz,
+                                                   const RealMatrix& duxdx,
+                                                   const RealMatrix& duydy,
+                                                   const RealMatrix& duzdz,
                                                    const bool         is_rho0_scalar,
                                                    const float*       rho0_matrix)
 {
@@ -2141,28 +2141,28 @@ void SolverCUDAKernels::ComputePressurePartsLinear(TRealMatrix&       sum_rhoxyz
   {
    CUDAComputePressurePartsLinear<true>
                                 <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                (sum_rhoxyz.GetDeviceData(),
-                                 sum_rho0_du.GetDeviceData(),
-                                 rhox.GetDeviceData(),
-                                 rhoy.GetDeviceData(),
-                                 rhoz.GetDeviceData(),
-                                 duxdx.GetDeviceData(),
-                                 duydy.GetDeviceData(),
-                                 duzdz.GetDeviceData(),
+                                (sum_rhoxyz.getDeviceData(),
+                                 sum_rho0_du.getDeviceData(),
+                                 rhox.getDeviceData(),
+                                 rhoy.getDeviceData(),
+                                 rhoz.getDeviceData(),
+                                 duxdx.getDeviceData(),
+                                 duydy.getDeviceData(),
+                                 duzdz.getDeviceData(),
                                  rho0_matrix);
   }
   else
   {
    CUDAComputePressurePartsLinear<false>
                                 <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                (sum_rhoxyz.GetDeviceData(),
-                                 sum_rho0_du.GetDeviceData(),
-                                 rhox.GetDeviceData(),
-                                 rhoy.GetDeviceData(),
-                                 rhoz.GetDeviceData(),
-                                 duxdx.GetDeviceData(),
-                                 duydy.GetDeviceData(),
-                                 duzdz.GetDeviceData(),
+                                (sum_rhoxyz.getDeviceData(),
+                                 sum_rho0_du.getDeviceData(),
+                                 rhox.getDeviceData(),
+                                 rhoy.getDeviceData(),
+                                 rhoz.getDeviceData(),
+                                 duxdx.getDeviceData(),
+                                 duydy.getDeviceData(),
+                                 duzdz.getDeviceData(),
                                  rho0_matrix);
   }
   // check for errors
@@ -2204,10 +2204,10 @@ __global__ void CUDASum_new_p_linear_lossless(float*       p,
  * @param [in]  is_c2_scalar
  * @param [in]  c2_matrix
  */
-void SolverCUDAKernels::SumPressureLinearLossless(TRealMatrix& p,
-                                                  const TRealMatrix& rhox,
-                                                  const TRealMatrix& rhoy,
-                                                  const TRealMatrix& rhoz,
+void SolverCUDAKernels::SumPressureLinearLossless(RealMatrix& p,
+                                                  const RealMatrix& rhox,
+                                                  const RealMatrix& rhoy,
+                                                  const RealMatrix& rhoz,
                                                   const bool         is_c2_scalar,
                                                   const float*       c2_matrix)
 {
@@ -2215,20 +2215,20 @@ void SolverCUDAKernels::SumPressureLinearLossless(TRealMatrix& p,
   {
     CUDASum_new_p_linear_lossless<true>
                                  <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                 (p.GetDeviceData(),
-                                  rhox.GetDeviceData(),
-                                  rhoy.GetDeviceData(),
-                                  rhoz.GetDeviceData(),
+                                 (p.getDeviceData(),
+                                  rhox.getDeviceData(),
+                                  rhoy.getDeviceData(),
+                                  rhoz.getDeviceData(),
                                   c2_matrix);
   }
   else
   {
     CUDASum_new_p_linear_lossless<false>
                                  <<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                                 (p.GetDeviceData(),
-                                  rhox.GetDeviceData(),
-                                  rhoy.GetDeviceData(),
-                                  rhoz.GetDeviceData(),
+                                 (p.getDeviceData(),
+                                  rhox.getDeviceData(),
+                                  rhoy.getDeviceData(),
+                                  rhoz.getDeviceData(),
                                   c2_matrix);
   }
   // check for errors
@@ -2723,12 +2723,12 @@ __global__ void CUDAComputeVelocityShiftInX(cuFloatComplex*       cufft_shift_te
  * @param [in,out] cufft_shift_temp - Matrix to calculate 1D FFT to
  * @param [in]     x_shift_neg_r
  */
-void SolverCUDAKernels::ComputeVelocityShiftInX(TCUFFTComplexMatrix&  cufft_shift_temp,
-                                                const TComplexMatrix& x_shift_neg_r)
+void SolverCUDAKernels::ComputeVelocityShiftInX(CufftComplexMatrix&  cufft_shift_temp,
+                                                const ComplexMatrix& x_shift_neg_r)
 {
   CUDAComputeVelocityShiftInX<<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                             (reinterpret_cast<cuFloatComplex*>  (cufft_shift_temp.GetDeviceData()),
-                              reinterpret_cast<const cuFloatComplex*> (x_shift_neg_r.GetDeviceData()));
+                             (reinterpret_cast<cuFloatComplex*>  (cufft_shift_temp.getDeviceData()),
+                              reinterpret_cast<const cuFloatComplex*> (x_shift_neg_r.getDeviceData()));
   // check for errors
   cudaCheckErrors(cudaGetLastError());
  }// end of ComputeVelocityShiftInX
@@ -2764,12 +2764,12 @@ __global__ void CUDAComputeVelocityShiftInY(cuFloatComplex*       cufft_shift_te
  * @param [in,out] cufft_shift_temp - Matrix to calculate 1D FFT to
  * @param [in]     y_shift_neg_r
  */
-void SolverCUDAKernels::ComputeVelocityShiftInY(TCUFFTComplexMatrix&  cufft_shift_temp,
-                                                const TComplexMatrix& y_shift_neg_r)
+void SolverCUDAKernels::ComputeVelocityShiftInY(CufftComplexMatrix&  cufft_shift_temp,
+                                                const ComplexMatrix& y_shift_neg_r)
 {
   CUDAComputeVelocityShiftInY<<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                             (reinterpret_cast<cuFloatComplex*>       (cufft_shift_temp.GetDeviceData()),
-                              reinterpret_cast<const cuFloatComplex*> (y_shift_neg_r.GetDeviceData()));
+                             (reinterpret_cast<cuFloatComplex*>       (cufft_shift_temp.getDeviceData()),
+                              reinterpret_cast<const cuFloatComplex*> (y_shift_neg_r.getDeviceData()));
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of ComputeVelocityShiftInY
@@ -2805,12 +2805,12 @@ __global__ void CUDAComputeVelocityShiftInZ(cuFloatComplex*       cufft_shift_te
  * @param [in,out] cufft_shift_temp - Matrix to calculate 1D FFT to
  * @param [in]     z_shift_neg_r
  */
-void SolverCUDAKernels::ComputeVelocityShiftInZ(TCUFFTComplexMatrix&  cufft_shift_temp,
-                                                const TComplexMatrix& z_shift_neg_r)
+void SolverCUDAKernels::ComputeVelocityShiftInZ(CufftComplexMatrix&  cufft_shift_temp,
+                                                const ComplexMatrix& z_shift_neg_r)
 {
   CUDAComputeVelocityShiftInZ<<<GetSolverGridSize1D(), GetSolverBlockSize1D()>>>
-                             (reinterpret_cast<cuFloatComplex*>       (cufft_shift_temp.GetDeviceData()),
-                              reinterpret_cast<const cuFloatComplex*> (z_shift_neg_r.GetDeviceData()));
+                             (reinterpret_cast<cuFloatComplex*>       (cufft_shift_temp.getDeviceData()),
+                              reinterpret_cast<const cuFloatComplex*> (z_shift_neg_r.getDeviceData()));
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of ComputeVelocityShiftInZ

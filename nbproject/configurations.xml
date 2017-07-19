@@ -43,8 +43,6 @@
       <itemPath>MatrixClasses/BaseIndexMatrix.cpp</itemPath>
       <itemPath>MatrixClasses/BaseIndexMatrix.h</itemPath>
       <itemPath>MatrixClasses/BaseMatrix.h</itemPath>
-      <itemPath>MatrixClasses/CUFFTComplexMatrix.cpp</itemPath>
-      <itemPath>MatrixClasses/CUFFTComplexMatrix.h</itemPath>
       <itemPath>MatrixClasses/ComplexMatrix.cpp</itemPath>
       <itemPath>MatrixClasses/ComplexMatrix.h</itemPath>
       <itemPath>MatrixClasses/IndexMatrix.cpp</itemPath>
@@ -73,6 +71,8 @@
       <itemPath>Parameters/CudaDeviceConstants.cuh</itemPath>
       <itemPath>Parameters/CudaParameters.cpp</itemPath>
       <itemPath>Parameters/CudaParameters.h</itemPath>
+      <itemPath>MatrixClasses/CufftComplexMatrix.cpp</itemPath>
+      <itemPath>MatrixClasses/CufftComplexMatrix.h</itemPath>
       <itemPath>Parameters/Parameters.cpp</itemPath>
       <itemPath>Parameters/Parameters.h</itemPath>
     </logicalFolder>
@@ -158,6 +158,16 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2  -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 -lineinfo</commandLine>
         </linkerTool>
       </compileType>
+      <item path="MatrixClasses/CufftComplexMatrix.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/CufftComplexMatrix.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -216,13 +226,6 @@
       <item path="MatrixClasses/BaseIndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseMatrix.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/ComplexMatrix.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -358,6 +361,16 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 -lineinfo</commandLine>
         </linkerTool>
       </compileType>
+      <item path="MatrixClasses/CufftComplexMatrix.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/CufftComplexMatrix.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -416,13 +429,6 @@
       <item path="MatrixClasses/BaseIndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseMatrix.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.cpp"
-            ex="false"
-            tool="1"
-            flavor2="8">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/ComplexMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -558,6 +564,16 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp" -G -lineinfo</commandLine>
         </linkerTool>
       </compileType>
+      <item path="MatrixClasses/CufftComplexMatrix.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/CufftComplexMatrix.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -616,13 +632,6 @@
       <item path="MatrixClasses/BaseIndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseMatrix.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.cpp"
-            ex="false"
-            tool="1"
-            flavor2="8">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/ComplexMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -757,6 +766,16 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2  -Wall -fopenmp" -G -lineinfo</commandLine>
         </linkerTool>
       </compileType>
+      <item path="MatrixClasses/CufftComplexMatrix.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/CufftComplexMatrix.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -815,13 +834,6 @@
       <item path="MatrixClasses/BaseIndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseMatrix.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.cpp"
-            ex="false"
-            tool="1"
-            flavor2="8">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/ComplexMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -958,6 +970,16 @@
           <commandLine>-Xcompiler="-Wall -fopenmp -mavx" -arch=compute_52 -code=sm_52</commandLine>
         </linkerTool>
       </compileType>
+      <item path="MatrixClasses/CufftComplexMatrix.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/CufftComplexMatrix.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -1016,13 +1038,6 @@
       <item path="MatrixClasses/BaseIndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseMatrix.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.cpp"
-            ex="false"
-            tool="1"
-            flavor2="8">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/ComplexMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -1157,6 +1172,16 @@
           <commandLine>-Xcompiler="-Wall -O3 -fopenmp -mavx" -arch=compute_52 -code=sm_52</commandLine>
         </linkerTool>
       </compileType>
+      <item path="MatrixClasses/CufftComplexMatrix.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/CufftComplexMatrix.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -1215,13 +1240,6 @@
       <item path="MatrixClasses/BaseIndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseMatrix.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.cpp"
-            ex="false"
-            tool="1"
-            flavor2="8">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/ComplexMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -1356,6 +1374,16 @@
           <commandLine>-Xcompiler="-Wall -fopenmp "</commandLine>
         </linkerTool>
       </compileType>
+      <item path="MatrixClasses/CufftComplexMatrix.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/CufftComplexMatrix.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -1414,13 +1442,6 @@
       <item path="MatrixClasses/BaseIndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseMatrix.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.cpp"
-            ex="false"
-            tool="1"
-            flavor2="8">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/ComplexMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
@@ -1554,6 +1575,16 @@
           <commandLine>-Xcompiler="-Wall -O3 -fopenmp"</commandLine>
         </linkerTool>
       </compileType>
+      <item path="MatrixClasses/CufftComplexMatrix.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="MatrixClasses/CufftComplexMatrix.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -1612,13 +1643,6 @@
       <item path="MatrixClasses/BaseIndexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/BaseMatrix.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.cpp"
-            ex="false"
-            tool="1"
-            flavor2="8">
-      </item>
-      <item path="MatrixClasses/CUFFTComplexMatrix.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="MatrixClasses/ComplexMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>

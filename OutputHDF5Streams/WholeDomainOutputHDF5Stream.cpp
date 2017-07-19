@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August    2014, 11:15 (created)
- *              16 July      2017, 16:54 (revised)
+ *              19 July      2017, 12:12 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -52,7 +52,7 @@
  */
 TWholeDomainOutputHDF5Stream::TWholeDomainOutputHDF5Stream(THDF5_File&           file,
                                                            MatrixName&          datasetName,
-                                                           TRealMatrix&          sourceMatrix,
+                                                           RealMatrix&          sourceMatrix,
                                                            const TReduceOperator reduceOp)
         : TBaseOutputHDF5Stream(file, datasetName, sourceMatrix, reduceOp),
           dataset(H5I_BADID),
@@ -83,14 +83,14 @@ TWholeDomainOutputHDF5Stream::~TWholeDomainOutputHDF5Stream()
  */
 void TWholeDomainOutputHDF5Stream::Create()
 {
-  DimensionSizes chunkSize(sourceMatrix.GetDimensionSizes().nx,
-                            sourceMatrix.GetDimensionSizes().ny,
+  DimensionSizes chunkSize(sourceMatrix.getDimensionSizes().nx,
+                            sourceMatrix.getDimensionSizes().ny,
                             1);
 
   // Create a dataset under the root group
   dataset = file.CreateFloatDataset(file.GetRootGroup(),
                                     rootObjectName,
-                                    sourceMatrix.GetDimensionSizes(),
+                                    sourceMatrix.getDimensionSizes(),
                                     chunkSize,
                                     Parameters::getInstance().getCompressionLevel());
 
@@ -99,7 +99,7 @@ void TWholeDomainOutputHDF5Stream::Create()
   file.WriteMatrixDataType  (file.GetRootGroup(), rootObjectName, THDF5_File::TMatrixDataType::FLOAT);
 
   // Set buffer size
-  bufferSize = sourceMatrix.GetElementCount();
+  bufferSize = sourceMatrix.size();
 
   // Allocate memory
   AllocateMemory();
@@ -115,7 +115,7 @@ void TWholeDomainOutputHDF5Stream::Reopen()
   const Parameters& params = Parameters::getInstance();
 
   // Set buffer size
-  bufferSize = sourceMatrix.GetElementCount();
+  bufferSize = sourceMatrix.size();
 
   // Allocate memory
   AllocateMemory();
@@ -137,7 +137,7 @@ void TWholeDomainOutputHDF5Stream::Reopen()
     {
       file.ReadCompleteDataset(file.GetRootGroup(),
                                     rootObjectName,
-                                    sourceMatrix.GetDimensionSizes(),
+                                    sourceMatrix.getDimensionSizes(),
                                     hostBuffer);
       // Send data to device
       CopyDataToDevice();
@@ -159,12 +159,12 @@ void TWholeDomainOutputHDF5Stream::Sample()
     {
       // Copy all data from GPU to CPU (no need to use a kernel)
       // this violates the const prerequisite, however this routine is still NOT used in the code
-      const_cast<TRealMatrix&> (sourceMatrix).CopyFromDevice();
+      const_cast<RealMatrix&> (sourceMatrix).copyFromDevice();
 
       // We use here direct HDF5 offload using MEMSPACE - seems to be faster for bigger datasets
       const DimensionSizes datasetPosition(0, 0, 0, sampledTimeStep); //4D position in the dataset
 
-      DimensionSizes cuboidSize(sourceMatrix.GetDimensionSizes());// Size of the cuboid
+      DimensionSizes cuboidSize(sourceMatrix.getDimensionSizes());// Size of the cuboid
       cuboidSize.nt = 1;
 
       // iterate over all cuboid to be sampled
@@ -172,8 +172,8 @@ void TWholeDomainOutputHDF5Stream::Sample()
                                   datasetPosition,
                                   DimensionSizes(0,0,0,0), // position in the SourceMatrix
                                   cuboidSize,
-                                  sourceMatrix.GetDimensionSizes(),
-                                  sourceMatrix.GetHostData());
+                                  sourceMatrix.getDimensionSizes(),
+                                  sourceMatrix.getHostData());
 
       sampledTimeStep++;   // Move forward in time
 
@@ -184,8 +184,8 @@ void TWholeDomainOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleAll<TReduceOperator::RMS>
                                          (deviceBuffer,
-                                          sourceMatrix.GetDeviceData(),
-                                          sourceMatrix.GetElementCount());
+                                          sourceMatrix.getDeviceData(),
+                                          sourceMatrix.size());
       break;
     }// case RMS
 
@@ -193,8 +193,8 @@ void TWholeDomainOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleAll<TReduceOperator::MAX>
                                          (deviceBuffer,
-                                          sourceMatrix.GetDeviceData(),
-                                          sourceMatrix.GetElementCount());
+                                          sourceMatrix.getDeviceData(),
+                                          sourceMatrix.size());
       break;
     }//case MAX
 
@@ -202,8 +202,8 @@ void TWholeDomainOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleAll<TReduceOperator::MIN>
                                          (deviceBuffer,
-                                          sourceMatrix.GetDeviceData(),
-                                          sourceMatrix.GetElementCount());
+                                          sourceMatrix.getDeviceData(),
+                                          sourceMatrix.size());
       break;
     } //case MIN
   }// switch
@@ -270,7 +270,7 @@ void TWholeDomainOutputHDF5Stream::Close()
  */
 void TWholeDomainOutputHDF5Stream::FlushBufferToFile()
 {
-  DimensionSizes size = sourceMatrix.GetDimensionSizes();
+  DimensionSizes size = sourceMatrix.getDimensionSizes();
   DimensionSizes position(0,0,0);
 
   // Not used for NONE now!

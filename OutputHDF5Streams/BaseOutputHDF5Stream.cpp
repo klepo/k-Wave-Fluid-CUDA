@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              17 June      2017, 16:16 (revised)
+ *              19 July      2017, 12:12 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -62,7 +62,7 @@
  */
 TBaseOutputHDF5Stream::TBaseOutputHDF5Stream(THDF5_File&           file,
                                              MatrixName&          rootObjectName,
-                                             const TRealMatrix&    sourceMatrix,
+                                             const RealMatrix&    sourceMatrix,
                                              const TReduceOperator reduceOp)
             : file(file),
               rootObjectName(rootObjectName),

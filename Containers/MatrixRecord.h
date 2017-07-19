@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December 2014, 15:44 (created) \n
- *              11 July     2017, 16:41 (revised)
+ *              19 July     2017, 12:08 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -37,7 +37,7 @@
 #include <MatrixClasses/RealMatrix.h>
 #include <MatrixClasses/ComplexMatrix.h>
 #include <MatrixClasses/IndexMatrix.h>
-#include <MatrixClasses/CUFFTComplexMatrix.h>
+#include <MatrixClasses/CufftComplexMatrix.h>
 #include <Utils/MatrixNames.h>
 
 /**
@@ -75,7 +75,7 @@ struct TMatrixRecord
            MatrixName&           matrixName);
 
   /// Pointer to the matrix object.
-  TBaseMatrix*    matrixPtr;
+  BaseMatrix*    matrixPtr;
   /// Matrix data type.
   TMatrixType     matrixType;
   /// Matrix dimension sizes.

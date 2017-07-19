@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August    2014, 10:10 (created)
- *              17 July      2017, 16:16 (revised)
+ *              19 July      2017, 12:12 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -58,8 +58,8 @@
  */
 TIndexOutputHDF5Stream::TIndexOutputHDF5Stream(THDF5_File&           file,
                                                MatrixName&          datasetName,
-                                               const TRealMatrix&    sourceMatrix,
-                                               const TIndexMatrix&   sensorMask,
+                                               const RealMatrix&    sourceMatrix,
+                                               const IndexMatrix&   sensorMask,
                                                const TReduceOperator reduceOp)
         : TBaseOutputHDF5Stream(file, datasetName, sourceMatrix, reduceOp),
           sensorMask(sensorMask),
@@ -94,7 +94,7 @@ TIndexOutputHDF5Stream::~TIndexOutputHDF5Stream()
 void TIndexOutputHDF5Stream::Create()
 {
 
-  size_t nSampledElementsPerStep = sensorMask.GetElementCount();
+  size_t nSampledElementsPerStep = sensorMask.size();
 
   const Parameters& params = Parameters::getInstance();
 
@@ -143,7 +143,7 @@ void TIndexOutputHDF5Stream::Reopen()
   const Parameters& params = Parameters::getInstance();
 
   // Set buffer size
-  bufferSize = sensorMask.GetElementCount();
+  bufferSize = sensorMask.size();
 
   // Allocate memory
    AllocateMemory();
@@ -192,9 +192,9 @@ void TIndexOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleIndex<TReduceOperator::NONE>
                                            (deviceBuffer,
-                                            sourceMatrix.GetDeviceData(),
-                                            sensorMask.GetDeviceData(),
-                                            sensorMask.GetElementCount());
+                                            sourceMatrix.getDeviceData(),
+                                            sensorMask.getDeviceData(),
+                                            sensorMask.size());
 
       // Record an event when the data has been copied over.
       cudaCheckErrors(cudaEventRecord(eventSamplingFinished));
@@ -206,9 +206,9 @@ void TIndexOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleIndex<TReduceOperator::RMS>
                                            (deviceBuffer,
-                                            sourceMatrix.GetDeviceData(),
-                                            sensorMask.GetDeviceData(),
-                                            sensorMask.GetElementCount());
+                                            sourceMatrix.getDeviceData(),
+                                            sensorMask.getDeviceData(),
+                                            sensorMask.size());
 
       break;
     }// case RMS
@@ -217,9 +217,9 @@ void TIndexOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleIndex<TReduceOperator::MAX>
                                            (deviceBuffer,
-                                            sourceMatrix.GetDeviceData(),
-                                            sensorMask.GetDeviceData(),
-                                            sensorMask.GetElementCount());
+                                            sourceMatrix.getDeviceData(),
+                                            sensorMask.getDeviceData(),
+                                            sensorMask.size());
       break;
     }// case MAX
 
@@ -227,9 +227,9 @@ void TIndexOutputHDF5Stream::Sample()
     {
       OutputStreamsCUDAKernels::SampleIndex<TReduceOperator::MIN>
                                            (deviceBuffer,
-                                            sourceMatrix.GetDeviceData(),
-                                            sensorMask.GetDeviceData(),
-                                            sensorMask.GetElementCount());
+                                            sourceMatrix.getDeviceData(),
+                                            sensorMask.getDeviceData(),
+                                            sensorMask.size());
       break;
     } //case MIN
   }// switch

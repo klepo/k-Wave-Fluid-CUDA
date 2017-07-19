@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              17 July      2017, 16:05 (revised)
+ *              19 July      2017, 12:07 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -85,25 +85,25 @@ void TMatrixContainer::CreateMatrices()
     {
       case MatrixType::REAL:
       {
-        it.second.matrixPtr = new TRealMatrix(it.second.dimensionSizes);
+        it.second.matrixPtr = new RealMatrix(it.second.dimensionSizes);
         break;
       }
 
       case MatrixType::COMPLEX:
       {
-        it.second.matrixPtr = new TComplexMatrix(it.second.dimensionSizes);
+        it.second.matrixPtr = new ComplexMatrix(it.second.dimensionSizes);
         break;
       }
 
       case MatrixType::INDEX:
       {
-        it.second.matrixPtr = new TIndexMatrix(it.second.dimensionSizes);
+        it.second.matrixPtr = new IndexMatrix(it.second.dimensionSizes);
         break;
       }
 
       case MatrixType::CUFFT:
       {
-        it.second.matrixPtr = new TCUFFTComplexMatrix(it.second.dimensionSizes);
+        it.second.matrixPtr = new CufftComplexMatrix(it.second.dimensionSizes);
         break;
       }
 
@@ -414,7 +414,7 @@ void TMatrixContainer::LoadDataFromInputFile(THDF5_File& inputFile)
   {
     if (it.second.loadData)
     {
-      it.second.matrixPtr->ReadDataFromHDF5File(inputFile, it.second.matrixName);
+      it.second.matrixPtr->readData(inputFile, it.second.matrixName);
     }
   }
 }// end of LoadDataFromInputFile
@@ -430,7 +430,7 @@ void TMatrixContainer::LoadDataFromCheckpointFile(THDF5_File& checkpointFile)
   {
     if (it.second.checkpoint)
     {
-      it.second.matrixPtr->ReadDataFromHDF5File(checkpointFile,it.second.matrixName);
+      it.second.matrixPtr->readData(checkpointFile,it.second.matrixName);
     }
   }
 }// end of LoadDataFromCheckpointFile
@@ -447,9 +447,9 @@ void TMatrixContainer::StoreDataIntoCheckpointFile(THDF5_File& checkpointFile)
     if (it.second.checkpoint)
     {
       // Copy data from device first
-      it.second.matrixPtr->CopyFromDevice();
+      it.second.matrixPtr->copyFromDevice();
       // store data to the checkpoint file
-      it.second.matrixPtr->WriteDataToHDF5File(checkpointFile,
+      it.second.matrixPtr->writeData(checkpointFile,
                                                it.second.matrixName,
                                                Parameters::getInstance().getCompressionLevel());
     }
@@ -480,7 +480,7 @@ void TMatrixContainer::CopyMatricesToDevice()
 {
   for (const auto& it : matrixContainer)
   {
-    it.second.matrixPtr->CopyToDevice();
+    it.second.matrixPtr->copyToDevice();
   }
 }//end of CopyMatricesToDevice
 //--------------------------------------------------------------------------------------------------
@@ -492,7 +492,7 @@ void TMatrixContainer::CopyMatricesFromDevice()
 {
   for (const auto& it : matrixContainer)
   {
-    it.second.matrixPtr->CopyFromDevice();
+    it.second.matrixPtr->copyFromDevice();
   }
 }// end of CopyAllMatricesFromGPU
 //--------------------------------------------------------------------------------------------------
