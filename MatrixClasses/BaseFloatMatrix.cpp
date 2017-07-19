@@ -53,12 +53,12 @@ using std::string;
 /**
  * Default constructor.
  */
-BaseFloatMatrix::BaseFloatMatrix():
-  BaseMatrix(),
-  mSize(0), mCapacity(0),
-  mDimensionSizes(),
-  mRowSize(0), mSlabSize(0),
-  mHostData(nullptr), mDeviceData(nullptr)
+BaseFloatMatrix::BaseFloatMatrix()
+  : BaseMatrix(),
+    mSize(0), mCapacity(0),
+    mDimensionSizes(),
+    mRowSize(0), mSlabSize(0),
+    mHostData(nullptr), mDeviceData(nullptr)
 {
 
 }// end of BaseFloatMatrix

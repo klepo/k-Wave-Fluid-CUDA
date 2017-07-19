@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 10:30 (created) \n
- *              19 July      2017, 12:15 (revised)
+ *              19 July      2017, 15:20 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -46,8 +46,8 @@
 /**
  * Constructor.
  */
-RealMatrix::RealMatrix(const DimensionSizes& dimensionSizes) :
-  BaseFloatMatrix()
+RealMatrix::RealMatrix(const DimensionSizes& dimensionSizes)
+  : BaseFloatMatrix()
 {
   initDimensions(dimensionSizes);
   allocateMemory();

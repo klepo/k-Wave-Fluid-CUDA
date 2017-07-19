@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August    2014, 10:00 (created)
- *              19 July      2017, 12:12 (revised)
+ *              19 July      2017, 15:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,78 +29,98 @@
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
  * If not, see http://www.gnu.org/licenses/.
  */
-#ifndef INDEX_OUTPUT_HDF5_STREAM_H
-#define INDEX_OUTPUT_HDF5_STREAM_H
+#ifndef IndexOutputStreamH
+#define IndexOutputStreamH
 
 #include <cuda_runtime.h>
 
 #include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
 
 /**
- * @class TIndexOutputHDF5Stream.
+ * @class   IndexOutputStream.
  * @brief   Output stream for quantities sampled by an index sensor mask.
- * @details Output stream for quantities sampled by an index sensor mask.
- *          This class writes data to a single dataset in a root group of the HDF5 file (time-series
- *          as well as aggregations).
+ *
+ * Output stream for quantities sampled by an index sensor mask. This class writes data to a single dataset in a
+ * root group of the HDF5 file (time-series as well as aggregations).
  *
  */
-class TIndexOutputHDF5Stream : public TBaseOutputHDF5Stream
+class IndexOutputStream : public BaseOutputStream
 {
   public:
     /// Default constructor not allowed.
-    TIndexOutputHDF5Stream() = delete;
-    /// Constructor.
-    TIndexOutputHDF5Stream(THDF5_File&           file,
-                           MatrixName&          datasetName,
-                           const RealMatrix&    sourceMatrix,
-                           const IndexMatrix&   sensorMask,
-                           const TReduceOperator reduceOp);
-    /// Destructor.
-    virtual ~TIndexOutputHDF5Stream();
+    IndexOutputStream() = delete;
+    /**
+     * @brief Constructor.
+     *
+     * Constructor - links the HDF5 dataset, source (sampled matrix), sensor mask and the reduce
+     * operator together. The constructor DOES NOT allocate memory because the size of the sensor mask
+     * is not known at the time the instance of  the class is being created.
+     *
+     * @param [in] file         - Handle to the HDF5 (output) file
+     * @param [in] datasetName  - The dataset's name (index based sensor data stored in a single dataset)
+     * @param [in] sourceMatrix - The source matrix (only real matrices are supported)
+     * @param [in] sensorMask   - Index based sensor mask
+     * @param [in] reduceOp     - Reduce operator
+     */
+    IndexOutputStream(THDF5_File&           file,
+                      MatrixName&          datasetName,
+                      const RealMatrix&    sourceMatrix,
+                      const IndexMatrix&   sensorMask,
+                      const ReduceOperator reduceOp);
+    /**
+     * @brief Destructor.
+     *
+     * If the file is still opened, it applies the post processing and flush the data.
+     * Then, the object memory is freed and the object destroyed.
+     */
+    virtual ~IndexOutputStream();
 
     /// operator= is not allowed.
-    TIndexOutputHDF5Stream& operator=(const TIndexOutputHDF5Stream&) = delete;
+    IndexOutputStream& operator=(const IndexOutputStream&) = delete;
 
     /// Create a HDF5 stream and allocate data for it.
-    virtual void Create();
+    virtual void create();
 
     /// Reopen the output stream after restart and reload data.
-    virtual void Reopen();
+    virtual void reopen();
 
-    /// Sample data into buffer, apply reduction or copy to the CPU side
-    virtual void Sample();
+    /**
+     * @brief Sample data into buffer, apply reduction or copy to the CPU side
+     * @warning data is not flushed, there is no sync.
+     */
+    virtual void sample();
 
     /// Flush data to disk (from raw streams only).
-    virtual void FlushRaw();
+    virtual void flushRaw();
 
     /// Apply post-processing on the buffer and flush it to the file.
-    virtual void PostProcess();
+    virtual void postProcess();
 
     /// Checkpoint the stream.
-    virtual void Checkpoint();
+    virtual void checkpoint();
 
     /// Close stream (apply post-processing if necessary, flush data and close).
-    virtual void Close();
+    virtual void close();
 
   protected:
 
     /// Flush the buffer to the file.
-    virtual void FlushBufferToFile();
+    virtual void flushBufferToFile();
 
     /// Sensor mask to sample data.
-    const IndexMatrix& sensorMask;
+    const IndexMatrix& mSensorMask;
 
     /// Handle to a HDF5 dataset.
-    hid_t  dataset;
+    hid_t  mDataset;
 
     /// Time step to store (N/A for aggregated)
-    size_t sampledTimeStep;
+    size_t mSampledTimeStep;
 
     /// Has the sampling finished?
-    cudaEvent_t eventSamplingFinished;
+    cudaEvent_t mEventSamplingFinished;
 
 }; // end of TIndexOutputHDF5Stream
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
-#endif /* INDEX_OUTPUT_HDF5_STREAM_H */
+#endif /* IndexOutputStreamH */
 

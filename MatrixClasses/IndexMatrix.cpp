@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              19 July     2017, 12:16 (revised)
+ *              19 July     2017, 15:20 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -45,8 +45,8 @@
 /**
  * Constructor allocating memory.
  */
-IndexMatrix::IndexMatrix(const DimensionSizes& dimensionSizes) :
-  BaseIndexMatrix()
+IndexMatrix::IndexMatrix(const DimensionSizes& dimensionSizes)
+  : BaseIndexMatrix()
 {
   mDimensionSizes = dimensionSizes;
 

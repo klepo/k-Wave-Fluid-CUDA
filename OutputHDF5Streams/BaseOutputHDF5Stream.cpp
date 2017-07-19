@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              19 July      2017, 12:12 (revised)
+ *              19 July      2017, 15:38 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -41,218 +41,199 @@
 #include <Parameters/Parameters.h>
 
 
-//------------------------------------------------------------------------------------------------//
-//------------------------------------------ Constants -------------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------- Constants -----------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Public methods -----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Public methods ---------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
  * Constructor - there is no sensor mask by default!
- * it links the HDF5 dataset, source (sampled matrix) and the reduce operator together.
- * The constructor DOES NOT allocate memory because the size of the sensor mask is not known at
- * the time the instance of the class is being created.
- *
- * @param [in] file           - Handle to the HDF5 (output) file
- * @param [in] rootObjectName - The root object that stores the sample  data (dataset or group)
- * @param [in] sourceMatrix   - The source matrix (only real matrices are supported)
- * @param [in] reduceOp       - Reduce operator
  */
-TBaseOutputHDF5Stream::TBaseOutputHDF5Stream(THDF5_File&           file,
-                                             MatrixName&          rootObjectName,
-                                             const RealMatrix&    sourceMatrix,
-                                             const TReduceOperator reduceOp)
-            : file(file),
-              rootObjectName(rootObjectName),
-              sourceMatrix(sourceMatrix),
-              reduceOp(reduceOp)
+BaseOutputStream::BaseOutputStream(THDF5_File&           file,
+                                   MatrixName&          rootObjectName,
+                                   const RealMatrix&    sourceMatrix,
+                                   const ReduceOperator reduceOp)
+  : mFile(file),
+    mRootObjectName(rootObjectName),
+    mSourceMatrix(sourceMatrix),
+    mReduceOp(reduceOp)
 {
 
- }// end of TBaseOutputHDF5Stream
-//--------------------------------------------------------------------------------------------------
+ }// end of BaseOutputStream
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Apply post-processing on the buffer (Done on the GPU side as well).
  */
-void TBaseOutputHDF5Stream::PostProcess()
+void BaseOutputStream::postProcess()
 {
-  switch (reduceOp)
+  switch (mReduceOp)
   {
-    case TReduceOperator::NONE:
+    case ReduceOperator::kNone:
     {
       // do nothing
       break;
     }
 
-    case TReduceOperator::RMS:
+    case ReduceOperator::kRms:
     {
       const float scalingCoeff = 1.0f / (Parameters::getInstance().getNt() -
                                          Parameters::getInstance().getSamplingStartTimeIndex());
 
-      OutputStreamsCUDAKernels::PostProcessingRMS(deviceBuffer, scalingCoeff, bufferSize);
+      OutputStreamsCudaKernels::postProcessingRms(mDeviceBuffer, scalingCoeff, mSize);
       break;
     }
 
-    case TReduceOperator::MAX:
+    case ReduceOperator::kMax:
     {
       // do nothing
       break;
     }
 
-    case TReduceOperator::MIN:
+    case ReduceOperator::kMin:
     {
       // do nothing
       break;
     }
   }// switch
 
-}// end of ApplyPostProcessing
-//-------------------------------------------------------------------------------------------------
+}// end of postProcessing
+//----------------------------------------------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------------------------//
-//-------------------------------------- Protected methods ---------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Protected methods ------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
  * Allocate memory using proper memory alignment.
- *
- * @warning - This can routine is not used in the base class (should be used in derived ones).
  */
-void TBaseOutputHDF5Stream::AllocateMemory()
+void BaseOutputStream::allocateMemory()
 {
   // Allocate memory on the CPU side (always)
-  hostBuffer = (float*) _mm_malloc(bufferSize * sizeof (float), kDataAlignment);
+  mHostBuffer = (float*) _mm_malloc(mSize * sizeof (float), kDataAlignment);
 
-  if (!hostBuffer)
+  if (!mHostBuffer)
   {
     throw std::bad_alloc();
   }
 
   // memory allocation done on core 0 - GPU is pinned to the first sockets
   // we need different initialization for different reduce ops
-  switch (reduceOp)
+  switch (mReduceOp)
   {
-    case TReduceOperator::NONE :
+    case ReduceOperator::kNone:
     {
       // zero the matrix - on the CPU side and lock on core 0 (gpu pinned to 1st socket)
-      for (size_t i = 0; i < bufferSize; i++)
+      for (size_t i = 0; i < mSize; i++)
       {
-        hostBuffer[i] = 0.0f;
+        mHostBuffer[i] = 0.0f;
       }
       break;
     }
 
-    case TReduceOperator::RMS :
+    case ReduceOperator::kRms:
     {
       // zero the matrix - on the CPU side and lock on core 0 (gpu pinned to 1st socket)
-      for (size_t i = 0; i < bufferSize; i++)
+      for (size_t i = 0; i < mSize; i++)
       {
-        hostBuffer[i] = 0.0f;
+        mHostBuffer[i] = 0.0f;
       }
       break;
     }
 
-    case TReduceOperator::MAX :
+    case ReduceOperator::kMax:
     {
       // set the values to the highest negative float value - on the core 0
-      for (size_t i = 0; i < bufferSize; i++)
+      for (size_t i = 0; i < mSize; i++)
       {
-        hostBuffer[i] = -1 * std::numeric_limits<float>::max();
+        mHostBuffer[i] = -1 * std::numeric_limits<float>::max();
       }
       break;
     }
 
-    case TReduceOperator::MIN :
+    case ReduceOperator::kMin:
     {
       // set the values to the highest float value - on the core 0
-      for (size_t i = 0; i < bufferSize; i++)
+      for (size_t i = 0; i < mSize; i++)
       {
-        hostBuffer[i] = std::numeric_limits<float>::max();
+        mHostBuffer[i] = std::numeric_limits<float>::max();
       }
       break;
     }
   }// switch
 
   // Register Host memory (pin in memory only - no mapped data)
-  cudaCheckErrors(cudaHostRegister(hostBuffer,
-                                   bufferSize * sizeof (float),
+  cudaCheckErrors(cudaHostRegister(mHostBuffer,
+                                   mSize * sizeof (float),
                                    cudaHostRegisterPortable | cudaHostRegisterMapped));
   // cudaHostAllocWriteCombined - cannot be used since GPU writes and CPU reads
 
-  // Map CPU buffer to GPU memory (RAW data) or allocate a GPU buffer (aggregated)
-  if (reduceOp == TReduceOperator::NONE)
+  // Map CPU data to GPU memory (RAW data) or allocate a GPU data (aggregated)
+  if (mReduceOp == ReduceOperator::kNone)
   {
     // Register CPU memory for zero-copy
-    cudaCheckErrors(cudaHostGetDevicePointer<float>(&deviceBuffer, hostBuffer, 0));
+    cudaCheckErrors(cudaHostGetDevicePointer<float>(&mDeviceBuffer, mHostBuffer, 0));
   }
   else
   {
     // Allocate memory on the GPU side
-    if ((cudaMalloc<float>(&deviceBuffer, bufferSize * sizeof (float))!= cudaSuccess) || (!deviceBuffer))
+    if ((cudaMalloc<float>(&mDeviceBuffer, mSize * sizeof (float))!= cudaSuccess) || (!mDeviceBuffer))
     {
       throw std::bad_alloc();
     }
     // if doing aggregation copy initialised arrays on GPU
-    CopyDataToDevice();
+    copyToDevice();
   }
-}// end of AllocateMemory
-//--------------------------------------------------------------------------------------------------
+}// end of allocateMemory
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Free memory.
- *
- * @warning - This can routine is not used in the base class (should be used in derived ones).
  */
-void TBaseOutputHDF5Stream::FreeMemory()
+void BaseOutputStream::freeMemory()
 {
   // free host buffer
-  if (hostBuffer)
+  if (mHostBuffer)
   {
-    cudaHostUnregister(hostBuffer);
-    _mm_free(hostBuffer);
+    cudaHostUnregister(mHostBuffer);
+    _mm_free(mHostBuffer);
   }
-  hostBuffer = nullptr;
+  mHostBuffer = nullptr;
 
   // Free GPU memory
-  if (reduceOp != TReduceOperator::NONE)
+  if (mReduceOp != ReduceOperator::kNone)
   {
-    cudaCheckErrors(cudaFree(deviceBuffer));
+    cudaCheckErrors(cudaFree(mDeviceBuffer));
   }
-  deviceBuffer = nullptr;
+  mDeviceBuffer = nullptr;
 }// end of FreeMemory
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  *  Copy data hostBuffer -> deviceBuffer
  */
-void TBaseOutputHDF5Stream::CopyDataToDevice()
+void BaseOutputStream::copyToDevice()
 {
-
-  cudaCheckErrors(cudaMemcpy(deviceBuffer,
-                             hostBuffer,
-                             bufferSize * sizeof(float),
-                             cudaMemcpyHostToDevice));
-
-}// end of CopyDataToDevice
-//--------------------------------------------------------------------------------------------------
+  cudaCheckErrors(cudaMemcpy(mDeviceBuffer, mHostBuffer, mSize * sizeof(float), cudaMemcpyHostToDevice));
+}// end of copyToDevice
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Copy data deviceBuffer -> hostBuffer
  */
-void TBaseOutputHDF5Stream::CopyDataFromDevice()
+void BaseOutputStream::copyFromDevice()
 {
-  cudaCheckErrors(cudaMemcpy(hostBuffer,
-                             deviceBuffer,
-                             bufferSize * sizeof(float),
-                             cudaMemcpyDeviceToHost));
-}// end of CopyDataFromDevice
-//--------------------------------------------------------------------------------------------------
+  cudaCheckErrors(cudaMemcpy(mHostBuffer, mDeviceBuffer, mSize * sizeof(float), cudaMemcpyDeviceToHost));
+}// end of copyFromDevice
+//----------------------------------------------------------------------------------------------------------------------
 
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Private methods ----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------ Private methods ---------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 

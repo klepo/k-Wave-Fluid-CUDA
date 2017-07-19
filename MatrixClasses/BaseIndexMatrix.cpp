@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 14:17 (created) \n
- *              19 July     2017, 12:15 (revised)
+ *              19 July     2017, 15:20 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,12 +50,12 @@
 /**
  * Default constructor
  */
-BaseIndexMatrix::BaseIndexMatrix() :
-  BaseMatrix(),
-  mSize(0), mCapacity(0),
-  mDimensionSizes(),
-  mRowSize(0), mSlabSize(0),
-  mHostData(nullptr), mDeviceData(nullptr)
+BaseIndexMatrix::BaseIndexMatrix()
+  : BaseMatrix(),
+    mSize(0), mCapacity(0),
+    mDimensionSizes(),
+    mRowSize(0), mSlabSize(0),
+    mHostData(nullptr), mDeviceData(nullptr)
 {
 
 }// end of BaseIndexMatrix

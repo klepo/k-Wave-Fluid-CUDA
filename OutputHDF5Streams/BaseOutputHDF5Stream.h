@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              19 July      2017, 12:12 (revised)
+ *              19 July      2017, 15:21 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,8 +29,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef BASE_OUTPUT_HDF5_STREAM_H
-#define BASE_OUTPUT_HDF5_STREAM_H
+#ifndef BaseOutputStreamH
+#define BaseOutputStreamH
 
 
 #include <MatrixClasses/RealMatrix.h>
@@ -38,110 +38,130 @@
 #include <HDF5/HDF5_File.h>
 
 /**
- * @class   TBaseOutputHDF5Stream
+ * @class   BaseOutputStream
  * @brief   Abstract base class for output data streams (sampled data).
- * @details Abstract base class for output data streams (sampled data).
+ *
+ * Data are sampled based on the the sensor mask and the reduction operator. The sampled data is stored in the output
+ * HDF5 file.
  *
  */
-class TBaseOutputHDF5Stream
+class BaseOutputStream
 {
   public:
     /**
-     * @enum TReduceOperator
-     * @brief How to aggregate data.
+     * @enum  ReduceOperator
      * @brief How to aggregate data.
      */
-    enum class TReduceOperator
+    enum class ReduceOperator
     {
-      /// store actual data (time series)
-      NONE,
-       /// calculate root mean square
-      RMS,
-      /// store maximum
-      MAX,
-      /// store minimum
-      MIN
+      /// Store actual data (time series).
+      kNone,
+       /// Calculate root mean square
+      kRms,
+      /// Store maximum
+      kMax,
+      /// Store minimum
+      kMin
     };
 
 
     /// Default constructor not allowed.
-    TBaseOutputHDF5Stream() = delete;
-    /// Constructor.
-    TBaseOutputHDF5Stream(THDF5_File&           file,
-                          MatrixName&          rootObjectName,
-                          const RealMatrix&    sourceMatrix,
-                          const TReduceOperator reduceOp);
+    BaseOutputStream() = delete;
+    /**
+     * @brief Constructor - there is no sensor mask by default!
+     *
+     * The constructor links the HDF5 dataset, source (sampled matrix) and the reduce operator together.
+     * The constructor DOES NOT allocate memory because the size of the sensor mask is not known at the time the
+     * instance of the class is being created.
+     *
+     * @param [in] file           - Handle to the HDF5 (output) file.
+     * @param [in] rootObjectName - The root object that stores the sample  data (dataset or group).
+     * @param [in] sourceMatrix   - The source matrix (only real matrices are supported).
+     * @param [in] reduceOp       - Reduction operator.
+     */
+    BaseOutputStream(THDF5_File&          file,
+                     MatrixName&          rootObjectName,
+                     const RealMatrix&    sourceMatrix,
+                     const ReduceOperator reduceOp);
+
     /// Copy constructor not allowed.
-    TBaseOutputHDF5Stream(const TBaseOutputHDF5Stream&);
+    BaseOutputStream(const BaseOutputStream&) = delete;
     /// Destructor
-    virtual ~TBaseOutputHDF5Stream() {};
+    virtual ~BaseOutputStream() {};
 
     /// Operator= is not allowed.
-    TBaseOutputHDF5Stream& operator=(const TBaseOutputHDF5Stream&);
+    BaseOutputStream& operator=(const BaseOutputStream&) = delete;
 
     /// Create a HDF5 stream and allocate data for it.
-    virtual void Create() = 0;
+    virtual void create() = 0;
 
     /// Reopen the output stream after restart.
-    virtual void Reopen() = 0;
+    virtual void reopen() = 0;
 
     /// Sample data into buffer, apply reduction - based on a sensor mask (no data flushed to disk).
-    virtual void Sample() = 0;
+    virtual void sample() = 0;
 
     /// Flush raw data to disk.
-    virtual void FlushRaw() = 0;
+    virtual void flushRaw() = 0;
 
     /// Apply post-processing on the buffer and flush it to the file.
-    virtual void PostProcess();
+    virtual void postProcess();
 
     /// Checkpoint the stream.
-    virtual void Checkpoint() = 0;
+    virtual void checkpoint() = 0;
 
     /// Close stream (apply post-processing if necessary, flush data and close).
-    virtual void Close() = 0;
+    virtual void close() = 0;
 
   protected:
-    /// A generic function to allocate memory - not used in the base class.
-    virtual void AllocateMemory();
-    /// A generic function to free memory - not used in the base class.
-    virtual void FreeMemory();
+    /**
+     * @brief    Allocate memory using proper memory alignment.
+     * @throw    std::bad_alloc - If there's not enough memory.
+     * @warning  This can routine is not used in the base class (should be used in derived ones).
+     */
+    virtual void allocateMemory();
+    /**
+     * @brief   Free memory.
+     * @warning This can routine is not used in the base class (should be used in derived ones).
+     */
+    virtual void freeMemory();
 
-    /// Copy data hostBuffer-> deviceBuffer
-    virtual void CopyDataToDevice();
-    /// Copy data deviceBuffer -> hostBuffer
-    virtual void CopyDataFromDevice();
+    /// Copy data Host -> Device
+    virtual void copyToDevice();
+    /// Copy data Device -> Host
+    virtual void copyFromDevice();
 
-    /// HDF5 file handle.
-    THDF5_File& file;
+    /// Handle to HDF5 output file
+    THDF5_File& mFile;
 
-    /// Dataset name.
-    std::string rootObjectName;
+    /// HDF5 group in the output file where to store data in.
+    std::string mRootObjectName;
 
     /// Source matrix to be sampled.
-    const RealMatrix& sourceMatrix;
+    const RealMatrix& mSourceMatrix;
 
     /// HDF5 dataset handle.
-    hid_t dataset;
-    /// Reduce operator.
-    const TReduceOperator reduceOp;
+    hid_t mDataset;
+    /// Reduction operator.
+    const ReduceOperator mReduceOp;
 
     /// Position in the dataset
-    DimensionSizes position;
+    DimensionSizes mPosition;
 
     /// Buffer size
-    size_t  bufferSize;
+    size_t  mSize;
 
     /// Temporary buffer for store on the GPU side
-    float* hostBuffer;
+    float* mHostBuffer;
     /// Temporary buffer on the GPU side - only for aggregated quantities
-    float* deviceBuffer;
+    float* mDeviceBuffer;
 
     /// chunk size of 4MB in number of float elements
-    static constexpr size_t CHUNK_SIZE_4MB = 1048576;
+    static constexpr size_t kChunkSize4MB = 1048576;
     /// The minimum number of elements to start sampling in parallel (4MB)
-    static constexpr size_t MIN_GRIDPOINTS_TO_SAMPLE_IN_PARALLEL = 1048576;
+    static constexpr size_t kMinGridpointsToSampleInParallel = 1048576;
 
-};// end of TBaseOutputHDF5Stream
-//--------------------------------------------------------------------------------------------------
-#endif /* BASE_OUTPUT_HDF5_STREAM_H */
+};// end of BaseOutputStream
+//----------------------------------------------------------------------------------------------------------------------
+#endif /* BaseOutputStreamH */
 

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        04 December  2014, 11:00 (created)
- *              11 July      2017, 14:41 (revised)
+ *              19 July      2017, 15:18 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -113,7 +113,7 @@ class TOutputStreamContainer
      * @param [in] outputStreamIdx - id of the output stream
      * @return an element of the container
      */
-    TBaseOutputHDF5Stream& operator[] (const TOutputStreamIdx outputStreamIdx)
+    BaseOutputStream& operator[] (const TOutputStreamIdx outputStreamIdx)
     {
       return (* (outputStreamContainer[outputStreamIdx]));
     };
@@ -145,13 +145,13 @@ class TOutputStreamContainer
 
    private:
     /// Create a new output stream
-    TBaseOutputHDF5Stream* CreateNewOutputStream(TMatrixContainer&                            matrixContainer,
+    BaseOutputStream* CreateNewOutputStream(TMatrixContainer&                            matrixContainer,
                                                  const TMatrixContainer::TMatrixIdx           sampledMatrixIdx,
                                                  const MatrixName&                           fileDatasetName,
-                                                 const TBaseOutputHDF5Stream::TReduceOperator reduceOp);
+                                                 const BaseOutputStream::ReduceOperator reduceOp);
 
     /// Output stream map.
-    using TOutputStreamMap = std::map<TOutputStreamIdx, TBaseOutputHDF5Stream*>;
+    using TOutputStreamMap = std::map<TOutputStreamIdx, BaseOutputStream*>;
 
     /// Map with output streams.
     TOutputStreamMap outputStreamContainer;

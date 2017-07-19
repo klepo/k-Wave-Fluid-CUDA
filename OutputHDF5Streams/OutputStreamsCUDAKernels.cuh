@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 January   2015, 16:25 (created) \n
- *              29 July      2016, 14:19 (revised)
+ *              19 July      2017, 15:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,8 +30,8 @@
  */
 
 
-#ifndef OUTPUT_STREAMS_CUDA_KERNELS_CUH
-#define	OUTPUT_STREAMS_CUDA_KERNELS_CUH
+#ifndef OutputStreamsCudaKernelsH
+#define OutputStreamsCudaKernelsH
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -39,41 +39,72 @@
 #include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
 
 /**
- * @namespace   OutputStreamsCUDAKernels
+ * @namespace   OutputStreamsCudaKernels
  * @brief       List of cuda kernels used for sampling data.
  * @details     List of cuda kernels used for sampling data.
  *
  */
-namespace OutputStreamsCUDAKernels
+namespace OutputStreamsCudaKernels
 {
-  /// Kernel to sample quantities using an index sensor mask
-  template<TBaseOutputHDF5Stream::TReduceOperator reduceOp>
-  void SampleIndex(float*        samplingBuffer,
+  /**
+   * @brief  Sample the source matrix using the index sensor mask and store data in buffer.
+   *
+   * @tparam      reduceOp         - Reduction operator
+   * @param [out] samplingBuffer   - Buffer to sample data in
+   * @param [in]  sourceData       - Source matrix
+   * @param [in]  sensorData       - Sensor mask
+   * @param [in]  nSamples         - Number of sampled points
+   */
+  template<BaseOutputStream::ReduceOperator reduceOp>
+  void sampleIndex(float*        samplingBuffer,
                    const float*  sourceData,
                    const size_t* sensorData,
                    const size_t  nSamples);
 
-  /// Kernel to sample quantities inside one cuboid
-  template<TBaseOutputHDF5Stream::TReduceOperator reduceOp>
-  void SampleCuboid(float*       samplingBuffer,
+  /**
+   * @brief  Sample data inside one cuboid and store it to buffer. The operation is given in the template parameter.
+   *
+   * @tparam      reduceOp         - Reduction operator
+   * @param [out] samplingBuffer    - Buffer to sample data in
+   * @param [in]  sourceData        - Source matrix
+   * @param [in]  topLeftCorner     - Top left corner of the cuboid
+   * @param [in]  bottomRightCorner - Bottom right corner of the cuboid
+   * @param [in]  matrixSize        - Size of the matrix being sampled
+   * @param [in]  nSamples          - Number of grid points inside the cuboid
+   */
+  template<BaseOutputStream::ReduceOperator reduceOp>
+  void sampleCuboid(float*       samplingBuffer,
                     const float* sourceData,
                     const dim3   topLeftCorner,
                     const dim3   bottomRightCorner,
                     const dim3   matrixSize,
                     const size_t nSamples);
 
-  /// Kernel to sample of the quantity on the whole domain
-  template<TBaseOutputHDF5Stream::TReduceOperator reduceOp>
-  void SampleAll(float*       samplingBuffer,
+  /**
+   * @brief Sample and the whole domain and apply a defined operator.
+   *
+   * @tparam      reduceOp         - Reduction operator
+   * @param [in,out] samplingBuffer - Buffer to sample data in
+   * @param [in]     sourceData     - Source matrix
+   * @param [in]     nSamples       - Number of sampled points
+   */
+  template<BaseOutputStream::ReduceOperator reduceOp>
+  void sampleAll(float*       samplingBuffer,
                  const float* sourceData,
                  const size_t nSamples);
 
-  /// Kernel to calculate post-processing for RMS
-  void PostProcessingRMS(float*       samplingBuffer,
+  /**
+   * @brief Calculate post-processing for RMS.
+   *
+   * @param [in, out] samplingBuffer - Buffer to apply post-processing on
+   * @param [in]      scalingCoeff   - Scaling coefficent
+   * @param [in]      nSamples       - Number of elements
+   */
+  void postProcessingRms(float*       samplingBuffer,
                          const float  scalingCoeff,
                          const size_t nSamples);
-}// end of OutputStreamsCUDAKernels
-//--------------------------------------------------------------------------------------------------
+}// end of OutputStreamsCudaKernels
+//----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* OUTPUT_STREAMS_CUDA_KERNELS_H */
+#endif	/* OutputStreamsCudaKernelsH */
 
