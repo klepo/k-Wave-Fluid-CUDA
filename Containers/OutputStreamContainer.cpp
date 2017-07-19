@@ -32,10 +32,10 @@
 #include <Parameters/Parameters.h>
 #include <Containers/OutputStreamContainer.h>
 
-#include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
-#include <OutputHDF5Streams/IndexOutputHDF5Stream.h>
-#include <OutputHDF5Streams/CuboidOutputHDF5Stream.h>
-#include <OutputHDF5Streams/WholeDomainOutputHDF5Stream.h>
+#include <OutputStreams/BaseOutputStream.h>
+#include <OutputStreams/IndexOutputStream.h>
+#include <OutputStreams/CuboidOutputStream.h>
+#include <OutputStreams/WholeDomainOutputStream.h>
 
 
 //------------------------------------------------------------------------------------------------//

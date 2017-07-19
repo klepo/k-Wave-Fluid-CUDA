@@ -48,11 +48,11 @@ OBJECTFILES= \
 	${OBJECTDIR}/MatrixClasses/CufftComplexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/IndexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/RealMatrix.o \
-	${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o \
-	${OBJECTDIR}/OutputHDF5Streams/CuboidOutputHDF5Stream.o \
-	${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o \
-	${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o \
-	${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o \
+	${OBJECTDIR}/OutputStreams/BaseOutputStream.o \
+	${OBJECTDIR}/OutputStreams/CuboidOutputStream.o \
+	${OBJECTDIR}/OutputStreams/IndexOutputStream.o \
+	${OBJECTDIR}/OutputStreams/OutputStreamsCudaKernels.o \
+	${OBJECTDIR}/OutputStreams/WholeDomainOutputStream.o \
 	${OBJECTDIR}/Parameters/CommandLineParameters.o \
 	${OBJECTDIR}/Parameters/CudaDeviceConstants.o \
 	${OBJECTDIR}/Parameters/CudaParameters.o \
@@ -136,25 +136,25 @@ ${OBJECTDIR}/MatrixClasses/RealMatrix.o: MatrixClasses/RealMatrix.cpp
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
 	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/RealMatrix.o MatrixClasses/RealMatrix.cpp
 
-${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o: OutputHDF5Streams/BaseOutputHDF5Stream.cpp
-	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o OutputHDF5Streams/BaseOutputHDF5Stream.cpp
+${OBJECTDIR}/OutputStreams/BaseOutputStream.o: OutputStreams/BaseOutputStream.cpp
+	${MKDIR} -p ${OBJECTDIR}/OutputStreams
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputStreams/BaseOutputStream.o OutputStreams/BaseOutputStream.cpp
 
-${OBJECTDIR}/OutputHDF5Streams/CuboidOutputHDF5Stream.o: OutputHDF5Streams/CuboidOutputHDF5Stream.cpp
-	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/CuboidOutputHDF5Stream.o OutputHDF5Streams/CuboidOutputHDF5Stream.cpp
+${OBJECTDIR}/OutputStreams/CuboidOutputStream.o: OutputStreams/CuboidOutputStream.cpp
+	${MKDIR} -p ${OBJECTDIR}/OutputStreams
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputStreams/CuboidOutputStream.o OutputStreams/CuboidOutputStream.cpp
 
-${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o: OutputHDF5Streams/IndexOutputHDF5Stream.cpp
-	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o OutputHDF5Streams/IndexOutputHDF5Stream.cpp
+${OBJECTDIR}/OutputStreams/IndexOutputStream.o: OutputStreams/IndexOutputStream.cpp
+	${MKDIR} -p ${OBJECTDIR}/OutputStreams
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputStreams/IndexOutputStream.o OutputStreams/IndexOutputStream.cpp
 
-${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o: OutputHDF5Streams/OutputStreamsCUDAKernels.cu
-	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o OutputHDF5Streams/OutputStreamsCUDAKernels.cu
+${OBJECTDIR}/OutputStreams/OutputStreamsCudaKernels.o: OutputStreams/OutputStreamsCudaKernels.cu
+	${MKDIR} -p ${OBJECTDIR}/OutputStreams
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputStreams/OutputStreamsCudaKernels.o OutputStreams/OutputStreamsCudaKernels.cu
 
-${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o: OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp
-	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp
+${OBJECTDIR}/OutputStreams/WholeDomainOutputStream.o: OutputStreams/WholeDomainOutputStream.cpp
+	${MKDIR} -p ${OBJECTDIR}/OutputStreams
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputStreams/WholeDomainOutputStream.o OutputStreams/WholeDomainOutputStream.cpp
 
 ${OBJECTDIR}/Parameters/CommandLineParameters.o: Parameters/CommandLineParameters.cpp
 	${MKDIR} -p ${OBJECTDIR}/Parameters

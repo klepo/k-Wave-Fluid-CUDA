@@ -1,5 +1,5 @@
 /**
- * @file        OutputStreamsCUDAKernels.cuh
+ * @file        OutputStreamsCudaKernels.cuh
  *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
@@ -36,7 +36,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
+#include <OutputStreams/BaseOutputStream.h>
 
 /**
  * @namespace   OutputStreamsCudaKernels

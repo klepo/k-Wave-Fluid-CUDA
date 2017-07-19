@@ -1,5 +1,5 @@
 /**
- * @file        IndexOutputHDF5Stream.h
+ * @file        IndexOutputStream.h
  *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
@@ -34,7 +34,7 @@
 
 #include <cuda_runtime.h>
 
-#include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
+#include <OutputStreams/BaseOutputStream.h>
 
 /**
  * @class   IndexOutputStream.

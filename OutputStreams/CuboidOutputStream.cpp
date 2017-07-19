@@ -1,5 +1,5 @@
 /**
- * @file        CuboidOutputHDF5Stream.cpp
+ * @file        CuboidOutputStream.cpp
  *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
@@ -30,8 +30,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#include <OutputHDF5Streams/CuboidOutputHDF5Stream.h>
-#include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
+#include <OutputStreams/CuboidOutputStream.h>
+#include <OutputStreams/OutputStreamsCudaKernels.cuh>
 
 #include <Parameters/Parameters.h>
 #include <Logger/Logger.h>

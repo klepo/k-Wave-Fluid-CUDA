@@ -1,5 +1,5 @@
 /**
- * @file        WholeDomainOutputHDF5Stream.cpp
+ * @file        WholeDomainOutputStream.cpp
  *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
@@ -30,10 +30,10 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#include <OutputHDF5Streams/WholeDomainOutputHDF5Stream.h>
+#include <OutputStreams/WholeDomainOutputStream.h>
 #include <Parameters/Parameters.h>
 
-#include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
+#include <OutputStreams/OutputStreamsCudaKernels.cuh>
 
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------ Constants -------------------------------------------//

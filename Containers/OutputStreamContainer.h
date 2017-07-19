@@ -36,7 +36,7 @@
 #include <map>
 
 #include <Containers/MatrixContainer.h>
-#include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
+#include <OutputStreams/BaseOutputStream.h>
 
 #include <Utils/MatrixNames.h>
 #include <Utils/DimensionSizes.h>

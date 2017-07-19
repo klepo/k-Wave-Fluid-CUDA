@@ -19,6 +19,7 @@
                 <sourceRootElem>Containers</sourceRootElem>
                 <sourceRootElem>OutputHDF5Streams</sourceRootElem>
                 <sourceRootElem>Logger</sourceRootElem>
+                <sourceRootElem>OutputStreams</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>

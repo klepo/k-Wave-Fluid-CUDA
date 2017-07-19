@@ -1,5 +1,5 @@
 /**
- * @file        WholeDomainOutputHDF5Stream.h
+ * @file        WholeDomainOutputStream.h
  *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
@@ -33,7 +33,7 @@
 #ifndef WholeDomainOutputStreamH
 #define WholeDomainOutputStreamH
 
-#include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
+#include <OutputStreams/BaseOutputStream.h>
 
 /**
  * @class   WholeDomainOutputStream

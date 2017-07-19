@@ -1,5 +1,5 @@
 /**
- * @file        BaseOutputHDF5Stream.h
+ * @file        BaseOutputStream.h
  *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n

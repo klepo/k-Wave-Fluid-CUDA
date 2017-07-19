@@ -1,5 +1,5 @@
 /**
- * @file        BaseOutputHDF5Stream.cpp
+ * @file        BaseOutputStream.cpp
  *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
@@ -34,8 +34,8 @@
 #include <limits>
 #include <immintrin.h>
 
-#include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
-#include <OutputHDF5Streams/OutputStreamsCUDAKernels.cuh>
+#include <OutputStreams/BaseOutputStream.h>
+#include <OutputStreams/OutputStreamsCudaKernels.cuh>
 
 #include <Logger/Logger.h>
 #include <Parameters/Parameters.h>
