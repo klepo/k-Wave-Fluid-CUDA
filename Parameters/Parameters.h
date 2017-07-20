@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        08 December 2011, 16:34 (created)      \n
- *              20 July     2017, 14:23 (revised)
+ *              20 July     2017, 17:01 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -37,7 +37,8 @@
 #include <Parameters/CudaParameters.h>
 #include <Parameters/CommandLineParameters.h>
 #include <Utils/DimensionSizes.h>
-#include <HDF5/HDF5_File.h>
+#include <Hdf5/Hdf5FileHeader.h>
+#include <Hdf5/Hdf5FileHeader.h>
 
 /**
  * @class   Parameters

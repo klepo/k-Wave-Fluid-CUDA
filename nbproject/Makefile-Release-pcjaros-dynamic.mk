@@ -38,7 +38,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/Containers/MatrixContainer.o \
 	${OBJECTDIR}/Containers/MatrixRecord.o \
 	${OBJECTDIR}/Containers/OutputStreamContainer.o \
-	${OBJECTDIR}/HDF5/HDF5_File.o \
+	${OBJECTDIR}/Hdf5/Hdf5File.o \
+	${OBJECTDIR}/Hdf5/Hdf5FileHeader.o \
 	${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o \
 	${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o \
 	${OBJECTDIR}/Logger/Logger.o \
@@ -96,9 +97,13 @@ ${OBJECTDIR}/Containers/OutputStreamContainer.o: Containers/OutputStreamContaine
 	${MKDIR} -p ${OBJECTDIR}/Containers
 	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Containers/OutputStreamContainer.o Containers/OutputStreamContainer.cpp
 
-${OBJECTDIR}/HDF5/HDF5_File.o: HDF5/HDF5_File.cpp
-	${MKDIR} -p ${OBJECTDIR}/HDF5
-	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/HDF5/HDF5_File.o HDF5/HDF5_File.cpp
+${OBJECTDIR}/Hdf5/Hdf5File.o: Hdf5/Hdf5File.cpp
+	${MKDIR} -p ${OBJECTDIR}/Hdf5
+	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Hdf5/Hdf5File.o Hdf5/Hdf5File.cpp
+
+${OBJECTDIR}/Hdf5/Hdf5FileHeader.o: Hdf5/Hdf5FileHeader.cpp
+	${MKDIR} -p ${OBJECTDIR}/Hdf5
+	$(COMPILE.cc) -O3 -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Hdf5/Hdf5FileHeader.o Hdf5/Hdf5FileHeader.cpp
 
 ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o: KSpaceSolver/KSpaceFirstOrder3DSolver.cpp
 	${MKDIR} -p ${OBJECTDIR}/KSpaceSolver

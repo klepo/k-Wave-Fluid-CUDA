@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              20 July     2017, 14:14 (revised)
+ *              20 July     2017, 17:01 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -52,6 +52,9 @@
 #include <limits>
 
 #include <KSpaceSolver/KSpaceFirstOrder3DSolver.h>
+
+#include <Hdf5/Hdf5FileHeader.h>
+#include <Hdf5/Hdf5File.h>
 
 #include <Logger/ErrorMessages.h>
 #include <Logger/Logger.h>

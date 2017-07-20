@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August   2012, 11:25 (created) \n
- *              17 July     2017, 16:15 (revised)
+ *              20 July     2017, 17:01 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -49,7 +49,7 @@
 #include <Logger/Logger.h>
 #include <Parameters/CudaParameters.h>
 #include <Parameters/CommandLineParameters.h>
-#include <HDF5/HDF5_File.h>
+#include <Hdf5/Hdf5File.h>
 
 using std::string;
 

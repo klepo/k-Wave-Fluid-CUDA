@@ -20,12 +20,12 @@
             <url>KSpaceSolver/KSpaceFirstOrder3DSolver.cpp</url>
             <bookmark id="8">
                 <name/>
-                <line>1674</line>
+                <line>1677</line>
                 <key/>
             </bookmark>
             <bookmark id="10">
                 <name/>
-                <line>1956</line>
+                <line>1959</line>
                 <key/>
             </bookmark>
         </file>
@@ -46,16 +46,10 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/home/jarosjir/Devices/kazi/Sources/K-Wave++/k-Wave-Fluid-CUDA/main.cpp</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-Wave-Fluid-CUDA/OutputStreams/WholeDomainOutputStream.h</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-Wave-Fluid-CUDA/OutputStreams/CuboidOutputStream.h</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-Wave-Fluid-CUDA/OutputStreams/BaseOutputStream.h</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-Wave-Fluid-CUDA/OutputStreams/OutputStreamsCudaKernels.cuh</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-Wave-Fluid-CUDA/OutputStreams/IndexOutputStream.cpp</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-Wave-Fluid-CUDA/OutputStreams/BaseOutputStream.cpp</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-Wave-Fluid-CUDA/OutputStreams/IndexOutputStream.h</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-Wave-Fluid-CUDA/OutputStreams/OutputStreamsCudaKernels.cu</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-Wave-Fluid-CUDA/OutputStreams/WholeDomainOutputStream.cpp</file>
-            <file>file:/home/jarosjir/Sources/K-Wave++/k-Wave-Fluid-CUDA/OutputStreams/CuboidOutputStream.cpp</file>
+            <file>file:/home/jarosjir/Devices/kazi/Sources/K-Wave++/k-Wave-Fluid-CUDA/Hdf5/Hdf5File.cpp</file>
+            <file>file:/home/jarosjir/Devices/kazi/Sources/K-Wave++/k-Wave-Fluid-CUDA/Hdf5/Hdf5FileHeader.cpp</file>
+            <file>file:/home/jarosjir/Devices/kazi/Sources/K-Wave++/k-Wave-Fluid-CUDA/Hdf5/Hdf5FileHeader.h</file>
+            <file>file:/home/jarosjir/Devices/kazi/Sources/K-Wave++/k-Wave-Fluid-CUDA/Hdf5/Hdf5File.h</file>
         </group>
     </open-files>
 </project-private>

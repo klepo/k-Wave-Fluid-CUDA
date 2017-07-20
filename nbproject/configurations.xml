@@ -9,9 +9,11 @@
       <itemPath>Containers/OutputStreamContainer.cpp</itemPath>
       <itemPath>Containers/OutputStreamContainer.h</itemPath>
     </logicalFolder>
-    <logicalFolder name="HDF5" displayName="HDF5" projectFiles="true">
-      <itemPath>HDF5/HDF5_File.cpp</itemPath>
-      <itemPath>HDF5/HDF5_File.h</itemPath>
+    <logicalFolder name="Hdf5" displayName="Hdf5" projectFiles="true">
+      <itemPath>Hdf5/Hdf5File.cpp</itemPath>
+      <itemPath>Hdf5/Hdf5File.h</itemPath>
+      <itemPath>Hdf5/Hdf5FileHeader.cpp</itemPath>
+      <itemPath>Hdf5/Hdf5FileHeader.h</itemPath>
     </logicalFolder>
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
@@ -105,13 +107,13 @@
   </logicalFolder>
   <sourceRootList>
     <Elem>CUDA</Elem>
-    <Elem>HDF5</Elem>
+    <Elem>Hdf5</Elem>
     <Elem>KSpaceSolver</Elem>
     <Elem>MatrixClasses</Elem>
     <Elem>Parameters</Elem>
     <Elem>Utils</Elem>
     <Elem>Containers</Elem>
-    <Elem>OutputHDF5Streams</Elem>
+    <Elem>OutputStreams</Elem>
     <Elem>Logger</Elem>
     <Elem>OutputStreams</Elem>
   </sourceRootList>
@@ -159,52 +161,12 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2  -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 -lineinfo</commandLine>
         </linkerTool>
       </compileType>
-      <item path="OutputStreams/BaseOutputStream.cpp"
+      <item path="Hdf5/Hdf5FileHeader.cpp"
             ex="false"
             tool="1"
             flavor2="0">
       </item>
-      <item path="OutputStreams/BaseOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.h"
+      <item path="Hdf5/Hdf5FileHeader.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -224,9 +186,9 @@
       </item>
       <item path="Containers/OutputStreamContainer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="0">
+      <item path="Hdf5/Hdf5File.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
+      <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
@@ -286,6 +248,44 @@
       <item path="MatrixClasses/RealMatrix.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="MatrixClasses/RealMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
@@ -359,52 +359,12 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 -lineinfo</commandLine>
         </linkerTool>
       </compileType>
-      <item path="OutputStreams/BaseOutputStream.cpp"
+      <item path="Hdf5/Hdf5FileHeader.cpp"
             ex="false"
             tool="1"
             flavor2="0">
       </item>
-      <item path="OutputStreams/BaseOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.h"
+      <item path="Hdf5/Hdf5FileHeader.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -424,9 +384,9 @@
       </item>
       <item path="Containers/OutputStreamContainer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="8">
+      <item path="Hdf5/Hdf5File.cpp" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
+      <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
@@ -486,6 +446,44 @@
       <item path="MatrixClasses/RealMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="MatrixClasses/RealMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
@@ -559,52 +557,12 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp" -G -lineinfo</commandLine>
         </linkerTool>
       </compileType>
-      <item path="OutputStreams/BaseOutputStream.cpp"
+      <item path="Hdf5/Hdf5FileHeader.cpp"
             ex="false"
             tool="1"
             flavor2="0">
       </item>
-      <item path="OutputStreams/BaseOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.h"
+      <item path="Hdf5/Hdf5FileHeader.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -624,9 +582,9 @@
       </item>
       <item path="Containers/OutputStreamContainer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="8">
+      <item path="Hdf5/Hdf5File.cpp" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
+      <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
@@ -686,6 +644,44 @@
       <item path="MatrixClasses/RealMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="MatrixClasses/RealMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
@@ -758,52 +754,12 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2  -Wall -fopenmp" -G -lineinfo</commandLine>
         </linkerTool>
       </compileType>
-      <item path="OutputStreams/BaseOutputStream.cpp"
+      <item path="Hdf5/Hdf5FileHeader.cpp"
             ex="false"
             tool="1"
             flavor2="0">
       </item>
-      <item path="OutputStreams/BaseOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.h"
+      <item path="Hdf5/Hdf5FileHeader.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -823,9 +779,9 @@
       </item>
       <item path="Containers/OutputStreamContainer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="8">
+      <item path="Hdf5/Hdf5File.cpp" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
+      <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
@@ -885,6 +841,44 @@
       <item path="MatrixClasses/RealMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="MatrixClasses/RealMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
@@ -959,52 +953,12 @@
           <commandLine>-Xcompiler="-Wall -fopenmp -mavx" -arch=compute_52 -code=sm_52</commandLine>
         </linkerTool>
       </compileType>
-      <item path="OutputStreams/BaseOutputStream.cpp"
+      <item path="Hdf5/Hdf5FileHeader.cpp"
             ex="false"
             tool="1"
             flavor2="0">
       </item>
-      <item path="OutputStreams/BaseOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.h"
+      <item path="Hdf5/Hdf5FileHeader.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -1024,9 +978,9 @@
       </item>
       <item path="Containers/OutputStreamContainer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="8">
+      <item path="Hdf5/Hdf5File.cpp" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
+      <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
@@ -1086,6 +1040,44 @@
       <item path="MatrixClasses/RealMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="MatrixClasses/RealMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
@@ -1158,52 +1150,12 @@
           <commandLine>-Xcompiler="-Wall -O3 -fopenmp -mavx" -arch=compute_52 -code=sm_52</commandLine>
         </linkerTool>
       </compileType>
-      <item path="OutputStreams/BaseOutputStream.cpp"
+      <item path="Hdf5/Hdf5FileHeader.cpp"
             ex="false"
             tool="1"
             flavor2="0">
       </item>
-      <item path="OutputStreams/BaseOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.h"
+      <item path="Hdf5/Hdf5FileHeader.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -1223,9 +1175,9 @@
       </item>
       <item path="Containers/OutputStreamContainer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="8">
+      <item path="Hdf5/Hdf5File.cpp" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
+      <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
@@ -1285,6 +1237,44 @@
       <item path="MatrixClasses/RealMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="MatrixClasses/RealMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
@@ -1357,52 +1347,12 @@
           <commandLine>-Xcompiler="-Wall -fopenmp "</commandLine>
         </linkerTool>
       </compileType>
-      <item path="OutputStreams/BaseOutputStream.cpp"
+      <item path="Hdf5/Hdf5FileHeader.cpp"
             ex="false"
             tool="1"
             flavor2="0">
       </item>
-      <item path="OutputStreams/BaseOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.h"
+      <item path="Hdf5/Hdf5FileHeader.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -1422,9 +1372,9 @@
       </item>
       <item path="Containers/OutputStreamContainer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="8">
+      <item path="Hdf5/Hdf5File.cpp" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
+      <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
@@ -1484,6 +1434,44 @@
       <item path="MatrixClasses/RealMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="MatrixClasses/RealMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"
@@ -1555,52 +1543,12 @@
           <commandLine>-Xcompiler="-Wall -O3 -fopenmp"</commandLine>
         </linkerTool>
       </compileType>
-      <item path="OutputStreams/BaseOutputStream.cpp"
+      <item path="Hdf5/Hdf5FileHeader.cpp"
             ex="false"
             tool="1"
             flavor2="0">
       </item>
-      <item path="OutputStreams/BaseOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/CuboidOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/IndexOutputStream.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="OutputStreams/WholeDomainOutputStream.h"
+      <item path="Hdf5/Hdf5FileHeader.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -1620,9 +1568,9 @@
       </item>
       <item path="Containers/OutputStreamContainer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="HDF5/HDF5_File.cpp" ex="false" tool="1" flavor2="8">
+      <item path="Hdf5/Hdf5File.cpp" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="HDF5/HDF5_File.h" ex="false" tool="3" flavor2="0">
+      <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
@@ -1682,6 +1630,44 @@
       <item path="MatrixClasses/RealMatrix.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="MatrixClasses/RealMatrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="OutputStreams/BaseOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/CuboidOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/IndexOutputStream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cu"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/OutputStreamsCudaKernels.cuh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="OutputStreams/WholeDomainOutputStream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="Parameters/CommandLineParameters.cpp"
             ex="false"

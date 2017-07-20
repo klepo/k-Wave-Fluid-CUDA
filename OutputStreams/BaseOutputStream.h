@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              20 July      2017, 14:20 (revised)
+ *              20 July      2017, 17:01 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -35,7 +35,7 @@
 
 #include <MatrixClasses/RealMatrix.h>
 #include <MatrixClasses/IndexMatrix.h>
-#include <HDF5/HDF5_File.h>
+#include <Hdf5/Hdf5File.h>
 
 /**
  * @class   BaseOutputStream
