@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              19 July     2017, 15:20 (revised)
+ *              20 July     2017, 14:18 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -73,28 +73,28 @@ IndexMatrix::~IndexMatrix()
 /**
  * Read data from HDF5 file (only from the root group).
  */
-void IndexMatrix::readData(THDF5_File&  file,
+void IndexMatrix::readData(Hdf5File&   file,
                            MatrixName& matrixName)
 {
-  if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDataType::LONG)
+  if (file.readMatrixDataType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDataType::kLong)
   {
     throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotIndex, matrixName.c_str()));
   }
 
-  if (file.ReadMatrixDomainType(file.GetRootGroup(),matrixName) != THDF5_File::TMatrixDomainType::REAL)
+  if (file.readMatrixDomainType(file.getRootGroup(),matrixName) != Hdf5File::MatrixDomainType::kReal)
   {
     throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotReal,matrixName.c_str()));
   }
 
-  file.ReadCompleteDataset(file.GetRootGroup(), matrixName, mDimensionSizes, mHostData);
+  file.readCompleteDataset(file.getRootGroup(), matrixName, mDimensionSizes, mHostData);
 }// end of readData
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write data to HDF5 file.
  */
-void IndexMatrix::writeData(THDF5_File&  file,
-                            MatrixName& matrixName,
+void IndexMatrix::writeData(Hdf5File&    file,
+                            MatrixName&  matrixName,
                             const size_t compressionLevel)
 {
   // set chunks - may be necessary for long index based sensor masks
@@ -120,19 +120,19 @@ void IndexMatrix::writeData(THDF5_File&  file,
   }
 
   // create dataset and write a slab
-  hid_t dataset = file.CreateIndexDataset(file.GetRootGroup(),
+  hid_t dataset = file.createIndexDataset(file.getRootGroup(),
                                           matrixName,
                                           mDimensionSizes,
                                           chunks,
                                           compressionLevel);
 
-  file.WriteHyperSlab(dataset, DimensionSizes(0, 0, 0), mDimensionSizes, mHostData);
+  file.writeHyperSlab(dataset, DimensionSizes(0, 0, 0), mDimensionSizes, mHostData);
 
-  file.CloseDataset(dataset);
+  file.closeDataset(dataset);
 
   // write data and domain types
-  file.WriteMatrixDataType(file.GetRootGroup(),   matrixName, THDF5_File::TMatrixDataType::LONG);
-  file.WriteMatrixDomainType(file.GetRootGroup(), matrixName, THDF5_File::TMatrixDomainType::REAL);
+  file.writeMatrixDataType(file.getRootGroup(),   matrixName, Hdf5File::MatrixDataType::kLong);
+  file.writeMatrixDomainType(file.getRootGroup(), matrixName, Hdf5File::MatrixDomainType::kReal);
 }// end of writeData
 //----------------------------------------------------------------------------------------------------------------------
 

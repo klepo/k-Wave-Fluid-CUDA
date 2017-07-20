@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              19 July      2017, 15:38 (revised)
+ *              20 July      2017, 14:20 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -53,7 +53,7 @@
 /**
  * Constructor - there is no sensor mask by default!
  */
-BaseOutputStream::BaseOutputStream(THDF5_File&           file,
+BaseOutputStream::BaseOutputStream(Hdf5File&            file,
                                    MatrixName&          rootObjectName,
                                    const RealMatrix&    sourceMatrix,
                                    const ReduceOperator reduceOp)

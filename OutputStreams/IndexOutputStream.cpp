@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August    2014, 10:10 (created)
- *              19 July      2017, 15:21 (revised)
+ *              20 July      2017, 14:21 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -48,7 +48,7 @@
 /**
  * Constructor.
  */
-IndexOutputStream::IndexOutputStream(THDF5_File&           file,
+IndexOutputStream::IndexOutputStream(Hdf5File&            file,
                                      MatrixName&          datasetName,
                                      const RealMatrix&    sourceMatrix,
                                      const IndexMatrix&   sensorMask,
@@ -103,15 +103,15 @@ void IndexOutputStream::create()
   }
 
   // Create a dataset under the root group
-  mDataset = mFile.CreateFloatDataset(mFile.GetRootGroup(),
+  mDataset = mFile.createFloatDataset(mFile.getRootGroup(),
                                       mRootObjectName,
                                       datasetSize,
                                       chunkSize,
                                       params.getCompressionLevel());
 
     // Write dataset parameters
-  mFile.WriteMatrixDomainType(mFile.GetRootGroup(), mRootObjectName, THDF5_File::TMatrixDomainType::REAL);
-  mFile.WriteMatrixDataType  (mFile.GetRootGroup(), mRootObjectName, THDF5_File::TMatrixDataType::FLOAT);
+  mFile.writeMatrixDomainType(mFile.getRootGroup(), mRootObjectName, Hdf5File::MatrixDomainType::kReal);
+  mFile.writeMatrixDataType  (mFile.getRootGroup(), mRootObjectName, Hdf5File::MatrixDataType::kFloat);
 
   // Sampled time step
   mSampledTimeStep = 0;
@@ -140,7 +140,7 @@ void IndexOutputStream::reopen()
    allocateMemory();
 
   // Reopen the dataset
-  mDataset = mFile.OpenDataset(mFile.GetRootGroup(), mRootObjectName);
+  mDataset = mFile.openDataset(mFile.getRootGroup(), mRootObjectName);
 
 
   if (mReduceOp == ReduceOperator::kNone)
@@ -157,7 +157,7 @@ void IndexOutputStream::reopen()
     if (Parameters::getInstance().getTimeIndex() > Parameters::getInstance().getSamplingStartTimeIndex())
     {
       // Since there is only a single timestep in the dataset, I can read the whole dataset
-      mFile.ReadCompleteDataset(mFile.GetRootGroup(),
+      mFile.readCompleteDataset(mFile.getRootGroup(),
                                 mRootObjectName,
                                 DimensionSizes(mSize, 1, 1),
                                 mHostBuffer);
@@ -284,7 +284,7 @@ void IndexOutputStream::close()
   // the dataset is still opened
   if (mDataset != H5I_BADID)
   {
-    mFile.CloseDataset(mDataset);
+    mFile.closeDataset(mDataset);
   }
 
   mDataset = H5I_BADID;
@@ -300,7 +300,7 @@ void IndexOutputStream::close()
  */
 void IndexOutputStream::flushBufferToFile()
 {
-  mFile.WriteHyperSlab(mDataset,
+  mFile.writeHyperSlab(mDataset,
                        DimensionSizes(0,mSampledTimeStep,0),
                        DimensionSizes(mSize,1,1),
                        mHostBuffer);

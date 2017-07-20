@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 February  2015, 12:51 (created)
- *              19 July      2017, 15:21 (revised)
+ *              20 July      2017, 14:21 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -64,7 +64,7 @@ class CuboidOutputStream : public BaseOutputStream
      * @param [in] sensorMask   - Sensor mask with the cuboid coordinates
      * @param [in] reduceOp     - Reduce operator
      */
-    CuboidOutputStream(THDF5_File&           file,
+    CuboidOutputStream(Hdf5File&            file,
                        MatrixName&          groupName,
                        const RealMatrix&    sourceMatrix,
                        const IndexMatrix&   sensorMask,

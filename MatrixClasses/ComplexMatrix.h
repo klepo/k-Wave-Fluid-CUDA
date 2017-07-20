@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2011, 14:02 (created) \n
- *              18 July     2017, 13:53 (revised)
+ *              20 July     2017, 14:17 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -75,7 +75,7 @@ class ComplexMatrix : public BaseFloatMatrix
      * @param [in] matrixName - HDF5 dataset name to read from
      * @throw ios::failure    - If error occurred.
      */
-    virtual void readData(THDF5_File& file,
+    virtual void readData(Hdf5File&   file,
                           MatrixName& matrixName);
 
     /**
@@ -86,7 +86,7 @@ class ComplexMatrix : public BaseFloatMatrix
      * @param [in] compressionLevel - Compression level for the HDF5 dataset
      * @throw ios::failure          - If an error occurred.
      */
-    virtual void writeData(THDF5_File&  file,
+    virtual void writeData(Hdf5File&    file,
                            MatrixName&  matrixName,
                            const size_t compressionLevel);
 

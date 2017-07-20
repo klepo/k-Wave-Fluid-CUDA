@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August    2014, 10:20 (created)
- *              19 July      2017, 15:22 (revised)
+ *              20 July      2017, 14:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -54,7 +54,7 @@ class WholeDomainOutputStream : public BaseOutputStream
      * @param [in] sourceMatrix - Source matrix to be sampled
      * @param [in] reduceOp     - Reduce operator
      */
-    WholeDomainOutputStream(THDF5_File&           file,
+    WholeDomainOutputStream(Hdf5File&            file,
                             MatrixName&          datasetName,
                             RealMatrix&          sourceMatrix,
                             const ReduceOperator reduceOp);
@@ -100,8 +100,8 @@ class WholeDomainOutputStream : public BaseOutputStream
 
     /// Time step to store (N/A for aggregated).
     size_t mSampledTimeStep;
-};// end of TWholeDomainOutputHDF5Stream
-//--------------------------------------------------------------------------------------------------
+};// end of WholeDomainOutputHDF5Stream
+//----------------------------------------------------------------------------------------------------------------------
 
 #endif /* WholeDomainOutputStreamH */
 

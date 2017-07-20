@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              19 July     2017, 12:08 (revised)
+ *              20 July     2017, 14:14 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -146,9 +146,9 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
   dataLoadTime.start();
 
   // open and load input file
-  THDF5_File& inputFile      = parameters.getInputFile(); // file is opened (in Parameters)
-  THDF5_File& outputFile     = parameters.getOutputFile();
-  THDF5_File& checkpointFile = parameters.getCheckpointFile();
+  Hdf5File& inputFile      = parameters.getInputFile(); // file is opened (in Parameters)
+  Hdf5File& outputFile     = parameters.getOutputFile();
+  Hdf5File& checkpointFile = parameters.getCheckpointFile();
 
   // Load data from disk
   Logger::log(Logger::LogLevel::kFull, kOutFmtNoDone);
@@ -159,13 +159,13 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
   matrixContainer.LoadDataFromInputFile(inputFile);
 
   // close the input file
-  inputFile.Close();
+  inputFile.close();
 
   Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
 
   // The simulation does not use check pointing or this is the first turn
   bool recoverFromCheckpoint = (parameters.isCheckpointEnabled() &&
-                                THDF5_File::IsHDF5(parameters.getCheckpointFileName()));
+                                Hdf5File::canAccess(parameters.getCheckpointFileName()));
 
 
   if (recoverFromCheckpoint)
@@ -175,20 +175,20 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
     Logger::flush(Logger::LogLevel::kFull);
 
     // Open checkpoint file
-    checkpointFile.Open(parameters.getCheckpointFileName());
+    checkpointFile.open(parameters.getCheckpointFileName());
 
     // Check the checkpoint file
     CheckCheckpointFile();
 
     // read the actual value of t_index
     size_t new_t_index;
-    checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), kTimeIndexName, new_t_index);
+    checkpointFile.readScalarValue(checkpointFile.getRootGroup(), kTimeIndexName, new_t_index);
     parameters.setTimeIndex(new_t_index);
 
     // Read necessary matrices from the checkpoint file
     matrixContainer.LoadDataFromCheckpointFile(checkpointFile);
 
-    checkpointFile.Close();
+    checkpointFile.close();
     Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
 
     //----------------------------- Read data from the output file -------------------------------//
@@ -196,10 +196,10 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
     Logger::log(Logger::LogLevel::kFull, kOutFmtReadingOutputFile);
     Logger::flush(Logger::LogLevel::kFull);
 
-    outputFile.Open(parameters.getOutputFileName(), H5F_ACC_RDWR);
+    outputFile.open(parameters.getOutputFileName(), H5F_ACC_RDWR);
 
     //Read file header of the output file
-    parameters.getFileHeader().ReadHeaderFromOutputFile(outputFile);
+    parameters.getFileHeader().readHeaderFromOutputFile(outputFile);
 
     // Restore elapsed time
     LoadElapsedTimeFromOutputFile(outputFile);
@@ -215,7 +215,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
     Logger::log(Logger::LogLevel::kFull, kOutFmtCreatingOutputFile);
     Logger::flush(Logger::LogLevel::kFull);
 
-    outputFile.Create(parameters.getOutputFileName());
+    outputFile.create(parameters.getOutputFileName());
     Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
 
     // Create the steams, link them with the sampled matrices
@@ -369,7 +369,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
   try
   {
     WriteOutputDataInfo();
-    parameters.getOutputFile().Close();
+    parameters.getOutputFile().close();
 
     Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, postProcessingTime.getElapsedTime());
     }
@@ -941,35 +941,35 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData()
 void  TKSpaceFirstOrder3DSolver::WriteOutputDataInfo()
 {
   // write t_index into the output file
-  parameters.getOutputFile().WriteScalarValue(parameters.getOutputFile().GetRootGroup(),
+  parameters.getOutputFile().writeScalarValue(parameters.getOutputFile().getRootGroup(),
                                               kTimeIndexName,
                                               parameters.getTimeIndex());
 
   // Write scalars
   parameters.saveScalarsToOutputFile();
-  THDF5_FileHeader& fileHeader = parameters.getFileHeader();
+  Hdf5FileHeader& fileHeader = parameters.getFileHeader();
 
   // Write File header
-  fileHeader.SetCodeName(GetCodeName());
+  fileHeader.setCodeName(GetCodeName());
   fileHeader.SetMajorFileVersion();
   fileHeader.SetMinorFileVersion();
-  fileHeader.SetActualCreationTime();
-  fileHeader.SetFileType(THDF5_FileHeader::TFileType::OUTPUT);
-  fileHeader.SetHostName();
+  fileHeader.setActualCreationTime();
+  fileHeader.setFileType(Hdf5FileHeader::FileType::kOutput);
+  fileHeader.setHostName();
 
-  fileHeader.SetMemoryConsumption(GetHostMemoryUsageInMB());
+  fileHeader.setMemoryConsumption(GetHostMemoryUsageInMB());
 
   // Stop total timer here
   totalTime.stop();
-  fileHeader.SetExecutionTimes(GetTotalTime(),
+  fileHeader.setExecutionTimes(GetTotalTime(),
                                     GetDataLoadTime(),
                                     GetPreProcessingTime(),
                                     GetSimulationTime(),
                                     GetPostProcessingTime());
 
-  fileHeader.SetNumberOfCores();
+  fileHeader.setNumberOfCores();
 
-  fileHeader.WriteHeaderToOutputFile(parameters.getOutputFile());
+  fileHeader.writeHeaderToOutputFile(parameters.getOutputFile());
 }// end of WriteOutputDataInfo
 //--------------------------------------------------------------------------------------------------
 
@@ -979,46 +979,46 @@ void  TKSpaceFirstOrder3DSolver::WriteOutputDataInfo()
 void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
 {
   // Create Checkpoint file
-  THDF5_File& checkpointFile = parameters.getCheckpointFile();
+  Hdf5File& checkpointFile = parameters.getCheckpointFile();
   // if it happens and the file is opened (from the recovery, close it)
-  if (checkpointFile.IsOpen()) checkpointFile.Close();
+  if (checkpointFile.isOpen()) checkpointFile.close();
 
   Logger::log(Logger::LogLevel::kFull,kOutFmtStoringCheckpointData);
   Logger::flush(Logger::LogLevel::kFull);
 
   // Create the new file (overwrite the old one)
-  checkpointFile.Create(parameters.getCheckpointFileName());
+  checkpointFile.create(parameters.getCheckpointFileName());
 
   //-------------------------------------- Store Matrices ----------------------------------------//
 
   // Store all necessary matrices in Checkpoint file
   matrixContainer.StoreDataIntoCheckpointFile(checkpointFile);
   // Write t_index
-  checkpointFile.WriteScalarValue(checkpointFile.GetRootGroup(),
+  checkpointFile.writeScalarValue(checkpointFile.getRootGroup(),
                                   kTimeIndexName,
                                   parameters.getTimeIndex());
 
   // store basic dimension sizes (Nx, Ny, Nz) - Nt is not necessary
-  checkpointFile.WriteScalarValue(checkpointFile.GetRootGroup(),
+  checkpointFile.writeScalarValue(checkpointFile.getRootGroup(),
                                   kNxName,
                                   parameters.getFullDimensionSizes().nx);
-  checkpointFile.WriteScalarValue(checkpointFile.GetRootGroup(),
+  checkpointFile.writeScalarValue(checkpointFile.getRootGroup(),
                                   kNyName,
                                   parameters.getFullDimensionSizes().ny);
-  checkpointFile.WriteScalarValue(checkpointFile.GetRootGroup(),
+  checkpointFile.writeScalarValue(checkpointFile.getRootGroup(),
                                   kNzName,
                                   parameters.getFullDimensionSizes().nz);
 
   // Write checkpoint file header
-  THDF5_FileHeader checkpointFileHeader = parameters.getFileHeader();
+  Hdf5FileHeader checkpointFileHeader = parameters.getFileHeader();
 
-  checkpointFileHeader.SetFileType(THDF5_FileHeader::TFileType::CHECKPOINT);
-  checkpointFileHeader.SetCodeName(GetCodeName());
-  checkpointFileHeader.SetActualCreationTime();
+  checkpointFileHeader.setFileType(Hdf5FileHeader::FileType::kCheckpoint);
+  checkpointFileHeader.setCodeName(GetCodeName());
+  checkpointFileHeader.setActualCreationTime();
 
-  checkpointFileHeader.WriteHeaderToCheckpointFile(checkpointFile);
+  checkpointFileHeader.writeHeaderToCheckpointFile(checkpointFile);
 
-  checkpointFile.Close();
+  checkpointFile.close();
   Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
 
   // checkpoint only if necessary (t_index > start_index), we're here one step ahead!
@@ -1964,37 +1964,37 @@ bool TKSpaceFirstOrder3DSolver::IsCheckpointInterruption() const
 void TKSpaceFirstOrder3DSolver::CheckOutputFile()
 {
   // The header has already been read
-  THDF5_FileHeader& fileHeader = parameters.getFileHeader();
-  THDF5_File&       outputFile = parameters.getOutputFile();
+  Hdf5FileHeader& fileHeader = parameters.getFileHeader();
+  Hdf5File&       outputFile = parameters.getOutputFile();
 
   // test file type
-  if (fileHeader.GetFileType() != THDF5_FileHeader::TFileType::OUTPUT)
+  if (fileHeader.getFileType() != Hdf5FileHeader::FileType::kOutput)
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadOutputFileFormat,
                                               parameters.getOutputFileName().c_str()));
   }
 
   // test file major version
-  if (!fileHeader.CheckMajorFileVersion())
+  if (!fileHeader.checkMajorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMajorFileVersion,
                                               parameters.getCheckpointFileName().c_str(),
-                                              fileHeader.GetCurrentHDF5_MajorVersion().c_str()));
+                                              fileHeader.getFileMajorVersion().c_str()));
   }
 
   // test file minor version
-  if (!fileHeader.CheckMinorFileVersion())
+  if (!fileHeader.checkMinorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMinorFileVersion,
                                               parameters.getCheckpointFileName().c_str(),
-                                              fileHeader.GetCurrentHDF5_MinorVersion().c_str()));
+                                              fileHeader.getFileMinorVersion().c_str()));
   }
 
   // Check dimension sizes
   DimensionSizes outputDimSizes;
-  outputFile.ReadScalarValue(outputFile.GetRootGroup(), kNxName, outputDimSizes.nx);
-  outputFile.ReadScalarValue(outputFile.GetRootGroup(), kNyName, outputDimSizes.ny);
-  outputFile.ReadScalarValue(outputFile.GetRootGroup(), kNzName, outputDimSizes.nz);
+  outputFile.readScalarValue(outputFile.getRootGroup(), kNxName, outputDimSizes.nx);
+  outputFile.readScalarValue(outputFile.getRootGroup(), kNyName, outputDimSizes.ny);
+  outputFile.readScalarValue(outputFile.getRootGroup(), kNzName, outputDimSizes.nz);
 
  if (parameters.getFullDimensionSizes() != outputDimSizes)
  {
@@ -2019,39 +2019,39 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
 void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
 {
   // read the header and check the file version
-  THDF5_FileHeader fileHeader;
-  THDF5_File&     checkpointFile = parameters.getCheckpointFile();
+  Hdf5FileHeader fileHeader;
+  Hdf5File&     checkpointFile = parameters.getCheckpointFile();
 
-  fileHeader.ReadHeaderFromCheckpointFile(checkpointFile);
+  fileHeader.readHeaderFromCheckpointFile(checkpointFile);
 
   // test file type
-  if (fileHeader.GetFileType() != THDF5_FileHeader::TFileType::CHECKPOINT)
+  if (fileHeader.getFileType() != Hdf5FileHeader::FileType::kCheckpoint)
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadCheckpointFileFormat,
                                               parameters.getCheckpointFileName().c_str()));
   }
 
   // test file major version
-  if (!fileHeader.CheckMajorFileVersion())
+  if (!fileHeader.checkMajorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMajorFileVersion,
                                               parameters.getCheckpointFileName().c_str(),
-                                              fileHeader.GetCurrentHDF5_MajorVersion().c_str()));
+                                              fileHeader.getFileMajorVersion().c_str()));
   }
 
   // test file minor version
-  if (!fileHeader.CheckMinorFileVersion())
+  if (!fileHeader.checkMinorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMinorFileVersion,
                                               parameters.getCheckpointFileName().c_str(),
-                                              fileHeader.GetCurrentHDF5_MinorVersion().c_str()));
+                                              fileHeader.getFileMinorVersion().c_str()));
   }
 
   // Check dimension sizes
   DimensionSizes checkpointDimSizes;
-  checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), kNxName, checkpointDimSizes.nx);
-  checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), kNyName, checkpointDimSizes.ny);
-  checkpointFile.ReadScalarValue(checkpointFile.GetRootGroup(), kNzName, checkpointDimSizes.nz);
+  checkpointFile.readScalarValue(checkpointFile.getRootGroup(), kNxName, checkpointDimSizes.nx);
+  checkpointFile.readScalarValue(checkpointFile.getRootGroup(), kNyName, checkpointDimSizes.ny);
+  checkpointFile.readScalarValue(checkpointFile.getRootGroup(), kNzName, checkpointDimSizes.nz);
 
  if (parameters.getFullDimensionSizes() != checkpointDimSizes)
  {
@@ -2072,12 +2072,12 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
  *
  * @param [in] outputFile - Output file
  */
-void TKSpaceFirstOrder3DSolver::LoadElapsedTimeFromOutputFile(THDF5_File& outputFile)
+void TKSpaceFirstOrder3DSolver::LoadElapsedTimeFromOutputFile(Hdf5File& outputFile)
 {
   double totalTime, dataLoadTime, preProcessingTime, simulationTime, postProcessingTime;
 
   // Get execution times stored in the output file header
-  parameters.getFileHeader().GetExecutionTimes(totalTime,
+  parameters.getFileHeader().getExecutionTimes(totalTime,
                                                dataLoadTime,
                                                preProcessingTime,
                                                simulationTime,

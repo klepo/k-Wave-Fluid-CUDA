@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              19 July      2017, 12:07 (revised)
+ *              20 July      2017, 14:12 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -408,7 +408,7 @@ void TMatrixContainer::AddMatrices()
  * Load all marked matrices from the input HDF5 file.
  * @param [in] inputFile - HDF5 input file handle
  */
-void TMatrixContainer::LoadDataFromInputFile(THDF5_File& inputFile)
+void TMatrixContainer::LoadDataFromInputFile(Hdf5File& inputFile)
 {
   for (const auto& it : matrixContainer)
   {
@@ -424,7 +424,7 @@ void TMatrixContainer::LoadDataFromInputFile(THDF5_File& inputFile)
  * Load selected matrices from the checkpoint HDF5 file.
  * @param [in] checkpointFile - HDF5 checkpoint file handle
  */
-void TMatrixContainer::LoadDataFromCheckpointFile(THDF5_File& checkpointFile)
+void TMatrixContainer::LoadDataFromCheckpointFile(Hdf5File& checkpointFile)
 {
   for (const auto& it : matrixContainer)
   {
@@ -440,7 +440,7 @@ void TMatrixContainer::LoadDataFromCheckpointFile(THDF5_File& checkpointFile)
  * Store selected matrices into the checkpoint file.
  * @param [in] checkpointFile - Checkpoint file
  */
-void TMatrixContainer::StoreDataIntoCheckpointFile(THDF5_File& checkpointFile)
+void TMatrixContainer::StoreDataIntoCheckpointFile(Hdf5File& checkpointFile)
 {
   for (const auto& it : matrixContainer)
   {

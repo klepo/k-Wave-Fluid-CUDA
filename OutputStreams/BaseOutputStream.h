@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              19 July      2017, 15:21 (revised)
+ *              20 July      2017, 14:20 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -79,7 +79,7 @@ class BaseOutputStream
      * @param [in] sourceMatrix   - The source matrix (only real matrices are supported).
      * @param [in] reduceOp       - Reduction operator.
      */
-    BaseOutputStream(THDF5_File&          file,
+    BaseOutputStream(Hdf5File&            file,
                      MatrixName&          rootObjectName,
                      const RealMatrix&    sourceMatrix,
                      const ReduceOperator reduceOp);
@@ -132,7 +132,7 @@ class BaseOutputStream
     virtual void copyFromDevice();
 
     /// Handle to HDF5 output file
-    THDF5_File& mFile;
+    Hdf5File& mFile;
 
     /// HDF5 group in the output file where to store data in.
     std::string mRootObjectName;

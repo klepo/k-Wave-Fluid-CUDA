@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        08 December 2011, 16:34 (created)      \n
- *              16 July     2017, 16:14 (revised)
+ *              20 July     2017, 14:23 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -169,22 +169,22 @@ class Parameters
      * @brief Get input file handle.
      * @return Handle to the input file.
      */
-    THDF5_File& getInputFile()                {return mInputFile;};
+    Hdf5File& getInputFile()                 {return mInputFile;};
     /**
      * @brief Get output file handle.
      * @return Handle to the output file.
      */
-    THDF5_File& getOutputFile()               {return mOutputFile;};
+    Hdf5File& getOutputFile()                {return mOutputFile;};
     /**
      * @brief Get checkpoint file handle.
      * @return Handle to the checkpoint file.
      */
-    THDF5_File& getCheckpointFile()           {return mCheckpointFile;};
+    Hdf5File& getCheckpointFile()            {return mCheckpointFile;};
     /**
      * @brief Get file header handle.
      * @return Handle to the file header.
      */
-    THDF5_FileHeader& getFileHeader()         {return mFileHeader;};
+    Hdf5FileHeader& getFileHeader()          {return mFileHeader;};
 
 
     /**
@@ -620,14 +620,14 @@ class Parameters
     CommandLineParameters mCommandLineParameters;
 
     /// Handle to the input HDF5 file.
-    THDF5_File mInputFile;
+    Hdf5File mInputFile;
     /// Handle to the output HDF5 file.
-    THDF5_File mOutputFile;
+    Hdf5File mOutputFile;
     /// Handle to the checkpoint HDF5 file.
-    THDF5_File mCheckpointFile;
+    Hdf5File mCheckpointFile;
 
     /// Handle to the file header.
-    THDF5_FileHeader mFileHeader;
+    Hdf5FileHeader mFileHeader;
 
     /// Full 3D dimension sizes.
     DimensionSizes mFullDimensionSizes;

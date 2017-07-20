@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August    2014, 10:00 (created)
- *              19 July      2017, 15:22 (revised)
+ *              20 July      2017, 14:21 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -62,7 +62,7 @@ class IndexOutputStream : public BaseOutputStream
      * @param [in] sensorMask   - Index based sensor mask
      * @param [in] reduceOp     - Reduce operator
      */
-    IndexOutputStream(THDF5_File&           file,
+    IndexOutputStream(Hdf5File&            file,
                       MatrixName&          datasetName,
                       const RealMatrix&    sourceMatrix,
                       const IndexMatrix&   sensorMask,

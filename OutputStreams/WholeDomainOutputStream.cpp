@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August    2014, 11:15 (created)
- *              19 July      2017, 15:22 (revised)
+ *              20 July      2017, 14:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -46,7 +46,7 @@
 /**
  * Constructor - links the HDF5 dataset and SourceMatrix
  */
-WholeDomainOutputStream::WholeDomainOutputStream(THDF5_File&           file,
+WholeDomainOutputStream::WholeDomainOutputStream(Hdf5File&            file,
                                                  MatrixName&          datasetName,
                                                  RealMatrix&          sourceMatrix,
                                                  const ReduceOperator reduceOp)
@@ -82,15 +82,15 @@ void WholeDomainOutputStream::create()
                            1);
 
   // Create a dataset under the root group
-  mDataset = mFile.CreateFloatDataset(mFile.GetRootGroup(),
+  mDataset = mFile.createFloatDataset(mFile.getRootGroup(),
                                       mRootObjectName,
                                       mSourceMatrix.getDimensionSizes(),
                                       chunkSize,
                                       Parameters::getInstance().getCompressionLevel());
 
   // Write dataset parameters
-  mFile.WriteMatrixDomainType(mFile.GetRootGroup(), mRootObjectName, THDF5_File::TMatrixDomainType::REAL);
-  mFile.WriteMatrixDataType  (mFile.GetRootGroup(), mRootObjectName, THDF5_File::TMatrixDataType::FLOAT);
+  mFile.writeMatrixDomainType(mFile.getRootGroup(), mRootObjectName, Hdf5File::MatrixDomainType::kReal);
+  mFile.writeMatrixDataType  (mFile.getRootGroup(), mRootObjectName, Hdf5File::MatrixDataType::kFloat);
 
   // Set buffer size
   mSize = mSourceMatrix.size();
@@ -115,7 +115,7 @@ void WholeDomainOutputStream::reopen()
   allocateMemory();
 
   // Open the dataset under the root group
-  mDataset = mFile.OpenDataset(mFile.GetRootGroup(), mRootObjectName);
+  mDataset = mFile.openDataset(mFile.getRootGroup(), mRootObjectName);
 
   mSampledTimeStep = 0;
   if (mReduceOp == ReduceOperator::kNone)
@@ -129,7 +129,7 @@ void WholeDomainOutputStream::reopen()
     //(one step ahead)
     if (params.getTimeIndex() > params.getSamplingStartTimeIndex())
     {
-      mFile.ReadCompleteDataset(mFile.GetRootGroup(),
+      mFile.readCompleteDataset(mFile.getRootGroup(),
                                 mRootObjectName,
                                 mSourceMatrix.getDimensionSizes(),
                                 mHostBuffer);
@@ -162,7 +162,7 @@ void WholeDomainOutputStream::sample()
       cuboidSize.nt = 1;
 
       // iterate over all cuboid to be sampled
-      mFile.WriteCuboidToHyperSlab(mDataset,
+      mFile.writeCuboidToHyperSlab(mDataset,
                                    datasetPosition,
                                    DimensionSizes(0,0,0,0), // position in the SourceMatrix
                                    cuboidSize,
@@ -246,7 +246,7 @@ void WholeDomainOutputStream::close()
   // the dataset is still opened
   if (mDataset != H5I_BADID)
   {
-    mFile.CloseDataset(mDataset);
+    mFile.closeDataset(mDataset);
   }
 
   mDataset = H5I_BADID;
@@ -273,7 +273,7 @@ void WholeDomainOutputStream::flushBufferToFile()
     size.nt = mSampledTimeStep;
   }
 
-  mFile.WriteHyperSlab(mDataset, position, size, mHostBuffer);
+  mFile.writeHyperSlab(mDataset, position, size, mHostBuffer);
   mSampledTimeStep++;
 }// end of flushBufferToFile
 //----------------------------------------------------------------------------------------------------------------------

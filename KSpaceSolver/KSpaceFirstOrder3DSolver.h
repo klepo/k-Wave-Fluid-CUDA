@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July     2012, 10:27 (created)\n
- *              19 July     2017, 12:08 (revised)
+ *              20 July     2017, 14:14 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -205,7 +205,7 @@ protected:
     void CheckCheckpointFile();
 
     /// Reads the header of the output file and sets the cumulative elapsed time from the first log.
-    void LoadElapsedTimeFromOutputFile(THDF5_File& o1utputFile);
+    void LoadElapsedTimeFromOutputFile(Hdf5File& outputFile);
 
 //-------------------------------------- Get matrices ----------------------------------------//
     /// Get the kappa matrix from the container.

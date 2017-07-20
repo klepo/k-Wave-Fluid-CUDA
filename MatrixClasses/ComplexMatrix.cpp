@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2011, 14:02 (created) \n
- *              18 July     2017, 15:20 (revised)
+ *              20 July     2017, 14:17 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -67,17 +67,17 @@ ComplexMatrix::~ComplexMatrix()
 /**
  * Read data from HDF5 file (do some basic checks). Only from the root group.
  */
-void ComplexMatrix::readData(THDF5_File& file,
+void ComplexMatrix::readData(Hdf5File&   file,
                              MatrixName& matrixName)
 {
   // check data type
-  if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDataType::FLOAT)
+  if (file.readMatrixDataType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDataType::kFloat)
   {
     throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotFloat, matrixName.c_str()));
   }
 
   // check domain type
-  if (file.ReadMatrixDomainType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDomainType::COMPLEX)
+  if (file.readMatrixDomainType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDomainType::kComples)
   {
     throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotComplex, matrixName.c_str()));
   }
@@ -87,15 +87,15 @@ void ComplexMatrix::readData(THDF5_File& file,
   complexDims.nx = 2 * complexDims.nx;
 
   // Read data from the file
-  file.ReadCompleteDataset(file.GetRootGroup(), matrixName, complexDims, mHostData);
+  file.readCompleteDataset(file.getRootGroup(), matrixName, complexDims, mHostData);
 }// end of readData
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write data to HDF5 file (only from the root group).
  */
-void ComplexMatrix::writeData(THDF5_File&  file,
-                              MatrixName& matrixName,
+void ComplexMatrix::writeData(Hdf5File&    file,
+                              MatrixName&  matrixName,
                               const size_t compressionLevel)
 {
   // set dimensions and chunks
@@ -106,18 +106,18 @@ void ComplexMatrix::writeData(THDF5_File&  file,
   complexDims.nz = 1;
 
   // create a dataset
-  hid_t dataset = file.CreateFloatDataset(file.GetRootGroup(),
+  hid_t dataset = file.createFloatDataset(file.getRootGroup(),
                                           matrixName,
                                           complexDims,
                                           chunks,
                                           compressionLevel);
  // Write write the matrix at once.
-  file.WriteHyperSlab(dataset, DimensionSizes(0, 0, 0), mDimensionSizes, mHostData);
-  file.CloseDataset(dataset);
+  file.writeHyperSlab(dataset, DimensionSizes(0, 0, 0), mDimensionSizes, mHostData);
+  file.closeDataset(dataset);
 
  // Write data and domain type
-  file.WriteMatrixDataType(file.GetRootGroup()  , matrixName, THDF5_File::TMatrixDataType::FLOAT);
-  file.WriteMatrixDomainType(file.GetRootGroup(), matrixName, THDF5_File::TMatrixDomainType::COMPLEX);
+  file.writeMatrixDataType(file.getRootGroup()  , matrixName, Hdf5File::MatrixDataType::kFloat);
+  file.writeMatrixDomainType(file.getRootGroup(), matrixName, Hdf5File::MatrixDomainType::kComples);
 }// end of writeData
 //----------------------------------------------------------------------------------------------------------------------
 

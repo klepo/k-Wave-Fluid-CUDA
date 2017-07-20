@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2012, 13:39 (created) \n
- *              17 July      2017, 16:16 (revised)
+ *              20 July      2017, 14:23 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -193,57 +193,57 @@ void Parameters::readScalarsFromInputFile()
 {
   DimensionSizes scalarSizes(1,1,1);
 
-  if (!mInputFile.IsOpen())
+  if (!mInputFile.isOpen())
   {
     // Open file -- exceptions handled in main
-    mInputFile.Open(mCommandLineParameters.getInputFileName());
+    mInputFile.open(mCommandLineParameters.getInputFileName());
   }
 
-  mFileHeader.ReadHeaderFromInputFile(mInputFile);
+  mFileHeader.readHeaderFromInputFile(mInputFile);
 
   // check file type
-  if (mFileHeader.GetFileType() != THDF5_FileHeader::TFileType::INPUT)
+  if (mFileHeader.getFileType() != Hdf5FileHeader::FileType::kInput)
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadInputFileFormat, getInputFileName().c_str()));
   }
 
   // check version
-  if (!mFileHeader.CheckMajorFileVersion())
+  if (!mFileHeader.checkMajorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMajorFileVersion,
                                              getInputFileName().c_str(),
-                                             mFileHeader.GetCurrentHDF5_MajorVersion().c_str()));
+                                             mFileHeader.getFileMajorVersion().c_str()));
   }
 
-  if (!mFileHeader.CheckMinorFileVersion())
+  if (!mFileHeader.checkMinorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMinorFileVersion,
                                              getInputFileName().c_str(),
-                                             mFileHeader.GetCurrentHDF5_MinorVersion().c_str()));
+                                             mFileHeader.getFileMinorVersion().c_str()));
   }
 
-  const hid_t rootGroup = mInputFile.GetRootGroup();
+  const hid_t rootGroup = mInputFile.getRootGroup();
 
-  mInputFile.ReadScalarValue(rootGroup, kNtName, mNt);
+  mInputFile.readScalarValue(rootGroup, kNtName, mNt);
 
-  mInputFile.ReadScalarValue(rootGroup, kDtName, mDt);
-  mInputFile.ReadScalarValue(rootGroup, kDxName, mDx);
-  mInputFile.ReadScalarValue(rootGroup, kDyName, mDy);
-  mInputFile.ReadScalarValue(rootGroup, kDzName, mDz);
+  mInputFile.readScalarValue(rootGroup, kDtName, mDt);
+  mInputFile.readScalarValue(rootGroup, kDxName, mDx);
+  mInputFile.readScalarValue(rootGroup, kDyName, mDy);
+  mInputFile.readScalarValue(rootGroup, kDzName, mDz);
 
-  mInputFile.ReadScalarValue(rootGroup, kCRefName,     mCRef);
-  mInputFile.ReadScalarValue(rootGroup, kPmlXSizeName, mPmlXSize);
-  mInputFile.ReadScalarValue(rootGroup, kPmlYSizeName, mPmlYSize);
-  mInputFile.ReadScalarValue(rootGroup, kPmlZSizeName, mPmlZSize);
+  mInputFile.readScalarValue(rootGroup, kCRefName,     mCRef);
+  mInputFile.readScalarValue(rootGroup, kPmlXSizeName, mPmlXSize);
+  mInputFile.readScalarValue(rootGroup, kPmlYSizeName, mPmlYSize);
+  mInputFile.readScalarValue(rootGroup, kPmlZSizeName, mPmlZSize);
 
-  mInputFile.ReadScalarValue(rootGroup, kPmlXAlphaName, mPmlXAlpha);
-  mInputFile.ReadScalarValue(rootGroup, kPmlYAlphaName, mPmlYAlpha);
-  mInputFile.ReadScalarValue(rootGroup, kPmlZAlphaName, mPmlZAlpha);
+  mInputFile.readScalarValue(rootGroup, kPmlXAlphaName, mPmlXAlpha);
+  mInputFile.readScalarValue(rootGroup, kPmlYAlphaName, mPmlYAlpha);
+  mInputFile.readScalarValue(rootGroup, kPmlZAlphaName, mPmlZAlpha);
 
   size_t x, y, z;
-	mInputFile.ReadScalarValue(rootGroup, kNxName, x);
-  mInputFile.ReadScalarValue(rootGroup, kNyName, y);
-  mInputFile.ReadScalarValue(rootGroup, kNzName, z);
+	mInputFile.readScalarValue(rootGroup, kNxName, x);
+  mInputFile.readScalarValue(rootGroup, kNyName, y);
+  mInputFile.readScalarValue(rootGroup, kNzName, z);
 
 
   mFullDimensionSizes.nx = x;
@@ -255,9 +255,9 @@ void Parameters::readScalarsFromInputFile()
   mReducedDimensionSizes.nz = z;
 
   // if the file is of version 1.0, there must be a sensor mask index (backward compatibility)
-  if (mFileHeader.GetFileVersion() == THDF5_FileHeader::TFileVersion::VERSION_10)
+  if (mFileHeader.getFileVersion() == Hdf5FileHeader::FileVersion::kVersion10)
   {
-    mSensorMaskIndexSize = mInputFile.GetDatasetElementCount(rootGroup, kSensorMaskIndexName);
+    mSensorMaskIndexSize = mInputFile.getDatasetSize(rootGroup, kSensorMaskIndexName);
 
     //if -u_non_staggered_raw enabled, throw an error - not supported
     if (getStoreVelocityNonStaggeredRaw())
@@ -267,11 +267,11 @@ void Parameters::readScalarsFromInputFile()
   }// version 1.0
 
   // This is the current version 1.1
-  if (mFileHeader.GetFileVersion() == THDF5_FileHeader::TFileVersion::VERSION_11)
+  if (mFileHeader.getFileVersion() == Hdf5FileHeader::FileVersion::kVersion11)
   {
     // read sensor mask type as a size_t value to enum
     size_t sensorMaskTypeNumericValue = 0;
-    mInputFile.ReadScalarValue(rootGroup, kSensorMaskTypeName, sensorMaskTypeNumericValue);
+    mInputFile.readScalarValue(rootGroup, kSensorMaskTypeName, sensorMaskTypeNumericValue);
 
     // convert the long value on
     switch (sensorMaskTypeNumericValue)
@@ -298,30 +298,30 @@ void Parameters::readScalarsFromInputFile()
     {
       case SensorMaskType::kIndex:
       {
-        mSensorMaskIndexSize = mInputFile.GetDatasetElementCount(rootGroup, kSensorMaskIndexName);
+        mSensorMaskIndexSize = mInputFile.getDatasetSize(rootGroup, kSensorMaskIndexName);
         break;
       }
       case SensorMaskType::kCorners:
       {
         // mask dimensions are [6, N, 1] - I want to know N
-        mSensorMaskCornersSize = mInputFile.GetDatasetDimensionSizes(rootGroup, kSensorMaskCornersName).ny;
+        mSensorMaskCornersSize = mInputFile.getDatasetDimensionSizes(rootGroup, kSensorMaskCornersName).ny;
         break;
       }
     }// switch
   }// version 1.1
 
   // flags
-  mInputFile.ReadScalarValue(rootGroup, kVelocityXSourceFlagName,  mVelocityXSourceFlag);
-  mInputFile.ReadScalarValue(rootGroup, kVelocityYSourceFlagName,  mVelocityYSourceFlag);
-  mInputFile.ReadScalarValue(rootGroup, kVelocityZSourceFlagName,  mVelocityZSourceFlag);
-  mInputFile.ReadScalarValue(rootGroup, kTransducerSourceFlagName, mTransducerSourceFlag);
+  mInputFile.readScalarValue(rootGroup, kVelocityXSourceFlagName,  mVelocityXSourceFlag);
+  mInputFile.readScalarValue(rootGroup, kVelocityYSourceFlagName,  mVelocityYSourceFlag);
+  mInputFile.readScalarValue(rootGroup, kVelocityZSourceFlagName,  mVelocityZSourceFlag);
+  mInputFile.readScalarValue(rootGroup, kTransducerSourceFlagName, mTransducerSourceFlag);
 
-  mInputFile.ReadScalarValue(rootGroup, kPressureSourceFlagName,        mPressureSourceFlag);
-  mInputFile.ReadScalarValue(rootGroup, kInitialPressureSourceFlagName, mInitialPressureSourceFlag);
+  mInputFile.readScalarValue(rootGroup, kPressureSourceFlagName,        mPressureSourceFlag);
+  mInputFile.readScalarValue(rootGroup, kInitialPressureSourceFlagName, mInitialPressureSourceFlag);
 
-  mInputFile.ReadScalarValue(rootGroup, kNonUniformGridFlagName, mNonUniformGridFlag);
-  mInputFile.ReadScalarValue(rootGroup, kAbsorbingFlagName,      mAbsorbingFlag);
-  mInputFile.ReadScalarValue(rootGroup, kNonLinearFlagName,      mNonLinearFlag);
+  mInputFile.readScalarValue(rootGroup, kNonUniformGridFlagName, mNonUniformGridFlag);
+  mInputFile.readScalarValue(rootGroup, kAbsorbingFlagName,      mAbsorbingFlag);
+  mInputFile.readScalarValue(rootGroup, kNonLinearFlagName,      mNonLinearFlag);
 
   // Vector sizes.
   if (mTransducerSourceFlag == 0)
@@ -330,19 +330,19 @@ void Parameters::readScalarsFromInputFile()
   }
   else
   {
-    mTransducerSourceInputSize =mInputFile.GetDatasetElementCount(rootGroup, kTransducerSourceInputName);
+    mTransducerSourceInputSize =mInputFile.getDatasetSize(rootGroup, kTransducerSourceInputName);
   }
 
   if ((mTransducerSourceFlag > 0) || (mVelocityXSourceFlag > 0) || (mVelocityYSourceFlag > 0) || (mVelocityZSourceFlag > 0))
   {
-    mVelocitySourceIndexSize = mInputFile.GetDatasetElementCount(rootGroup, kVelocitySourceIndexName);
+    mVelocitySourceIndexSize = mInputFile.getDatasetSize(rootGroup, kVelocitySourceIndexName);
   }
 
   // uxyz_source_flags.
   if ((mVelocityXSourceFlag > 0) || (mVelocityYSourceFlag > 0) || (mVelocityZSourceFlag > 0))
   {
-    mInputFile.ReadScalarValue(rootGroup, kVelocitySourceManyName, mVelocitySourceMany);
-    mInputFile.ReadScalarValue(rootGroup, kVelocitySourceModeName, mVelocitySourceMode);
+    mInputFile.readScalarValue(rootGroup, kVelocitySourceManyName, mVelocitySourceMany);
+    mInputFile.readScalarValue(rootGroup, kVelocitySourceModeName, mVelocitySourceMode);
   }
   else
   {
@@ -353,10 +353,10 @@ void Parameters::readScalarsFromInputFile()
   // p_source_flag
   if (mPressureSourceFlag != 0)
   {
-    mInputFile.ReadScalarValue(rootGroup, kPressureSourceManyName, mPressureSourceMany);
-    mInputFile.ReadScalarValue(rootGroup, kPressureSourceModeName, mPressureSourceMode);
+    mInputFile.readScalarValue(rootGroup, kPressureSourceManyName, mPressureSourceMany);
+    mInputFile.readScalarValue(rootGroup, kPressureSourceModeName, mPressureSourceMode);
 
-    mPressureSourceIndexSize = mInputFile.GetDatasetElementCount(rootGroup, kPressureSourceIndexName);
+    mPressureSourceIndexSize = mInputFile.getDatasetSize(rootGroup, kPressureSourceIndexName);
   }
   else
   {
@@ -368,42 +368,42 @@ void Parameters::readScalarsFromInputFile()
   // absorb flag.
   if (mAbsorbingFlag != 0)
   {
-    mInputFile.ReadScalarValue(rootGroup, kAlphaPowerName, mAlphaPower);
+    mInputFile.readScalarValue(rootGroup, kAlphaPowerName, mAlphaPower);
     if (mAlphaPower == 1.0f)
     {
       throw std::invalid_argument(kErrFmtIllegalAlphaPowerValue);
     }
 
-    mAlphaCoeffScalarFlag = mInputFile.GetDatasetDimensionSizes(rootGroup, kAlphaCoeffName) == scalarSizes;
+    mAlphaCoeffScalarFlag = mInputFile.getDatasetDimensionSizes(rootGroup, kAlphaCoeffName) == scalarSizes;
 
     if (mAlphaCoeffScalarFlag)
     {
-      mInputFile.ReadScalarValue(rootGroup, kAlphaCoeffName, mAlphaCoeffScalar);
+      mInputFile.readScalarValue(rootGroup, kAlphaCoeffName, mAlphaCoeffScalar);
     }
   }
 
-  mC0ScalarFlag = mInputFile.GetDatasetDimensionSizes(rootGroup, kC0Name) == scalarSizes;
+  mC0ScalarFlag = mInputFile.getDatasetDimensionSizes(rootGroup, kC0Name) == scalarSizes;
   if (mC0ScalarFlag)
   {
-    mInputFile.ReadScalarValue(rootGroup, kC0Name, mC0Scalar);
+    mInputFile.readScalarValue(rootGroup, kC0Name, mC0Scalar);
   }
 
   if (mNonLinearFlag)
   {
-    mBOnAScalarFlag = mInputFile.GetDatasetDimensionSizes(rootGroup, kBonAName) == scalarSizes;
+    mBOnAScalarFlag = mInputFile.getDatasetDimensionSizes(rootGroup, kBonAName) == scalarSizes;
     if (mBOnAScalarFlag)
     {
-      mInputFile.ReadScalarValue(rootGroup, kBonAName, mBOnAScalar);
+      mInputFile.readScalarValue(rootGroup, kBonAName, mBOnAScalar);
     }
   }
 
-  mRho0ScalarFlag = mInputFile.GetDatasetDimensionSizes(rootGroup, kRho0Name) == scalarSizes;
+  mRho0ScalarFlag = mInputFile.getDatasetDimensionSizes(rootGroup, kRho0Name) == scalarSizes;
   if (mRho0ScalarFlag)
   {
-    mInputFile.ReadScalarValue(rootGroup, kRho0Name,     mRho0Scalar);
-    mInputFile.ReadScalarValue(rootGroup, kRho0SgxName, mRho0SgxScalar);
-    mInputFile.ReadScalarValue(rootGroup, kRho0SgyName, mRho0SgyScalar);
-    mInputFile.ReadScalarValue(rootGroup, kRho0SgzName, mRho0SgzScalar);
+    mInputFile.readScalarValue(rootGroup, kRho0Name,     mRho0Scalar);
+    mInputFile.readScalarValue(rootGroup, kRho0SgxName, mRho0SgxScalar);
+    mInputFile.readScalarValue(rootGroup, kRho0SgyName, mRho0SgyScalar);
+    mInputFile.readScalarValue(rootGroup, kRho0SgzName, mRho0SgzScalar);
     }
 }// end of readScalarsFromInputFile
 //----------------------------------------------------------------------------------------------------------------------
@@ -413,60 +413,60 @@ void Parameters::readScalarsFromInputFile()
  */
 void Parameters::saveScalarsToOutputFile()
 {
-    const hid_t rootGroup = mOutputFile.GetRootGroup();
+    const hid_t rootGroup = mOutputFile.getRootGroup();
 
   // Write dimension sizes
-  mOutputFile.WriteScalarValue(rootGroup, kNxName, mFullDimensionSizes.nx);
-  mOutputFile.WriteScalarValue(rootGroup, kNyName, mFullDimensionSizes.ny);
-  mOutputFile.WriteScalarValue(rootGroup, kNzName, mFullDimensionSizes.nz);
+  mOutputFile.writeScalarValue(rootGroup, kNxName, mFullDimensionSizes.nx);
+  mOutputFile.writeScalarValue(rootGroup, kNyName, mFullDimensionSizes.ny);
+  mOutputFile.writeScalarValue(rootGroup, kNzName, mFullDimensionSizes.nz);
 
-  mOutputFile.WriteScalarValue(rootGroup, kNtName, mNt);
+  mOutputFile.writeScalarValue(rootGroup, kNtName, mNt);
 
-  mOutputFile.WriteScalarValue(rootGroup, kDtName, mDt);
-  mOutputFile.WriteScalarValue(rootGroup, kDxName, mDx);
-  mOutputFile.WriteScalarValue(rootGroup, kDyName, mDy);
-  mOutputFile.WriteScalarValue(rootGroup, kDzName, mDz);
+  mOutputFile.writeScalarValue(rootGroup, kDtName, mDt);
+  mOutputFile.writeScalarValue(rootGroup, kDxName, mDx);
+  mOutputFile.writeScalarValue(rootGroup, kDyName, mDy);
+  mOutputFile.writeScalarValue(rootGroup, kDzName, mDz);
 
-  mOutputFile.WriteScalarValue(rootGroup, kCRefName, mCRef);
+  mOutputFile.writeScalarValue(rootGroup, kCRefName, mCRef);
 
-  mOutputFile.WriteScalarValue(rootGroup, kPmlXSizeName, mPmlXSize);
-  mOutputFile.WriteScalarValue(rootGroup, kPmlYSizeName, mPmlYSize);
-  mOutputFile.WriteScalarValue(rootGroup, kPmlZSizeName, mPmlZSize);
+  mOutputFile.writeScalarValue(rootGroup, kPmlXSizeName, mPmlXSize);
+  mOutputFile.writeScalarValue(rootGroup, kPmlYSizeName, mPmlYSize);
+  mOutputFile.writeScalarValue(rootGroup, kPmlZSizeName, mPmlZSize);
 
-  mOutputFile.WriteScalarValue(rootGroup, kPmlXAlphaName, mPmlXAlpha);
-  mOutputFile.WriteScalarValue(rootGroup, kPmlYAlphaName, mPmlYAlpha);
-  mOutputFile.WriteScalarValue(rootGroup, kPmlZAlphaName, mPmlZAlpha);
+  mOutputFile.writeScalarValue(rootGroup, kPmlXAlphaName, mPmlXAlpha);
+  mOutputFile.writeScalarValue(rootGroup, kPmlYAlphaName, mPmlYAlpha);
+  mOutputFile.writeScalarValue(rootGroup, kPmlZAlphaName, mPmlZAlpha);
 
-  mOutputFile.WriteScalarValue(rootGroup, kVelocityXSourceFlagName,  mVelocityXSourceFlag);
-  mOutputFile.WriteScalarValue(rootGroup, kVelocityYSourceFlagName,  mVelocityYSourceFlag);
-  mOutputFile.WriteScalarValue(rootGroup, kVelocityZSourceFlagName,  mVelocityZSourceFlag);
-  mOutputFile.WriteScalarValue(rootGroup, kTransducerSourceFlagName, mTransducerSourceFlag);
+  mOutputFile.writeScalarValue(rootGroup, kVelocityXSourceFlagName,  mVelocityXSourceFlag);
+  mOutputFile.writeScalarValue(rootGroup, kVelocityYSourceFlagName,  mVelocityYSourceFlag);
+  mOutputFile.writeScalarValue(rootGroup, kVelocityZSourceFlagName,  mVelocityZSourceFlag);
+  mOutputFile.writeScalarValue(rootGroup, kTransducerSourceFlagName, mTransducerSourceFlag);
 
-  mOutputFile.WriteScalarValue(rootGroup, kPressureSourceFlagName,        mPressureSourceFlag);
-  mOutputFile.WriteScalarValue(rootGroup, kInitialPressureSourceFlagName, mInitialPressureSourceFlag);
+  mOutputFile.writeScalarValue(rootGroup, kPressureSourceFlagName,        mPressureSourceFlag);
+  mOutputFile.writeScalarValue(rootGroup, kInitialPressureSourceFlagName, mInitialPressureSourceFlag);
 
-  mOutputFile.WriteScalarValue(rootGroup, kNonUniformGridFlagName, mNonUniformGridFlag);
-  mOutputFile.WriteScalarValue(rootGroup, kAbsorbingFlagName,      mAbsorbingFlag);
-  mOutputFile.WriteScalarValue(rootGroup, kNonLinearFlagName,      mNonLinearFlag);
+  mOutputFile.writeScalarValue(rootGroup, kNonUniformGridFlagName, mNonUniformGridFlag);
+  mOutputFile.writeScalarValue(rootGroup, kAbsorbingFlagName,      mAbsorbingFlag);
+  mOutputFile.writeScalarValue(rootGroup, kNonLinearFlagName,      mNonLinearFlag);
 
   // uxyz_source_flags.
   if ((mVelocityXSourceFlag > 0) || (mVelocityYSourceFlag > 0) || (mVelocityZSourceFlag > 0))
   {
-    mOutputFile.WriteScalarValue(rootGroup, kVelocitySourceManyName, mVelocitySourceMany);
-    mOutputFile.WriteScalarValue(rootGroup, kVelocitySourceModeName, mVelocitySourceMode);
+    mOutputFile.writeScalarValue(rootGroup, kVelocitySourceManyName, mVelocitySourceMany);
+    mOutputFile.writeScalarValue(rootGroup, kVelocitySourceModeName, mVelocitySourceMode);
   }
 
   // p_source_flag.
   if (mPressureSourceFlag != 0)
   {
-    mOutputFile.WriteScalarValue(rootGroup, kPressureSourceManyName, mPressureSourceMany);
-    mOutputFile.WriteScalarValue(rootGroup, kPressureSourceModeName, mPressureSourceMode);
+    mOutputFile.writeScalarValue(rootGroup, kPressureSourceManyName, mPressureSourceMany);
+    mOutputFile.writeScalarValue(rootGroup, kPressureSourceModeName, mPressureSourceMode);
   }
 
   // absorb flag
   if (mAbsorbingFlag != 0)
   {
-    mOutputFile.WriteScalarValue(rootGroup, kAlphaPowerName, mAlphaPower);
+    mOutputFile.writeScalarValue(rootGroup, kAlphaPowerName, mAlphaPower);
   }
 
   // if copy sensor mask, then copy the mask type
@@ -482,7 +482,7 @@ void Parameters::saveScalarsToOutputFile()
         break;
     }// switch
 
-    mOutputFile.WriteScalarValue(rootGroup, kSensorMaskTypeName, sensorMaskTypeNumericValue);
+    mOutputFile.writeScalarValue(rootGroup, kSensorMaskTypeName, sensorMaskTypeNumericValue);
   }
 }// end of saveScalarsToFile
 //----------------------------------------------------------------------------------------------------------------------
@@ -510,27 +510,27 @@ string Parameters::getGitHash() const
 /**
  * Constructor.
  */
-Parameters::Parameters() :
-  mCudaParameters(),
-  mCommandLineParameters(),
-  mInputFile(), mOutputFile(), mCheckpointFile(), mFileHeader(),
-  mFullDimensionSizes(0,0,0), mReducedDimensionSizes(0,0,0),
-  mNt(0), mTimeIndex(0),
-  mDt(0.0f), mDx(0.0f), mDy(0.0f), mDz(0.0f),
-  mCRef(0.0f), mC0ScalarFlag(false),   mC0Scalar(0.0f),
-  mRho0ScalarFlag(false), mRho0Scalar(0.0f),
-  mRho0SgxScalar(0.0f),   mRho0SgyScalar(0.0f), mRho0SgzScalar(0.0f),
-  mNonUniformGridFlag(0), mAbsorbingFlag(0), mNonLinearFlag(0),
-  mAlphaCoeffScalarFlag(false), mAlphaCoeffScalar(0.0f), mAlphaPower(0.0f),
-  mAbsorbEtaScalar(0.0f), mAbsorbTauScalar (0.0f),
-  mBOnAScalarFlag(false), mBOnAScalar (0.0f),
-  mPmlXSize(0), mPmlYSize(0), mPmlZSize(0),
-  mPmlXAlpha(0.0f), mPmlYAlpha(0.0f), mPmlZAlpha(0.0f),
-  mPressureSourceFlag(0), mInitialPressureSourceFlag(0), mTransducerSourceFlag(0),
-  mVelocityXSourceFlag(0), mVelocityYSourceFlag(0), mVelocityZSourceFlag(0),
-  mPressureSourceIndexSize(0), mTransducerSourceInputSize(0),mVelocitySourceIndexSize(0),
-  mPressureSourceMode(0), mPressureSourceMany(0), mVelocitySourceMany(0), mVelocitySourceMode(0),
-  mSensorMaskType(SensorMaskType::kIndex), mSensorMaskIndexSize (0), mSensorMaskCornersSize(0)
+Parameters::Parameters()
+  : mCudaParameters(),
+    mCommandLineParameters(),
+    mInputFile(), mOutputFile(), mCheckpointFile(), mFileHeader(),
+    mFullDimensionSizes(0,0,0), mReducedDimensionSizes(0,0,0),
+    mNt(0), mTimeIndex(0),
+    mDt(0.0f), mDx(0.0f), mDy(0.0f), mDz(0.0f),
+    mCRef(0.0f), mC0ScalarFlag(false),   mC0Scalar(0.0f),
+    mRho0ScalarFlag(false), mRho0Scalar(0.0f),
+    mRho0SgxScalar(0.0f),   mRho0SgyScalar(0.0f), mRho0SgzScalar(0.0f),
+    mNonUniformGridFlag(0), mAbsorbingFlag(0), mNonLinearFlag(0),
+    mAlphaCoeffScalarFlag(false), mAlphaCoeffScalar(0.0f), mAlphaPower(0.0f),
+    mAbsorbEtaScalar(0.0f), mAbsorbTauScalar (0.0f),
+    mBOnAScalarFlag(false), mBOnAScalar (0.0f),
+    mPmlXSize(0), mPmlYSize(0), mPmlZSize(0),
+    mPmlXAlpha(0.0f), mPmlYAlpha(0.0f), mPmlZAlpha(0.0f),
+    mPressureSourceFlag(0), mInitialPressureSourceFlag(0), mTransducerSourceFlag(0),
+    mVelocityXSourceFlag(0), mVelocityYSourceFlag(0), mVelocityZSourceFlag(0),
+    mPressureSourceIndexSize(0), mTransducerSourceInputSize(0),mVelocitySourceIndexSize(0),
+    mPressureSourceMode(0), mPressureSourceMany(0), mVelocitySourceMany(0), mVelocitySourceMode(0),
+    mSensorMaskType(SensorMaskType::kIndex), mSensorMaskIndexSize (0), mSensorMaskCornersSize(0)
 {
 
 }// end of Parameters()

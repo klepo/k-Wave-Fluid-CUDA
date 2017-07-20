@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              17 July     2017, 16:06 (revised)
+ *              20 July     2017, 14:11 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -55,249 +55,207 @@
 using std::ios;
 using std::string;
 
-//------------------------------------------------------------------------------------------------//
-//------------------------------------------ Constants -------------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------- Constants -----------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 
-const string THDF5_File::matrixDomainTypeName    = "domain_type";
-const string THDF5_File::matrixDataTypeName      = "data_type";
+const string Hdf5File::kMatrixDomainTypeName    = "domain_type";
+const string Hdf5File::kMatrixDataTypeName      = "data_type";
 
-const string THDF5_File::matrixDomainTypeNames[] = {"real","complex"};
-const string THDF5_File::matrixDataTypeNames[]   = {"float","long"};
+const string Hdf5File::kMatrixDomainTypeNames[] = {"real","complex"};
+const string Hdf5File::kMatrixDataTypeNames[]   = {"float","long"};
 
-const string THDF5_FileHeader::hdf5_FileTypesNames[]  = {"input", "output", "checkpoint", "unknown"};
+const string Hdf5FileHeader::kFileTypesNames[]  = {"input", "output", "checkpoint", "unknown"};
 
-const string THDF5_FileHeader::hdf5_MajorFileVersionsNames[] = {"1"};
-const string THDF5_FileHeader::hdf5_MinorFileVersionsNames[] = {"0","1"};
+const string Hdf5FileHeader::kMajorFileVersionsNames[] = {"1"};
+const string Hdf5FileHeader::kMinorFileVersionsNames[] = {"0","1"};
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------    THDF5_File    ----------------------------------------//
-//--------------------------------------- Public methods -----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//-------------------------------------------------    Hdf5File    ---------------------------------------------------//
+//------------------------------------------------- Public methods ---------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
  * Constructor.
  */
-THDF5_File::THDF5_File() :
-    file(H5I_BADID), fileName("")
+Hdf5File::Hdf5File()
+  : mFile(H5I_BADID), mFileName("")
 {
 
 }// end of constructor
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Destructor.
+ */
+Hdf5File::~Hdf5File()
+{
+  if (isOpen()) close();
+}//end of ~Hdf5File
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Create the HDF5 file.
- *
- * @param [in] fileName - File name
- * @param [in] flags    - Flags for the HDF5 runtime
- * @throw ios:failure if error happened.
  */
-void THDF5_File::Create(const string& fileName,
-                        unsigned int  flags)
+void Hdf5File::create(const string& fileName,
+                      unsigned int  flags)
 {
   // file is opened
-  if (IsOpen())
+  if (isOpen())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotRecreateFile, fileName.c_str()));
   }
 
   // Create a new file using default properties.
-  this->fileName = fileName;
+  mFileName = fileName;
 
-  file = H5Fcreate(fileName.c_str(), flags, H5P_DEFAULT, H5P_DEFAULT);
+  mFile = H5Fcreate(fileName.c_str(), flags, H5P_DEFAULT, H5P_DEFAULT);
 
-  if (file < 0)
+  if (mFile < 0)
   {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotCreateFile, fileName.c_str()));
   }
-}// end of Create
-//--------------------------------------------------------------------------------------------------
+}// end of create
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Open the HDF5 file.
- *
- * @param [in] fileName - File name
- * @param [in] flags    - Flags for the HDF5 runtime
- * @throw ios:failure if error happened.
- *
  */
-void THDF5_File::Open(const string& fileName,
-                      unsigned int  flags)
+void Hdf5File::open(const string& fileName,
+                    unsigned int  flags)
 {
   const char* cFileName = fileName.c_str();
 
-  if (IsOpen())
+  if (isOpen())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReopenFile, cFileName));
   };
 
-  this->fileName = fileName;
+  mFileName = fileName;
 
   if (H5Fis_hdf5(cFileName) == 0)
   {
     throw ios::failure(Logger::formatMessage(kErrFmtNOtHdf5File, cFileName));
   }
 
-  file = H5Fopen(cFileName, flags, H5P_DEFAULT);
+  mFile = H5Fopen(cFileName, flags, H5P_DEFAULT);
 
-  if (file < 0)
+  if (mFile < 0)
   {
     throw ios::failure(Logger::formatMessage(kErrFmtFileNotOpen, cFileName));
   }
-}// end of Open
-//--------------------------------------------------------------------------------------------------
+}// end of open
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Is a HDF5 file (can I access it)
- * @param [in] fileName - Filename
- * @return true if I can access the file
+ * Can I access the file.
  */
-bool THDF5_File::IsHDF5(const string& fileName)
+bool Hdf5File::canAccess(const string& fileName)
 {
   #ifdef __linux__
     return (access(fileName.c_str(), F_OK) == 0);
+
   #endif
 
   #ifdef _WIN64
      return (_access_s(fileName.c_str(), 0) == 0 );
   #endif
-}// end of IsHDF5
-//--------------------------------------------------------------------------------------------------
+}// end of canAccess
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Close the HDF5 file.
- *
- * @throw ios::failure
  */
-void THDF5_File::Close()
+void Hdf5File::close()
 {
   // Terminate access to the file.
-  herr_t status = H5Fclose(file);
+  herr_t status = H5Fclose(mFile);
 
   if (status < 0)
   {
-    throw ios::failure(Logger::formatMessage(kErrFmtCannotCloseFile, fileName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotCloseFile, mFileName.c_str()));
   }
 
-  fileName = "";
-  file = H5I_BADID;
-}// end of Close
-//--------------------------------------------------------------------------------------------------
+  mFileName = "";
+  mFile = H5I_BADID;
+}// end of close
+//----------------------------------------------------------------------------------------------------------------------
 
-/**
- * Destructor.
- */
-THDF5_File::~THDF5_File()
-{
-  if (IsOpen()) Close();
-}//end of ~THDF5_File
-//--------------------------------------------------------------------------------------------------
 
 
 /**
  * Create a HDF5 group at a specified place in the file tree.
- *
- * @param [in] parentGroup  - Where to link the group at
- * @param [in] groupName    - Group name
- * @return A handle to the new group
- * @throw ios::failure
  */
-hid_t THDF5_File::CreateGroup(const hid_t  parentGroup,
-                              MatrixName& groupName)
+hid_t Hdf5File::createGroup(const hid_t parentGroup,
+                            MatrixName& groupName)
 {
   hid_t group = H5Gcreate(parentGroup, groupName.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
   if (group == H5I_INVALID_HID)
   {
-    throw ios::failure(Logger::formatMessage(kErrFmtCannotCreateGroup,
-                                              groupName.c_str(),
-                                              fileName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotCreateGroup, groupName.c_str(), mFileName.c_str()));
   }
 
   return group;
-}// end of CreateGroup
-//--------------------------------------------------------------------------------------------------
+}// end of createGroup
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Open a HDF5 group at a specified place in the file tree.
- *
- * @param [in] parentGroup - Parent group
- * @param [in] groupName   - Group name
- * @return A handle to the group
- * @throw ios::failure
  */
-hid_t THDF5_File::OpenGroup(const hid_t  parentGroup,
-                            MatrixName& groupName)
+hid_t Hdf5File::openGroup(const hid_t parentGroup,
+                          MatrixName& groupName)
 {
   hid_t group = H5Gopen(parentGroup, groupName.c_str(), H5P_DEFAULT);
 
   if (group == H5I_INVALID_HID)
   {
-    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenGroup,
-                                              groupName.c_str(),
-                                              fileName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenGroup, groupName.c_str(), mFileName.c_str()));
   }
 
   return group;
-}// end of OpenGroup
-//--------------------------------------------------------------------------------------------------
+}// end of openGroup
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Close a group.
- *
- * @param[in] group - Group to close
  */
-void THDF5_File::CloseGroup(const hid_t group)
+void Hdf5File::closeGroup(const hid_t group)
 {
   H5Gclose(group);
-}// end of CloseGroup
-//--------------------------------------------------------------------------------------------------
+}// end of closeGroup
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Open a dataset at a specified place in the file tree.
- *
- * @param [in] parentGroup - Parent group Id (can be the file Id for root).
- * @param [in] datasetName - Dataset name
- * @return A handle to open dataset
- * @throw ios::failure
  */
-hid_t THDF5_File::OpenDataset(const hid_t  parentGroup,
-                              MatrixName& datasetName)
+hid_t Hdf5File::openDataset(const hid_t parentGroup,
+                            MatrixName& datasetName)
 {
   // Open dataset
   hid_t dataset = H5Dopen(parentGroup, datasetName.c_str(), H5P_DEFAULT);
 
   if (dataset == H5I_INVALID_HID)
   {
-    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset,
-                                              fileName.c_str(),
-                                              datasetName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset, mFileName.c_str(), datasetName.c_str()));
   }
 
   return dataset;
-}// end of OpenDataset
-//--------------------------------------------------------------------------------------------------
+}// end of openDataset
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Create a float HDF5 dataset at a specified place in the file tree.
- *
- * @param [in] parentGroup       - Parent group Id
- * @param [in] datasetName       - Dataset name
- * @param [in] dimensionSizes    - Dimension sizes
- * @param [in] chunkSizes        - Chunk sizes
- * @param [in] compressionLevel  - Compression level
- * @return A handle to the new dataset
- * @throw ios::failure
  */
-hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
-                                     MatrixName&           datasetName,
-                                     const DimensionSizes& dimensionSizes,
-                                     const DimensionSizes& chunkSizes,
-                                     const size_t           compressionLevel)
+hid_t Hdf5File::createFloatDataset(const hid_t           parentGroup,
+                                   MatrixName&           datasetName,
+                                   const DimensionSizes& dimensionSizes,
+                                   const DimensionSizes& chunkSizes,
+                                   const size_t          compressionLevel)
 {
   const int rank = (dimensionSizes.is3D()) ? 3 : 4;
 
@@ -340,9 +298,7 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
   status = H5Pset_chunk(propertyList, rank, chunk);
   if (status < 0)
   {
-    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset,
-                                              fileName.c_str(),
-                                              datasetName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset, mFileName.c_str(), datasetName.c_str()));
   }
 
   // set compression level
@@ -350,9 +306,9 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
   if (status < 0)
   {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotSetCompression,
-                                              fileName.c_str(),
-                                              datasetName.c_str(),
-                                              compressionLevel));
+                                             mFileName.c_str(),
+                                             datasetName.c_str(),
+                                             compressionLevel));
   }
 
   // create dataset
@@ -366,30 +322,20 @@ hid_t THDF5_File::CreateFloatDataset(const hid_t            parentGroup,
 
   if (dataset == H5I_INVALID_HID)
   {
-    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset,
-                                              fileName.c_str(),
-                                              datasetName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset, mFileName.c_str(), datasetName.c_str()));
   }
 
   H5Pclose(propertyList);
 
   return dataset;
-}// end of CreateFloatDataset
-//--------------------------------------------------------------------------------------------------
+}// end of createFloatDataset
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Create an index HDF5 dataset at a specified place in the file tree (always 3D).
- *
- * @param [in] parentGroup       - Parent group
- * @param [in] datasetName       - Dataset name
- * @param [in] dimensionSizes    - Dimension sizes
- * @param [in] chunkSizes        - Chunk sizes
- * @param [in] compressionLevel  - Compression level
- * @return A handle to the new dataset
- * @throw ios::failure
  */
-hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
+hid_t Hdf5File::createIndexDataset(const hid_t            parentGroup,
                                      MatrixName&           datasetName,
                                      const DimensionSizes& dimensionSizes,
                                      const DimensionSizes& chunkSizes,
@@ -411,9 +357,7 @@ hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
   status = H5Pset_chunk(propertyList, rank, chunk);
   if (status < 0)
   {
-    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset,
-                                              fileName.c_str(),
-                                              datasetName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset, mFileName.c_str(), datasetName.c_str()));
   }
 
   // set compression level
@@ -421,9 +365,9 @@ hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
   if (status < 0)
   {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotSetCompression,
-                                              fileName.c_str(),
-                                              datasetName.c_str(),
-                                              compressionLevel));
+                                             mFileName.c_str(),
+                                             datasetName.c_str(),
+                                             compressionLevel));
   }
 
   // create dataset
@@ -437,43 +381,33 @@ hid_t THDF5_File::CreateIndexDataset(const hid_t            parentGroup,
 
   if (dataset == H5I_INVALID_HID)
   {
-    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset,
-                                              fileName.c_str(),
-                                              datasetName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset, mFileName.c_str(), datasetName.c_str()));
   }
 
   H5Pclose(propertyList);
 
   return dataset;
-}// end of CreateIndexDataset
-//--------------------------------------------------------------------------------------------------
+}// end of createIndexDataset
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Close dataset.
- *
- * @param [in] dataset - Dataset to close
  */
-void  THDF5_File::CloseDataset(const hid_t dataset)
+void  Hdf5File::closeDataset(const hid_t dataset)
 {
   H5Dclose (dataset);
-}// end of CloseDataset
-//--------------------------------------------------------------------------------------------------
+}// end of closeDataset
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Write a hyperslab into the dataset, float version.
- *
- * @param [in] dataset   - Dataset id
- * @param [in] position  - Position in the dataset
- * @param [in] size      - Size of the hyperslab
- * @param [in] data      - Data to be written
- * @throw ios::failure
  */
-void THDF5_File::WriteHyperSlab(const hid_t            dataset,
-                                const DimensionSizes& position,
-                                const DimensionSizes& size,
-                                const float*           data)
+void Hdf5File::writeHyperSlab(const hid_t           dataset,
+                              const DimensionSizes& position,
+                              const DimensionSizes& size,
+                              const float*          data)
 {
   herr_t status;
   hid_t filespace, memspace;
@@ -528,23 +462,17 @@ void THDF5_File::WriteHyperSlab(const hid_t            dataset,
 
   H5Sclose(memspace);
   H5Sclose(filespace);
-}// end of WriteHyperSlab
-//--------------------------------------------------------------------------------------------------
+}// end of writeHyperSlab
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Write a hyperslab into the dataset, index version.
- *
- * @param [in] dataset  - Dataset id
- * @param [in] position - Position in the dataset
- * @param [in] size     - Size of the hyperslab
- * @param [in] data     - Data to be written
- * @throw ios::failure
  */
-void THDF5_File::WriteHyperSlab(const hid_t            dataset,
-                                const DimensionSizes& position,
-                                const DimensionSizes& size,
-                                const size_t*          data)
+void Hdf5File::writeHyperSlab(const hid_t           dataset,
+                              const DimensionSizes& position,
+                              const DimensionSizes& size,
+                              const size_t*         data)
 {
   herr_t status;
   hid_t filespace, memspace;
@@ -599,38 +527,32 @@ void THDF5_File::WriteHyperSlab(const hid_t            dataset,
 
   H5Sclose(memspace);
   H5Sclose(filespace);
-}// end of WriteHyperSlab
-//--------------------------------------------------------------------------------------------------
+}// end of writeHyperSlab
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Write a cuboid selected within the matrixData into a hyperslab.
- * The routine writes 3D cuboid into a 4D dataset (only intended for raw time series).
- *
- * @param [in] dataset           - Dataset to write MatrixData into
- * @param [in] hyperslabPosition - Position in the dataset (hyperslab) - may be 3D/4D
- * @param [in] cuboidPosition    - Position of the cuboid in MatrixData (what to sample) - must be 3D
- * @param [in] cuboidSize        - Cuboid size (size of data being sampled) - must by 3D
- * @param [in] matrixDimensions  - Size of the original matrix (the sampled one)
- * @param [in] matrixData        - C array of MatrixData
- * @throw ios::failure
  */
-void THDF5_File::WriteCuboidToHyperSlab(const hid_t            dataset,
-                                        const DimensionSizes& hyperslabPosition,
-                                        const DimensionSizes& cuboidPosition,
-                                        const DimensionSizes& cuboidSize,
-                                        const DimensionSizes& matrixDimensions,
-                                        const float*           matrixData)
+void Hdf5File::writeCuboidToHyperSlab(const hid_t           dataset,
+                                      const DimensionSizes& hyperslabPosition,
+                                      const DimensionSizes& cuboidPosition,
+                                      const DimensionSizes& cuboidSize,
+                                      const DimensionSizes& matrixDimensions,
+                                      const float*          matrixData)
 {
   herr_t status;
   hid_t filespace, memspace;
 
-  const int rank = 4;
+  constexpr int rank = 4;
 
   // Select sizes and positions
   // The T here is always 1 (only one timestep)
   hsize_t slabSize[rank]        = {1, cuboidSize.nz, cuboidSize.ny, cuboidSize.nx};
-  hsize_t offsetInDataset[rank] = {hyperslabPosition.nt, hyperslabPosition.nz, hyperslabPosition.ny, hyperslabPosition.nx};
+  hsize_t offsetInDataset[rank] = {hyperslabPosition.nt,
+                                   hyperslabPosition.nz,
+                                   hyperslabPosition.ny,
+                                   hyperslabPosition.nx};
   hsize_t offsetInMatrixData[]  = {cuboidPosition.nz, cuboidPosition.ny, cuboidPosition.nx};
   hsize_t matrixSize []         = {matrixDimensions.nz, matrixDimensions.ny, matrixDimensions.nx};
 
@@ -666,39 +588,28 @@ void THDF5_File::WriteCuboidToHyperSlab(const hid_t            dataset,
   // close memspace and filespace
   H5Sclose(memspace);
   H5Sclose(filespace);
-}// end of WriteCuboidToHyperSlab
-//--------------------------------------------------------------------------------------------------
+}// end of writeCuboidToHyperSlab
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write sensor data selected by the sensor mask.
- * A routine pick elements from the MatixData based on the sensor data and store.
- * them into a single hyperslab of size [Nsens, 1, 1].
- *
- * @param [in] dataset           - Dataset to write MaatrixData into
- * @param [in] hyperslabPosition - 3D position in the dataset (hyperslab)
- * @param [in] indexSensorSize   - Size of the index based sensor mask
- * @param [in] indexSensorData   - Index based sensor mask
- * @param [in] matrixDimensions  - Size of the sampled matrix
- * @param [in] matrixData        - Matrix data
- * @warning  - Very slow at this version of HDF5 for orthogonal planes-> DO NOT USE
- * @throw ios::failure
  */
-void THDF5_File::WriteDataByMaskToHyperSlab(const hid_t            dataset,
-                                            const DimensionSizes& hyperslabPosition,
-                                            const size_t           indexSensorSize,
-                                            const size_t*          indexSensorData,
-                                            const DimensionSizes& matrixDimensions,
-                                            const float*           matrixData)
+void Hdf5File::writeDataByMaskToHyperSlab(const hid_t           dataset,
+                                          const DimensionSizes& hyperslabPosition,
+                                          const size_t          indexSensorSize,
+                                          const size_t*         indexSensorData,
+                                          const DimensionSizes& matrixDimensions,
+                                          const float*          matrixData)
 {
   herr_t status;
   hid_t filespace, memspace;
 
-  const int Rank = 3;
+  constexpr int rank = 3;
 
   // Select sizes and positions
   // Only one timestep
-  hsize_t slabSize[Rank]        = {1, 1, indexSensorSize};
-  hsize_t offsetInDataset[Rank] = {hyperslabPosition.nz, hyperslabPosition.ny, hyperslabPosition.nx};
+  hsize_t slabSize[rank]        = {1, 1, indexSensorSize};
+  hsize_t offsetInDataset[rank] = {hyperslabPosition.nz, hyperslabPosition.ny, hyperslabPosition.nx};
 
   // treat as a 1D array
   hsize_t matrixSize = matrixDimensions.nz * matrixDimensions.ny * matrixDimensions.nx;
@@ -733,21 +644,15 @@ void THDF5_File::WriteDataByMaskToHyperSlab(const hid_t            dataset,
   // close memspace and filespace
   H5Sclose(memspace);
   H5Sclose(filespace);
-}// end of WriteSensorbyMaskToHyperSlab
-//--------------------------------------------------------------------------------------------------
+}// end of writeSensorbyMaskToHyperSlab
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Write a scalar value at a specified place in the file tree
- * (no chunks, no compression). Float value.
- *
- * @param [in] parentGroup - Where to link the scalar dataset
- * @param [in] datasetName - HDF5 dataset name
- * @param [in] value       - data to be written
- * @throw ios::failure
+ * Write a scalar value at a specified place in the file tree.
  */
-void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
-                                  MatrixName& datasetName,
-                                  const float  value)
+void Hdf5File::writeScalarValue(const hid_t parentGroup,
+                                MatrixName& datasetName,
+                                const float value)
 {
 
   const int rank = 3;
@@ -760,7 +665,7 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
   const char* cDatasetName = datasetName.c_str();
   if (H5LTfind_dataset(parentGroup, cDatasetName) == 1)
   { // dataset already exists (from previous simulation leg) open it
-    dataset = OpenDataset(parentGroup,cDatasetName);
+    dataset = openDataset(parentGroup,cDatasetName);
   }
   else
   { // dataset does not exist yet -> create it
@@ -786,23 +691,17 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, cDatasetName));
   }
 
-  WriteMatrixDataType(parentGroup, datasetName, TMatrixDataType::FLOAT);
-  WriteMatrixDomainType(parentGroup, datasetName, TMatrixDomainType::REAL);
-} // end of WriteScalarValue (float)
-//--------------------------------------------------------------------------------------------------
+  writeMatrixDataType(parentGroup, datasetName, MatrixDataType::kFloat);
+  writeMatrixDomainType(parentGroup, datasetName, MatrixDomainType::kReal);
+} // end of writeScalarValue (float)
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write a scalar value at a specified place in the file tree
- * (no chunks, no compression). Index value.
- *
- * @param [in] parentGroup - Where to link the scalar dataset
- * @param [in] datasetName - HDF5 dataset name
- * @param [in] value       - Data to be written
- * @throw ios::failure
  */
-void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
-                                  MatrixName& datasetName,
-                                  const size_t value)
+void Hdf5File::writeScalarValue(const hid_t  parentGroup,
+                                MatrixName&  datasetName,
+                                const size_t value)
 {
   const int rank = 3;
   const hsize_t dims[] = {1, 1, 1};
@@ -814,7 +713,7 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
   const char* cDatasetName = datasetName.c_str();
   if (H5LTfind_dataset(parentGroup, cDatasetName) == 1)
   { // dataset already exists (from previous leg) open it
-    dataset = OpenDataset(parentGroup, cDatasetName);
+    dataset = openDataset(parentGroup, cDatasetName);
   }
   else
   { // dataset does not exist yet -> create it
@@ -840,59 +739,43 @@ void THDF5_File::WriteScalarValue(const hid_t  parentGroup,
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, cDatasetName));
   }
 
-  WriteMatrixDataType(parentGroup, datasetName, TMatrixDataType::LONG);
-  WriteMatrixDomainType(parentGroup, datasetName, TMatrixDomainType::REAL);
-}// end of WriteScalarValue
-//--------------------------------------------------------------------------------------------------
+  writeMatrixDataType(parentGroup, datasetName, MatrixDataType::kLong);
+  writeMatrixDomainType(parentGroup, datasetName, MatrixDomainType::kReal);
+}// end of writeScalarValue
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read the scalar value under a specified group, float value.
- *
- * @param [in]  parentGroup - Where to link the scalar dataset
- * @param [in]  datasetName - HDF5 dataset name
- * @param [out] value       - Data to be read
  */
-void THDF5_File::ReadScalarValue(const hid_t  parentGroup,
-                                 MatrixName& datasetName,
-                                 float&       value)
+void Hdf5File::readScalarValue(const hid_t parentGroup,
+                               MatrixName& datasetName,
+                               float&      value)
 {
-  ReadCompleteDataset(parentGroup, datasetName, DimensionSizes(1,1,1), &value);
-} // end of ReadScalarValue
-//--------------------------------------------------------------------------------------------------
+  readCompleteDataset(parentGroup, datasetName, DimensionSizes(1,1,1), &value);
+} // end of readScalarValue
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read the scalar value under a specified group, index value.
- *
- * @param [in]  parentGroup - Where to link the scalar dataset
- * @param [in]  datasetName - HDF5 dataset name
- * @param [out] value       - Data to be read
  */
-void THDF5_File::ReadScalarValue(const hid_t  parentGroup,
-                                 MatrixName& datasetName,
-                                 size_t&      value)
+void Hdf5File::readScalarValue(const hid_t parentGroup,
+                               MatrixName& datasetName,
+                               size_t&     value)
 {
-  ReadCompleteDataset(parentGroup, datasetName, DimensionSizes(1,1,1), &value);
-}// end of ReadScalarValue
-//--------------------------------------------------------------------------------------------------
+  readCompleteDataset(parentGroup, datasetName, DimensionSizes(1,1,1), &value);
+}// end of readScalarValue
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read data from the dataset at a specified place in the file tree, float version.
- *
- * @param [in] parentGroup     - Where is the dataset situated
- * @param [in] datasetName     - Dataset name
- * @param [in] dimensionSizes  - Dimension sizes
- * @param [out] data           - Pointer to data
- * @throw ios::failure
  */
-void THDF5_File::ReadCompleteDataset (const hid_t            parentGroup,
-                                      MatrixName&           datasetName,
-                                      const DimensionSizes& dimensionSizes,
-                                      float*                 data)
-{
-  const char* cDatasetName = datasetName.c_str();
+void Hdf5File::readCompleteDataset(const hid_t           parentGroup,
+                                   MatrixName&           datasetName,
+                                   const DimensionSizes& dimensionSizes,
+                                   float*                data)
+{  const char* cDatasetName = datasetName.c_str();
   // Check Dimensions sizes
-  if (GetDatasetDimensionSizes(parentGroup, datasetName).nElements() !=
-      dimensionSizes.nElements())
+  if (getDatasetDimensionSizes(parentGroup, datasetName).nElements() != dimensionSizes.nElements())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadDimensionSizes, cDatasetName));
   }
@@ -903,27 +786,20 @@ void THDF5_File::ReadCompleteDataset (const hid_t            parentGroup,
   {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, cDatasetName));
   }
-}// end of ReadDataset (float)
-//-------------------------------------------------------------------------------------------------
+}// end of readCompleteDataset (float)
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Read data from the dataset at a specified place in the file tree, index version.
- *
- * @param [in] parentGroup     - Where is the dataset situated
- * @param [in] datasetName     - Dataset name
- * @param [in] dimensionSizes  - Dimension sizes
- * @param [out] data           - Pointer to data
- * @throw ios::failure
  */
-void THDF5_File::ReadCompleteDataset(const hid_t            parentGroup,
-                                     MatrixName&           datasetName,
-                                     const DimensionSizes& dimensionSizes,
-                                     size_t*                data)
+void Hdf5File::readCompleteDataset(const hid_t           parentGroup,
+                                   MatrixName&           datasetName,
+                                   const DimensionSizes& dimensionSizes,
+                                   size_t*               data)
 {
   const char* cDatasetName = datasetName.c_str();
-  if (GetDatasetDimensionSizes(parentGroup, datasetName).nElements() !=
-      dimensionSizes.nElements())
+  if (getDatasetDimensionSizes(parentGroup, datasetName).nElements() != dimensionSizes.nElements())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadDimensionSizes, cDatasetName));
   }
@@ -934,29 +810,22 @@ void THDF5_File::ReadCompleteDataset(const hid_t            parentGroup,
   {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, cDatasetName));
   }
-}// end of ReadCompleteDataset
-//--------------------------------------------------------------------------------------------------
-
+}// end of readCompleteDataset (index)
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Get dimension sizes of the dataset at a specified place in the file tree.
- *
- * @param [in] parentGroup - Where the dataset is
- * @param [in] datasetName - Dataset name
- * @return Dimension sizes of the dataset
- * @throw ios::failure
- */
-DimensionSizes THDF5_File::GetDatasetDimensionSizes(const hid_t parentGroup,
-                                                     MatrixName& datasetName)
+  * Get dimension sizes of the dataset  under a specified group.
+  */
+DimensionSizes Hdf5File::getDatasetDimensionSizes(const hid_t parentGroup,
+                                                  MatrixName& datasetName)
 {
-  const size_t ndims = GetDatasetNumberOfDimensions(parentGroup, datasetName);
+  const size_t ndims = getDatasetNumberOfDimensions(parentGroup, datasetName);
 
   hsize_t dims[4] = {0, 0, 0, 0};
 
   herr_t status = H5LTget_dataset_info(parentGroup, datasetName.c_str(), dims, NULL, NULL);
   if (status < 0)
   {
-
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, datasetName.c_str()));
   }
 
@@ -968,19 +837,14 @@ DimensionSizes THDF5_File::GetDatasetDimensionSizes(const hid_t parentGroup,
   {
     return DimensionSizes(dims[3], dims[2], dims[1], dims[0]);
   }
-}// end of GetDatasetDimensionSizes
-//--------------------------------------------------------------------------------------------------
+}// end of getDatasetDimensionSizes
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get number of dimensions of the dataset  under a specified group.
- *
- * @param [in] parentGroup - Where the dataset is
- * @param [in] datasetName - Dataset name
- * @return Number of dimensions
- * @throw ios::failure
  */
-size_t THDF5_File::GetDatasetNumberOfDimensions(const hid_t  parentGroup,
-                                                MatrixName& datasetName)
+size_t Hdf5File::getDatasetNumberOfDimensions(const hid_t parentGroup,
+                                              MatrixName& datasetName)
 {
   int dims = 0;
 
@@ -991,20 +855,15 @@ size_t THDF5_File::GetDatasetNumberOfDimensions(const hid_t  parentGroup,
   }
 
   return dims;
-}// end of GetDatasetNumberOfDimensions
-//--------------------------------------------------------------------------------------------------
+}// end of getDatasetNumberOfDimensions
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Get dataset element count at a specified place in the file tree.
- *
- * @param [in] parentGroup - Where the dataset is
- * @param [in] datasetName - Dataset name
- * @return Number of elements
- * @throw ios::failure
  */
-size_t THDF5_File::GetDatasetElementCount(const hid_t  parentGroup,
-                                          MatrixName& datasetName)
+size_t Hdf5File::getDatasetSize(const hid_t parentGroup,
+                                MatrixName& datasetName)
 {
   hsize_t dims[3] = {0, 0, 0};
 
@@ -1015,127 +874,103 @@ size_t THDF5_File::GetDatasetElementCount(const hid_t  parentGroup,
   }
 
   return dims[0] * dims[1] * dims[2];
-}// end of GetDatasetElementCount
-//--------------------------------------------------------------------------------------------------
+}// end of getDatasetSize
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Write matrix data type into the dataset at a specified place in the file tree.
- *
- * @param [in] parentGroup    - Where the dataset is
- * @param [in] datasetName    - Dataset name
- * @param [in] matrixDataType - Matrix data type in the file
  */
-void THDF5_File::WriteMatrixDataType(const hid_t            parentGroup,
-                                     MatrixName&           datasetName,
-                                     const TMatrixDataType& matrixDataType)
+void Hdf5File::writeMatrixDataType(const hid_t           parentGroup,
+                                   MatrixName&           datasetName,
+                                   const MatrixDataType& matrixDataType)
 {
-  WriteStringAttribute(parentGroup,
+  writeStringAttribute(parentGroup,
                        datasetName,
-                       matrixDataTypeName,
-                       matrixDataTypeNames[static_cast<int>(matrixDataType)]);
-}// end of WriteMatrixDataType
-//--------------------------------------------------------------------------------------------------
+                       kMatrixDataTypeName,
+                       kMatrixDataTypeNames[static_cast<int>(matrixDataType)]);
+}// end of writeMatrixDataType
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Write matrix data type into the dataset at a specified place in the file tree.
- *
- * @param [in] parentGroup      - Where the dataset is
- * @param [in] datasetName      - Dataset name
- * @param [in] matrixDomainType - Matrix domain type
  */
-void THDF5_File::WriteMatrixDomainType(const hid_t              parentGroup,
-                                       MatrixName&             datasetName,
-                                       const TMatrixDomainType& matrixDomainType)
+void Hdf5File::writeMatrixDomainType(const hid_t             parentGroup,
+                                     MatrixName&             datasetName,
+                                     const MatrixDomainType& matrixDomainType)
 {
-  WriteStringAttribute(parentGroup,
+  writeStringAttribute(parentGroup,
                        datasetName,
-                       matrixDomainTypeName,
-                       matrixDomainTypeNames[static_cast<int>(matrixDomainType)]);
-}// end of WriteMatrixDomainType
-//--------------------------------------------------------------------------------------------------
+                       kMatrixDomainTypeName,
+                       kMatrixDomainTypeNames[static_cast<int>(matrixDomainType)]);
+}// end of writeMatrixDomainType
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Read matrix data type from the dataset at a specified place in the file tree.
- *
- * @param [in] parentGroup - Where the dataset is
- * @param [in] datasetName - Dataset name
- * @return Matrix data type
- * @throw ios::failure
  */
-THDF5_File::TMatrixDataType THDF5_File::ReadMatrixDataType(const hid_t parentGroup,
-                                                           MatrixName& datasetName)
+Hdf5File::MatrixDataType Hdf5File::readMatrixDataType(const hid_t parentGroup,
+                                                      MatrixName& datasetName)
 {
-  string paramValue = ReadStringAttribute(parentGroup, datasetName, matrixDataTypeName);
+  const string paramValue = readStringAttribute(parentGroup, datasetName, kMatrixDataTypeName);
 
-  if (paramValue == matrixDataTypeNames[0])
+  if (paramValue == kMatrixDataTypeNames[0])
   {
-    return static_cast<TMatrixDataType>(0);
+    return static_cast<MatrixDataType>(0);
   }
-  if (paramValue == matrixDataTypeNames[1])
+  if (paramValue == kMatrixDataTypeNames[1])
   {
-    return static_cast<TMatrixDataType>(1);
+    return static_cast<MatrixDataType>(1);
   }
 
   throw ios::failure(Logger::formatMessage(kErrFmtBadAttributeValue,
-                                            datasetName.c_str(),
-                                            matrixDataTypeName.c_str(),
-                                            paramValue.c_str()));
+                                           datasetName.c_str(),
+                                           kMatrixDataTypeName.c_str(),
+                                           paramValue.c_str()));
 
   // this will never be executed (just to prevent warning)
-  return  static_cast<TMatrixDataType> (0);
-}// end of ReadMatrixDataType
-//--------------------------------------------------------------------------------------------------
+  return  static_cast<MatrixDataType> (0);
+}// end of readMatrixDataType
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Read matrix dataset domain type at a specified place in the file tree.
- *
- * @param [in] parentGroup - Where the dataset is
- * @param [in] datasetName - Dataset name
- * @return Matrix domain type
- * @throw ios::failure
  */
-THDF5_File::TMatrixDomainType THDF5_File::ReadMatrixDomainType(const hid_t  parentGroup,
-                                                               MatrixName& datasetName)
+Hdf5File::MatrixDomainType Hdf5File::readMatrixDomainType(const hid_t parentGroup,
+                                                          MatrixName& datasetName)
 {
-  string paramValue = ReadStringAttribute(parentGroup, datasetName, matrixDomainTypeName);
+  const string paramValue = readStringAttribute(parentGroup, datasetName, kMatrixDomainTypeName);
 
-  if (paramValue == matrixDomainTypeNames[0])
+  if (paramValue == kMatrixDomainTypeNames[0])
   {
-    return static_cast<TMatrixDomainType> (0);
+    return static_cast<MatrixDomainType> (0);
   }
-  if (paramValue == matrixDomainTypeNames[1])
+  if (paramValue == kMatrixDomainTypeNames[1])
   {
-    return static_cast<TMatrixDomainType> (1);
+    return static_cast<MatrixDomainType> (1);
   }
 
   throw ios::failure(Logger::formatMessage(kErrFmtBadAttributeValue,
                                             datasetName.c_str(),
-                                            matrixDomainTypeName.c_str(),
+                                            kMatrixDomainTypeName.c_str(),
                                             paramValue.c_str()));
 
   // This line will never be executed (just to prevent warning)
-  return static_cast<TMatrixDomainType> (0);
-}// end of ReadMatrixDomainType
-//--------------------------------------------------------------------------------------------------
+  return static_cast<MatrixDomainType> (0);
+}// end of readMatrixDomainType
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Write integer attribute at a specified place in the file tree.
- *
- * @param [in] parentGroup   - Where the dataset is
- * @param [in] datasetName   - Dataset name
- * @param [in] attributeName - Attribute name
- * @param [in] value         - Data to write
- * @throw ios::failure
  */
-inline void THDF5_File::WriteStringAttribute(const hid_t   parentGroup,
-                                             MatrixName&  datasetName,
-                                             MatrixName&  attributeName,
-                                             const string& value)
+inline void Hdf5File::writeStringAttribute(const hid_t   parentGroup,
+                                           MatrixName&   datasetName,
+                                           MatrixName&   attributeName,
+                                           const string& value)
 {
   herr_t status = H5LTset_attribute_string(parentGroup,
                                            datasetName.c_str(),
@@ -1144,11 +979,11 @@ inline void THDF5_File::WriteStringAttribute(const hid_t   parentGroup,
   if (status < 0)
   {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteAttribute,
-                                              attributeName.c_str(),
-                                              datasetName.c_str()));
+                                             attributeName.c_str(),
+                                             datasetName.c_str()));
   }
-}// end of WriteIntAttribute
-//--------------------------------------------------------------------------------------------------
+}// end of writeIntAttribute
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
@@ -1160,9 +995,9 @@ inline void THDF5_File::WriteStringAttribute(const hid_t   parentGroup,
  * @return Attribute value
  * @throw ios::failure
  */
-inline string THDF5_File::ReadStringAttribute(const hid_t  parentGroup,
-                                              MatrixName& datasetName,
-                                              MatrixName& attributeName)
+inline string Hdf5File::readStringAttribute(const hid_t  parentGroup,
+                                            MatrixName& datasetName,
+                                            MatrixName& attributeName)
 {
   char value[256] = "";
   herr_t status = H5LTget_attribute_string(parentGroup,
@@ -1173,336 +1008,311 @@ inline string THDF5_File::ReadStringAttribute(const hid_t  parentGroup,
   if (status < 0)
   {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReadAttribute,
-                                              attributeName.c_str(),
-                                              datasetName.c_str()));
+                                             attributeName.c_str(),
+                                             datasetName.c_str()));
   }
 
   return string(value);
-}// end of ReadIntAttribute
-//--------------------------------------------------------------------------------------------------
+}// end of readIntAttribute
+//----------------------------------------------------------------------------------------------------------------------
 
 
-//------------------------------------------------------------------------------------------------//
-//------------------------------------------ THDF5_File ------------------------------------------//
-//-------------------------------------- Protected methods ---------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//-------------------------------------------------    Hdf5File    ---------------------------------------------------//
+//------------------------------------------------- Protected methods ------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 
-//------------------------------------------------------------------------------------------------//
-//------------------------------------------ THDF5_File ------------------------------------------//
-//--------------------------------------- Private methods ----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//-------------------------------------------------    Hdf5File    ---------------------------------------------------//
+//------------------------------------------------ Private methods ---------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 
-//------------------------------------------------------------------------------------------------//
-//-------------------------------------- THDF5_File_Header ---------------------------------------//
-//--------------------------------------- Public methods -----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Hdf5FileHeader ---------------------------------------------------//
+//------------------------------------------------- Public methods ---------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
  * Constructor.
  */
-THDF5_FileHeader::THDF5_FileHeader() :
-        headerValues(),
-        headerNames()
+Hdf5FileHeader::Hdf5FileHeader()
+  : mHeaderValues(),
+    mHeaderNames()
 {
-  PopulateHeaderFileMap();
+  populateHeaderFileMap();
 }// end of constructor
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Copy constructor.
- * @param [in] src - Source object
  */
-THDF5_FileHeader::THDF5_FileHeader(const THDF5_FileHeader& src) :
-        headerValues(src.headerValues),
-        headerNames(src.headerNames)
+Hdf5FileHeader::Hdf5FileHeader(const Hdf5FileHeader& src)
+  : mHeaderValues(src.mHeaderValues),
+    mHeaderNames(src.mHeaderNames)
 {
 
 }// end of copy constructor
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Destructor.
- *
  */
-THDF5_FileHeader::~THDF5_FileHeader()
+Hdf5FileHeader::~Hdf5FileHeader()
 {
-  headerValues.clear();
-  headerNames.clear();
+  mHeaderValues.clear();
+  mHeaderNames.clear();
 }// end of destructor
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Read header from the input file.
- *
- * @param [in, out] inputFile - Input file handle
- * @throw ios:failure when en error happens
  */
-void THDF5_FileHeader::ReadHeaderFromInputFile(THDF5_File& inputFile)
+void Hdf5FileHeader::readHeaderFromInputFile(Hdf5File& inputFile)
 {
   // Get file root handle
-  hid_t rootGroup = inputFile.GetRootGroup();
+  hid_t rootGroup = inputFile.getRootGroup();
   // read file type
-  headerValues[TFileHeaderItems::FILE_TYPE] =
-          inputFile.ReadStringAttribute(rootGroup,
+  mHeaderValues[FileHeaderItems::kFileType] =
+          inputFile.readStringAttribute(rootGroup,
                                         "/",
-                                        headerNames[TFileHeaderItems::FILE_TYPE].c_str());
+                                        mHeaderNames[FileHeaderItems::kFileType].c_str());
 
-  if (GetFileType() == TFileType::INPUT)
+  if (getFileType() == FileType::kInput)
   {
-    headerValues[TFileHeaderItems::CREATED_BY]
-            = inputFile.ReadStringAttribute(rootGroup,
+    mHeaderValues[FileHeaderItems::kCreatedBy]
+            = inputFile.readStringAttribute(rootGroup,
                                             "/",
-                                            headerNames[TFileHeaderItems::CREATED_BY].c_str());
-    headerValues[TFileHeaderItems::CREATION_DATA]
-            = inputFile.ReadStringAttribute(rootGroup,
+                                            mHeaderNames[FileHeaderItems::kCreatedBy].c_str());
+    mHeaderValues[FileHeaderItems::kCreationDate]
+            = inputFile.readStringAttribute(rootGroup,
                                             "/",
-                                            headerNames[TFileHeaderItems::CREATION_DATA].c_str());
-    headerValues[TFileHeaderItems::FILE_DESCRIPTION]
-            = inputFile.ReadStringAttribute(rootGroup,
+                                            mHeaderNames[FileHeaderItems::kCreationDate].c_str());
+    mHeaderValues[FileHeaderItems::kFileDescription]
+            = inputFile.readStringAttribute(rootGroup,
                                             "/",
-                                            headerNames[TFileHeaderItems::FILE_DESCRIPTION].c_str());
-    headerValues[TFileHeaderItems::MAJOR_VERSION]
-            = inputFile.ReadStringAttribute(rootGroup,
+                                            mHeaderNames[FileHeaderItems::kFileDescription].c_str());
+    mHeaderValues[FileHeaderItems::kMajorVersion]
+            = inputFile.readStringAttribute(rootGroup,
                                             "/",
-                                            headerNames[TFileHeaderItems::MAJOR_VERSION].c_str());
-    headerValues[TFileHeaderItems::MINOR_VERSION]
-            = inputFile.ReadStringAttribute(rootGroup,
+                                            mHeaderNames[FileHeaderItems::kMajorVersion].c_str());
+    mHeaderValues[FileHeaderItems::kMinorVersion]
+            = inputFile.readStringAttribute(rootGroup,
                                             "/",
-                                            headerNames[TFileHeaderItems::MINOR_VERSION].c_str());
+                                            mHeaderNames[FileHeaderItems::kMinorVersion].c_str());
   }
   else
   {
     throw ios::failure(kErrFmtBadInputFileType);
   }
-}// end of ReadHeaderFromInputFile
-//--------------------------------------------------------------------------------------------------
+}// end of readHeaderFromInputFile
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
- * Read header from output file (necessary for checkpoint-restart). Read only execution times
- * (the others are read from the input file, or calculated based on the very last leg of the
- * simulation).
- * This function is called only if checkpoint-restart is enabled.
- *
- * @param [in, out] outputFile - Output file handle
+ * Read header from output file (necessary for checkpoint-restart).
  */
-void THDF5_FileHeader::ReadHeaderFromOutputFile(THDF5_File& outputFile)
+void Hdf5FileHeader::readHeaderFromOutputFile(Hdf5File& outputFile)
 {
   // Get file root handle
-  hid_t rootGroup = outputFile.GetRootGroup();
+  hid_t rootGroup = outputFile.getRootGroup();
 
-  headerValues[TFileHeaderItems::FILE_TYPE]
-          = outputFile.ReadStringAttribute(rootGroup,
+  mHeaderValues[FileHeaderItems::kFileType]
+          = outputFile.readStringAttribute(rootGroup,
                                            "/",
-                                           headerNames[TFileHeaderItems::FILE_TYPE].c_str());
+                                           mHeaderNames[FileHeaderItems::kFileType].c_str());
 
-  if (GetFileType() == TFileType::OUTPUT)
+  if (getFileType() == FileType::kOutput)
   {
-    headerValues[TFileHeaderItems::TOTAL_EXECUTION_TIME]
-            = outputFile.ReadStringAttribute(rootGroup,
+    mHeaderValues[FileHeaderItems::kTotalExecutionTime]
+            = outputFile.readStringAttribute(rootGroup,
                                              "/",
-                                             headerNames[TFileHeaderItems::TOTAL_EXECUTION_TIME].c_str());
-    headerValues[TFileHeaderItems::DATA_LOAD_TIME]
-            = outputFile.ReadStringAttribute(rootGroup,
+                                             mHeaderNames[FileHeaderItems::kTotalExecutionTime].c_str());
+    mHeaderValues[FileHeaderItems::kDataLoadTime]
+            = outputFile.readStringAttribute(rootGroup,
                                              "/",
-                                             headerNames[TFileHeaderItems::DATA_LOAD_TIME].c_str());
-    headerValues[TFileHeaderItems::PREPROCESSING_TIME]
-            = outputFile.ReadStringAttribute(rootGroup,
+                                             mHeaderNames[FileHeaderItems::kDataLoadTime].c_str());
+    mHeaderValues[FileHeaderItems::kPreProcessingTime]
+            = outputFile.readStringAttribute(rootGroup,
                                              "/",
-                                             headerNames[TFileHeaderItems::PREPROCESSING_TIME].c_str());
-    headerValues[TFileHeaderItems::SIMULATION_TIME]
-            = outputFile.ReadStringAttribute(rootGroup,
+                                             mHeaderNames[FileHeaderItems::kPreProcessingTime].c_str());
+    mHeaderValues[FileHeaderItems::kSimulationTime]
+            = outputFile.readStringAttribute(rootGroup,
                                              "/",
-                                             headerNames[TFileHeaderItems::SIMULATION_TIME].c_str());
-    headerValues[TFileHeaderItems::POST_PROCESSING_TIME]
-            = outputFile.ReadStringAttribute(rootGroup,
+                                             mHeaderNames[FileHeaderItems::kSimulationTime].c_str());
+    mHeaderValues[FileHeaderItems::kPostProcessingTime]
+            = outputFile.readStringAttribute(rootGroup,
                                              "/",
-                                             headerNames[TFileHeaderItems::POST_PROCESSING_TIME].c_str());
+                                             mHeaderNames[FileHeaderItems::kPostProcessingTime].c_str());
   }
   else
   {
     throw ios::failure(kErrFmtBadOutputFIleType);
   }
-}// end of ReadHeaderFromOutputFile
-//--------------------------------------------------------------------------------------------------
+}// end of readHeaderFromOutputFile
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
- * Read the file header form the checkpoint file. We need the header to verify the file version
- * and type.
- * @param [in, out] checkpointFile - Checkpoint file handle
+ * Read the file header form the checkpoint file.
  */
-void THDF5_FileHeader::ReadHeaderFromCheckpointFile(THDF5_File& checkpointFile)
+void Hdf5FileHeader::readHeaderFromCheckpointFile(Hdf5File& checkpointFile)
 {
   // Get file root handle
-  hid_t rootGroup = checkpointFile.GetRootGroup();
+  hid_t rootGroup = checkpointFile.getRootGroup();
   // read file type
-  headerValues[TFileHeaderItems::FILE_TYPE] =
-          checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[TFileHeaderItems::FILE_TYPE]);
+  mHeaderValues[FileHeaderItems::kFileType] =
+          checkpointFile.readStringAttribute(rootGroup, "/", mHeaderNames[FileHeaderItems::kFileType]);
 
-  if (GetFileType() == TFileType::CHECKPOINT)
+  if (getFileType() == FileType::kCheckpoint)
   {
-    headerValues[TFileHeaderItems::CREATED_BY]
-            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[TFileHeaderItems::CREATED_BY]);
-    headerValues[TFileHeaderItems::CREATION_DATA]
-            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[TFileHeaderItems::CREATION_DATA]);
-    headerValues[TFileHeaderItems::FILE_DESCRIPTION]
-            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[TFileHeaderItems::FILE_DESCRIPTION]);
-    headerValues[TFileHeaderItems::MAJOR_VERSION]
-            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[TFileHeaderItems::MAJOR_VERSION]);
-    headerValues[TFileHeaderItems::MINOR_VERSION]
-            = checkpointFile.ReadStringAttribute(rootGroup, "/", headerNames[TFileHeaderItems::MINOR_VERSION]);
+    mHeaderValues[FileHeaderItems::kCreatedBy]
+            = checkpointFile.readStringAttribute(rootGroup, "/", mHeaderNames[FileHeaderItems::kCreatedBy]);
+    mHeaderValues[FileHeaderItems::kCreationDate]
+            = checkpointFile.readStringAttribute(rootGroup, "/", mHeaderNames[FileHeaderItems::kCreationDate]);
+    mHeaderValues[FileHeaderItems::kFileDescription]
+            = checkpointFile.readStringAttribute(rootGroup, "/", mHeaderNames[FileHeaderItems::kFileDescription]);
+    mHeaderValues[FileHeaderItems::kMajorVersion]
+            = checkpointFile.readStringAttribute(rootGroup, "/", mHeaderNames[FileHeaderItems::kMajorVersion]);
+    mHeaderValues[FileHeaderItems::kMinorVersion]
+            = checkpointFile.readStringAttribute(rootGroup, "/", mHeaderNames[FileHeaderItems::kMinorVersion]);
   }
   else
   {
     throw ios::failure(kErrFmtBadCheckpointFileType);
   }
-}// end of ReadHeaderFromCheckpointFile
-//--------------------------------------------------------------------------------------------------
+}// end of readHeaderFromCheckpointFile
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write header into the output file.
- *
- * @param [in,out] outputFile - Output file handle
  */
-void THDF5_FileHeader::WriteHeaderToOutputFile(THDF5_File& outputFile)
+void Hdf5FileHeader::writeHeaderToOutputFile(Hdf5File& outputFile)
 {
   // Get file root handle
-  hid_t rootGroup = outputFile.GetRootGroup();
+  hid_t rootGroup = outputFile.getRootGroup();
 
-  for (const auto& it : headerNames)
+  for (const auto& it : mHeaderNames)
   {
-    outputFile.WriteStringAttribute(rootGroup, "/", it.second, headerValues[it.first]);
+    outputFile.writeStringAttribute(rootGroup, "/", it.second, mHeaderValues[it.first]);
   }
-}// end of WriteHeaderToOutputFile
-//--------------------------------------------------------------------------------------------------
+}// end of writeHeaderToOutputFile
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write header to the output file (only a subset of all possible fields are written).
- *
- * @param [in, out] checkpointFile - Checkpoint file handle
  */
-void THDF5_FileHeader::WriteHeaderToCheckpointFile(THDF5_File& checkpointFile)
+void Hdf5FileHeader::writeHeaderToCheckpointFile(Hdf5File& checkpointFile)
 {
   // Get file root handle
-  hid_t rootGroup = checkpointFile.GetRootGroup();
+  hid_t rootGroup = checkpointFile.getRootGroup();
 
   // Write header
-  checkpointFile.WriteStringAttribute(rootGroup,
+  checkpointFile.writeStringAttribute(rootGroup,
                                       "/",
-                                      headerNames [TFileHeaderItems::FILE_TYPE].c_str(),
-                                      headerValues[TFileHeaderItems::FILE_TYPE].c_str());
+                                      mHeaderNames [FileHeaderItems::kFileType].c_str(),
+                                      mHeaderValues[FileHeaderItems::kFileType].c_str());
 
-  checkpointFile.WriteStringAttribute(rootGroup,
+  checkpointFile.writeStringAttribute(rootGroup,
                                       "/",
-                                      headerNames [TFileHeaderItems::CREATED_BY].c_str(),
-                                      headerValues[TFileHeaderItems::CREATED_BY].c_str());
+                                      mHeaderNames [FileHeaderItems::kCreatedBy].c_str(),
+                                      mHeaderValues[FileHeaderItems::kCreatedBy].c_str());
 
-  checkpointFile.WriteStringAttribute(rootGroup,
+  checkpointFile.writeStringAttribute(rootGroup,
                                       "/",
-                                      headerNames [TFileHeaderItems::CREATION_DATA].c_str(),
-                                      headerValues[TFileHeaderItems::CREATION_DATA].c_str());
+                                      mHeaderNames [FileHeaderItems::kCreationDate].c_str(),
+                                      mHeaderValues[FileHeaderItems::kCreationDate].c_str());
 
-  checkpointFile.WriteStringAttribute(rootGroup,
+  checkpointFile.writeStringAttribute(rootGroup,
                                       "/",
-                                      headerNames [TFileHeaderItems::FILE_DESCRIPTION].c_str(),
-                                      headerValues[TFileHeaderItems::FILE_DESCRIPTION].c_str());
+                                      mHeaderNames [FileHeaderItems::kFileDescription].c_str(),
+                                      mHeaderValues[FileHeaderItems::kFileDescription].c_str());
 
-  checkpointFile.WriteStringAttribute(rootGroup,
+  checkpointFile.writeStringAttribute(rootGroup,
                                       "/",
-                                      headerNames [TFileHeaderItems::MAJOR_VERSION].c_str(),
-                                      headerValues[TFileHeaderItems::MAJOR_VERSION].c_str());
+                                      mHeaderNames [FileHeaderItems::kMajorVersion].c_str(),
+                                      mHeaderValues[FileHeaderItems::kMajorVersion].c_str());
 
-  checkpointFile.WriteStringAttribute(rootGroup,
+  checkpointFile.writeStringAttribute(rootGroup,
                                       "/",
-                                      headerNames [TFileHeaderItems::MINOR_VERSION].c_str(),
-                                      headerValues[TFileHeaderItems::MINOR_VERSION].c_str());
-}// end of WriteHeaderToCheckpointFile
-//--------------------------------------------------------------------------------------------------
+                                      mHeaderNames [FileHeaderItems::kMinorVersion].c_str(),
+                                      mHeaderValues[FileHeaderItems::kMinorVersion].c_str());
+}// end of writeHeaderToCheckpointFile
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Set actual date and time.
- *
  */
-void THDF5_FileHeader::SetActualCreationTime()
+void Hdf5FileHeader::setActualCreationTime()
 {
   struct tm *current;
   time_t now;
   time(&now);
   current = localtime(&now);
 
-  headerValues[TFileHeaderItems::CREATION_DATA] = Logger::formatMessage("%02i/%02i/%02i, %02i:%02i:%02i",
+  mHeaderValues[FileHeaderItems::kCreationDate] = Logger::formatMessage("%02i/%02i/%02i, %02i:%02i:%02i",
                                                   current->tm_mday, current->tm_mon + 1, current->tm_year - 100,
                                                   current->tm_hour, current->tm_min, current->tm_sec);
 
-}// end of SetCreationTime
-//--------------------------------------------------------------------------------------------------
+}// end of setCreationTime
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get file version as an enum.
- * @return File version as an enum
  */
-THDF5_FileHeader::TFileVersion THDF5_FileHeader::GetFileVersion()
+Hdf5FileHeader::FileVersion Hdf5FileHeader::getFileVersion()
 {
-  if ((headerValues[TFileHeaderItems::MAJOR_VERSION] == hdf5_MajorFileVersionsNames[0]) &&
-      (headerValues[TFileHeaderItems::MINOR_VERSION] == hdf5_MinorFileVersionsNames[0]))
+  if ((mHeaderValues[FileHeaderItems::kMajorVersion] == kMajorFileVersionsNames[0]) &&
+      (mHeaderValues[FileHeaderItems::kMinorVersion] == kMinorFileVersionsNames[0]))
   {
-    return TFileVersion::VERSION_10;
+    return FileVersion::kVersion10;
   }
 
-  if ((headerValues[TFileHeaderItems::MAJOR_VERSION] == hdf5_MajorFileVersionsNames[0]) &&
-      (headerValues[TFileHeaderItems::MINOR_VERSION] == hdf5_MinorFileVersionsNames[1]))
+  if ((mHeaderValues[FileHeaderItems::kMajorVersion] == kMajorFileVersionsNames[0]) &&
+      (mHeaderValues[FileHeaderItems::kMinorVersion] == kMinorFileVersionsNames[1]))
   {
-    return TFileVersion::VERSION_11;
+    return FileVersion::kVersion11;
   }
 
-  return TFileVersion::VERSION_UNKNOWN;
-}// end of GetFileVersion
-//--------------------------------------------------------------------------------------------------
-
+  return FileVersion::kVersionUnknown;
+}// end of getFileVersion
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Get File type.
- *
- * @return File type
  */
-THDF5_FileHeader::TFileType  THDF5_FileHeader::GetFileType()
+Hdf5FileHeader::FileType  Hdf5FileHeader::getFileType()
 {
-  for (int i = static_cast<int>(TFileType::INPUT); i < static_cast<int>(TFileType::UNKNOWN); i++)
+  for (int i = static_cast<int>(FileType::kInput); i < static_cast<int>(FileType::kUnknown); i++)
   {
-    if (headerValues[TFileHeaderItems::FILE_TYPE] == hdf5_FileTypesNames[i])
+    if (mHeaderValues[FileHeaderItems::kFileType] == kFileTypesNames[i])
     {
-      return static_cast<TFileType >(i);
+      return static_cast<FileType >(i);
     }
   }
 
-  return THDF5_FileHeader::TFileType::UNKNOWN;
-}// end of GetFileType
-//--------------------------------------------------------------------------------------------------
+  return Hdf5FileHeader::FileType::kUnknown;
+}// end of getFileType
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Set File type.
- *
- * @param [in] fileType - File type
  */
-void THDF5_FileHeader::SetFileType(const THDF5_FileHeader::TFileType fileType)
+void Hdf5FileHeader::setFileType(const Hdf5FileHeader::FileType fileType)
 {
-  headerValues[TFileHeaderItems::FILE_TYPE] = hdf5_FileTypesNames[static_cast<int>(fileType)];
-}// end of SetFileType
-//--------------------------------------------------------------------------------------------------
-
+  mHeaderValues[FileHeaderItems::kFileType] = kFileTypesNames[static_cast<int>(fileType)];
+}// end of setFileType
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Set Host name.
- *
  */
-void THDF5_FileHeader::SetHostName()
+void Hdf5FileHeader::setHostName()
 {
   char hostName[256];
 
@@ -1520,114 +1330,98 @@ void THDF5_FileHeader::SetHostName()
     WSACleanup();
   #endif
 
-  headerValues[TFileHeaderItems::HOST_NAME] = hostName;
-}// end of SetHostName
-//--------------------------------------------------------------------------------------------------
+  mHeaderValues[FileHeaderItems::kHostName] = hostName;
+}// end of setHostName
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Set memory consumption.
- *
- * @param [in] totalMemory - Total memory consumption
  */
-void THDF5_FileHeader::SetMemoryConsumption(const size_t totalMemory)
+void Hdf5FileHeader::setMemoryConsumption(const size_t totalMemory)
 {
-  headerValues[TFileHeaderItems::TOTAL_MEMORY_CONSUMPTION] = Logger::formatMessage("%ld MB", totalMemory);
+  mHeaderValues[FileHeaderItems::kTotalMemoryConsumption] = Logger::formatMessage("%ld MB", totalMemory);
 
-  headerValues[TFileHeaderItems::PEAK_CORE_MEMORY_CONSUMPTION]
+  mHeaderValues[FileHeaderItems::kPeakMemoryConsumption]
           = Logger::formatMessage("%ld MB",
-                                   totalMemory / Parameters::getInstance().getNumberOfThreads());
+                                  totalMemory / Parameters::getInstance().getNumberOfThreads());
 
-}// end of SetMemoryConsumption
-//--------------------------------------------------------------------------------------------------
+}// end of setMemoryConsumption
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Set execution times in file header.
- *
- * @param [in] totalTime          - Total time
- * @param [in] loadTime           - Time to load data
- * @param [in] preProcessingTime  - Preprocessing time
- * @param [in] simulationTime     - Simulation time
- * @param [in] postprocessingTime - Post processing time
  */
-void THDF5_FileHeader::SetExecutionTimes(const double totalTime,
-                                         const double loadTime,
-                                         const double preProcessingTime,
-                                         const double simulationTime,
-                                         const double postprocessingTime)
+void Hdf5FileHeader::setExecutionTimes(const double totalTime,
+                                       const double loadTime,
+                                       const double preProcessingTime,
+                                       const double simulationTime,
+                                       const double postprocessingTime)
 {
-  headerValues[TFileHeaderItems::TOTAL_EXECUTION_TIME] = Logger::formatMessage("%8.2fs", totalTime);
-  headerValues[TFileHeaderItems::DATA_LOAD_TIME]       = Logger::formatMessage("%8.2fs", loadTime);
-  headerValues[TFileHeaderItems::PREPROCESSING_TIME]   = Logger::formatMessage("%8.2fs", preProcessingTime);
-  headerValues[TFileHeaderItems::SIMULATION_TIME]      = Logger::formatMessage("%8.2fs", simulationTime);
-  headerValues[TFileHeaderItems::POST_PROCESSING_TIME] = Logger::formatMessage("%8.2fs", postprocessingTime);
-}// end of SetExecutionTimes
-//--------------------------------------------------------------------------------------------------
+  mHeaderValues[FileHeaderItems::kTotalExecutionTime] = Logger::formatMessage("%8.2fs", totalTime);
+  mHeaderValues[FileHeaderItems::kDataLoadTime]       = Logger::formatMessage("%8.2fs", loadTime);
+  mHeaderValues[FileHeaderItems::kPreProcessingTime]  = Logger::formatMessage("%8.2fs", preProcessingTime);
+  mHeaderValues[FileHeaderItems::kSimulationTime]     = Logger::formatMessage("%8.2fs", simulationTime);
+  mHeaderValues[FileHeaderItems::kPostProcessingTime] = Logger::formatMessage("%8.2fs", postprocessingTime);
+}// end of setExecutionTimes
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get execution times stored in the output file header.
- *
- * @param [out] totalTime          - Total time
- * @param [out] loadTime           - Time to load data
- * @param [out] preProcessingTime  - Preprocessing time
- * @param [out] simulationTime     - Simulation time
- * @param [out] postprocessingTime - Post processing time
  */
-void THDF5_FileHeader::GetExecutionTimes(double& totalTime,
-                                         double& loadTime,
-                                         double& preProcessingTime,
-                                         double& simulationTime,
-                                         double& postprocessingTime)
+void Hdf5FileHeader::getExecutionTimes(double& totalTime,
+                                       double& loadTime,
+                                       double& preProcessingTime,
+                                       double& simulationTime,
+                                       double& postprocessingTime)
 {
-  totalTime          = std::stof(headerValues[TFileHeaderItems::TOTAL_EXECUTION_TIME]);
-  loadTime           = std::stof(headerValues[TFileHeaderItems::DATA_LOAD_TIME]);
-  preProcessingTime  = std::stof(headerValues[TFileHeaderItems::PREPROCESSING_TIME]);
-  simulationTime     = std::stof(headerValues[TFileHeaderItems::SIMULATION_TIME]);
-  postprocessingTime = std::stof(headerValues[TFileHeaderItems::POST_PROCESSING_TIME]);
-}// end of GetExecutionTimes
-//--------------------------------------------------------------------------------------------------
+  totalTime          = std::stof(mHeaderValues[FileHeaderItems::kTotalExecutionTime]);
+  loadTime           = std::stof(mHeaderValues[FileHeaderItems::kDataLoadTime]);
+  preProcessingTime  = std::stof(mHeaderValues[FileHeaderItems::kPreProcessingTime]);
+  simulationTime     = std::stof(mHeaderValues[FileHeaderItems::kSimulationTime]);
+  postprocessingTime = std::stof(mHeaderValues[FileHeaderItems::kPostProcessingTime]);
+}// end of getExecutionTimes
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Set Number of cores.
- *
  */
-void THDF5_FileHeader::SetNumberOfCores()
+void Hdf5FileHeader::setNumberOfCores()
 {
-  headerValues[TFileHeaderItems::NUMBER_OF_CORES]
+  mHeaderValues[FileHeaderItems::kNumberofCores]
           = Logger::formatMessage("%ld", Parameters::getInstance().getNumberOfThreads());
-}// end of SetNumberOfCores
-//--------------------------------------------------------------------------------------------------
+}// end of setNumberOfCores
+//----------------------------------------------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------------------------//
-//-------------------------------------- THDF5_File_Header ---------------------------------------//
-//-------------------------------------- Protected methods ---------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Hdf5FileHeader ---------------------------------------------------//
+//------------------------------------------------- Protected methods ------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
  * Create map with names for the header.
- *
  */
-void THDF5_FileHeader::PopulateHeaderFileMap()
+void Hdf5FileHeader::populateHeaderFileMap()
 {
-  headerNames.clear();
+  mHeaderNames.clear();
 
-  headerNames[TFileHeaderItems::CREATED_BY]       = "created_by";
-  headerNames[TFileHeaderItems::CREATION_DATA]    = "creation_date";
-  headerNames[TFileHeaderItems::FILE_DESCRIPTION] = "file_description";
-  headerNames[TFileHeaderItems::MAJOR_VERSION]    = "major_version";
-  headerNames[TFileHeaderItems::MINOR_VERSION]    = "minor_version";
-  headerNames[TFileHeaderItems::FILE_TYPE]        = "file_type";
+  mHeaderNames[FileHeaderItems::kCreatedBy]       = "created_by";
+  mHeaderNames[FileHeaderItems::kCreationDate]    = "creation_date";
+  mHeaderNames[FileHeaderItems::kFileDescription] = "file_description";
+  mHeaderNames[FileHeaderItems::kMajorVersion]    = "major_version";
+  mHeaderNames[FileHeaderItems::kMinorVersion]    = "minor_version";
+  mHeaderNames[FileHeaderItems::kFileType]        = "file_type";
 
-  headerNames[TFileHeaderItems::HOST_NAME]                    = "host_names";
-  headerNames[TFileHeaderItems::NUMBER_OF_CORES]              = "number_of_cpu_cores";
-  headerNames[TFileHeaderItems::TOTAL_MEMORY_CONSUMPTION]     = "total_memory_in_use";
-  headerNames[TFileHeaderItems::PEAK_CORE_MEMORY_CONSUMPTION] = "peak_core_memory_in_use";
+  mHeaderNames[FileHeaderItems::kHostName]               = "host_names";
+  mHeaderNames[FileHeaderItems::kNumberofCores]          = "number_of_cpu_cores";
+  mHeaderNames[FileHeaderItems::kTotalMemoryConsumption] = "total_memory_in_use";
+  mHeaderNames[FileHeaderItems::kPeakMemoryConsumption]  = "peak_core_memory_in_use";
 
-  headerNames[TFileHeaderItems::TOTAL_EXECUTION_TIME] = "total_execution_time";
-  headerNames[TFileHeaderItems::DATA_LOAD_TIME]       = "data_loading_phase_execution_time";
-  headerNames[TFileHeaderItems::PREPROCESSING_TIME]   = "pre-processing_phase_execution_time";
-  headerNames[TFileHeaderItems::SIMULATION_TIME]      = "simulation_phase_execution_time";
-  headerNames[TFileHeaderItems::POST_PROCESSING_TIME] = "post-processing_phase_execution_time";
-}// end of PopulateHeaderFileMap
-//--------------------------------------------------------------------------------------------------
+  mHeaderNames[FileHeaderItems::kTotalExecutionTime] = "total_execution_time";
+  mHeaderNames[FileHeaderItems::kDataLoadTime]       = "data_loading_phase_execution_time";
+  mHeaderNames[FileHeaderItems::kPreProcessingTime]  = "pre-processing_phase_execution_time";
+  mHeaderNames[FileHeaderItems::kSimulationTime]     = "simulation_phase_execution_time";
+  mHeaderNames[FileHeaderItems::kPostProcessingTime] = "post-processing_phase_execution_time";
+}// end of populateHeaderFileMap
+//----------------------------------------------------------------------------------------------------------------------

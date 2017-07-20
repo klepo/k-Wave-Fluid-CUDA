@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2012, 11:34 (created) \n
- *              19 July     2017, 12:15 (revised)
+ *              20 July     2017, 14:16 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -80,7 +80,7 @@ class BaseMatrix
      * @param [in] file       - Handle to the HDF5 file.
      * @param [in] matrixName - HDF5 dataset name to read from.
      */
-    virtual void readData(THDF5_File&  file,
+    virtual void readData(Hdf5File&   file,
                           MatrixName& matrixName) = 0;
     /**
      * @brief   Write data into HDF5 file.
@@ -89,7 +89,7 @@ class BaseMatrix
      * @param [in] matrixName       - HDF5 dataset name to write to.
      * @param [in] compressionLevel - Compression level for the HDF5 dataset.
      */
-    virtual void writeData(THDF5_File&  file,
+    virtual void writeData(Hdf5File&    file,
                            MatrixName&  matrixName,
                            const size_t compressionLevel) = 0;
 

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 February  2015, 12:51 (created)
- *              19 July      2017, 15:21 (revised)
+ *              20 July      2017, 14:21 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,7 +50,7 @@ using std::string;
 /**
  * Constructor.
  */
-CuboidOutputStream::CuboidOutputStream(THDF5_File&           file,
+CuboidOutputStream::CuboidOutputStream(Hdf5File&            file,
                                        MatrixName&          groupName,
                                        const RealMatrix&    sourceMatrix,
                                        const IndexMatrix&   sensorMask,
@@ -87,7 +87,7 @@ CuboidOutputStream::~CuboidOutputStream()
 void CuboidOutputStream::create()
 {
   // Create the HDF5 group and open it
-  mGroup = mFile.CreateGroup(mFile.GetRootGroup(), mRootObjectName);
+  mGroup = mFile.createGroup(mFile.getRootGroup(), mRootObjectName);
 
   // Create all datasets (sizes, chunks, and attributes)
   size_t nCuboids = mSensorMask.getDimensionSizes().ny;
@@ -147,7 +147,7 @@ void CuboidOutputStream::reopen()
   size_t actualPositionInBuffer = 0;
 
   // Open the HDF5 group
-  mGroup = mFile.OpenGroup(mFile.GetRootGroup(), mRootObjectName);
+  mGroup = mFile.openGroup(mFile.getRootGroup(), mRootObjectName);
 
   for (size_t cuboidIdx = 0; cuboidIdx < nCuboids; cuboidIdx++)
   {
@@ -156,7 +156,7 @@ void CuboidOutputStream::reopen()
     const string datasetName = std::to_string(cuboidIdx + 1);
 
     // open the dataset
-    cuboidInfo.cuboidIdx = mFile.OpenDataset(mGroup,datasetName.c_str());
+    cuboidInfo.cuboidIdx = mFile.openDataset(mGroup,datasetName.c_str());
     cuboidInfo.startingPossitionInBuffer = actualPositionInBuffer;
     mCuboidsInfo.push_back(cuboidInfo);
 
@@ -172,7 +172,7 @@ void CuboidOutputStream::reopen()
                                   (mSensorMask.getBottomRightCorner(cuboidIdx) -
                                    mSensorMask.getTopLeftCorner(cuboidIdx)).nz);
 
-        mFile.ReadCompleteDataset(mGroup,
+        mFile.readCompleteDataset(mGroup,
                                  datasetName.c_str(),
                                  cuboidSize,
                                  mHostBuffer + actualPositionInBuffer);
@@ -345,11 +345,11 @@ void CuboidOutputStream::close()
     // Close all datasets and the group
     for (size_t cuboidIdx = 0; cuboidIdx < mCuboidsInfo.size(); cuboidIdx++)
     {
-      mFile.CloseDataset(mCuboidsInfo[cuboidIdx].cuboidIdx);
+      mFile.closeDataset(mCuboidsInfo[cuboidIdx].cuboidIdx);
     }
     mCuboidsInfo.clear();
 
-    mFile.CloseGroup(mGroup);
+    mFile.closeGroup(mGroup);
     mGroup = H5I_BADID;
   }// if opened
 }// end of close
@@ -394,15 +394,15 @@ hid_t CuboidOutputStream::createCuboidDataset(const size_t cuboidIdx)
   // Indexed from 1
   const string datasetName = std::to_string(cuboidIdx + 1);
 
-  hid_t dataset = mFile.CreateFloatDataset(mGroup,
+  hid_t dataset = mFile.createFloatDataset(mGroup,
                                            datasetName.c_str(),
                                            cuboidSize,
                                            cuboidChunkSize,
                                            params.getCompressionLevel());
 
   // Write dataset parameters
-  mFile.WriteMatrixDomainType(mGroup, datasetName.c_str(), THDF5_File::TMatrixDomainType::REAL);
-  mFile.WriteMatrixDataType  (mGroup, datasetName.c_str(), THDF5_File::TMatrixDataType::FLOAT);
+  mFile.writeMatrixDomainType(mGroup, datasetName.c_str(), Hdf5File::MatrixDomainType::kReal);
+  mFile.writeMatrixDataType  (mGroup, datasetName.c_str(), Hdf5File::MatrixDataType::kFloat);
 
   return dataset;
 }//end of createCuboidDatasets
@@ -423,7 +423,7 @@ void CuboidOutputStream::flushBufferToFile()
     blockSize = mSensorMask.getBottomRightCorner(cuboidIdx) - mSensorMask.getTopLeftCorner(cuboidIdx);
     blockSize.nt = 1;
 
-    mFile.WriteHyperSlab(mCuboidsInfo[cuboidIdx].cuboidIdx,
+    mFile.writeHyperSlab(mCuboidsInfo[cuboidIdx].cuboidIdx,
                         position,
                         blockSize,
                         mHostBuffer + mCuboidsInfo[cuboidIdx].startingPossitionInBuffer);

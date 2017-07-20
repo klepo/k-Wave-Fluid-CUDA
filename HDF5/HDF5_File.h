@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              11 July     2017, 16:42 (revised)
+ *              20 July     2017, 14:11 (revised)
  *
  *
  * @section HDF HDF5 File Structure
@@ -465,8 +465,8 @@ Name                            Size           Data type       Domain Type      
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef THDF5_FILE_H
-#define	THDF5_FILE_H
+#ifndef Hdf5FileH
+#define Hdf5FileH
 
 
 #include <hdf5.h>
@@ -488,215 +488,430 @@ Name                            Size           Data type       Domain Type      
 
 
 // Class with File header
-class THDF5_FileHeader;
+class Hdf5FileHeader;
 
 /**
- * @class THDF5_File
+ * @class Hdf5File
  * @brief Class wrapping the HDF5 routines.
- * @details This class is responsible for working with HDF5 files. It offers routines to manage
- * files (create, open, close) as well as creating, reading and modifying the contents
- * (groups and datasets).
+ *
+ * This class is responsible for working with HDF5 files. It offers routines to manage files (create, open, close)
+ * as well as creating, reading and modifying the contents (groups and datasets).
  */
-class THDF5_File
+class Hdf5File
 {
   public:
 
     /**
-     * @enum    TMatrixDataType
+     * @enum    MatrixDataType
      * @brief   HDF5 matrix data type (float or uint64).
      * @details HDF5 matrix data type (float or uint64).
      */
-    enum class TMatrixDataType
+    enum class MatrixDataType
     {
-      FLOAT = 0,
-      LONG  = 1
+      /// The matrix is stored in floating point 32b wide format.
+      kFloat = 0,
+      /// The matrix is stored in fixed point point 64b wide format.
+      kLong  = 1
     };
 
     /**
-     * @enum    TMatrixDomainType
+     * @enum    MatrixDomainType
      * @brief   HDF5 Matrix domain type (real or complex).
      * @details HDF5 Matrix domain type (real or complex).
      */
-    enum class TMatrixDomainType
+    enum class MatrixDomainType
     {
-      REAL    = 0,
-      COMPLEX = 1
+      /// The matrix is defined on real domain.
+      kReal    = 0,
+      /// The matrix is defined on complex domain.
+      kComples = 1
     };
 
 
     /// Constructor of the class.
-    THDF5_File();
+    Hdf5File();
     /// Copy constructor is not allowed.
-    THDF5_File(const THDF5_File&) = delete;
+    Hdf5File(const Hdf5File&) = delete;
     /// Destructor.
-    virtual ~THDF5_File();
+    virtual ~Hdf5File();
 
     /// Operator = is not allowed.
-    THDF5_File& operator=(const THDF5_File&) = delete;
+    Hdf5File& operator=(const Hdf5File&) = delete;
 
-    //----------------------- Basic file operations --------------------------//
-    /// Create a file.
-    void Create(const std::string& fileName,
+    //------------------------------------------- Basic file operations ----------------------------------------------//
+    /**
+     * @brief Create the HDF5 file.
+     *
+     * The file is always created in read write mode mode, by default overwriting an old file of the same name.
+     * Other HDF5 flags are set to default.
+     *
+     * @param [in] fileName - File name.
+     * @param [in] flags    - How to create the file, by default overwrite existing file.
+     * @throw ios:failure   - If error happened (file is open or cannot be created).
+     */
+    void create(const std::string& fileName,
                 unsigned int       flags = H5F_ACC_TRUNC);
-
-    /// Open a file.
-    void Open(const std::string& fileName,
+    /**
+     * @brief Open the HDF5 file.
+     *
+     * The file is opened in read only mode by default. Other HDF5 flags are set to default.
+     *
+     * @param [in] fileName - File name
+     * @param [in] flags    - Open mode, by default read only.
+     * @throw ios:failure   - If error happened (file not found, file is not a HDF5 file, file is already open).
+     *
+     */
+    void open(const std::string& fileName,
               unsigned int       flags  = H5F_ACC_RDONLY);
     /**
      * @brief   Is the file opened?
      * @details Is the file opened?
-     * @return  true if the file is opened.
+     * @return  true - If the file is opened.
      */
-    bool IsOpen() const {return file != H5I_BADID;};
-
+    bool isOpen() const {return mFile != H5I_BADID;};
     /**
-     * @brief      Does the file exist?
-     * @details    Check if the file exist.
-     * @param [in] fileName
-     * @return true if the file exists.
+     * @brief  Can I access the file.
+     * @details  Can the code access the file, e.g. does it exist, do we have enough privileges, etc.
+     *
+     * @param  [in] fileName - Name of the file.
+     * @return true          - If it is possible to access the file.
      */
-    static bool IsHDF5(const std::string& fileName);
+    static bool canAccess(const std::string& fileName);
+    /**
+     * @brief Close the HDF5 file.@breif
+     * @throw ios::failure - If an error happens
+     */
+    void close();
 
-    /// Close file.
-    void Close();
-
-    //----------------------------------- Group manipulators -------------------------------------//
-    /// Create a HDF5 group at a specified place in the file tree.
-    hid_t CreateGroup(const hid_t  parentGroup,
+    //--------------------------------------------- Group manipulators -----------------------------------------------//
+    /**
+     * @brief   Create a HDF5 group at a specified place in the file tree.
+     * @details Other HDF5 flags are set to default.
+     *
+     * @param [in] parentGroup  - Where to link the group at.
+     * @param [in] groupName    - Group name.
+     * @return A handle to the new group.
+     * @throw ios::failure      - If error happens.
+     */
+    hid_t createGroup(const hid_t parentGroup,
                       MatrixName& groupName);
-    /// Open a HDF5 group at a specified place in the file tree.
-    hid_t OpenGroup(const hid_t  parentGroup,
-                    MatrixName& groupName);
-    /// Close group.
-    void CloseGroup(const hid_t group);
-
     /**
-     * @brief   Get handle to the root group.
-     * @details Get handle to the root group.
-     * @return  handle to the root group
+     * @brief   Open a HDF5 group at a specified place in the file tree.
+     * @details Other HDF5 flags are set to default.
+     *
+     * @param [in] parentGroup - Parent group.
+     * @param [in] groupName   - Group name.
+     * @return A handle to the group.
+     * @throw ios::failure      - If error happens.
      */
-    hid_t GetRootGroup() const {return file;};
+    hid_t openGroup(const hid_t parentGroup,
+                    MatrixName& groupName);
+    /**
+     * @brief Close a group.
+     *
+     * @param[in] group - Group to close.
+     */
+    void closeGroup(const hid_t group);
+    /**
+     * @brief   Get handle to the root group of the file.
+     * @details Get handle to the root group of the file.
+     * @return  Handle to the root group.
+     */
+    hid_t getRootGroup() const {return mFile;};
 
 
-    //---------------------------------- Dataset manipulators -------------------------------------//
-    /// Open the HDF5 dataset at a specified place in the file tree.
-    hid_t OpenDataset(const hid_t parentGroup,
+    //-------------------------------------------- Dataset manipulators ----------------------------------------------//
+    /**
+     * @brief   Open a dataset at a specified place in the file tree.
+     * @details Other HDF5 flags are set to default.
+     *
+     * @param [in] parentGroup - Parent group id (can be the file id for root)..
+     * @param [in] datasetName - Dataset name.
+     * @return A handle to open dataset.
+     * @throw ios::failure     - If error happens.
+     */
+    hid_t openDataset(const hid_t parentGroup,
                       MatrixName& datasetName);
-
-    /// Create a float HDF5 dataset at a specified place in the file tree (3D/4D).
-    hid_t CreateFloatDataset(const hid_t            parentGroup,
+    /**
+     * @brief   Create a float HDF5 dataset at a specified place in the file tree (3D/4D).
+     * @details Other HDF5 flags are set to default, the dataset uses H5T_NATIVE_FLOAT
+     *
+     * @param [in] parentGroup      - Parent group id.
+     * @param [in] datasetName      - Dataset name.
+     * @param [in] dimensionSizes   - Dimension sizes.
+     * @param [in] chunkSizes       - Chunk sizes.
+     * @param [in] compressionLevel - Compression level.
+     * @return A handle to the new dataset.
+     * @throw ios::failure          - If error happens.
+     */
+    hid_t createFloatDataset(const hid_t           parentGroup,
                              MatrixName&           datasetName,
                              const DimensionSizes& dimensionSizes,
                              const DimensionSizes& chunkSizes,
-                             const size_t           compressionLevel);
-
-    /// Create an index HDF5 dataset at a specified place in the file tree (3D only).
-    hid_t CreateIndexDataset(const hid_t            parentGroup,
+                             const size_t          compressionLevel);
+    /**
+     * @brief   Create a index HDF5 dataset at a specified place in the file tree (3D/4D).
+     * @details Other HDF5 flags are set to default, the dataset uses H5T_STD_U64LE.
+     *
+     * @param [in] parentGroup      - Parent group id.
+     * @param [in] datasetName      - Dataset name.
+     * @param [in] dimensionSizes   - Dimension sizes.
+     * @param [in] chunkSizes       - Chunk sizes.
+     * @param [in] compressionLevel - Compression level.
+     * @return A handle to the new dataset.
+     * @throw ios::failure          - If error happens.
+     */
+    hid_t createIndexDataset(const hid_t           parentGroup,
                              MatrixName&           datasetName,
                              const DimensionSizes& dimensionSizes,
                              const DimensionSizes& chunkSizes,
-                             const size_t           compressionLevel);
+                             const size_t          compressionLevel);
+    /**
+     * @brief Close dataset.
+     * @param [in] dataset - Dataset to close
+     */
+    void  closeDataset(const hid_t dataset);
 
-    /// Close the HDF5 dataset.
-    void  CloseDataset (const hid_t dataset);
 
-
-    //----------------------------- Dataset Read/Write operations --------------------------------//
-    /// Write a hyper-slab into the dataset - float dataset.
-    void WriteHyperSlab(const hid_t            dataset,
+    //---------------------------------------- Dataset Read/Write operations -----------------------------------------//
+    /**
+     * @brief Write a hyperslab into the dataset, float version.
+     *
+     * @param [in] dataset   - Dataset id.
+     * @param [in] position  - Position in the dataset.
+     * @param [in] size      - Size of the hyperslab.
+     * @param [in] data      - Data to be written.
+     * @throw ios::failure   - If error happens.
+     */
+    void writeHyperSlab(const hid_t           dataset,
                         const DimensionSizes& position,
                         const DimensionSizes& size,
-                        const float*           data);
-    /// Write a hyper-slab into the dataset - long dataset.
-    void WriteHyperSlab(const hid_t            dataset,
+                        const float*          data);
+    /**
+     * @brief Write a hyperslab into the dataset, index version.
+     *
+     * @param [in] dataset   - Dataset id
+     * @param [in] position  - Position in the dataset
+     * @param [in] size      - Size of the hyperslab
+     * @param [in] data      - Data to be written
+     * @throw ios::failure   - If error happens
+     */
+    void writeHyperSlab(const hid_t            dataset,
                         const DimensionSizes& position,
                         const DimensionSizes& size,
                         const size_t*          data);
-
-    /// Write a cuboid selected within the matrixData into a hyperslab.
-    void WriteCuboidToHyperSlab(const hid_t            dataset,
+    /**
+     * @brief   Write a cuboid selected within the matrixData into a hyperslab.
+     * @details The routine writes 3D cuboid into a 4D dataset (only intended for raw time series).
+     *
+     * @param [in] dataset           - Dataset to write MatrixData into.
+     * @param [in] hyperslabPosition - Position in the dataset (hyperslab) - may be 3D/4D.
+     * @param [in] cuboidPosition    - Position of the cuboid in MatrixData (what to sample) - must be 3D.
+     * @param [in] cuboidSize        - Cuboid size (size of data being sampled) - must by 3D.
+     * @param [in] matrixDimensions  - Size of the original matrix (the sampled one).
+     * @param [in] matrixData        - C array of matrix data.
+     * @throw ios::failure           - If error happens.
+     */
+    void writeCuboidToHyperSlab(const hid_t           dataset,
                                 const DimensionSizes& hyperslabPosition,
                                 const DimensionSizes& cuboidPosition,
                                 const DimensionSizes& cuboidSize,
                                 const DimensionSizes& matrixDimensions,
-                                const float*           mMatrixData);
-
-    /// Write sensor data selected by the sensor mask - Occasionally very slow, do not use!
-    void WriteDataByMaskToHyperSlab(const hid_t            dataset,
+                                const float*          MatrixData);
+    /**
+     * @brief Write sensor data selected by the sensor mask.
+     *
+     * A routine pick elements from the MatixData based on the sensor data and store them into a single
+     * hyperslab of size [Nsens, 1, 1].
+     *
+     * @param [in] dataset           - Dataset to write MaatrixData into.
+     * @param [in] hyperslabPosition - 3D position in the dataset (hyperslab).
+     * @param [in] indexSensorSize   - Size of the index based sensor mask.
+     * @param [in] indexSensorData   - Index based sensor mask.
+     * @param [in] matrixDimensions  - Size of the sampled matrix.
+     * @param [in] matrixData        - Matrix data.
+     * @warning  Very slow at this version of HDF5 for orthogonal planes-> DO NOT USE.
+     * @throw ios::failure           - If error happens.
+     */
+    void writeDataByMaskToHyperSlab(const hid_t           dataset,
                                     const DimensionSizes& hyperslabPosition,
-                                    const size_t           indexSensorSize,
-                                    const size_t*          indexSensorData,
+                                    const size_t          indexSensorSize,
+                                    const size_t*         indexSensorData,
                                     const DimensionSizes& matrixDimensions,
-                                    const float*           matrixData);
-
-    /// Write the scalar value under a specified group, float value.
-    void WriteScalarValue(const hid_t  parentGroup,
+                                    const float*          matrixData);
+    /**
+     * @brief   Write the scalar value under a specified group, float value.
+     * @details No chunks nad no compression is used.
+     *
+     * @param [in] parentGroup - Where to link the scalar dataset.
+     * @param [in] datasetName - HDF5 dataset name.
+     * @param [in] value       - data to be written.
+     * @throw ios::failure     - If error happens.
+     */
+    void writeScalarValue(const hid_t parentGroup,
                           MatrixName& datasetName,
-                          const float  value);
-    /// Write the scalar value under a specified group, index value.
-    void WriteScalarValue(const hid_t  parentGroup,
-                          MatrixName& datasetName,
+                          const float value);
+    /**
+     * @brief   Write the scalar value under a specified group, index value.
+     * @details No chunks nad no compression is used.
+     *
+     * @param [in] parentGroup - Where to link the scalar dataset.
+     * @param [in] datasetName - HDF5 dataset name.
+     * @param [in] value       - data to be written.
+     * @throw ios::failure     - If error happens
+     */
+    void writeScalarValue(const hid_t  parentGroup,
+                          MatrixName&  datasetName,
                           const size_t value);
 
-    /// Read the scalar value under a specified group, float value.
-    void ReadScalarValue(const hid_t  parentGroup,
+    /**
+     * @brief Read the scalar value under a specified group, float value.
+     *
+     * @param [in]  parentGroup - Where to link the scalar dataset.
+     * @param [in]  datasetName - HDF5 dataset name.
+     * @param [out] value       - Data to be read.
+     * @throw ios::failure      - If error happens.
+     */
+    void readScalarValue(const hid_t  parentGroup,
                          MatrixName& datasetName,
                          float&       value);
-    /// Read the scalar value under a specified group, index value.
-    void ReadScalarValue(const hid_t  parentGroup,
+    /**
+     * @brief Read the scalar value under a specified group, index value.
+     *
+     * @param [in]  parentGroup - Where to link the scalar dataset.
+     * @param [in]  datasetName - HDF5 dataset name.
+     * @param [out] value       - Data to be read.
+     * @throw ios::failure      - If error happens.
+     */
+    void readScalarValue(const hid_t  parentGroup,
                          MatrixName& datasetName,
                          size_t&      value);
-
-    /// Read data from the dataset under a specified group, float dataset.
-    void ReadCompleteDataset(const hid_t            parentGroup,
+    /**
+     * @brief Read data from the dataset at a specified place in the file tree, float version.
+     *
+     * @param [in] parentGroup     - Where is the dataset situated.
+     * @param [in] datasetName     - Dataset name.
+     * @param [in] dimensionSizes  - Dimension sizes.
+     * @param [out] data           - Pointer to data.
+     * @throw ios::failure         - If error happens.
+     */
+    void readCompleteDataset(const hid_t           parentGroup,
                              MatrixName&           datasetName,
                              const DimensionSizes& dimensionSizes,
-                             float*                 data);
-    /// Read data from the dataset under a specified group, index dataset.
-    void ReadCompleteDataset(const hid_t            parentGroup,
+                             float*                data);
+    /**
+     * @brief Read data from the dataset at a specified place in the file tree, index version.
+     *
+     * @param [in] parentGroup     - Where is the dataset situated.
+     * @param [in] datasetName     - Dataset name.
+     * @param [in] dimensionSizes  - Dimension sizes.
+     * @param [out] data           - Pointer to data.
+     * @throw ios::failure         - If error happens.
+     */
+    void readCompleteDataset(const hid_t           parentGroup,
                              MatrixName&           datasetName,
                              const DimensionSizes& dimensionSizes,
-                             size_t*                data);
+                             size_t*               data);
 
-    //---------------------------- Attributes Read/Write operations ------------------------------//
-
-    /// Get dimension sizes of the dataset  under a specified group.
-    DimensionSizes GetDatasetDimensionSizes(const hid_t  parentGroup,
-                                             MatrixName& datasetName);
-
-    /// Get number of dimensions of the dataset  under a specified group.
-    size_t GetDatasetNumberOfDimensions(const hid_t  parentGroup,
+    //--------------------------------------- Attributes Read/Write operations ---------------------------------------//
+    /**
+     * @brief Get dimension sizes of the dataset under a specified group.
+     *
+     * @param [in] parentGroup - Where the dataset is.
+     * @param [in] datasetName - Dataset name.
+     * @return Dimension sizes of the dataset.
+     * @throw ios::failure     - If error happens.
+     */
+    DimensionSizes getDatasetDimensionSizes(const hid_t parentGroup,
+                                            MatrixName& datasetName);
+    /**
+     * @brief Get number of dimensions of the dataset  under a specified group.
+     *
+     * @param [in] parentGroup - Where the dataset is.
+     * @param [in] datasetName - Dataset name.
+     * @return Number of dimensions.
+     * @throw ios::failure     - If error happens.
+     */
+    size_t getDatasetNumberOfDimensions(const hid_t parentGroup,
                                         MatrixName& datasetName);
+    /**
+     * @brief Get dataset element count at a specified place in the file tree.
+     *
+     * @param [in] parentGroup - Where the dataset is.
+     * @param [in] datasetName - Dataset name.
+     * @return Number of elements.
+     * @throw ios::failure     - If error happens.
+     */
+    size_t getDatasetSize(const hid_t parentGroup,
+                          MatrixName& datasetName);
 
-    /// Get dataset element count under a specified group.
-    size_t GetDatasetElementCount(const hid_t  parentGroup,
-                                  MatrixName& datasetName);
+    /**
+     * @brief Write matrix data type into the dataset at a specified place in the file tree.
+     *
+     * @param [in] parentGroup    - Where the dataset is.
+     * @param [in] datasetName    - Dataset name.
+     * @param [in] matrixDataType - Matrix data type in the file.
+     * @throw ios::failure        - If error happens.
+     */
+    void writeMatrixDataType (const hid_t           parentGroup,
+                              MatrixName&           datasetName,
+                              const MatrixDataType& matrixDataType);
+    /**
+     * @brief  Write matrix data type into the dataset at a specified place in the file tree.
+     *
+     * @param [in] parentGroup      - Where the dataset is.
+     * @param [in] datasetName      - Dataset name.
+     * @param [in] matrixDomainType - Matrix domain type.
+     * @throw ios::failure          - If error happens.
+     */
+    void writeMatrixDomainType(const hid_t             parentGroup,
+                               MatrixName&             datasetName,
+                               const MatrixDomainType& matrixDomainType);
 
+    /**
+     * @brief Read matrix data type from the dataset at a specified place in the file tree.
+     *
+     * @param [in] parentGroup - Where the dataset is.
+     * @param [in] datasetName - Dataset name.
+     * @return Matrix data type.
+     * @throw ios::failure     - If error happens.
+     */
+    MatrixDataType   readMatrixDataType(const hid_t parentGroup,
+                                        MatrixName& datasetName);
+    /**
+     * @brief Read matrix dataset domain type at a specified place in the file tree.
+     *
+     * @param [in] parentGroup - Where the dataset is.
+     * @param [in] datasetName - Dataset name.
+     * @return Matrix domain type.
+     * @throw ios::failure      - If error happens.
+     */
+    MatrixDomainType readMatrixDomainType(const hid_t parentGroup,
+                                          MatrixName& datasetName);
 
-    /// Write matrix data type into the dataset under a specified group.
-    void WriteMatrixDataType (const hid_t                parentGroup,
-                              MatrixName&               datasetName,
-                              const TMatrixDataType& matrixDataType);
-    /// Write matrix domain type into the dataset under the root group.
-    void WriteMatrixDomainType(const hid_t                  parentGroup,
-                               MatrixName&                 datasetName,
-                               const TMatrixDomainType& matrixDomainType);
-
-    /// Read matrix data type from the dataset.
-    THDF5_File::TMatrixDataType   ReadMatrixDataType(const hid_t  parentGroup,
-                                                     MatrixName& datasetName);
-    /// Read matrix domain type from the dataset under a specified group.
-    THDF5_File::TMatrixDomainType ReadMatrixDomainType(const hid_t  parentGroup,
-                                                       MatrixName& datasetName);
-
-
-    /// Write string attribute into the dataset under the root group.
-    void   WriteStringAttribute(const hid_t        parentGroup,
+    /**
+     * @brief Write string attribute into the dataset under the root group.
+     *
+     * @param [in] parentGroup   - Where the dataset is.
+     * @param [in] datasetName   - Dataset name.
+     * @param [in] attributeName - Attribute name.
+     * @param [in] value         - Data to write.
+     * @throw ios::failure       - If error happens.
+     */
+    void   writeStringAttribute(const hid_t        parentGroup,
                                 MatrixName&       datasetName,
                                 MatrixName&       attributeName,
                                 const std::string& value);
-    /// Read string attribute from the dataset under the root group.
-    std::string ReadStringAttribute(const hid_t  parentGroup,
+    /**
+     * @brief Read string attribute from the dataset under the root group.
+     *
+     * @param [in] parentGroup   - Where the dataset is.
+     * @param [in] datasetName   - Dataset name.
+     * @param [in] attributeName - Attribute name.
+     * @return Attribute value.
+     * @throw ios::failure       - If error happens.
+     */
+    std::string readStringAttribute(const hid_t parentGroup,
                                     MatrixName& datasetName,
                                     MatrixName& attributeName);
 
@@ -704,219 +919,289 @@ class THDF5_File
 
   private:
     /// String representation of the Domain type in the HDF5 file.
-    static const std::string matrixDomainTypeName;
+    static const std::string kMatrixDomainTypeName;
     /// String representation of the Data type in the HDF5 file.
-    static const std::string matrixDataTypeName;
+    static const std::string kMatrixDataTypeName;
 
     /// String representation of different domain types.
-    static const std::string matrixDomainTypeNames[];
+    static const std::string kMatrixDomainTypeNames[];
     /// String representation of different data types.
-    static const std::string matrixDataTypeNames[];
+    static const std::string kMatrixDataTypeNames[];
 
     /// HDF file handle.
-    hid_t  file;
+    hid_t  mFile;
     /// File name.
-    std::string fileName;
-}; // THDF5_File
-//--------------------------------------------------------------------------------------------------
+    std::string mFileName;
+}; // Hdf5File
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
- * @class THDF5_FileHeader
- * @brief Class for HDF5 header.
+ * @class   Hdf5FileHeader
+ * @brief   Class for HDF5 file header.
  * @details This class manages all information that can be stored in the input output or checkpoint
  * file header.
  */
-class THDF5_FileHeader
+class Hdf5FileHeader
 {
   public:
 
     /**
-     * @enum  TFileHeaderItems
-     * @brief List of all header items.
+     * @enum    FileHeaderItems
+     * @brief   List of all header items.
      * @details List of all header items.
-     * @todo  In the future we should add number of GPUs, peak GPU memory.
+     * @todo    In the future, we should add number of GPUs, peak GPU memory.
      */
-    enum class TFileHeaderItems
+    enum class FileHeaderItems
     {
-      CREATED_BY                   =  0,
-      CREATION_DATA                =  1,
-      FILE_DESCRIPTION             =  2,
-      MAJOR_VERSION                =  3,
-      MINOR_VERSION                =  4,
-      FILE_TYPE                    =  5,
-      HOST_NAME                    =  6,
-      TOTAL_MEMORY_CONSUMPTION     =  7,
-      PEAK_CORE_MEMORY_CONSUMPTION =  8,
-      TOTAL_EXECUTION_TIME         =  9,
-      DATA_LOAD_TIME               = 10,
-      PREPROCESSING_TIME           = 11,
-      SIMULATION_TIME              = 12,
-      POST_PROCESSING_TIME         = 13,
-      NUMBER_OF_CORES              = 14
+      /// Code that created the file.
+      kCreatedBy              =  0,
+      /// When the file was created.
+      kCreationDate           =  1,
+      /// Description of the file (e.g. simulation).
+      kFileDescription        =  2,
+      /// Major file version.
+      kMajorVersion           =  3,
+      /// Minor file version.
+      kMinorVersion           =  4,
+      /// File type.
+      kFileType               =  5,
+      /// Machines the code were executed on.
+      kHostName               =  6,
+      /// Total amount of memory consumed by the code.
+      kTotalMemoryConsumption =  7,
+      /// Peak memory consumption (by process).
+      kPeakMemoryConsumption  =  8,
+      /// Total execution time.
+      kTotalExecutionTime     =  9,
+      /// Time to load data in.
+      kDataLoadTime           = 10,
+      /// Time to preprocess data.
+      kPreProcessingTime      = 11,
+      /// Simulation time.
+      kSimulationTime         = 12,
+      /// Time to postprocess data.
+      kPostProcessingTime     = 13,
+      /// Number of cores the simulation was executed.
+      kNumberofCores          = 14
     };
 
     /**
-     * @enum    TFileType
+     * @enum    FileType
      * @brief   HDF5 file type.
      * @details HDF5 file type.
      */
-    enum class TFileType
+    enum class FileType
     {
-      INPUT      = 0,
-      OUTPUT     = 1,
-      CHECKPOINT = 2,
-      UNKNOWN    = 3
+      /// Input file.
+      kInput      = 0,
+      /// Output file.
+      kOutput     = 1,
+      /// Checkpoint file.
+      kCheckpoint = 2,
+      /// Unknown file.
+      kUnknown    = 3
     };
 
     /**
-     * @enum    TFileVersion
+     * @enum    FileVersion
      * @brief   HDF5 file version.
      * @details HDF5 file version.
      */
-    enum class TFileVersion
+    enum class FileVersion
     {
-      VERSION_10      = 0,
-      VERSION_11      = 1,
-      VERSION_UNKNOWN = 2
+      /// Version 1.0.
+      kVersion10      = 0,
+      /// Version 1.1.
+      kVersion11      = 1,
+      /// Version unknown.
+      kVersionUnknown = 2
     };
 
     /// Constructor.
-    THDF5_FileHeader();
-    /// Copy constructor.
-    THDF5_FileHeader(const THDF5_FileHeader& src);
+    Hdf5FileHeader();
+    /**
+     * @brief Copy constructor.
+     * @param [in] src - Source object.
+     */
+    Hdf5FileHeader(const Hdf5FileHeader& src);
     /// Destructor.
-    ~THDF5_FileHeader();
-
-    /// Read header from the input file.
-    void ReadHeaderFromInputFile(THDF5_File& inputFile);
-    /// Read Header from output file (necessary for checkpoint-restart).
-    void ReadHeaderFromOutputFile(THDF5_File& outputFile);
-    /// Read Header from checkpoint file (necessary for checkpoint-restart).
-    void ReadHeaderFromCheckpointFile(THDF5_File& checkpointFile);
-
-    /// Write header to the output file
-    void WriteHeaderToOutputFile(THDF5_File& outputFile);
-    /// Write header to the output file
-    void WriteHeaderToCheckpointFile(THDF5_File& checkpointFile);
+    ~Hdf5FileHeader();
 
     /**
-     * @brief Set code name.
-     * @details Set code name to the header.
-     * @param [in] codeName - code version
+     * @brief Read header from the input file.
+     *
+     * @param [in, out] inputFile - Input file handle.
+     * @throw ios:failure         - If error happens.
      */
-    void SetCodeName(const std::string& codeName)
+    void readHeaderFromInputFile(Hdf5File& inputFile);
+    /**
+     * @brief Read header from output file (necessary for checkpoint-restart).
+     *
+     * Read only execution times (the others are read from the input file, or calculated based on the very last
+     * leg of the simulation). This function is called only if checkpoint-restart is enabled.
+     *
+     * @param [in, out] outputFile - Output file handle.
+     * @throw ios:failure          - If error happens.
+     */
+    void readHeaderFromOutputFile(Hdf5File& outputFile);
+    /**
+     * @brief Read the file header form the checkpoint file.
+     *
+     * We need the header to verify the file version and type.
+     * @param [in, out] checkpointFile - Checkpoint file handle.
+     * @throw ios:failure          - If error happens.
+     */
+    void readHeaderFromCheckpointFile(Hdf5File& checkpointFile);
+
+    /**
+     * @brief Write header into the output file.
+     *
+     * @param [in,out] outputFile - Output file handle.
+     * @throw ios:failure          - If error happens.
+     */
+    void writeHeaderToOutputFile(Hdf5File& outputFile);
+    /**
+     * @brief Write header to the output file (only a subset of all possible fields are written).
+     *
+     * @param [in, out] checkpointFile - Checkpoint file handle.
+     * @throw ios:failure              - If error happens.
+     */
+    void writeHeaderToCheckpointFile(Hdf5File& checkpointFile);
+
+    /**
+     * @brief   Set code name.
+     * @param [in] codeName - Code version.
+     */
+    void setCodeName(const std::string& codeName)
     {
-      headerValues[TFileHeaderItems::CREATED_BY] = codeName;
+      mHeaderValues[FileHeaderItems::kCreatedBy] = codeName;
     };
 
     /// Set creation time.
-    void SetActualCreationTime();
+    void setActualCreationTime();
 
     /**
-     * @brief   Get string version of current Major version.
-     * @details Get string version of current Major version.
-     * @return  Current major version
+     * @brief   Get string representing of current Major version of the file.
+     * @return  Current major file version.
      */
-    static std::string GetCurrentHDF5_MajorVersion()
+    static std::string getFileMajorVersion()
     {
-      return hdf5_MajorFileVersionsNames[0];
+      return kMajorFileVersionsNames[0];
     };
 
     /**
-     * @brief   Get string version of current Minor version.
-     * @details Get string version of current Minor version.
-     * @return  Current minor version
+     * @brief   Get string representing of current Minor version of the file.
+     * @return  Current minor file version.
      */
-    static std::string GetCurrentHDF5_MinorVersion()
+    static std::string getFileMinorVersion()
     {
-      return hdf5_MinorFileVersionsNames[1];
+      return kMinorFileVersionsNames[1];
     };
 
-    /**
-     * @brief  Set major file version.
-     * @details Set major file version.
-     */
+    /// Set major file version.
     void SetMajorFileVersion()
     {
-      headerValues[TFileHeaderItems::MAJOR_VERSION] = GetCurrentHDF5_MajorVersion();
+      mHeaderValues[FileHeaderItems::kMajorVersion] = getFileMajorVersion();
     };
 
-    /**
-     * @brief   Set minor file version.
-     * @details  Set minor file version.
-     */
+
+    /// Set minor file version.
     void SetMinorFileVersion()
     {
-      headerValues[TFileHeaderItems::MINOR_VERSION] = GetCurrentHDF5_MinorVersion();
+      mHeaderValues[FileHeaderItems::kMinorVersion] = getFileMinorVersion();
     };
-
-    /// Set major file version in a string.
-    TFileVersion GetFileVersion();
 
     /**
-     * @brief   Check major file version.
-     * @details Check major file version.
+     * Get file version as an enum.
+     * @return File version as an enum.
+     */
+    FileVersion getFileVersion();
+
+    /**
+     * @brief   check major file version.
      * @return true if ok
      */
-    bool CheckMajorFileVersion()
+    bool checkMajorFileVersion()
     {
-      return (headerValues[TFileHeaderItems::MAJOR_VERSION] == GetCurrentHDF5_MajorVersion());
+      return (mHeaderValues[FileHeaderItems::kMajorVersion] == getFileMajorVersion());
     };
-
     /**
      * @brief   Check minor file version.
-     * @details Check minor file version.
      * @return true if ok
      */
-    bool CheckMinorFileVersion()
+    bool checkMinorFileVersion()
     {
-      return (headerValues[TFileHeaderItems::MINOR_VERSION] <= GetCurrentHDF5_MinorVersion());
+      return (mHeaderValues[FileHeaderItems::kMinorVersion] <= getFileMinorVersion());
     };
 
 
-    /// Get File type.
-    THDF5_FileHeader::TFileType GetFileType();
-    /// Set file type.
-    void SetFileType(const THDF5_FileHeader::TFileType fileType);
+    /**
+     * @brief  Get File type.
+     * @return File type.
+     */
+    Hdf5FileHeader::FileType getFileType();
+    /**
+     * @brief Set File type.
+     * @param [in] fileType - File type.
+     */
+    void setFileType(const Hdf5FileHeader::FileType fileType);
 
     /// Set host name.
-    void SetHostName();
-    /// Set memory consumption.
-    void SetMemoryConsumption(const size_t totalMemory);
-    /// Set execution times.
-    void SetExecutionTimes(const double totalTime,
+    void setHostName();
+    /**
+     * @brief Set memory consumption.
+     * @param [in] totalMemory - Total memory consumption.
+     */
+    void setMemoryConsumption(const size_t totalMemory);
+    /**
+     * @brief Set execution times in file header.
+     *
+     * @param [in] totalTime          - Total time.
+     * @param [in] loadTime           - Time to load data.
+     * @param [in] preProcessingTime  - Preprocessing time.
+     * @param [in] simulationTime     - Simulation time.
+     * @param [in] postprocessingTime - Post processing time.
+     */
+    void setExecutionTimes(const double totalTime,
                            const double loadTime,
                            const double preProcessingTime,
                            const double simulationTime,
                            const double postprocessingTime);
-
-  /// Get execution times stored in the output file header.
-  void GetExecutionTimes(double& totalTime,
+  /**
+   * Get execution times stored in the output file header.
+   *
+   * @param [out] totalTime          - Total time.
+   * @param [out] loadTime           - Time to load data.
+   * @param [out] preProcessingTime  - Preprocessing time.
+   * @param [out] simulationTime     - Simulation time.
+   * @param [out] postprocessingTime - Post processing time.
+   */
+  void getExecutionTimes(double& totalTime,
                          double& loadTime,
                          double& preProcessingTime,
                          double& simulationTime,
                          double& postprocessingTime);
   /// Set number of cores.
-  void SetNumberOfCores();
+  void setNumberOfCores();
 
 private:
   /// Populate the map with the header items.
-  void PopulateHeaderFileMap();
+  void populateHeaderFileMap();
 
   /// map for the header values.
-  std::map<TFileHeaderItems, std::string> headerValues;
+  std::map<FileHeaderItems, std::string> mHeaderValues;
   /// map for the header names.
-  std::map<TFileHeaderItems, std::string> headerNames;
+  std::map<FileHeaderItems, std::string> mHeaderNames;
 
   ///String representation of different file types.
-  static const std::string hdf5_FileTypesNames[];
+  static const std::string kFileTypesNames[];
   /// String representations of Major file versions.
-  static const std::string hdf5_MajorFileVersionsNames[];
+  static const std::string kMajorFileVersionsNames[];
   /// String representations of Major file versions.
-  static const std::string hdf5_MinorFileVersionsNames[];
+  static const std::string kMinorFileVersionsNames[];
 
-};// THDF5_FileHeader
-//--------------------------------------------------------------------------------------------------
+};// Hdf5FileHeader
+//----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* THDF5_FILE_H */
+#endif	/* Hdf5FileH */

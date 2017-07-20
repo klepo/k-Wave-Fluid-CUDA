@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 10:30 (created) \n
- *              19 July      2017, 15:20 (revised)
+ *              20 July      2017, 14:18 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -66,30 +66,30 @@ RealMatrix::~RealMatrix()
 /**
  * Read data data from HDF5 file (only from the root group).
  */
-void RealMatrix::readData(THDF5_File&  file,
+void RealMatrix::readData(Hdf5File&   file,
                           MatrixName& matrixName)
 {
   // test matrix datatype
-  if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDataType::FLOAT)
+  if (file.readMatrixDataType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDataType::kFloat)
   {
     throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotFloat, matrixName.c_str()));
   }
   // read matrix domain type
-  if (file.ReadMatrixDomainType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDomainType::REAL)
+  if (file.readMatrixDomainType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDomainType::kReal)
   {
     throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotReal, matrixName.c_str()));
   }
 
   // Read matrix
-  file.ReadCompleteDataset(file.GetRootGroup(), matrixName, mDimensionSizes, mHostData);
+  file.readCompleteDataset(file.getRootGroup(), matrixName, mDimensionSizes, mHostData);
 }// end of readData
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write data to HDF5 file (only from the root group).
  */
-void RealMatrix::writeData(THDF5_File&  file,
-                           MatrixName& matrixName,
+void RealMatrix::writeData(Hdf5File&    file,
+                           MatrixName&  matrixName,
                            const size_t compressionLevel)
 {
   DimensionSizes chunks = mDimensionSizes;
@@ -113,19 +113,19 @@ void RealMatrix::writeData(THDF5_File&  file,
     }
   }
 
-  hid_t dataset = file.CreateFloatDataset(file.GetRootGroup(),
+  hid_t dataset = file.createFloatDataset(file.getRootGroup(),
                                           matrixName,
                                           mDimensionSizes,
                                           chunks,
                                           compressionLevel);
 
-  file.WriteHyperSlab(dataset, DimensionSizes(0, 0, 0), mDimensionSizes, mHostData);
+  file.writeHyperSlab(dataset, DimensionSizes(0, 0, 0), mDimensionSizes, mHostData);
 
-  file.CloseDataset(dataset);
+  file.closeDataset(dataset);
 
   // Write data and domain type
-  file.WriteMatrixDataType  (file.GetRootGroup(), matrixName, THDF5_File::TMatrixDataType::FLOAT);
-  file.WriteMatrixDomainType(file.GetRootGroup(), matrixName, THDF5_File::TMatrixDomainType::REAL);
+  file.writeMatrixDataType  (file.getRootGroup(), matrixName, Hdf5File::MatrixDataType::kFloat);
+  file.writeMatrixDomainType(file.getRootGroup(), matrixName, Hdf5File::MatrixDomainType::kReal);
 }// end of writeData
 //----------------------------------------------------------------------------------------------------------------------
 
