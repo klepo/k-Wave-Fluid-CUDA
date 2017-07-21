@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        14 September 2012, 17:28 (created) \n
- *              16 July      2017, 17:00 (revised)
+ *              21 July      2017, 16:50 (revised)
  *
  * @section License
  * This file is part of the C++ extension of thq-Wave Toolbox
@@ -184,11 +184,11 @@ MatrixName kBonAName   = "BonA";
 /// p variable name
 MatrixName kPName      = "p";
 /// rhox variable name
-MatrixName kRhoxName   = "rhox";
+MatrixName kRhoXName   = "rhox";
 /// rhoy variable name
-MatrixName kRhoyName   = "rhoy";
+MatrixName kRhoYName   = "rhoy";
 /// rhoz variable name
-MatrixName kRhozName   = "rhoz";
+MatrixName kRhoZName   = "rhoz";
 
 /// ux variable name
 MatrixName kUxName     = "ux";
@@ -264,18 +264,20 @@ MatrixName kAbsorbNabla1RName  = "absorb_nabla1_r";
 /// absorb_nabla2_r variable name
 MatrixName kAbsorbNabla2RName  = "absorb_nabla2_r";
 
+/// p variable name in the output file
+MatrixName kPressureRawName    = "p";
 /// p_rms variable name
-MatrixName kPRmsName    = "p_rms";
+MatrixName kPressureRmsName    = "p_rms";
 /// p_max variable name
-MatrixName kPMaxName    = "p_max";
+MatrixName kPressureMaxName    = "p_max";
 /// p_min variable name
-MatrixName kPminName    = "p_min";
+MatrixName kPressureMinName    = "p_min";
 /// p_max_all variable name
-MatrixName kPMaxAllName = "p_max_all";
+MatrixName kPressureMaxAllName = "p_max_all";
 /// p_min_all variable name
-MatrixName kPMinAllName = "p_min_all";
+MatrixName kPressureMinAllName = "p_min_all";
 /// p_final variable name
-MatrixName kPFinalName  = "p_final";
+MatrixName kPressureFinalName  = "p_final";
 
 /// ux_rms variable name
 MatrixName kUxRmsName = "ux_rms";

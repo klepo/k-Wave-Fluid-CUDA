@@ -10,8 +10,8 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  *
- * @date        20 July     2017, 14:54 (created) \n
- *              21 July     2017, 14:05 (revised)
+ * @date        20 July      2017, 14:54 (created) \n
+ *              21 July      2017, 16:48 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -119,7 +119,6 @@ Hdf5FileHeader::Hdf5FileHeader(const Hdf5FileHeader& src)
 Hdf5FileHeader::~Hdf5FileHeader()
 {
   mHeaderValues.clear();
-  sHeaderNames.clear();
 }// end of destructor
 //----------------------------------------------------------------------------------------------------------------------
 

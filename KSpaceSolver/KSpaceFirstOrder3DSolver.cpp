@@ -11,8 +11,8 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  *
- * @date        12 July     2012, 10:27 (created)\n
- *              20 July     2017, 17:01 (revised)
+ * @date        12 July      2012, 10:27 (created)\n
+ *              21 July      2017, 16:50 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -116,11 +116,11 @@ void TKSpaceFirstOrder3DSolver::AllocateMemory()
   Logger::flush(Logger::LogLevel::kBasic);
 
   // create container, then all matrices
-  matrixContainer.AddMatrices();
-  matrixContainer.CreateMatrices();
+  matrixContainer.addMatrices();
+  matrixContainer.createMatrices();
 
   // add output streams into container
-  outputStreamContainer.AddStreams(matrixContainer);
+  outputStreamContainer.addStreams(matrixContainer);
 
   Logger::log(Logger::LogLevel::kBasic, kOutFmtDone);
 }// end of AllocateMemory
@@ -132,7 +132,7 @@ void TKSpaceFirstOrder3DSolver::AllocateMemory()
 void TKSpaceFirstOrder3DSolver::FreeMemory()
 {
   matrixContainer.FreeMatrices();
-  outputStreamContainer.FreeStreams();
+  outputStreamContainer.freeStreams();
 }// end of FreeMemory
 //--------------------------------------------------------------------------------------------------
 
@@ -159,7 +159,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
   Logger::flush(Logger::LogLevel::kFull);
 
   // load data from the input file
-  matrixContainer.LoadDataFromInputFile(inputFile);
+  matrixContainer.loadDataFromInputFile(inputFile);
 
   // close the input file
   inputFile.close();
@@ -189,7 +189,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
     parameters.setTimeIndex(new_t_index);
 
     // Read necessary matrices from the checkpoint file
-    matrixContainer.LoadDataFromCheckpointFile(checkpointFile);
+    matrixContainer.loadDataFromCheckpointFile(checkpointFile);
 
     checkpointFile.close();
     Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
@@ -208,7 +208,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
     LoadElapsedTimeFromOutputFile(outputFile);
 
     // Reopen streams
-    outputStreamContainer.ReopenStreams();
+    outputStreamContainer.reopenStreams();
     Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
   }
   else
@@ -223,7 +223,7 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
 
     // Create the steams, link them with the sampled matrices
     // however DO NOT allocate memory!
-    outputStreamContainer.CreateStreams();
+    outputStreamContainer.createStreams();
   }
 
   dataLoadTime.stop();
@@ -782,7 +782,7 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
   Logger::log(Logger::LogLevel::kBasic,kOutFmtSimulationHeader);
 
   // Initial copy of data to the GPU
-  matrixContainer.CopyMatricesToDevice();
+  matrixContainer.copyMatricesToDevice();
 
   iterationTime.start();
 
@@ -845,7 +845,7 @@ void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
     // However we need to check if the loop wasn't skipped due to very short checkpoint interval
     if (parameters.getTimeIndex() > parameters.getSamplingStartTimeIndex() && (!isTimestepRightAfterRestore))
     {
-      outputStreamContainer.FlushRawStreams();
+      outputStreamContainer.flushRawStreams();
     }
 }// end of ComputeMainLoop()
 //--------------------------------------------------------------------------------------------------
@@ -859,7 +859,7 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
   {
     Get_p().copyFromDevice();
     Get_p().writeData(parameters.getOutputFile(),
-                                kPFinalName,
+                                kPressureFinalName,
                                 parameters.getCompressionLevel());
   }// p_final
 
@@ -881,8 +881,8 @@ void TKSpaceFirstOrder3DSolver::PostProcessing()
   }// u_final
 
   // Apply post-processing, flush data on disk/
-  outputStreamContainer.PostProcessStreams();
-  outputStreamContainer.CloseStreams();
+  outputStreamContainer.postProcessStreams();
+  outputStreamContainer.closeStreams();
 
   // store sensor mask if wanted
   if (parameters.getCopySensorMaskFlag())
@@ -921,7 +921,7 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData()
     // when restoring from checkpoint we have to skip the first flush
     if (parameters.getTimeIndex() > parameters.getSamplingStartTimeIndex() && !isTimestepRightAfterRestore)
     {
-      outputStreamContainer.FlushRawStreams();
+      outputStreamContainer.flushRawStreams();
     }
 
     // if --u_non_staggered is switched on, calculate unstaggered velocity.
@@ -931,7 +931,7 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData()
     }
 
     // Sample data for step t  (store event for sampling in next turn)
-    outputStreamContainer.SampleStreams();
+    outputStreamContainer.sampleStreams();
 
     // the last step (or data after) checkpoint are flushed in the main loop
   }
@@ -995,7 +995,7 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   //-------------------------------------- Store Matrices ----------------------------------------//
 
   // Store all necessary matrices in Checkpoint file
-  matrixContainer.StoreDataIntoCheckpointFile(checkpointFile);
+  matrixContainer.storeDataIntoCheckpointFile(checkpointFile);
   // Write t_index
   checkpointFile.writeScalarValue(checkpointFile.getRootGroup(),
                                   kTimeIndexName,
@@ -1030,12 +1030,12 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
     Logger::log(Logger::LogLevel::kFull,kOutFmtStoringSensorData);
     Logger::flush(Logger::LogLevel::kFull);
 
-    outputStreamContainer.CheckpointStreams();
+    outputStreamContainer.checkpointStreams();
 
     Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
   }
 
-  outputStreamContainer.CloseStreams();
+  outputStreamContainer.closeStreams();
 }// end of SaveCheckpointData()
 //--------------------------------------------------------------------------------------------------
 

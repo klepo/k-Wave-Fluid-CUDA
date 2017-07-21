@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              21 July     2017, 12:52 (revised)
+ *              21 July     2017, 16:53 (revised)
  *
  *
  * @section HDF HDF5 File Structure
@@ -681,7 +681,7 @@ class Hdf5File
                                 const DimensionSizes& cuboidPosition,
                                 const DimensionSizes& cuboidSize,
                                 const DimensionSizes& matrixDimensions,
-                                const float*          MatrixData);
+                                const float*          matrixData);
     /**
      * @brief Write sensor data selected by the sensor mask.
      *

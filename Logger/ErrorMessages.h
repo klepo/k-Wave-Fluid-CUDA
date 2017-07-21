@@ -11,11 +11,11 @@
  *              ErrorMessagesLinux.h and ErrorMessagesWindows.h
  *
  * @version     kspaceFirstOrder3D 3.4
+
+ * @date        09 August    2011, 12:34 (created) \n
+ *              21 July      2017, 16:50 (revised)
  *
- * @date        09 August   2011, 12:34 (created) \n
- *              19 July     2017, 12:10 (revised)
- *
-  * @section License
+ * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
  * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
@@ -138,8 +138,8 @@ ErrorMessage  kErrFmtMatrixNotIndex
 //------------------------------------------------ Matrix Container --------------------------------------------------//
 
 /// Matrix container error message
-ErrorMessage  kErrFmtBadMatrixDistributionType =
-  "Error: Matrix [%s] has unknown distribution type in the C++ code. [File, Line] : [%s,%d].";
+ErrorMessage  kErrFmtBadMatrixType =
+  "Error: Matrix [%s] has unknown type in the C++ code. [File, Line] : [%s,%d].";
 
 /// Matrix container error message
 ErrorMessage  kErrFmtRelocationError =
