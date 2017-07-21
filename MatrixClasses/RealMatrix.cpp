@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 10:30 (created) \n
- *              20 July      2017, 14:18 (revised)
+ *              21 July      2017, 13:05 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -113,11 +113,12 @@ void RealMatrix::writeData(Hdf5File&    file,
     }
   }
 
-  hid_t dataset = file.createFloatDataset(file.getRootGroup(),
-                                          matrixName,
-                                          mDimensionSizes,
-                                          chunks,
-                                          compressionLevel);
+  hid_t dataset = file.createDataset(file.getRootGroup(),
+                                     matrixName,
+                                     mDimensionSizes,
+                                     chunks,
+                                     Hdf5File::MatrixDataType::kFloat,
+                                     compressionLevel);
 
   file.writeHyperSlab(dataset, DimensionSizes(0, 0, 0), mDimensionSizes, mHostData);
 

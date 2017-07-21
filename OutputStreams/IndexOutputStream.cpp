@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August    2014, 10:10 (created)
- *              20 July      2017, 14:21 (revised)
+ *              21 July      2017, 13:05 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -103,11 +103,12 @@ void IndexOutputStream::create()
   }
 
   // Create a dataset under the root group
-  mDataset = mFile.createFloatDataset(mFile.getRootGroup(),
-                                      mRootObjectName,
-                                      datasetSize,
-                                      chunkSize,
-                                      params.getCompressionLevel());
+  mDataset = mFile.createDataset(mFile.getRootGroup(),
+                                 mRootObjectName,
+                                 datasetSize,
+                                 chunkSize,
+                                 Hdf5File::MatrixDataType::kFloat,
+                                 params.getCompressionLevel());
 
     // Write dataset parameters
   mFile.writeMatrixDomainType(mFile.getRootGroup(), mRootObjectName, Hdf5File::MatrixDomainType::kReal);

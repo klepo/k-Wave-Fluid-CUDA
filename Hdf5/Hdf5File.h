@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              20 July     2017, 16:59 (revised)
+ *              21 July     2017, 12:52 (revised)
  *
  *
  * @section HDF HDF5 File Structure
@@ -622,38 +622,23 @@ class Hdf5File
                       MatrixName& datasetName);
     /**
      * @brief   Create a float HDF5 dataset at a specified place in the file tree (3D/4D).
-     * @details Other HDF5 flags are set to default, the dataset uses H5T_NATIVE_FLOAT
+     * @details Other HDF5 flags are set to default.
      *
      * @param [in] parentGroup      - Parent group id.
      * @param [in] datasetName      - Dataset name.
      * @param [in] dimensionSizes   - Dimension sizes.
      * @param [in] chunkSizes       - Chunk sizes.
+     * @param [in] matrixDataType   - Matrix data type
      * @param [in] compressionLevel - Compression level.
      * @return A handle to the new dataset.
-     * @throw ios::failure          - If error happens.
+     * @throw  ios::failure         - If error happens.
      */
-    hid_t createFloatDataset(const hid_t           parentGroup,
-                             MatrixName&           datasetName,
-                             const DimensionSizes& dimensionSizes,
-                             const DimensionSizes& chunkSizes,
-                             const size_t          compressionLevel);
-    /**
-     * @brief   Create a index HDF5 dataset at a specified place in the file tree (3D/4D).
-     * @details Other HDF5 flags are set to default, the dataset uses H5T_STD_U64LE.
-     *
-     * @param [in] parentGroup      - Parent group id.
-     * @param [in] datasetName      - Dataset name.
-     * @param [in] dimensionSizes   - Dimension sizes.
-     * @param [in] chunkSizes       - Chunk sizes.
-     * @param [in] compressionLevel - Compression level.
-     * @return A handle to the new dataset.
-     * @throw ios::failure          - If error happens.
-     */
-    hid_t createIndexDataset(const hid_t           parentGroup,
-                             MatrixName&           datasetName,
-                             const DimensionSizes& dimensionSizes,
-                             const DimensionSizes& chunkSizes,
-                             const size_t          compressionLevel);
+    hid_t createDataset(const hid_t           parentGroup,
+                        MatrixName&           datasetName,
+                        const DimensionSizes& dimensionSizes,
+                        const DimensionSizes& chunkSizes,
+                        const MatrixDataType  matrixDataType,
+                        const size_t          compressionLevel);
     /**
      * @brief Close dataset.
      * @param [in] dataset - Dataset to close
@@ -663,31 +648,22 @@ class Hdf5File
 
     //---------------------------------------- Dataset Read/Write operations -----------------------------------------//
     /**
-     * @brief Write a hyperslab into the dataset, float version.
+     * @brief Write a hyperslab into the dataset.
      *
+     * @tparam     T         - Data type to be written.
      * @param [in] dataset   - Dataset id.
      * @param [in] position  - Position in the dataset.
      * @param [in] size      - Size of the hyperslab.
      * @param [in] data      - Data to be written.
      * @throw ios::failure   - If error happens.
+     * @warning Limited to float and size_t data types.
      */
+    template<class T>
     void writeHyperSlab(const hid_t           dataset,
                         const DimensionSizes& position,
                         const DimensionSizes& size,
-                        const float*          data);
-    /**
-     * @brief Write a hyperslab into the dataset, index version.
-     *
-     * @param [in] dataset   - Dataset id
-     * @param [in] position  - Position in the dataset
-     * @param [in] size      - Size of the hyperslab
-     * @param [in] data      - Data to be written
-     * @throw ios::failure   - If error happens
-     */
-    void writeHyperSlab(const hid_t           dataset,
-                        const DimensionSizes& position,
-                        const DimensionSizes& size,
-                        const size_t*         data);
+                        const T*              data);
+
     /**
      * @brief   Write a cuboid selected within the matrixData into a hyperslab.
      * @details The routine writes 3D cuboid into a 4D dataset (only intended for raw time series).
@@ -728,78 +704,50 @@ class Hdf5File
                                     const DimensionSizes& matrixDimensions,
                                     const float*          matrixData);
     /**
-     * @brief   Write the scalar value under a specified group, float value.
-     * @details No chunks nad no compression is used.
+     * @brief   Write the scalar value under a specified group
+     * @details No chunks and no compression is used.
      *
+     * @tparam     T         - Data type to be written.
      * @param [in] parentGroup - Where to link the scalar dataset.
      * @param [in] datasetName - HDF5 dataset name.
      * @param [in] value       - data to be written.
      * @throw ios::failure     - If error happens.
+     * @warning Limited to float and size_t data types
      */
+    template<class T>
     void writeScalarValue(const hid_t parentGroup,
                           MatrixName& datasetName,
-                          const float value);
-    /**
-     * @brief   Write the scalar value under a specified group, index value.
-     * @details No chunks nad no compression is used.
-     *
-     * @param [in] parentGroup - Where to link the scalar dataset.
-     * @param [in] datasetName - HDF5 dataset name.
-     * @param [in] value       - data to be written.
-     * @throw ios::failure     - If error happens
-     */
-    void writeScalarValue(const hid_t  parentGroup,
-                          MatrixName&  datasetName,
-                          const size_t value);
+                          const T     value);
 
     /**
-     * @brief Read the scalar value under a specified group, float value.
+     * @brief Read the scalar value under a specified group.
      *
+     * @tparam      T           - Data type to be written.
      * @param [in]  parentGroup - Where to link the scalar dataset.
      * @param [in]  datasetName - HDF5 dataset name.
      * @param [out] value       - Data to be read.
      * @throw ios::failure      - If error happens.
+     * @warning Limited to float and size_t data types
      */
+    template<class T>
     void readScalarValue(const hid_t parentGroup,
                          MatrixName& datasetName,
-                         float&      value);
+                         T&          value);
     /**
-     * @brief Read the scalar value under a specified group, index value.
+     * @brief Read data from the dataset at a specified place in the file tree.
      *
-     * @param [in]  parentGroup - Where to link the scalar dataset.
-     * @param [in]  datasetName - HDF5 dataset name.
-     * @param [out] value       - Data to be read.
-     * @throw ios::failure      - If error happens.
-     */
-    void readScalarValue(const hid_t parentGroup,
-                         MatrixName& datasetName,
-                         size_t&     value);
-    /**
-     * @brief Read data from the dataset at a specified place in the file tree, float version.
-     *
-     * @param [in] parentGroup     - Where is the dataset situated.
-     * @param [in] datasetName     - Dataset name.
-     * @param [in] dimensionSizes  - Dimension sizes.
+     * @tparam      T              - Data type to be written.
+     * @param [in]  parentGroup    - Where is the dataset situated.
+     * @param [in]  datasetName    - Dataset name.
+     * @param [in]  dimensionSizes - Dimension sizes.
      * @param [out] data           - Pointer to data.
      * @throw ios::failure         - If error happens.
      */
+    template<class T>
     void readCompleteDataset(const hid_t           parentGroup,
                              MatrixName&           datasetName,
                              const DimensionSizes& dimensionSizes,
-                             float*                data);
-    /**
-     * @brief Read data from the dataset at a specified place in the file tree, index version.
-     *
-     * @param [in] parentGroup     - Where is the dataset situated.
-     * @param [in] datasetName     - Dataset name.
-     * @param [in] dimensionSizes  - Dimension sizes.
-     * @param [out] data           - Pointer to data.
-     * @throw ios::failure         - If error happens.
-     */
-    void readCompleteDataset(const hid_t           parentGroup,
-                             MatrixName&           datasetName,
-                             const DimensionSizes& dimensionSizes,
-                             size_t*               data);
+                             T*                    data);
 
     //--------------------------------------- Attributes Read/Write operations ---------------------------------------//
     /**

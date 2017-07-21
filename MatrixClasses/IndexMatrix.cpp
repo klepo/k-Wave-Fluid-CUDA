@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              20 July     2017, 14:18 (revised)
+ *              21 July     2017, 13:05 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -120,11 +120,12 @@ void IndexMatrix::writeData(Hdf5File&    file,
   }
 
   // create dataset and write a slab
-  hid_t dataset = file.createIndexDataset(file.getRootGroup(),
-                                          matrixName,
-                                          mDimensionSizes,
-                                          chunks,
-                                          compressionLevel);
+  hid_t dataset = file.createDataset(file.getRootGroup(),
+                                     matrixName,
+                                     mDimensionSizes,
+                                     chunks,
+                                     Hdf5File::MatrixDataType::kLong,
+                                     compressionLevel);
 
   file.writeHyperSlab(dataset, DimensionSizes(0, 0, 0), mDimensionSizes, mHostData);
 

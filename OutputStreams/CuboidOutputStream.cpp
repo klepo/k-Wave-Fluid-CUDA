@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 February  2015, 12:51 (created)
- *              20 July      2017, 14:21 (revised)
+ *              21 July      2017, 13:05 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -394,11 +394,12 @@ hid_t CuboidOutputStream::createCuboidDataset(const size_t cuboidIdx)
   // Indexed from 1
   const string datasetName = std::to_string(cuboidIdx + 1);
 
-  hid_t dataset = mFile.createFloatDataset(mGroup,
-                                           datasetName.c_str(),
-                                           cuboidSize,
-                                           cuboidChunkSize,
-                                           params.getCompressionLevel());
+  hid_t dataset = mFile.createDataset(mGroup,
+                                      datasetName.c_str(),
+                                      cuboidSize,
+                                      cuboidChunkSize,
+                                      Hdf5File::MatrixDataType::kFloat,
+                                      params.getCompressionLevel());
 
   // Write dataset parameters
   mFile.writeMatrixDomainType(mGroup, datasetName.c_str(), Hdf5File::MatrixDomainType::kReal);
