@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        20 July     2017, 14:42 (created) \n
- *              20 July     2017, 17:00 (revised)
+ *              21 July     2017, 14:05 (revised)
  *
  * @section Hdf5FileHeader HDF5 File Header Structure
  *
@@ -335,13 +335,11 @@ class Hdf5FileHeader
   void setNumberOfCores();
 
 private:
-  /// Populate the map with the header items.
-  void populateHeaderFileMap();
 
   /// map for the header values.
   std::map<FileHeaderItems, std::string> mHeaderValues;
   /// map for the header names.
-  std::map<FileHeaderItems, std::string> mHeaderNames;
+  static std::map<FileHeaderItems, std::string> sHeaderNames;
 
   ///String representation of different file types.
   static const std::string kFileTypesNames[];
