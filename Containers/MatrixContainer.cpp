@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              21 July      2017, 16:48 (revised)
+ *              08 August    2017, 13:38 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -345,7 +345,7 @@ void MatrixContainer::addMatrices()
   }
 
   //-------------------------------------------- Non staggered velocity ----------------------------------------------//
-  if (params.getStoreVelocityNonStaggeredRaw())
+  if (params.getStoreVelocityNonStaggeredRawFlag())
   {
     DimensionSizes shiftDims = fullDims;
 

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July      2012, 10:27 (created)\n
- *              21 July      2017, 16:50 (revised)
+ *              08 August    2017, 11:37 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -66,92 +66,92 @@ using std::string;
 using std::ios;
 
 
-//------------------------------------------------------------------------------------------------//
-//------------------------------------------ Constants -------------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------- Constants -----------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Public methods -----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Public methods ---------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
  * Constructor of the class.
  */
-TKSpaceFirstOrder3DSolver::TKSpaceFirstOrder3DSolver() :
-        matrixContainer(), outputStreamContainer(), parameters(Parameters::getInstance()),
-        actPercent(0), isTimestepRightAfterRestore(false),
-        totalTime(), preProcessingTime(), dataLoadTime(), simulationTime(),
-        postProcessingTime(), iterationTime()
+KSpaceFirstOrder3DSolver::KSpaceFirstOrder3DSolver()
+  : mMatrixContainer(), mOutputStreamContainer(), mParameters(Parameters::getInstance()),
+    mActPercent(0), mIsTimestepRightAfterRestore(false),
+    mTotalTime(), mPreProcessingTime(), mDataLoadTime(), mSimulationTime(),
+    mPostProcessingTime(), mIterationTime()
 {
-  totalTime.start();
+  mTotalTime.start();
 
   //Switch off default HDF5 error messages
   H5Eset_auto(H5E_DEFAULT, NULL, NULL);
-}// end of TKSpaceFirstOrder3DSolver
-//--------------------------------------------------------------------------------------------------
+}// end of KSpaceFirstOrder3DSolver
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Destructor of the class.
  */
-TKSpaceFirstOrder3DSolver::~TKSpaceFirstOrder3DSolver()
+KSpaceFirstOrder3DSolver::~KSpaceFirstOrder3DSolver()
 {
   // Delete CUDA FFT plans and related data
   CufftComplexMatrix::destroyAllPlansAndStaticData();
 
   // Free memory
-  FreeMemory();
+  freeMemory();
 
   //Reset device after the run - recommended by CUDA SDK
   cudaDeviceReset();
-}// end of ~TKSpaceFirstOrder3DSolver
-//--------------------------------------------------------------------------------------------------
+}// end of ~KSpaceFirstOrder3DSolver
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * The method allocates the matrix container and create all matrices and creates all output streams.
  */
-void TKSpaceFirstOrder3DSolver::AllocateMemory()
+void KSpaceFirstOrder3DSolver::allocateMemory()
 {
   Logger::log(Logger::LogLevel::kBasic, kOutFmtMemoryAllocation);
   Logger::flush(Logger::LogLevel::kBasic);
 
   // create container, then all matrices
-  matrixContainer.addMatrices();
-  matrixContainer.createMatrices();
+  mMatrixContainer.addMatrices();
+  mMatrixContainer.createMatrices();
 
   // add output streams into container
-  outputStreamContainer.addStreams(matrixContainer);
+  mOutputStreamContainer.addStreams(mMatrixContainer);
 
   Logger::log(Logger::LogLevel::kBasic, kOutFmtDone);
-}// end of AllocateMemory
-//--------------------------------------------------------------------------------------------------
+}// end of allocateMemory
+//----------------------------------------------------------------------------------------------------------------------
 
-/*
+/**
  * The method frees all memory allocated by the class.
  */
-void TKSpaceFirstOrder3DSolver::FreeMemory()
+void KSpaceFirstOrder3DSolver::freeMemory()
 {
-  matrixContainer.FreeMatrices();
-  outputStreamContainer.freeStreams();
-}// end of FreeMemory
-//--------------------------------------------------------------------------------------------------
+  mMatrixContainer.FreeMatrices();
+  mOutputStreamContainer.freeStreams();
+}// end of freeMemory
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Load data from the input file provided by the parameter class and creates the output time
  * series streams.
  */
-void TKSpaceFirstOrder3DSolver::LoadInputData()
+void KSpaceFirstOrder3DSolver::loadInputData()
 {
   // Load data from disk
   Logger::log(Logger::LogLevel::kBasic, kOutFmtDataLoading);
   Logger::flush(Logger::LogLevel::kBasic);
 
-  dataLoadTime.start();
+  mDataLoadTime.start();
 
   // open and load input file
-  Hdf5File& inputFile      = parameters.getInputFile(); // file is opened (in Parameters)
-  Hdf5File& outputFile     = parameters.getOutputFile();
-  Hdf5File& checkpointFile = parameters.getCheckpointFile();
+  Hdf5File& inputFile      = mParameters.getInputFile(); // file is opened (in Parameters)
+  Hdf5File& outputFile     = mParameters.getOutputFile();
+  Hdf5File& checkpointFile = mParameters.getCheckpointFile();
 
   // Load data from disk
   Logger::log(Logger::LogLevel::kFull, kOutFmtNoDone);
@@ -159,110 +159,108 @@ void TKSpaceFirstOrder3DSolver::LoadInputData()
   Logger::flush(Logger::LogLevel::kFull);
 
   // load data from the input file
-  matrixContainer.loadDataFromInputFile(inputFile);
+  mMatrixContainer.loadDataFromInputFile(inputFile);
 
-  // close the input file
+  // close the input file since we don't need it anymore.
   inputFile.close();
 
   Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
 
   // The simulation does not use check pointing or this is the first turn
-  bool recoverFromCheckpoint = (parameters.isCheckpointEnabled() &&
-                                Hdf5File::canAccess(parameters.getCheckpointFileName()));
+  bool recoverFromCheckpoint = (mParameters.isCheckpointEnabled() &&
+                                Hdf5File::canAccess(mParameters.getCheckpointFileName()));
 
 
   if (recoverFromCheckpoint)
   {
-    //--------------------------- Read data from the checkpoint file -----------------------------//
+    //------------------------------------- Read data from the checkpoint file ---------------------------------------//
     Logger::log(Logger::LogLevel::kFull, kOutFmtReadingCheckpointFile);
     Logger::flush(Logger::LogLevel::kFull);
 
     // Open checkpoint file
-    checkpointFile.open(parameters.getCheckpointFileName());
+    checkpointFile.open(mParameters.getCheckpointFileName());
 
     // Check the checkpoint file
-    CheckCheckpointFile();
+    checkCheckpointFile();
 
     // read the actual value of t_index
-    size_t new_t_index;
-    checkpointFile.readScalarValue(checkpointFile.getRootGroup(), kTimeIndexName, new_t_index);
-    parameters.setTimeIndex(new_t_index);
+    size_t checkpointedTimeIndex;
+    checkpointFile.readScalarValue(checkpointFile.getRootGroup(), kTimeIndexName, checkpointedTimeIndex);
+    mParameters.setTimeIndex(checkpointedTimeIndex);
 
     // Read necessary matrices from the checkpoint file
-    matrixContainer.loadDataFromCheckpointFile(checkpointFile);
+    mMatrixContainer.loadDataFromCheckpointFile(checkpointFile);
 
     checkpointFile.close();
     Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
 
-    //----------------------------- Read data from the output file -------------------------------//
+    //--------------------------------------- Read data from the output file -----------------------------------------//
     // Reopen output file for RW access
     Logger::log(Logger::LogLevel::kFull, kOutFmtReadingOutputFile);
     Logger::flush(Logger::LogLevel::kFull);
 
-    outputFile.open(parameters.getOutputFileName(), H5F_ACC_RDWR);
+    outputFile.open(mParameters.getOutputFileName(), H5F_ACC_RDWR);
 
     //Read file header of the output file
-    parameters.getFileHeader().readHeaderFromOutputFile(outputFile);
+    mParameters.getFileHeader().readHeaderFromOutputFile(outputFile);
 
     // Restore elapsed time
-    LoadElapsedTimeFromOutputFile(outputFile);
+    loadElapsedTimeFromOutputFile();
 
     // Reopen streams
-    outputStreamContainer.reopenStreams();
+    mOutputStreamContainer.reopenStreams();
     Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
   }
   else
   {
-    //-------------------------- First round of multi-leg simulation -----------------------------//
+    //------------------------------------ First round of multi-leg simulation ---------------------------------------//
     // Create the output file
     Logger::log(Logger::LogLevel::kFull, kOutFmtCreatingOutputFile);
     Logger::flush(Logger::LogLevel::kFull);
 
-    outputFile.create(parameters.getOutputFileName());
+    outputFile.create(mParameters.getOutputFileName());
     Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
 
     // Create the steams, link them with the sampled matrices
     // however DO NOT allocate memory!
-    outputStreamContainer.createStreams();
+    mOutputStreamContainer.createStreams();
   }
 
-  dataLoadTime.stop();
+  mDataLoadTime.stop();
 
   if (Logger::getLevel() != Logger::LogLevel::kFull)
   {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtDone);
   }
-}// end of LoadInputData
-//--------------------------------------------------------------------------------------------------
+}// end of loadInputData
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- * This method computes k-space First Order 3D simulation. It launches calculation on a given
- * dataset going through  FFT initialization, pre-processing, main loop and post-processing phases.
- *
+ * This method computes k-space First Order 3D simulation.
  */
-void TKSpaceFirstOrder3DSolver::Compute()
+void KSpaceFirstOrder3DSolver::compute()
 {
-  preProcessingTime.start();
+  mPreProcessingTime.start();
 
   Logger::log(Logger::LogLevel::kBasic, kOutFmtFftPlans);
   Logger::flush(Logger::LogLevel::kBasic);
 
-  CudaParameters& cudaParameters = parameters.getCudaParameters();
+  CudaParameters& cudaParameters = mParameters.getCudaParameters();
 
   // fft initialisation and preprocessing
   try
   {
     // initilaise all cuda FFT plans
-    InitializeFFTPlans();
+    initializeCufftPlans();
     Logger::log(Logger::LogLevel::kBasic, kOutFmtDone);
 
     Logger::log(Logger::LogLevel::kBasic,kOutFmtPreProcessing);
     Logger::flush(Logger::LogLevel::kBasic);
 
     // preprocessing is done on CPU and must pretend the CUDA configuration
-    PreProcessingPhase();
+    preProcessing();
 
-    preProcessingTime.stop();
+    mPreProcessingTime.stop();
     // Set kernel configurations
     cudaParameters.setKernelConfiguration();
 
@@ -281,32 +279,32 @@ void TKSpaceFirstOrder3DSolver::Compute()
   }
 
   // Logger header for simulation
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, preProcessingTime.getElapsedTime());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, mPreProcessingTime.getElapsedTime());
   Logger::log(Logger::LogLevel::kBasic, kOutFmtCompResourcesHeader);
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtCurrentHostMemory,   GetHostMemoryUsageInMB());
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtCurrentDeviceMemory, GetDeviceMemoryUsageInMB());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtCurrentHostMemory,   getHostMemoryUsage());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtCurrentDeviceMemory, getDeviceMemoryUsage());
 
 
   const string blockDims = Logger::formatMessage(kOutFmtCudaGridShapeFormat,
-                                                  cudaParameters.getSolverGridSize1D(),
-                                                  cudaParameters.getSolverBlockSize1D());
+                                                 cudaParameters.getSolverGridSize1D(),
+                                                 cudaParameters.getSolverBlockSize1D());
 
   Logger::log(Logger::LogLevel::kFull, kOutFmtCudaSolverGridShape, blockDims.c_str());
 
   const string gridDims = Logger::formatMessage(kOutFmtCudaGridShapeFormat,
-                                                 cudaParameters.getSamplerGridSize1D(),
-                                                 cudaParameters.getSamplerBlockSize1D());
+                                                cudaParameters.getSamplerGridSize1D(),
+                                                cudaParameters.getSamplerBlockSize1D());
 
   Logger::log(Logger::LogLevel::kFull, kOutFmtCudaSamplerGridShape, gridDims.c_str());
 
   // Main loop
   try
   {
-    simulationTime.start();
+    mSimulationTime.start();
 
-    ComputeMainLoop();
+    computeMainLoop();
 
-    simulationTime.stop();
+    mSimulationTime.stop();
 
     Logger::log(Logger::LogLevel::kBasic,kOutFmtSimulationEndSeparator);
   }
@@ -317,14 +315,14 @@ void TKSpaceFirstOrder3DSolver::Compute()
   }
 
   // Post processing region
-  postProcessingTime.start();
+  mPostProcessingTime.start();
 
   try
   {
-    if (IsCheckpointInterruption())
+    if (isCheckpointInterruption())
     { // Checkpoint
-      Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, simulationTime.getElapsedTime());
-      Logger::log(Logger::LogLevel::kBasic, kOutFmtCheckpointTimeSteps, parameters.getTimeIndex());
+      Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, mSimulationTime.getElapsedTime());
+      Logger::log(Logger::LogLevel::kBasic, kOutFmtCheckpointTimeSteps, mParameters.getTimeIndex());
       Logger::log(Logger::LogLevel::kBasic, kOutFmtCheckpointHeader);
       Logger::log(Logger::LogLevel::kBasic, kOutFmtCreatingCheckpoint);
       Logger::flush(Logger::LogLevel::kBasic);
@@ -334,7 +332,7 @@ void TKSpaceFirstOrder3DSolver::Compute()
         Logger::log(Logger::LogLevel::kBasic, kOutFmtNoDone);
       }
 
-      SaveCheckpointData();
+      saveCheckpointData();
 
       if (Logger::getLevel() != Logger::LogLevel::kFull)
       {
@@ -344,17 +342,17 @@ void TKSpaceFirstOrder3DSolver::Compute()
     else
     { // Finish
 
-      Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, simulationTime.getElapsedTime());
+      Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, mSimulationTime.getElapsedTime());
       Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
       Logger::log(Logger::LogLevel::kBasic, kOutFmtPostProcessing);
       Logger::flush(Logger::LogLevel::kBasic);
 
-      PostProcessing();
+      postProcessing();
 
       // if checkpointing is enabled and the checkpoint file was created in the past, delete it
-      if (parameters.isCheckpointEnabled())
+      if (mParameters.isCheckpointEnabled())
       {
-        std::remove(parameters.getCheckpointFileName().c_str());
+        std::remove(mParameters.getCheckpointFileName().c_str());
       }
       Logger::log(Logger::LogLevel::kBasic, kOutFmtDone);
     }
@@ -366,30 +364,28 @@ void TKSpaceFirstOrder3DSolver::Compute()
 
     Logger::errorAndTerminate(Logger::wordWrapString(e.what(),kErrFmtPathDelimiters,9).c_str());
   }
-  postProcessingTime.stop();
+  mPostProcessingTime.stop();
 
   // Final data written
   try
   {
-    WriteOutputDataInfo();
-    parameters.getOutputFile().close();
+    writeOutputDataInfo();
+    mParameters.getOutputFile().close();
 
-    Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, postProcessingTime.getElapsedTime());
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, mPostProcessingTime.getElapsedTime());
     }
   catch (const std::exception &e)
   {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
     Logger::errorAndTerminate(Logger::wordWrapString(e.what(),kErrFmtPathDelimiters, 9).c_str());
   }
-}// end of Compute()
-//--------------------------------------------------------------------------------------------------
+}// end of compute()
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get peak CPU memory usage.
- *
- * @return peak memory usage in MBs.
  */
-size_t TKSpaceFirstOrder3DSolver::GetHostMemoryUsageInMB()
+size_t KSpaceFirstOrder3DSolver::getHostMemoryUsage()
 {
   // Linux build
   #ifdef __linux__
@@ -413,47 +409,43 @@ size_t TKSpaceFirstOrder3DSolver::GetHostMemoryUsageInMB()
 
     return pmc.PeakWorkingSetSize >> 20;
   #endif
-}// end of GetHostMemoryUsageInMB
-//--------------------------------------------------------------------------------------------------
+}// end of getHostMemoryUsageInMB
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get peak GPU memory usage.
- *
- * @return Peak memory usage in MBs.
  */
-size_t TKSpaceFirstOrder3DSolver::GetDeviceMemoryUsageInMB()
+size_t KSpaceFirstOrder3DSolver::getDeviceMemoryUsage()
 {
   size_t free, total;
   cudaMemGetInfo(&free,&total);
 
-  return ((total-free) >> 20);
-}// end of GetDeviceMemoryUsageInMB
-//--------------------------------------------------------------------------------------------------
+  return ((total - free) >> 20);
+}// end of getDeviceMemoryUsageInMB
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get release code version.
- *
- * @return core name
  */
-const string TKSpaceFirstOrder3DSolver::GetCodeName() const
+const string KSpaceFirstOrder3DSolver::getCodeName() const
 {
   return string(kOutFmtKWaveVersion);
-}// end of GetCodeName
-//--------------------------------------------------------------------------------------------------
+}// end of getCodeName
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Print full code name and the license
+ * Print full code name and the license.
  */
-void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense() const
+void KSpaceFirstOrder3DSolver::printFullCodeNameAndLicense() const
 {
   Logger::log(Logger::LogLevel::kBasic,
-               kOutFmtBuildNoDataTime,
-               10,11,__DATE__,
-               8,8,__TIME__);
+              kOutFmtBuildNoDataTime,
+              10,11, __DATE__,
+              8,8, __TIME__);
 
-  if (parameters.getGitHash() != "")
+  if (mParameters.getGitHash() != "")
   {
-    Logger::log(Logger::LogLevel::kBasic, kOutFmtVersionGitHash, parameters.getGitHash().c_str());
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtVersionGitHash, mParameters.getGitHash().c_str());
   }
 
   Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
@@ -504,17 +496,17 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense() const
   else
   {
     Logger::log(Logger::LogLevel::kBasic,
-                 kOutFmtCudaRuntime,
-                 cudaRuntimeVersion/1000, (cudaRuntimeVersion%100)/10);
+                kOutFmtCudaRuntime,
+                cudaRuntimeVersion / 1000, (cudaRuntimeVersion % 100) / 10);
   }
 
   int cudaDriverVersion;
   cudaDriverGetVersion(&cudaDriverVersion);
   Logger::log(Logger::LogLevel::kBasic,
-               kOutFmtCudaDriver,
-               cudaDriverVersion/1000, (cudaDriverVersion%100)/10);
+              kOutFmtCudaDriver,
+              cudaDriverVersion / 1000, (cudaDriverVersion % 100) / 10);
 
-  const CudaParameters& cudaParameters = parameters.getCudaParameters();
+  const CudaParameters& cudaParameters = mParameters.getCudaParameters();
   // no GPU was found
   if (cudaParameters.getDeviceIdx() == CudaParameters::kDefaultDeviceIdx)
   {
@@ -523,466 +515,442 @@ void TKSpaceFirstOrder3DSolver::PrintFullNameCodeAndLicense() const
   else
   {
     Logger::log(Logger::LogLevel::kBasic,
-                  kOutFmtCudaCodeArch,
-                  SolverCUDAKernels::GetCUDACodeVersion()/10.f);
+                kOutFmtCudaCodeArch,
+                SolverCUDAKernels::GetCUDACodeVersion() / 10.f);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtCudaDevice, cudaParameters.getDeviceIdx());
 
     const int paddingLength = static_cast<int>(65 - (22 + cudaParameters.getDeviceName().length()));
 
     Logger::log(Logger::LogLevel::kBasic,
-                 kOutFmtCudaDeviceName,
-                 cudaParameters.getDeviceName().c_str(),
-                 paddingLength,
-                 kOutFmtCudaDeviceNamePadding.c_str());
+                kOutFmtCudaDeviceName,
+                cudaParameters.getDeviceName().c_str(),
+                paddingLength,
+                kOutFmtCudaDeviceNamePadding.c_str());
 
     Logger::log(Logger::LogLevel::kBasic,
-                 kOutFmtCudaCapability,
-                 cudaParameters.getDeviceProperties().major,
-                 cudaParameters.getDeviceProperties().minor);
+                kOutFmtCudaCapability,
+                cudaParameters.getDeviceProperties().major,
+                cudaParameters.getDeviceProperties().minor);
   }
 
   Logger::log(Logger::LogLevel::kBasic, kOutFmtLicense);
-}// end of GetFullCodeAndLincence
-//--------------------------------------------------------------------------------------------------
+}// end of getFullCodeAndLincence
+//----------------------------------------------------------------------------------------------------------------------
 
  /**
   * Get total simulation time.
-  *
-  * @return  total simulation time.
   */
-double TKSpaceFirstOrder3DSolver::GetTotalTime() const
+double KSpaceFirstOrder3DSolver::getTotalTime() const
 {
-  return totalTime.getElapsedTime();
-}// end of GetTotalTime()
-//--------------------------------------------------------------------------------------------------
+  return mTotalTime.getElapsedTime();
+}// end of getTotalTime()
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get pre-processing time.
- *
- * @return pre-processing time
  */
-double TKSpaceFirstOrder3DSolver::GetPreProcessingTime() const
+double KSpaceFirstOrder3DSolver::getPreProcessingTime() const
 {
-  return preProcessingTime.getElapsedTime();
-}// end of GetPreProcessingTime
-//--------------------------------------------------------------------------------------------------
+  return mPreProcessingTime.getElapsedTime();
+}// end of getPreProcessingTime
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get data load time.
- *
- * @return  time to load data
  */
-double TKSpaceFirstOrder3DSolver::GetDataLoadTime() const
+double KSpaceFirstOrder3DSolver::getDataLoadTime() const
 {
-  return dataLoadTime.getElapsedTime();
-}// end of GetDataLoadTime
-//--------------------------------------------------------------------------------------------------
-
+  return mDataLoadTime.getElapsedTime();
+}// end of getDataLoadTime
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get simulation time (time loop).
- *
- * @return  simulation time
  */
-double TKSpaceFirstOrder3DSolver::GetSimulationTime() const
+double KSpaceFirstOrder3DSolver::getSimulationTime() const
 {
-  return simulationTime.getElapsedTime();
-}// end of GetSimulationTime
-//--------------------------------------------------------------------------------------------------
+  return mSimulationTime.getElapsedTime();
+}// end of getSimulationTime
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get post-processing time.
- *
- * @return post-processing time
  */
-double TKSpaceFirstOrder3DSolver::GetPostProcessingTime() const
+double KSpaceFirstOrder3DSolver::getPostProcessingTime() const
 {
-  return postProcessingTime.getElapsedTime();
-}// end of GetPostProcessingTime
-//--------------------------------------------------------------------------------------------------
+  return mPostProcessingTime.getElapsedTime();
+}// end of getPostProcessingTime
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get total simulation time cumulated over all legs.
- * @return  simulation time cumulated over multiple legs
  */
-double TKSpaceFirstOrder3DSolver::GetCumulatedTotalTime() const
+double KSpaceFirstOrder3DSolver::getCumulatedTotalTime() const
 {
-  return totalTime.getElapsedTimeOverAllLegs();
-}// end of GetCumulatedTotalTime
-//--------------------------------------------------------------------------------------------------
+  return mTotalTime.getElapsedTimeOverAllLegs();
+}// end of getCumulatedTotalTime
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get pre-processing time cumulated over all legs.
- *
- * @return pre-processing time cumulated over multiple legs
  */
-double TKSpaceFirstOrder3DSolver::GetCumulatedPreProcessingTime() const
+double KSpaceFirstOrder3DSolver::getCumulatedPreProcessingTime() const
 {
-  return preProcessingTime.getElapsedTimeOverAllLegs();
-} // end of GetCumulatedPreProcessingTime
-//--------------------------------------------------------------------------------------------------
+  return mPreProcessingTime.getElapsedTimeOverAllLegs();
+} // end of getCumulatedPreProcessingTime
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get data load time cumulated over all legs.
- *
- * @return time to load data cumulated over multiple legs
  */
-double TKSpaceFirstOrder3DSolver::GetCumulatedDataLoadTime() const
+double KSpaceFirstOrder3DSolver::getCumulatedDataLoadTime() const
 {
-  return dataLoadTime.getElapsedTimeOverAllLegs();
-}// end of GetCumulatedDataLoadTime
-//--------------------------------------------------------------------------------------------------
+  return mDataLoadTime.getElapsedTimeOverAllLegs();
+}// end of getCumulatedDataLoadTime
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get simulation time (time loop) cumulated over all legs.
- *
- * @return simulation time cumulated over multiple legs
  */
-double TKSpaceFirstOrder3DSolver::GetCumulatedSimulationTime() const
+double KSpaceFirstOrder3DSolver::getCumulatedSimulationTime() const
 {
-  return simulationTime.getElapsedTimeOverAllLegs();
-}// end of GetCumulatedSimulationTime
-//--------------------------------------------------------------------------------------------------
+  return mSimulationTime.getElapsedTimeOverAllLegs();
+}// end of getCumulatedSimulationTime
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get post-processing time cumulated over all legs.
- *
- * @return cumulated time to do post-processing over multiple legs
  */
-double TKSpaceFirstOrder3DSolver::GetCumulatedPostProcessingTime() const
+double KSpaceFirstOrder3DSolver::getCumulatedPostProcessingTime() const
 {
-  return postProcessingTime.getElapsedTimeOverAllLegs();
-}// end of GetCumulatedPostProcessingTime
-//--------------------------------------------------------------------------------------------------
+  return mPostProcessingTime.getElapsedTimeOverAllLegs();
+}// end of getCumulatedPostProcessingTime
+//----------------------------------------------------------------------------------------------------------------------
 
 
-//------------------------------------------------------------------------------------------------//
-//-------------------------------------- Protected methods ---------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------ Protected methods -------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 
 /**
- * Initialize FFT plans.
+ * Initialize cuda FFT plans.
  */
-void TKSpaceFirstOrder3DSolver::InitializeFFTPlans()
+void KSpaceFirstOrder3DSolver::initializeCufftPlans()
 {
   // create real to complex plans
-  CufftComplexMatrix::createR2CFftPlan3D(parameters.getFullDimensionSizes());
+  CufftComplexMatrix::createR2CFftPlan3D(mParameters.getFullDimensionSizes());
 
  // create complex to real plans
-  CufftComplexMatrix::createC2RFftPlan3D(parameters.getFullDimensionSizes());
+  CufftComplexMatrix::createC2RFftPlan3D(mParameters.getFullDimensionSizes());
 
   // if necessary, create 1D shift plans.
   // in this case, the matrix has a bit bigger dimensions to be able to store shifted matrices.
-  if (Parameters::getInstance().getStoreVelocityNonStaggeredRaw())
+  if (Parameters::getInstance().getStoreVelocityNonStaggeredRawFlag())
   {
     // X shifts
-    CufftComplexMatrix::createR2CFftPlan1DX(parameters.getFullDimensionSizes());
-    CufftComplexMatrix::createC2RFftPlan1DX(parameters.getFullDimensionSizes());
+    CufftComplexMatrix::createR2CFftPlan1DX(mParameters.getFullDimensionSizes());
+    CufftComplexMatrix::createC2RFftPlan1DX(mParameters.getFullDimensionSizes());
 
     // Y shifts
-    CufftComplexMatrix::createR2CFftPlan1DY(parameters.getFullDimensionSizes());
-    CufftComplexMatrix::createC2RFftPlan1DY(parameters.getFullDimensionSizes());
+    CufftComplexMatrix::createR2CFftPlan1DY(mParameters.getFullDimensionSizes());
+    CufftComplexMatrix::createC2RFftPlan1DY(mParameters.getFullDimensionSizes());
 
     // Z shifts
-    CufftComplexMatrix::createR2CFftPlan1DZ(parameters.getFullDimensionSizes());
-    CufftComplexMatrix::createC2RFftPlan1DZ(parameters.getFullDimensionSizes());
+    CufftComplexMatrix::createR2CFftPlan1DZ(mParameters.getFullDimensionSizes());
+    CufftComplexMatrix::createC2RFftPlan1DZ(mParameters.getFullDimensionSizes());
   }// end u_non_staggered
-}// end of InitializeFFTPlans
-//--------------------------------------------------------------------------------------------------
+}// end of initializeCufftPlans
+//----------------------------------------------------------------------------------------------------------------------
 
-/*
- * Compute pre-processing phase. \n
- * Initialize all indices, pre-compute constants such as c^2, rho0_sg* x dt  and create kappa,
- * absorb_eta, absorb_tau, absorb_nabla1, absorb_nabla2  matrices. Calculate this on the CPU side.
+/**
+ * Compute pre-processing phase.
  */
-void TKSpaceFirstOrder3DSolver::PreProcessingPhase()
+void KSpaceFirstOrder3DSolver::preProcessing()
 {
   // get the correct sensor mask and recompute indices
-  if (parameters.getSensorMaskType() == Parameters::SensorMaskType::kIndex)
+  if (mParameters.getSensorMaskType() == Parameters::SensorMaskType::kIndex)
   {
-    Get_sensor_mask_index().recomputeIndicesToCPP();
+    getSensorMaskIndex().recomputeIndicesToCPP();
   }
 
-  if (parameters.getSensorMaskType() == Parameters::SensorMaskType::kCorners)
+  if (mParameters.getSensorMaskType() == Parameters::SensorMaskType::kCorners)
   {
-    Get_sensor_mask_corners().recomputeIndicesToCPP();
+    getSensorMaskCorners().recomputeIndicesToCPP();
   }
 
-  if ((parameters.getTransducerSourceFlag() != 0) ||
-      (parameters.getVelocityXSourceFlag() != 0)         ||
-      (parameters.getVelocityYSourceFlag() != 0)         ||
-      (parameters.getVelocityZSourceFlag() != 0)
+  if ((mParameters.getTransducerSourceFlag() != 0) ||
+      (mParameters.getVelocityXSourceFlag() != 0)  ||
+      (mParameters.getVelocityYSourceFlag() != 0)  ||
+      (mParameters.getVelocityZSourceFlag() != 0)
      )
   {
-    Get_u_source_index().recomputeIndicesToCPP();
+    getVelocitySourceIndex().recomputeIndicesToCPP();
   }
 
-  if (parameters.getTransducerSourceFlag() != 0)
+  if (mParameters.getTransducerSourceFlag() != 0)
   {
-    Get_delay_mask().recomputeIndicesToCPP();
+    getDelayMask().recomputeIndicesToCPP();
   }
 
-  if (parameters.getPressureSourceFlag() != 0)
+  if (mParameters.getPressureSourceFlag() != 0)
   {
-    Get_p_source_index().recomputeIndicesToCPP();
+    getPressureSourceIndex().recomputeIndicesToCPP();
   }
 
   // compute dt / rho0_sg...
-  if (!parameters.getRho0ScalarFlag())
+  if (!mParameters.getRho0ScalarFlag())
   { // non-uniform grid cannot be pre-calculated :-(
     // rho is matrix
-    if (parameters.getNonUniformGridFlag())
+    if (mParameters.getNonUniformGridFlag())
     {
-      GenerateInitialDenisty();
+      generateInitialDenisty();
     }
     else
     {
-      Get_dt_rho0_sgx().scalarDividedBy(parameters.getDt());
-      Get_dt_rho0_sgy().scalarDividedBy(parameters.getDt());
-      Get_dt_rho0_sgz().scalarDividedBy(parameters.getDt());
+      getDtRho0Sgx().scalarDividedBy(mParameters.getDt());
+      getDtRho0Sgy().scalarDividedBy(mParameters.getDt());
+      getDtRho0Sgz().scalarDividedBy(mParameters.getDt());
     }
   }
 
   // generate different matrices
-  if (parameters.getAbsorbingFlag() != 0)
+  if (mParameters.getAbsorbingFlag() != 0)
   {
-    GenerateKappaAndNablas();
-    GenerateTauAndEta();
+    generateKappaAndNablas();
+    generateTauAndEta();
   }
   else
   {
-    GenerateKappa();
+    generateKappa();
   }
 
   // calculate c^2. It has to be after kappa gen... because of c modification
-  Compute_c2();
+  computeC2();
 
-}// end of PreProcessingPhase
-//--------------------------------------------------------------------------------------------------
+}// end of preProcessing
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Compute the main time loop of KSpaceFirstOrder3D.
  */
-void TKSpaceFirstOrder3DSolver::ComputeMainLoop()
+void KSpaceFirstOrder3DSolver::computeMainLoop()
 {
-  actPercent = 0;
+  mActPercent = 0;
 
   // if resuming from a checkpoint,
   // set ActPercent to correspond the t_index after recovery
-  if (parameters.getTimeIndex() > 0)
+  if (mParameters.getTimeIndex() > 0)
   {
     // We're restarting after checkpoint
-    isTimestepRightAfterRestore = true;
-    actPercent = (parameters.getTimeIndex() / (parameters.getNt() / 100));
+    mIsTimestepRightAfterRestore = true;
+    mActPercent = (mParameters.getTimeIndex() / (mParameters.getNt() / 100));
   }
 
   // Progress header
   Logger::log(Logger::LogLevel::kBasic,kOutFmtSimulationHeader);
 
   // Initial copy of data to the GPU
-  matrixContainer.copyMatricesToDevice();
+  mMatrixContainer.copyMatricesToDevice();
 
-  iterationTime.start();
+  mIterationTime.start();
 
   // execute main loop
-  while (parameters.getTimeIndex() < parameters.getNt() && (!IsTimeToCheckpoint()))
+  while (mParameters.getTimeIndex() < mParameters.getNt() && (!isTimeToCheckpoint()))
   {
-    const size_t t_index = parameters.getTimeIndex();
+    const size_t timeIndex = mParameters.getTimeIndex();
 
     // compute velocity
-    ComputeVelocity();
+    computeVelocity();
 
     // add in the velocity u source term
-    AddVelocitySource();
+    addVelocitySource();
 
     // add in the transducer source term (t = t1) to ux
-    if (parameters.getTransducerSourceFlag() > t_index)
+    if (mParameters.getTransducerSourceFlag() > timeIndex)
     {
-      SolverCUDAKernels::AddTransducerSource(Get_ux_sgx(),
-                                             Get_u_source_index(),
-                                             Get_delay_mask(),
-                                             Get_transducer_source_input());
+      SolverCUDAKernels::AddTransducerSource(getUxSgx(),
+                                             getVelocitySourceIndex(),
+                                             getDelayMask(),
+                                             getTransducerSourceInput());
     }
 
     // compute gradient of velocity
-    ComputeGradientVelocity();
+    computeVelocityGradient();
 
     // compute density
-    if (parameters.getNonLinearFlag())
+    if (mParameters.getNonLinearFlag())
     {
-      ComputeDensityNonliner();
+      computeDensityNonliner();
     }
     else
     {
-      ComputeDensityLinear();
+      computeDensityLinear();
     }
 
     // add in the source pressure term
-    AddPressureSource();
+    addPressureSource();
 
-    if (parameters.getNonLinearFlag())
+    if (mParameters.getNonLinearFlag())
     {
-      ComputePressureNonlinear();
+      computePressureNonlinear();
     }
     else
     {
-      ComputePressureLinear();
+      computePressureLinear();
     }
 
     //-- calculate initial pressure
-    if ((t_index == 0) && (parameters.getInitialPressureSourceFlag() == 1))  Calculate_p0_source();
+    if ((timeIndex == 0) && (mParameters.getInitialPressureSourceFlag() == 1))  addInitialPressureSource();
 
-    StoreSensorData();
-    PrintStatistics();
+    storeSensorData();
+    printStatistics();
 
-    parameters.incrementTimeIndex();
-    isTimestepRightAfterRestore = false;
+    mParameters.incrementTimeIndex();
+    mIsTimestepRightAfterRestore = false;
   }
 
     // Since disk operations are one step delayed, we have to do the last one here.
     // However we need to check if the loop wasn't skipped due to very short checkpoint interval
-    if (parameters.getTimeIndex() > parameters.getSamplingStartTimeIndex() && (!isTimestepRightAfterRestore))
+    if (mParameters.getTimeIndex() > mParameters.getSamplingStartTimeIndex() && (!mIsTimestepRightAfterRestore))
     {
-      outputStreamContainer.flushRawStreams();
+      mOutputStreamContainer.flushRawStreams();
     }
-}// end of ComputeMainLoop()
-//--------------------------------------------------------------------------------------------------
+}// end of computeMainLoop()
+//----------------------------------------------------------------------------------------------------------------------
 
-/*
+/**
  * Post processing, and closing the output streams.
  */
-void TKSpaceFirstOrder3DSolver::PostProcessing()
+void KSpaceFirstOrder3DSolver::postProcessing()
 {
-  if (parameters.getStorePressureFinalAllFlag())
+  if (mParameters.getStorePressureFinalAllFlag())
   {
-    Get_p().copyFromDevice();
-    Get_p().writeData(parameters.getOutputFile(),
-                                kPressureFinalName,
-                                parameters.getCompressionLevel());
+    getP().copyFromDevice();
+    getP().writeData(mParameters.getOutputFile(),
+                     kPressureFinalName,
+                     mParameters.getCompressionLevel());
   }// p_final
 
-  if (parameters.getStoreVelocityFinalAllFlag())
+  if (mParameters.getStoreVelocityFinalAllFlag())
   {
-    Get_ux_sgx().copyFromDevice();
-    Get_uy_sgy().copyFromDevice();
-    Get_uz_sgz().copyFromDevice();
+    getUxSgx().copyFromDevice();
+    getUySgy().copyFromDevice();
+    getUzSgz().copyFromDevice();
 
-    Get_ux_sgx().writeData(parameters.getOutputFile(),
-                                     kUxFinalName,
-                                     parameters.getCompressionLevel());
-    Get_uy_sgy().writeData(parameters.getOutputFile(),
-                                     kUyFinalName,
-                                     parameters.getCompressionLevel());
-    Get_uz_sgz().writeData(parameters.getOutputFile(),
-                                     kUzFinalName,
-                                     parameters.getCompressionLevel());
+    getUxSgx().writeData(mParameters.getOutputFile(),
+                         kUxFinalName,
+                         mParameters.getCompressionLevel());
+    getUySgy().writeData(mParameters.getOutputFile(),
+                         kUyFinalName,
+                         mParameters.getCompressionLevel());
+    getUzSgz().writeData(mParameters.getOutputFile(),
+                         kUzFinalName,
+                         mParameters.getCompressionLevel());
   }// u_final
 
   // Apply post-processing, flush data on disk/
-  outputStreamContainer.postProcessStreams();
-  outputStreamContainer.closeStreams();
+  mOutputStreamContainer.postProcessStreams();
+  mOutputStreamContainer.closeStreams();
 
   // store sensor mask if wanted
-  if (parameters.getCopySensorMaskFlag())
+  if (mParameters.getCopySensorMaskFlag())
   {
-    if (parameters.getSensorMaskType() == Parameters::SensorMaskType::kIndex)
+    if (mParameters.getSensorMaskType() == Parameters::SensorMaskType::kIndex)
     {
-      Get_sensor_mask_index().recomputeIndicesToMatlab();
-      Get_sensor_mask_index().writeData(parameters.getOutputFile(),kSensorMaskIndexName,
-                                                  parameters.getCompressionLevel());
+      getSensorMaskIndex().recomputeIndicesToMatlab();
+      getSensorMaskIndex().writeData(mParameters.getOutputFile(),kSensorMaskIndexName,
+                                     mParameters.getCompressionLevel());
     }
 
-    if (parameters.getSensorMaskType() == Parameters::SensorMaskType::kCorners)
+    if (mParameters.getSensorMaskType() == Parameters::SensorMaskType::kCorners)
     {
-      Get_sensor_mask_corners().recomputeIndicesToMatlab();
-      Get_sensor_mask_corners().writeData(parameters.getOutputFile(),kSensorMaskCornersName,
-                                                    parameters.getCompressionLevel());
+      getSensorMaskCorners().recomputeIndicesToMatlab();
+      getSensorMaskCorners().writeData(mParameters.getOutputFile(),kSensorMaskCornersName,
+                                       mParameters.getCompressionLevel());
     }
   }
-}// end of PostProcessing
-//--------------------------------------------------------------------------------------------------
+}// end of postProcessing
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Store sensor data.
- * This routine exploits asynchronous behavior. It first performs IO from the i-1th step while
- * waiting for ith step to come to the point of sampling.
  */
-void TKSpaceFirstOrder3DSolver::StoreSensorData()
+void KSpaceFirstOrder3DSolver::storeSensorData()
 {
   // Unless the time for sampling has come, exit.
-  if (parameters.getTimeIndex() >= parameters.getSamplingStartTimeIndex())
+  if (mParameters.getTimeIndex() >= mParameters.getSamplingStartTimeIndex())
   {
 
     // Read event for t_index-1. If sampling did not occur by then, ignored it.
     // if it did store data on disk (flush) - the GPU is running asynchronously.
     // But be careful, flush has to be one step delayed to work correctly.
     // when restoring from checkpoint we have to skip the first flush
-    if (parameters.getTimeIndex() > parameters.getSamplingStartTimeIndex() && !isTimestepRightAfterRestore)
+    if (mParameters.getTimeIndex() > mParameters.getSamplingStartTimeIndex() && !mIsTimestepRightAfterRestore)
     {
-      outputStreamContainer.flushRawStreams();
+      mOutputStreamContainer.flushRawStreams();
     }
 
     // if --u_non_staggered is switched on, calculate unstaggered velocity.
-    if (parameters.getStoreVelocityNonStaggeredRaw())
+    if (mParameters.getStoreVelocityNonStaggeredRawFlag())
     {
-      CalculateShiftedVelocity();
+      computeShiftedVelocity();
     }
 
     // Sample data for step t  (store event for sampling in next turn)
-    outputStreamContainer.sampleStreams();
+    mOutputStreamContainer.sampleStreams();
 
     // the last step (or data after) checkpoint are flushed in the main loop
   }
-}// end of StoreSensorData
-//--------------------------------------------------------------------------------------------------
+}// end of storeSensorData
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write statistics and the header into the output file.
  */
-void  TKSpaceFirstOrder3DSolver::WriteOutputDataInfo()
+void KSpaceFirstOrder3DSolver::writeOutputDataInfo()
 {
   // write t_index into the output file
-  parameters.getOutputFile().writeScalarValue(parameters.getOutputFile().getRootGroup(),
-                                              kTimeIndexName,
-                                              parameters.getTimeIndex());
+  mParameters.getOutputFile().writeScalarValue(mParameters.getOutputFile().getRootGroup(),
+                                               kTimeIndexName,
+                                               mParameters.getTimeIndex());
 
   // Write scalars
-  parameters.saveScalarsToOutputFile();
-  Hdf5FileHeader& fileHeader = parameters.getFileHeader();
+  mParameters.saveScalarsToOutputFile();
+  Hdf5FileHeader& fileHeader = mParameters.getFileHeader();
 
   // Write File header
-  fileHeader.setCodeName(GetCodeName());
-  fileHeader.SetMajorFileVersion();
-  fileHeader.SetMinorFileVersion();
+  fileHeader.setCodeName(getCodeName());
+  fileHeader.setMajorFileVersion();
+  fileHeader.setMinorFileVersion();
   fileHeader.setActualCreationTime();
   fileHeader.setFileType(Hdf5FileHeader::FileType::kOutput);
   fileHeader.setHostName();
 
-  fileHeader.setMemoryConsumption(GetHostMemoryUsageInMB());
+  fileHeader.setMemoryConsumption(getHostMemoryUsage());
 
   // Stop total timer here
-  totalTime.stop();
-  fileHeader.setExecutionTimes(GetTotalTime(),
-                                    GetDataLoadTime(),
-                                    GetPreProcessingTime(),
-                                    GetSimulationTime(),
-                                    GetPostProcessingTime());
+  mTotalTime.stop();
+  fileHeader.setExecutionTimes(getTotalTime(),
+                               getDataLoadTime(),
+                               getPreProcessingTime(),
+                               getSimulationTime(),
+                               getPostProcessingTime());
 
   fileHeader.setNumberOfCores();
 
-  fileHeader.writeHeaderToOutputFile(parameters.getOutputFile());
-}// end of WriteOutputDataInfo
-//--------------------------------------------------------------------------------------------------
+  fileHeader.writeHeaderToOutputFile(mParameters.getOutputFile());
+}// end of writeOutputDataInfo
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Save checkpoint data into the checkpoint file, flush aggregated outputs into the output file.
  */
-void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
+void KSpaceFirstOrder3DSolver::saveCheckpointData()
 {
   // Create Checkpoint file
-  Hdf5File& checkpointFile = parameters.getCheckpointFile();
+  Hdf5File& checkpointFile = mParameters.getCheckpointFile();
   // if it happens and the file is opened (from the recovery, close it)
   if (checkpointFile.isOpen()) checkpointFile.close();
 
@@ -990,33 +958,33 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   Logger::flush(Logger::LogLevel::kFull);
 
   // Create the new file (overwrite the old one)
-  checkpointFile.create(parameters.getCheckpointFileName());
+  checkpointFile.create(mParameters.getCheckpointFileName());
 
   //-------------------------------------- Store Matrices ----------------------------------------//
 
   // Store all necessary matrices in Checkpoint file
-  matrixContainer.storeDataIntoCheckpointFile(checkpointFile);
+  mMatrixContainer.storeDataIntoCheckpointFile(checkpointFile);
   // Write t_index
   checkpointFile.writeScalarValue(checkpointFile.getRootGroup(),
                                   kTimeIndexName,
-                                  parameters.getTimeIndex());
+                                  mParameters.getTimeIndex());
 
-  // store basic dimension sizes (Nx, Ny, Nz) - Nt is not necessary
+  // store basic dimension sizes (nx, ny, nz) - time index is not necessary
   checkpointFile.writeScalarValue(checkpointFile.getRootGroup(),
                                   kNxName,
-                                  parameters.getFullDimensionSizes().nx);
+                                  mParameters.getFullDimensionSizes().nx);
   checkpointFile.writeScalarValue(checkpointFile.getRootGroup(),
                                   kNyName,
-                                  parameters.getFullDimensionSizes().ny);
+                                  mParameters.getFullDimensionSizes().ny);
   checkpointFile.writeScalarValue(checkpointFile.getRootGroup(),
                                   kNzName,
-                                  parameters.getFullDimensionSizes().nz);
+                                  mParameters.getFullDimensionSizes().nz);
 
   // Write checkpoint file header
-  Hdf5FileHeader checkpointFileHeader = parameters.getFileHeader();
+  Hdf5FileHeader checkpointFileHeader = mParameters.getFileHeader();
 
   checkpointFileHeader.setFileType(Hdf5FileHeader::FileType::kCheckpoint);
-  checkpointFileHeader.setCodeName(GetCodeName());
+  checkpointFileHeader.setCodeName(getCodeName());
   checkpointFileHeader.setActualCreationTime();
 
   checkpointFileHeader.writeHeaderToCheckpointFile(checkpointFile);
@@ -1025,559 +993,652 @@ void TKSpaceFirstOrder3DSolver::SaveCheckpointData()
   Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
 
   // checkpoint only if necessary (t_index > start_index), we're here one step ahead!
-  if (parameters.getTimeIndex() > parameters.getSamplingStartTimeIndex())
+  if (mParameters.getTimeIndex() > mParameters.getSamplingStartTimeIndex())
   {
     Logger::log(Logger::LogLevel::kFull,kOutFmtStoringSensorData);
     Logger::flush(Logger::LogLevel::kFull);
 
-    outputStreamContainer.checkpointStreams();
+    mOutputStreamContainer.checkpointStreams();
 
     Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
   }
 
-  outputStreamContainer.closeStreams();
-}// end of SaveCheckpointData()
-//--------------------------------------------------------------------------------------------------
+  mOutputStreamContainer.closeStreams();
+}// end of saveCheckpointData()
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
- * Compute new values of ux_sgx, uy_sgy, uz_sgz (acoustic velocity).
+ * Compute new values of acoustic velocity in all three dimensions (UxSgx, UySgy, UzSgz).
+ *
+ * <b>Matlab code:</b> \n
+ *
+ * \verbatim
+   p_l = fftn(p);
+   ux_sgx = bsxfun(@times, pml_x_sgx, ...
+       bsxfun(@times, pml_x_sgx, ux_sgx) ...
+       - dt .* rho0_sgx_inv .* real(ifftn( bsxfun(@times, ddx_k_shift_pos, kappa .* p_k) )) ...
+       );
+   uy_sgy = bsxfun(@times, pml_y_sgy, ...
+       bsxfun(@times, pml_y_sgy, uy_sgy) ...
+       - dt .* rho0_sgy_inv .* real(ifftn( bsxfun(@times, ddy_k_shift_pos, kappa .* p_k) )) ...
+       );
+   uz_sgz = bsxfun(@times, pml_z_sgz, ...
+       bsxfun(@times, pml_z_sgz, uz_sgz) ...
+       - dt .* rho0_sgz_inv .* real(ifftn( bsxfun(@times, ddz_k_shift_pos, kappa .* p_k) )) ...
+       );
+ \endverbatim
  */
-void TKSpaceFirstOrder3DSolver::ComputeVelocity()
+void KSpaceFirstOrder3DSolver::computeVelocity()
 {
-  Get_cufft_x_temp().computeR2CFft3D(Get_p());
+  // fftn(p);
+  getTempCufftX().computeR2CFft3D(getP());
+  // bsxfun(@times, ddx_k_shift_pos, kappa .* pre_result) , for all 3 dims
+  SolverCUDAKernels::ComputePressurelGradient(getTempCufftX(),
+                                              getTempCufftY(),
+                                              getTempCufftZ(),
+                                              getKappa(),
+                                              getDdxKShiftPos(),
+                                              getDdyKShiftPos(),
+                                              getDdzKShiftPos());
 
-  SolverCUDAKernels::ComputePressurelGradient(Get_cufft_x_temp(),
-                                              Get_cufft_y_temp(),
-                                              Get_cufft_z_temp(),
-                                              Get_kappa(),
-                                              Get_ddx_k_shift_pos(),
-                                              Get_ddy_k_shift_pos(),
-                                              Get_ddz_k_shift_pos());
+  // ifftn(pre_result)
+  getTempCufftX().computeC2RFft3D(getTemp1Real3D());
+  getTempCufftY().computeC2RFft3D(getTemp2Real3D());
+  getTempCufftZ().computeC2RFft3D(getTemp3Real3D());
 
-  Get_cufft_x_temp().computeC2RFft3D(Get_temp_1_real_3D());
-  Get_cufft_y_temp().computeC2RFft3D(Get_temp_2_real_3D());
-  Get_cufft_z_temp().computeC2RFft3D(Get_temp_3_real_3D());
-
-  if (parameters.getRho0ScalarFlag())
+  // bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* (pre_result))
+  if (mParameters.getRho0ScalarFlag())
   { // scalars
-    if (parameters.getNonUniformGridFlag())
+    if (mParameters.getNonUniformGridFlag())
     {
-      SolverCUDAKernels::ComputeVelocityScalarNonuniform(Get_ux_sgx(),
-                                                         Get_uy_sgy(),
-                                                         Get_uz_sgz(),
-                                                         Get_temp_1_real_3D(),
-                                                         Get_temp_2_real_3D(),
-                                                         Get_temp_3_real_3D(),
-                                                         Get_dxudxn_sgx(),
-                                                         Get_dyudyn_sgy(),
-                                                         Get_dzudzn_sgz(),
-                                                         Get_pml_x_sgx(),
-                                                         Get_pml_y_sgy(),
-                                                         Get_pml_z_sgz());
+      SolverCUDAKernels::ComputeVelocityScalarNonuniform(getUxSgx(),
+                                                         getUySgy(),
+                                                         getUzSgz(),
+                                                         getTemp1Real3D(),
+                                                         getTemp2Real3D(),
+                                                         getTemp3Real3D(),
+                                                         getDxudxnSgx(),
+                                                         getDyudynSgy(),
+                                                         getDzudznSgz(),
+                                                         getPmlXSgx(),
+                                                         getPmlYSgy(),
+                                                         getPmlZSgz());
     }
     else
     {
-      SolverCUDAKernels::ComputeVelocityScalarUniform(Get_ux_sgx(),
-                                                      Get_uy_sgy(),
-                                                      Get_uz_sgz(),
-                                                      Get_temp_1_real_3D(),
-                                                      Get_temp_2_real_3D(),
-                                                      Get_temp_3_real_3D(),
-                                                      Get_pml_x_sgx(),
-                                                      Get_pml_y_sgy(),
-                                                      Get_pml_z_sgz());
+      SolverCUDAKernels::ComputeVelocityScalarUniform(getUxSgx(),
+                                                      getUySgy(),
+                                                      getUzSgz(),
+                                                      getTemp1Real3D(),
+                                                      getTemp2Real3D(),
+                                                      getTemp3Real3D(),
+                                                      getPmlXSgx(),
+                                                      getPmlYSgy(),
+                                                      getPmlZSgz());
     }
   }
   else
   {// matrices
-    SolverCUDAKernels::ComputeVelocity(Get_ux_sgx(),
-                                       Get_uy_sgy(),
-                                       Get_uz_sgz(),
-                                       Get_temp_1_real_3D(),
-                                       Get_temp_2_real_3D(),
-                                       Get_temp_3_real_3D(),
-                                       Get_dt_rho0_sgx(),
-                                       Get_dt_rho0_sgy(),
-                                       Get_dt_rho0_sgz(),
-                                       Get_pml_x_sgx(),
-                                       Get_pml_y_sgy(),
-                                       Get_pml_z_sgz());
+    SolverCUDAKernels::ComputeVelocity(getUxSgx(),
+                                       getUySgy(),
+                                       getUzSgz(),
+                                       getTemp1Real3D(),
+                                       getTemp2Real3D(),
+                                       getTemp3Real3D(),
+                                       getDtRho0Sgx(),
+                                       getDtRho0Sgy(),
+                                       getDtRho0Sgz(),
+                                       getPmlXSgx(),
+                                       getPmlYSgy(),
+                                       getPmlZSgz());
   }
-}// end of ComputeVelocity
-//--------------------------------------------------------------------------------------------------
+}// end of computeVelocity
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
- * Compute new values for duxdx, duydy, duzdz, gradient of velocity.
+ * Compute new gradient of velocity (Duxdx, Duydy, Duzdz).
+ *
+ * <b>Matlab code:</b> \n
+ *
+ * \verbatim
+   duxdx = real(ifftn( bsxfun(@times, ddx_k_shift_neg, kappa .* fftn(ux_sgx)) ));
+   duydy = real(ifftn( bsxfun(@times, ddy_k_shift_neg, kappa .* fftn(uy_sgy)) ));
+   duzdz = real(ifftn( bsxfun(@times, ddz_k_shift_neg, kappa .* fftn(uz_sgz)) ));
+ \endverbatim
  */
-void TKSpaceFirstOrder3DSolver::ComputeGradientVelocity()
+void KSpaceFirstOrder3DSolver::computeVelocityGradient()
 {
-  Get_cufft_x_temp().computeR2CFft3D(Get_ux_sgx());
-  Get_cufft_y_temp().computeR2CFft3D(Get_uy_sgy());
-  Get_cufft_z_temp().computeR2CFft3D(Get_uz_sgz());
+  getTempCufftX().computeR2CFft3D(getUxSgx());
+  getTempCufftY().computeR2CFft3D(getUySgy());
+  getTempCufftZ().computeR2CFft3D(getUzSgz());
 
-  // calculate duxyz on uniform grid
-  SolverCUDAKernels::ComputeVelocityGradient(Get_cufft_x_temp(),
-                                             Get_cufft_y_temp(),
-                                             Get_cufft_z_temp(),
-                                             Get_kappa(),
-                                             Get_ddx_k_shift_neg(),
-                                             Get_ddy_k_shift_neg(),
-                                             Get_ddz_k_shift_neg());
+  // calculate Duxyz on uniform grid
+  SolverCUDAKernels::ComputeVelocityGradient(getTempCufftX(),
+                                             getTempCufftY(),
+                                             getTempCufftZ(),
+                                             getKappa(),
+                                             getDdxKShiftNeg(),
+                                             getDdyKShiftNeg(),
+                                             getDdzKShiftNeg());
 
-  Get_cufft_x_temp().computeC2RFft3D(Get_duxdx());
-  Get_cufft_y_temp().computeC2RFft3D(Get_duydy());
-  Get_cufft_z_temp().computeC2RFft3D(Get_duzdz());
+  getTempCufftX().computeC2RFft3D(getDuxdx());
+  getTempCufftY().computeC2RFft3D(getDuydy());
+  getTempCufftZ().computeC2RFft3D(getDuzdz());
 
   // Non-uniform grid
-  if (parameters.getNonUniformGridFlag() != 0)
+  if (mParameters.getNonUniformGridFlag() != 0)
   {
-    SolverCUDAKernels::ComputeVelocityGradientNonuniform(Get_duxdx(),
-                                                         Get_duydy(),
-                                                         Get_duzdz(),
-                                                         Get_dxudxn(),
-                                                         Get_dyudyn(),
-                                                         Get_dzudzn());
-  }// nonlinear
-}// end of ComputeGradientVelocity()
-//--------------------------------------------------------------------------------------------------
+    SolverCUDAKernels::ComputeVelocityGradientNonuniform(getDuxdx(),
+                                                         getDuydy(),
+                                                         getDuzdz(),
+                                                         getDxudxn(),
+                                                         getDyudyn(),
+                                                         getDzudzn());
+  }// non-uniform grid
+}// end of computeVelocityGradient
+//--------------------------------------------------------------------------------------------------------
 
 /**
- * Calculate new values of rhox, rhoy and rhoz for non-linear case.
+ * Calculate new values of acoustic density for non-linear case (rhoX, rhoy and rhoZ).
+ *
+ * <b>Matlab code:</b> \n
+ *
+ *\verbatim
+    rho0_plus_rho = 2 .* (rhox + rhoy + rhoz) + rho0;
+    rhox = bsxfun(@times, pml_x, bsxfun(@times, pml_x, rhox) - dt .* rho0_plus_rho .* duxdx);
+    rhoy = bsxfun(@times, pml_y, bsxfun(@times, pml_y, rhoy) - dt .* rho0_plus_rho .* duydy);
+    rhoz = bsxfun(@times, pml_z, bsxfun(@times, pml_z, rhoz) - dt .* rho0_plus_rho .* duzdz);
+ \endverbatim
  */
-void TKSpaceFirstOrder3DSolver::ComputeDensityNonliner()
+void KSpaceFirstOrder3DSolver::computeDensityNonliner()
 {
-  // Scalar
-  if (parameters.getRho0ScalarFlag())
+  // Homogenous density
+  if (mParameters.getRho0ScalarFlag())
   {
-    SolverCUDAKernels::ComputeDensityNonlinearHomogeneous(Get_rhox(),
-                                                          Get_rhoy(),
-                                                          Get_rhoz(),
-                                                          Get_pml_x(),
-                                                          Get_pml_y(),
-                                                          Get_pml_z(),
-                                                          Get_duxdx(),
-                                                          Get_duydy(),
-                                                          Get_duzdz());
+    SolverCUDAKernels::ComputeDensityNonlinearHomogeneous(getRhoX(),
+                                                          getRhoY(),
+                                                          getRhoZ(),
+                                                          getPmlX(),
+                                                          getPmlY(),
+                                                          getPmlZ(),
+                                                          getDuxdx(),
+                                                          getDuydy(),
+                                                          getDuzdz());
 }
 else
 {
-  // rho0 is a matrix
-  SolverCUDAKernels::ComputeDensityNonlinearHeterogeneous(Get_rhox(),
-                                                          Get_rhoy(),
-                                                          Get_rhoz(),
-                                                          Get_pml_x(),
-                                                          Get_pml_y(),
-                                                          Get_pml_z(),
-                                                          Get_duxdx(),
-                                                          Get_duydy(),
-                                                          Get_duzdz(),
-                                                          Get_rho0());
+  // heterogenous density
+  SolverCUDAKernels::ComputeDensityNonlinearHeterogeneous(getRhoX(),
+                                                          getRhoY(),
+                                                          getRhoZ(),
+                                                          getPmlX(),
+                                                          getPmlY(),
+                                                          getPmlZ(),
+                                                          getDuxdx(),
+                                                          getDuydy(),
+                                                          getDuzdz(),
+                                                          getRho0());
   } // end matrix
-}// end of ComputeDensityNonliner
-//--------------------------------------------------------------------------------------------------
+}// end of computeDensityNonliner
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Calculate new values of rhox, rhoy and rhoz for linear case.
+ * Calculate new values of acoustic density for linear case (rhoX, rhoy and rhoZ).
+ *
+ * <b>Matlab code:</b> \n
+ *
+ *\verbatim
+    rhox = bsxfun(@times, pml_x, bsxfun(@times, pml_x, rhox) - dt .* rho0 .* duxdx);
+    rhoy = bsxfun(@times, pml_y, bsxfun(@times, pml_y, rhoy) - dt .* rho0 .* duydy);
+    rhoz = bsxfun(@times, pml_z, bsxfun(@times, pml_z, rhoz) - dt .* rho0 .* duzdz);
+\endverbatim
  *
  */
-void TKSpaceFirstOrder3DSolver::ComputeDensityLinear()
+void KSpaceFirstOrder3DSolver::computeDensityLinear()
 {
-  // Scalar
-  if (parameters.getRho0ScalarFlag())
+  // Homogeneous acoustic density
+  if (mParameters.getRho0ScalarFlag())
   {
-    SolverCUDAKernels::ComputeDensityLinearHomogeneous(Get_rhox(),
-                                                       Get_rhoy(),
-                                                       Get_rhoz(),
-                                                       Get_pml_x(),
-                                                       Get_pml_y(),
-                                                       Get_pml_z(),
-                                                       Get_duxdx(),
-                                                       Get_duydy(),
-                                                       Get_duzdz());
+    SolverCUDAKernels::ComputeDensityLinearHomogeneous(getRhoX(),
+                                                       getRhoY(),
+                                                       getRhoZ(),
+                                                       getPmlX(),
+                                                       getPmlY(),
+                                                       getPmlZ(),
+                                                       getDuxdx(),
+                                                       getDuydy(),
+                                                       getDuzdz());
   }
   else
   {
-    // rho0 is a matrix
-    SolverCUDAKernels::ComputeDensityLinearHeterogeneous(Get_rhox(),
-                                                         Get_rhoy(),
-                                                         Get_rhoz(),
-                                                         Get_pml_x(),
-                                                         Get_pml_y(),
-                                                         Get_pml_z(),
-                                                         Get_duxdx(),
-                                                         Get_duydy(),
-                                                         Get_duzdz(),
-                                                         Get_rho0());
-  } // end matrix
-}// end of ComputeDensityLinear
-//--------------------------------------------------------------------------------------------------
+    // Heterogeneous acoustic density
+    SolverCUDAKernels::ComputeDensityLinearHeterogeneous(getRhoX(),
+                                                         getRhoY(),
+                                                         getRhoZ(),
+                                                         getPmlX(),
+                                                         getPmlY(),
+                                                         getPmlZ(),
+                                                         getDuxdx(),
+                                                         getDuydy(),
+                                                         getDuzdz(),
+                                                         getRho0());
+  } // end heterogeneous
+}// end of computeDensityLinear
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Compute acoustic pressure for non-linear case.
+ *
+ * <b>Matlab code:</b> \n
+ *
+ *\verbatim
+    case 'lossless'
+        % calculate p using a nonlinear adiabatic equation of state
+        p = c.^2 .* (rhox + rhoy + rhoz + medium.BonA .* (rhox + rhoy + rhoz).^2 ./ (2 .* rho0));
+
+    case 'absorbing'
+        % calculate p using a nonlinear absorbing equation of state
+        p = c.^2 .* (...
+            (rhox + rhoy + rhoz) ...
+            + absorb_tau .* real(ifftn( absorb_nabla1 .* fftn(rho0 .* (duxdx + duydy + duzdz)) ))...
+            - absorb_eta .* real(ifftn( absorb_nabla2 .* fftn(rhox + rhoy + rhoz) ))...
+            + medium.BonA .*(rhox + rhoy + rhoz).^2 ./ (2 .* rho0) ...
+            );
+
+ \endverbatim
  */
-void TKSpaceFirstOrder3DSolver::ComputePressureNonlinear()
+void KSpaceFirstOrder3DSolver::computePressureNonlinear()
 {
-  if (parameters.getAbsorbingFlag())
+  if (mParameters.getAbsorbingFlag())
   { // absorbing case
-    RealMatrix& rhoxyz_part = Get_temp_1_real_3D();
-    RealMatrix& BonA_part   = Get_temp_2_real_3D();
-    RealMatrix& du_part     = Get_temp_3_real_3D();
+    RealMatrix& densitySum         = getTemp1Real3D();
+    RealMatrix& nonlinearTerm      = getTemp2Real3D();
+    RealMatrix& velocitGradientSum = getTemp3Real3D();
 
-    RealMatrix& absorb_tau_temp = du_part;
-    RealMatrix& absorb_eta_temp = rhoxyz_part;
+    // reusing of the temp variables
+    RealMatrix& absorbTauTerm = velocitGradientSum;
+    RealMatrix& absorbEtaTerm = densitySum;
 
-    ComputePressurePartsNonLinear(rhoxyz_part, BonA_part, du_part);
+    computePressureTermsNonLinear(densitySum, nonlinearTerm, velocitGradientSum);
 
-    Get_cufft_x_temp().computeR2CFft3D(du_part);
-    Get_cufft_y_temp().computeR2CFft3D(rhoxyz_part);
+    getTempCufftX().computeR2CFft3D(velocitGradientSum);
+    getTempCufftY().computeR2CFft3D(densitySum);
 
-    SolverCUDAKernels::ComputeAbsorbtionTerm(Get_cufft_x_temp(),
-                                             Get_cufft_y_temp(),
-                                             Get_absorb_nabla1(),
-                                             Get_absorb_nabla2());
+    SolverCUDAKernels::ComputeAbsorbtionTerm(getTempCufftX(), getTempCufftY(), getAbsorbNabla1(), getAbsorbNabla2());
 
-    Get_cufft_x_temp().computeC2RFft3D(absorb_tau_temp);
-    Get_cufft_y_temp().computeC2RFft3D(absorb_eta_temp);
+    getTempCufftX().computeC2RFft3D(absorbTauTerm);
+    getTempCufftY().computeC2RFft3D(absorbEtaTerm);
 
-    SumPressureTermsNonlinear(absorb_tau_temp, absorb_eta_temp, BonA_part);
+    sumPressureTermsNonlinear(absorbTauTerm, absorbEtaTerm, nonlinearTerm);
   }
   else
   {
-    SumPressureNonlinearLossless();
+    sumPressureTermsNonlinearLossless();
   }
-}// end of ComputePressureNonlinear
-//--------------------------------------------------------------------------------------------------
+}// end of computePressureNonlinear
+//----------------------------------------------------------------------------------------------------------------------
 
-/*
+/**
  * Compute new p for linear case.
+ *
+ * <b>Matlab code:</b> \n
+ *
+ *\verbatim
+    case 'lossless'
+
+        % calculate p using a linear adiabatic equation of state
+        p = c.^2 .* (rhox + rhoy + rhoz);
+
+    case 'absorbing'
+
+        % calculate p using a linear absorbing equation of state
+        p = c.^2 .* ( ...
+            (rhox + rhoy + rhoz) ...
+            + absorb_tau .* real(ifftn( absorb_nabla1 .* fftn(rho0 .* (duxdx + duydy + duzdz)) )) ...
+            - absorb_eta .* real(ifftn( absorb_nabla2 .* fftn(rhox + rhoy + rhoz) )) ...
+            );
+ \endverbatim
  */
-void TKSpaceFirstOrder3DSolver::ComputePressureLinear()
+void KSpaceFirstOrder3DSolver::computePressureLinear()
 {
-  if (parameters.getAbsorbingFlag())
+  if (mParameters.getAbsorbingFlag())
   { // absorbing case
-    RealMatrix& sum_rhoxyz  = Get_temp_1_real_3D();
-    RealMatrix& sum_rho0_du = Get_temp_2_real_3D();
+    RealMatrix& densitySum           = getTemp1Real3D();
+    RealMatrix& velocityGradientTerm = getTemp2Real3D();
 
-    RealMatrix& absorb_tau_temp = Get_temp_2_real_3D();
-    RealMatrix& absorb_eta_temp = Get_temp_3_real_3D();
+    RealMatrix& absorbTauTerm    = getTemp2Real3D();
+    RealMatrix& absorbEtaTerm    = getTemp3Real3D();
 
-    ComputePressurePartsLinear(sum_rhoxyz, sum_rho0_du);
+    computePressureTermsLinear(densitySum, velocityGradientTerm);
 
-    // ifftn ( absorb_nabla1 * fftn (rho0 * (duxdx+duydy+duzdz))
-    Get_cufft_x_temp().computeR2CFft3D(sum_rho0_du);
-    Get_cufft_y_temp().computeR2CFft3D(sum_rhoxyz);
+    // ifftn ( absorbNabla1 * fftn (rho0 * (duxdx + duydy + duzdz))
+    getTempCufftX().computeR2CFft3D(velocityGradientTerm);
+    getTempCufftY().computeR2CFft3D(densitySum);
 
-    SolverCUDAKernels::ComputeAbsorbtionTerm(Get_cufft_x_temp(),
-                                             Get_cufft_y_temp(),
-                                             Get_absorb_nabla1(),
-                                             Get_absorb_nabla2());
+    SolverCUDAKernels::ComputeAbsorbtionTerm(getTempCufftX(), getTempCufftY(), getAbsorbNabla1(), getAbsorbNabla2());
 
-    Get_cufft_x_temp().computeC2RFft3D(absorb_tau_temp);
-    Get_cufft_y_temp().computeC2RFft3D(absorb_eta_temp);
+    getTempCufftX().computeC2RFft3D(absorbTauTerm);
+    getTempCufftY().computeC2RFft3D(absorbEtaTerm);
 
-    SumPressureTermsLinear(absorb_tau_temp, absorb_eta_temp, sum_rhoxyz);
+    sumPressureTermsLinear(absorbTauTerm, absorbEtaTerm, densitySum);
   }
   else
   {
     // lossless case
-    SumPressureLinearLossless();
+    sumPressureTermsLinearLossless();
   }
-}// end of ComputePressureLinear()
-//--------------------------------------------------------------------------------------------------
+}// end of computePressureLinear()
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Add velocity source to the particle velocity.
  */
-void TKSpaceFirstOrder3DSolver::AddVelocitySource()
+void KSpaceFirstOrder3DSolver::addVelocitySource()
 {
-  size_t t_index = parameters.getTimeIndex();
+  size_t timeIndex = mParameters.getTimeIndex();
 
-  if (parameters.getVelocityXSourceFlag() > t_index)
+  if (mParameters.getVelocityXSourceFlag() > timeIndex)
   {
-    SolverCUDAKernels::AddVelocitySource(Get_ux_sgx(),
-                                         Get_ux_source_input(),
-                                         Get_u_source_index(),
-                                         t_index);
+    SolverCUDAKernels::AddVelocitySource(getUxSgx(),
+                                         GetVelocityXSourceInput(),
+                                         getVelocitySourceIndex(),
+                                         timeIndex);
   }
-  if (parameters.getVelocityYSourceFlag() > t_index)
+  if (mParameters.getVelocityYSourceFlag() > timeIndex)
   {
-    SolverCUDAKernels::AddVelocitySource(Get_uy_sgy(),
-                                         Get_uy_source_input(),
-                                         Get_u_source_index(),
-                                         t_index);
+    SolverCUDAKernels::AddVelocitySource(getUySgy(),
+                                         GetVelocityYSourceInput(),
+                                         getVelocitySourceIndex(),
+                                         timeIndex);
   }
-  if (parameters.getVelocityZSourceFlag() > t_index)
+  if (mParameters.getVelocityZSourceFlag() > timeIndex)
   {
-    SolverCUDAKernels::AddVelocitySource(Get_uz_sgz(),
-                                         Get_uz_source_input(),
-                                         Get_u_source_index(),
-                                         t_index);
+    SolverCUDAKernels::AddVelocitySource(getUzSgz(),
+                                         getVelocityZSourceInput(),
+                                         getVelocitySourceIndex(),
+                                         timeIndex);
   }
-}// end of AddVelocitySource
-//--------------------------------------------------------------------------------------------------
+}// end of addVelocitySource
+//----------------------------------------------------------------------------------------------------------------------
 
 /*
  * Add in pressure source.
  */
-void TKSpaceFirstOrder3DSolver::AddPressureSource()
+void KSpaceFirstOrder3DSolver::addPressureSource()
 {
-  size_t t_index = parameters.getTimeIndex();
+  size_t timeIndex = mParameters.getTimeIndex();
 
-  if (parameters.getPressureSourceFlag() > t_index)
+  if (mParameters.getPressureSourceFlag() > timeIndex)
   {
-    SolverCUDAKernels::AddPressureSource(Get_rhox(),
-                                         Get_rhoy(),
-                                         Get_rhoz(),
-                                         Get_p_source_input(),
-                                         Get_p_source_index(),
-                                         t_index);
+    SolverCUDAKernels::AddPressureSource(getRhoX(),
+                                         getRhoY(),
+                                         getRhoZ(),
+                                         getPressureSourceInput(),
+                                         getPressureSourceIndex(),
+                                         timeIndex);
   }//
 }// end of AddPressureSource
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Calculate p0 source when necessary.
+ *
+ * <b>Matlab code:</b> \n
+ *
+ *\verbatim
+    % add the initial pressure to rho as a mass source
+    p = source.p0;
+    rhox = source.p0 ./ (3 .* c.^2);
+    rhoy = source.p0 ./ (3 .* c.^2);
+    rhoz = source.p0 ./ (3 .* c.^2);
+
+    % compute u(t = t1 + dt/2) based on the assumption u(dt/2) = -u(-dt/2)
+    % which forces u(t = t1) = 0
+    ux_sgx = dt .* rho0_sgx_inv .* real(ifftn( bsxfun(@times, ddx_k_shift_pos, kappa .* fftn(p)) )) / 2;
+    uy_sgy = dt .* rho0_sgy_inv .* real(ifftn( bsxfun(@times, ddy_k_shift_pos, kappa .* fftn(p)) )) / 2;
+    uz_sgz = dt .* rho0_sgz_inv .* real(ifftn( bsxfun(@times, ddz_k_shift_pos, kappa .* fftn(p)) )) / 2;
+ \endverbatim
  */
-void TKSpaceFirstOrder3DSolver::Calculate_p0_source()
+void KSpaceFirstOrder3DSolver::addInitialPressureSource()
 {
   // get over the scalar problem
-  bool is_c2_scalar = parameters.getC0ScalarFlag();
-  const float* c2 = (is_c2_scalar) ? nullptr : Get_c2().getDeviceData();
+  bool isSoundScalar = mParameters.getC0ScalarFlag();
+  const float* c2 = (isSoundScalar) ? nullptr : getC2().getDeviceData();
 
   //-- add the initial pressure to rho as a mass source --//
-  SolverCUDAKernels::Compute_p0_AddInitialPressure(Get_p(),
-                                                   Get_rhox(),
-                                                   Get_rhoy(),
-                                                   Get_rhoz(),
-                                                   Get_p0_source_input(),
-                                                   is_c2_scalar,
+  SolverCUDAKernels::Compute_p0_AddInitialPressure(getP(),
+                                                   getRhoX(),
+                                                   getRhoY(),
+                                                   getRhoZ(),
+                                                   getInitialPressureSourceInput(),
+                                                   isSoundScalar,
                                                    c2);
 
   //-----------------------------------------------------------------------//
   //--compute u(t = t1 + dt/2) based on the assumption u(dt/2) = -u(-dt/2)-//
   //--    which forces u(t = t1) = 0                                      -//
   //-----------------------------------------------------------------------//
-  Get_cufft_x_temp().computeR2CFft3D(Get_p());
+  getTempCufftX().computeR2CFft3D(getP());
 
-  SolverCUDAKernels::ComputePressurelGradient(Get_cufft_x_temp(),
-                                              Get_cufft_y_temp(),
-                                              Get_cufft_z_temp(),
-                                              Get_kappa(),
-                                              Get_ddx_k_shift_pos(),
-                                              Get_ddy_k_shift_pos(),
-                                              Get_ddz_k_shift_pos());
+  SolverCUDAKernels::ComputePressurelGradient(getTempCufftX(),
+                                              getTempCufftY(),
+                                              getTempCufftZ(),
+                                              getKappa(),
+                                              getDdxKShiftPos(),
+                                              getDdyKShiftPos(),
+                                              getDdzKShiftPos());
 
-  Get_cufft_x_temp().computeC2RFft3D(Get_ux_sgx());
-  Get_cufft_y_temp().computeC2RFft3D(Get_uy_sgy());
-  Get_cufft_z_temp().computeC2RFft3D(Get_uz_sgz());
+  getTempCufftX().computeC2RFft3D(getUxSgx());
+  getTempCufftY().computeC2RFft3D(getUySgy());
+  getTempCufftZ().computeC2RFft3D(getUzSgz());
 
-  if (parameters.getRho0ScalarFlag())
+  if (mParameters.getRho0ScalarFlag())
   {
-    if (parameters.getNonUniformGridFlag())
+    if (mParameters.getNonUniformGridFlag())
     { // non uniform grid, homogeneous
-      SolverCUDAKernels::Compute_p0_VelocityScalarNonUniform(Get_ux_sgx(),
-                                                             Get_uy_sgy(),
-                                                             Get_uz_sgz(),
-                                                             Get_dxudxn_sgx(),
-                                                             Get_dyudyn_sgy(),
-                                                             Get_dzudzn_sgz());
+      SolverCUDAKernels::Compute_p0_VelocityScalarNonUniform(getUxSgx(),
+                                                             getUySgy(),
+                                                             getUzSgz(),
+                                                             getDxudxnSgx(),
+                                                             getDyudynSgy(),
+                                                             getDzudznSgz());
     }
     else
     { //uniform grid, homogeneous
-      SolverCUDAKernels::Compute_p0_Velocity(Get_ux_sgx(), Get_uy_sgy(), Get_uz_sgz());
+      SolverCUDAKernels::Compute_p0_Velocity(getUxSgx(), getUySgy(), getUzSgz());
     }
   }
   else
   {
     // heterogeneous, uniform grid
     // divide the matrix by 2 and multiply with st./rho0_sg
-    SolverCUDAKernels::Compute_p0_Velocity(Get_ux_sgx(),
-                                           Get_uy_sgy(),
-                                           Get_uz_sgz(),
-                                           Get_dt_rho0_sgx(),
-                                           Get_dt_rho0_sgy(),
-                                           Get_dt_rho0_sgz());
+    SolverCUDAKernels::Compute_p0_Velocity(getUxSgx(),
+                                           getUySgy(),
+                                           getUzSgz(),
+                                           getDtRho0Sgx(),
+                                           getDtRho0Sgy(),
+                                           getDtRho0Sgz());
   }
-}// end of Calculate_p0_source
-//--------------------------------------------------------------------------------------------------
+}// end of addInitialPressureSource
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Generate kappa matrix for non-absorbing mode.
  */
-void TKSpaceFirstOrder3DSolver::GenerateKappa()
+void KSpaceFirstOrder3DSolver::generateKappa()
 {
   #pragma omp parallel
   {
-    const float dx_sq_rec = 1.0f / (parameters.getDx() * parameters.getDx());
-    const float dy_sq_rec = 1.0f / (parameters.getDy() * parameters.getDy());
-    const float dz_sq_rec = 1.0f / (parameters.getDz() * parameters.getDz());
+    const float dx2Rec = 1.0f / (mParameters.getDx() * mParameters.getDx());
+    const float dy2Rec = 1.0f / (mParameters.getDy() * mParameters.getDy());
+    const float dz2Rec = 1.0f / (mParameters.getDz() * mParameters.getDz());
 
-    const float c_ref_dt_pi = parameters.getCRef() * parameters.getDt() * float(M_PI);
+    const float cRefDtPi = mParameters.getCRef() * mParameters.getDt() * static_cast<float>(M_PI);
 
-    const float nx_rec = 1.0f / static_cast<float>(parameters.getFullDimensionSizes().nx);
-    const float ny_rec = 1.0f / static_cast<float>(parameters.getFullDimensionSizes().ny);
-    const float nz_rec = 1.0f / static_cast<float>(parameters.getFullDimensionSizes().nz);
+    const float nxRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().nx);
+    const float nyRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().ny);
+    const float nzRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().nz);
 
-    const size_t nx = parameters.getReducedDimensionSizes().nx;
-    const size_t ny = parameters.getReducedDimensionSizes().ny;
-    const size_t nz = parameters.getReducedDimensionSizes().nz;
+    const size_t nx = mParameters.getReducedDimensionSizes().nx;
+    const size_t ny = mParameters.getReducedDimensionSizes().ny;
+    const size_t nz = mParameters.getReducedDimensionSizes().nz;
 
-    float* kappa = Get_kappa().getHostData();
+    float* kappa = getKappa().getHostData();
 
     #pragma omp for schedule (static)
     for (size_t z = 0; z < nz; z++)
     {
-      const float z_f    = (float) z;
-            float z_part = 0.5f - fabs(0.5f - z_f * nz_rec );
-                  z_part = (z_part * z_part) * dz_sq_rec;
+      const float zf    = static_cast<float>(z);
+            float zPart = 0.5f - fabs(0.5f - zf * nzRec);
+                  zPart = (zPart * zPart) * dz2Rec;
 
       for (size_t y = 0; y < ny; y++)
       {
-        const float y_f    = (float) y;
-              float y_part = 0.5f - fabs(0.5f - y_f * ny_rec);
-                    y_part = (y_part * y_part) * dy_sq_rec;
+        const float yf    = static_cast<float>(y);
+              float yPart = 0.5f - fabs(0.5f - yf * nyRec);
+                    yPart = (yPart * yPart) * dy2Rec;
 
-        const float yz_part = z_part + y_part;
+        const float yzPart = zPart + yPart;
         for (size_t x = 0; x < nx; x++)
         {
-          const float x_f = (float) x;
-                float x_part = 0.5f - fabs(0.5f - x_f * nx_rec);
-                      x_part = (x_part * x_part) * dx_sq_rec;
+          const float xf = static_cast<float>(x);
+                float xPart = 0.5f - fabs(0.5f - xf * nxRec);
+                      xPart = (xPart * xPart) * dx2Rec;
 
-                float k = c_ref_dt_pi * sqrt(x_part + yz_part);
+                float k = cRefDtPi * sqrt(xPart + yzPart);
 
           // kappa element
-          kappa[(z*ny + y) * nx + x ] = (k == 0.0f) ? 1.0f : sin(k)/k;
+          kappa[(z * ny + y) * nx + x ] = (k == 0.0f) ? 1.0f : sin(k)/k;
         }//x
       }//y
     }// z
   }// parallel
-}// end of Generate_kappa
-//-------------------------------------------------------------------------------------------------
+}// end of generateKappa
+//----------------------------------------------------------------------------------------------------------------------
 
 /*
  * Generate kappa, absorb_nabla1, absorb_nabla2 for absorbing media.
  */
-void TKSpaceFirstOrder3DSolver::GenerateKappaAndNablas()
+void KSpaceFirstOrder3DSolver::generateKappaAndNablas()
 {
   #pragma omp parallel
   {
-    const float dx_sq_rec = 1.0f / (parameters.getDx() * parameters.getDx());
-    const float dy_sq_rec = 1.0f / (parameters.getDy() * parameters.getDy());
-    const float dz_sq_rec = 1.0f / (parameters.getDz() * parameters.getDz());
+    const float dxSqRec    = 1.0f / (mParameters.getDx() * mParameters.getDx());
+    const float dySqRec    = 1.0f / (mParameters.getDy() * mParameters.getDy());
+    const float dzSqRec    = 1.0f / (mParameters.getDz() * mParameters.getDz());
 
-    const float c_ref_dt_2 = parameters.getCRef() * parameters.getDt() * 0.5f;
-    const float pi_2       = float(M_PI) * 2.0f;
+    const float cRefDt2    = mParameters.getCRef() * mParameters.getDt() * 0.5f;
+    const float pi2        = static_cast<float>(M_PI) * 2.0f;
 
-    const size_t nx = parameters.getFullDimensionSizes().nx;
-    const size_t ny = parameters.getFullDimensionSizes().ny;
-    const size_t nz = parameters.getFullDimensionSizes().nz;
+    const size_t nx        = mParameters.getFullDimensionSizes().nx;
+    const size_t ny        = mParameters.getFullDimensionSizes().ny;
+    const size_t nz        = mParameters.getFullDimensionSizes().nz;
 
-    const float nx_rec   = 1.0f / (float) nx;
-    const float ny_rec   = 1.0f / (float) ny;
-    const float nz_rec   = 1.0f / (float) nz;
+    const float nxRec      = 1.0f / static_cast<float>(nx);
+    const float nyRec      = 1.0f / static_cast<float>(ny);
+    const float nzRec      = 1.0f / static_cast<float>(nz);
 
-    const size_t nxComplex  = parameters.getReducedDimensionSizes().nx;
-    const size_t nyComplex  = parameters.getReducedDimensionSizes().ny;
-    const size_t nzComplex  = parameters.getReducedDimensionSizes().nz;
+    const size_t nxComplex = mParameters.getReducedDimensionSizes().nx;
+    const size_t nyComplex = mParameters.getReducedDimensionSizes().ny;
+    const size_t nzComplex = mParameters.getReducedDimensionSizes().nz;
 
-    float* kappa            = Get_kappa().getHostData();
-    float* absorb_nabla1    = Get_absorb_nabla1().getHostData();
-    float* absorb_nabla2    = Get_absorb_nabla2().getHostData();
-    const float alpha_power = parameters.getAlphaPower();
+    float* kappa           = getKappa().getHostData();
+    float* absorbNabla1    = getAbsorbNabla1().getHostData();
+    float* absorbNabla2    = getAbsorbNabla2().getHostData();
+    const float alphaPower = mParameters.getAlphaPower();
 
     #pragma omp for schedule (static)
     for (size_t z = 0; z < nzComplex; z++)
     {
-      const float z_f    = (float) z;
-            float z_part = 0.5f - fabs(0.5f - z_f * nz_rec );
-                  z_part = (z_part * z_part) * dz_sq_rec;
+      const float zf    = static_cast<float>(z);
+            float zPart = 0.5f - fabs(0.5f - zf * nzRec);
+                  zPart = (zPart * zPart) * dzSqRec;
 
       for (size_t y = 0; y < nyComplex; y++)
       {
-        const float y_f    = (float) y;
-              float y_part = 0.5f - fabs(0.5f - y_f * ny_rec);
-                    y_part = (y_part * y_part) * dy_sq_rec;
+        const float yf    = static_cast<float>(y);
+              float yPart = 0.5f - fabs(0.5f - yf * nyRec);
+                    yPart = (yPart * yPart) * dySqRec;
 
-        const float yz_part = z_part + y_part;
+        const float yzPart = zPart + yPart;
 
         size_t i = (z * nyComplex + y) * nxComplex;
 
         for (size_t x = 0; x < nxComplex; x++)
         {
-          const float x_f    = (float) x;
-                float x_part = 0.5f - fabs(0.5f - x_f * nx_rec);
-                      x_part = (x_part * x_part) * dx_sq_rec;
+          const float xf    = static_cast<float>(x);
+                float xPart = 0.5f - fabs(0.5f - xf * nxRec);
+                      xPart = (xPart * xPart) * dxSqRec;
 
-                float  k         = pi_2 * sqrt(x_part + yz_part);
-                float  c_ref_k   = c_ref_dt_2 * k;
+                float k     = pi2 * sqrt(xPart + yzPart);
+                float cRefK = cRefDt2 * k;
 
-          absorb_nabla1[i] = pow(k, alpha_power - 2);
-          absorb_nabla2[i] = pow(k, alpha_power - 1);
+          absorbNabla1[i]   = pow(k, alphaPower - 2);
+          absorbNabla2[i]   = pow(k, alphaPower - 1);
 
-          kappa[i]         =  (c_ref_k == 0.0f) ? 1.0f : sin(c_ref_k)/c_ref_k;
+          kappa[i]          = (cRefK == 0.0f) ? 1.0f : sin(cRefK) / cRefK;
 
-          if (absorb_nabla1[i] == std::numeric_limits<float>::infinity()) absorb_nabla1[i] = 0.0f;
-          if (absorb_nabla2[i] == std::numeric_limits<float>::infinity()) absorb_nabla2[i] = 0.0f;
+          if (absorbNabla1[i] == std::numeric_limits<float>::infinity()) absorbNabla1[i] = 0.0f;
+          if (absorbNabla2[i] == std::numeric_limits<float>::infinity()) absorbNabla2[i] = 0.0f;
 
           i++;
         }//x
       }//y
     }// z
   }// parallel
-}// end of GenerateKappaAndNablas
-//--------------------------------------------------------------------------------------------------
+}// end of generateKappaAndNablas
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Generate absorb_tau and absorb_eta in for heterogenous media.
+ * Generate absorbTau and absorbEta in for heterogenous media.
  */
-void TKSpaceFirstOrder3DSolver::GenerateTauAndEta()
+void KSpaceFirstOrder3DSolver::generateTauAndEta()
 {
-  // test for scalars
-  if ((parameters.getAlphaCoeffScalarFlag()) && (parameters.getC0ScalarFlag()))
-  {
-    const float alpha_power = parameters.getAlphaPower();
-    const float tan_pi_y_2  = tan(static_cast<float> (M_PI_2) * alpha_power);
-    const float alpha_db_neper_coeff = (100.0f * pow(1.0e-6f /(2.0f * static_cast<float>(M_PI)), alpha_power)) /
-                                       (20.0f * static_cast<float>(M_LOG10E));
 
-    const float alpha_coeff_2 = 2.0f * parameters.getAlphaCoeffScalar() * alpha_db_neper_coeff;
+  if ((mParameters.getAlphaCoeffScalarFlag()) && (mParameters.getC0ScalarFlag()))
+  { // scalar values
+    const float alphaPower       = mParameters.getAlphaPower();
+    const float tanPi2AlphaPower = tan(static_cast<float> (M_PI_2) * alphaPower);
+    const float alphaNeperCoeff  = (100.0f * pow(1.0e-6f / (2.0f * static_cast<float>(M_PI)), alphaPower)) /
+                                   (20.0f * static_cast<float>(M_LOG10E));
 
-    parameters.setAbsorbTauScalar((-alpha_coeff_2) * pow(parameters.getC0Scalar(), alpha_power - 1));
-    parameters.setAbsorbEtaScalar(alpha_coeff_2  * pow(parameters.getC0Scalar(), alpha_power) * tan_pi_y_2);
+    const float alphaCoeff2      = 2.0f * mParameters.getAlphaCoeffScalar() * alphaNeperCoeff;
+
+    mParameters.setAbsorbTauScalar((-alphaCoeff2) * pow(mParameters.getC0Scalar(), alphaPower - 1));
+    mParameters.setAbsorbEtaScalar(  alphaCoeff2  * pow(mParameters.getC0Scalar(), alphaPower) * tanPi2AlphaPower);
   }
   else
   { // matrix
     #pragma omp parallel
     {
-      const size_t nx  = parameters.getFullDimensionSizes().nx;
-      const size_t ny  = parameters.getFullDimensionSizes().ny;
-      const size_t nz  = parameters.getFullDimensionSizes().nz;
+      const size_t nx  = mParameters.getFullDimensionSizes().nx;
+      const size_t ny  = mParameters.getFullDimensionSizes().ny;
+      const size_t nz  = mParameters.getFullDimensionSizes().nz;
 
-      float* absorb_tau = Get_absorb_tau().getHostData();
-      float* absorb_eta = Get_absorb_eta().getHostData();
+      float* absorbTau = getAbsorbTau().getHostData();
+      float* absorbEta = getAbsorbEta().getHostData();
 
-      const bool   alphaCoeffScalarFlag = parameters.getAlphaCoeffScalarFlag();
-      const float  alphaCoeffScalar     = (alphaCoeffScalarFlag) ? parameters.getAlphaCoeffScalar() : 0;
-      const float* alphaCoeffMatrix     = (alphaCoeffScalarFlag) ? nullptr : Get_temp_1_real_3D().getHostData();
+      const bool   alphaCoeffScalarFlag = mParameters.getAlphaCoeffScalarFlag();
+      const float  alphaCoeffScalar     = (alphaCoeffScalarFlag) ? mParameters.getAlphaCoeffScalar() : 0;
+      const float* alphaCoeffMatrix     = (alphaCoeffScalarFlag) ? nullptr : getTemp1Real3D().getHostData();
 
      // here the c2 hold just c0!
-      const bool   c0ScalarFlag = parameters.getC0ScalarFlag();
-      const float  c0Scalar     = (c0ScalarFlag) ? parameters.getC0Scalar() : 0;
-      const float* cOMatrix     = (c0ScalarFlag) ? nullptr : Get_c2().getHostData();
+      const bool   c0ScalarFlag = mParameters.getC0ScalarFlag();
+      const float  c0Scalar     = (c0ScalarFlag) ? mParameters.getC0Scalar() : 0;
+      const float* cOMatrix     = (c0ScalarFlag) ? nullptr : getC2().getHostData();
 
 
-      const float alpha_power = parameters.getAlphaPower();
-      const float tan_pi_y_2  = tan(static_cast<float>(M_PI_2) * alpha_power);
+      const float alphaPower       = mParameters.getAlphaPower();
+      const float tanPi2AlphaPower = tan(static_cast<float>(M_PI_2) * alphaPower);
 
       //alpha = 100*alpha.*(1e-6/(2*pi)).^y./
       //                  (20*log10(exp(1)));
-      const float alpha_db_neper_coeff = (100.0f * pow(1.0e-6f / (2.0f * static_cast<float>(M_PI)), alpha_power)) /
-                                         (20.0f * static_cast<float>(M_LOG10E));
+      const float alphaNeperCoeff = (100.0f * pow(1.0e-6f / (2.0f * static_cast<float>(M_PI)), alphaPower)) /
+                                    (20.0f * static_cast<float>(M_LOG10E));
 
 
       #pragma omp for schedule (static)
@@ -1588,54 +1649,53 @@ void TKSpaceFirstOrder3DSolver::GenerateTauAndEta()
           size_t i = (z * ny + y) * nx;
           for (size_t x = 0; x < nx; x++)
           {
-            const float alpha_coeff_2 = 2.0f * alpha_db_neper_coeff *
-                                        ((alphaCoeffScalarFlag) ? alphaCoeffScalar : alphaCoeffMatrix[i]);
+            const float alphaCoeff2 = 2.0f * alphaNeperCoeff *
+                                      ((alphaCoeffScalarFlag) ? alphaCoeffScalar : alphaCoeffMatrix[i]);
 
-            absorb_tau[i] = (-alpha_coeff_2) * pow((c0ScalarFlag) ? c0Scalar : cOMatrix[i], alpha_power - 1);
-            absorb_eta[i] =   alpha_coeff_2  * pow((c0ScalarFlag) ? c0Scalar : cOMatrix[i], alpha_power) * tan_pi_y_2;
+            absorbTau[i] = (-alphaCoeff2) * pow((c0ScalarFlag) ? c0Scalar : cOMatrix[i], alphaPower - 1);
+            absorbEta[i] =   alphaCoeff2  * pow((c0ScalarFlag) ? c0Scalar : cOMatrix[i], alphaPower) * tanPi2AlphaPower;
 
             i++;
           }//x
         }//y
       }// z
     }// parallel
-  } // absorb_tau and aborb_eta = matrics
-}// end of GenerateTauAndEta
-//--------------------------------------------------------------------------------------------------
+  } // matrix
+}// end of generateTauAndEta
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Prepare dt./ rho0  for non-uniform grid.
- *
  */
-void TKSpaceFirstOrder3DSolver::GenerateInitialDenisty()
+void KSpaceFirstOrder3DSolver::generateInitialDenisty()
 {
   #pragma omp parallel
   {
-    float* dt_rho0_sgx   = Get_dt_rho0_sgx().getHostData();
-    float* dt_rho0_sgy   = Get_dt_rho0_sgy().getHostData();
-    float* dt_rho0_sgz   = Get_dt_rho0_sgz().getHostData();
+    float* dtRho0Sgx   = getDtRho0Sgx().getHostData();
+    float* dtRho0Sgy   = getDtRho0Sgy().getHostData();
+    float* dtRho0Sgz   = getDtRho0Sgz().getHostData();
 
-    const float dt = parameters.getDt();
+    const float dt = mParameters.getDt();
 
-    const float* duxdxn_sgx = Get_dxudxn_sgx().getHostData();
-    const float* duydyn_sgy = Get_dyudyn_sgy().getHostData();
-    const float* duzdzn_sgz = Get_dzudzn_sgz().getHostData();
+    const float* duxdxnSgx = getDxudxnSgx().getHostData();
+    const float* duydynSgy = getDyudynSgy().getHostData();
+    const float* duzdznSgz = getDzudznSgz().getHostData();
 
-    const size_t nz = Get_dt_rho0_sgx().getDimensionSizes().nz;
-    const size_t ny = Get_dt_rho0_sgx().getDimensionSizes().ny;
-    const size_t nx = Get_dt_rho0_sgx().getDimensionSizes().nx;
+    const size_t nz = getDtRho0Sgx().getDimensionSizes().nz;
+    const size_t ny = getDtRho0Sgx().getDimensionSizes().ny;
+    const size_t nx = getDtRho0Sgx().getDimensionSizes().nx;
 
     const size_t sliceSize = (nx * ny );
 
     #pragma omp for schedule (static)
     for (size_t z = 0; z < nz; z++)
     {
-      register size_t i = z* sliceSize;
+      register size_t i = z * sliceSize;
       for (size_t y = 0; y < ny; y++)
       {
         for (size_t x = 0; x < nx; x++)
         {
-          dt_rho0_sgx[i] = (dt * duxdxn_sgx[x]) / dt_rho0_sgx[i];
+          dtRho0Sgx[i] = (dt * duxdxnSgx[x]) / dtRho0Sgx[i];
           i++;
         } // x
       } // y
@@ -1644,13 +1704,13 @@ void TKSpaceFirstOrder3DSolver::GenerateInitialDenisty()
     #pragma omp for schedule (static)
     for (size_t z = 0; z < nz; z++)
     {
-      register size_t i = z* sliceSize;
+      register size_t i = z * sliceSize;
       for (size_t y = 0; y < ny; y++)
       {
-        const float duydyn_el = duydyn_sgy[y];
+        const float duydynEl = duydynSgy[y];
         for (size_t x = 0; x < nx; x++)
         {
-          dt_rho0_sgy[i] = (dt * duydyn_el) / dt_rho0_sgy[i];
+          dtRho0Sgy[i] = (dt * duydynEl) / dtRho0Sgy[i];
           i++;
         } // x
       } // y
@@ -1660,211 +1720,185 @@ void TKSpaceFirstOrder3DSolver::GenerateInitialDenisty()
     #pragma omp for schedule (static)
     for (size_t z = 0; z < nz; z++)
     {
-      register size_t i = z* sliceSize;
-      const float duzdzn_el = duzdzn_sgz[z];
+      register size_t i = z * sliceSize;
+      const float duzdznEl = duzdznSgz[z];
       for (size_t y = 0; y < ny; y++)
       {
         for (size_t x = 0; x < nx; x++)
         {
-          dt_rho0_sgz[i] = (dt * duzdzn_el) / dt_rho0_sgz[i];
+          dtRho0Sgz[i] = (dt * duzdznEl) / dtRho0Sgz[i];
           i++;
         } // x
       } // y
     } // z
   } // parallel
-}// end of GenerateInitialDenisty
-//--------------------------------------------------------------------------------------------------
+}// end of generateInitialDenisty
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Compute c^2 on the CPU side.
  */
-void TKSpaceFirstOrder3DSolver::Compute_c2()
+void KSpaceFirstOrder3DSolver::computeC2()
 {
-  if (!parameters.getC0ScalarFlag())
+  if (!mParameters.getC0ScalarFlag())
   { // matrix
-    float* c2 =  Get_c2().getHostData();
+    float* c2 =  getC2().getHostData();
 
     #pragma omp parallel for schedule (static)
-    for (size_t i=0; i < Get_c2().size(); i++)
+    for (size_t i=0; i < getC2().size(); i++)
     {
       c2[i] = c2[i] * c2[i];
     }
   }// matrix
-}// ComputeC2
-//--------------------------------------------------------------------------------------------------
+}// computeC2
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Compute three temporary sums in the new pressure formula, non-linear absorbing case.
- *
- * @param [out] rho_part  - rhox_sgx + rhoy_sgy + rhoz_sgz
- * @param [out] BonA_part - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
- * @param [out] du_part   - rho0* (duxdx + duydy + duzdz)
- *
  */
-void TKSpaceFirstOrder3DSolver::ComputePressurePartsNonLinear(RealMatrix& rho_part,
-                                                              RealMatrix& BonA_part,
-                                                              RealMatrix& du_part)
+void KSpaceFirstOrder3DSolver::computePressureTermsNonLinear(RealMatrix& densitySum,
+                                                             RealMatrix& nonlinearTerm,
+                                                             RealMatrix& velocityGradientSum)
 {
-  const bool is_BonA_scalar = parameters.getBOnAScalarFlag();
-  const bool is_rho0_scalar = parameters.getRho0ScalarFlag();
+  const float* bOnA = (mParameters.getBOnAScalarFlag()) ? nullptr : geBOnA().getDeviceData();
+  const float* rho0 = (mParameters.getRho0ScalarFlag()) ? nullptr : getRho0().getDeviceData();
 
-  const float* BonA_data = (is_BonA_scalar) ? nullptr : Get_BonA().getDeviceData();
-  const float* rho0_data = (is_rho0_scalar) ? nullptr : Get_rho0().getDeviceData();
+  SolverCUDAKernels::ComputePressurePartsNonLinear(densitySum,
+                                                   nonlinearTerm,
+                                                   velocityGradientSum,
+                                                   getRhoX(),
+                                                   getRhoY(),
+                                                   getRhoZ(),
+                                                   getDuxdx(),
+                                                   getDuydy(),
+                                                   getDuzdz(),
+                                                   mParameters.getBOnAScalarFlag(),
+                                                   bOnA,
+                                                   mParameters.getRho0ScalarFlag(),
+                                                   rho0);
 
-  SolverCUDAKernels::ComputePressurePartsNonLinear(rho_part,
-                                                   BonA_part,
-                                                   du_part,
-                                                   Get_rhox(),
-                                                   Get_rhoy(),
-                                                   Get_rhoz(),
-                                                   Get_duxdx(),
-                                                   Get_duydy(),
-                                                   Get_duzdz(),
-                                                   is_BonA_scalar,
-                                                   BonA_data,
-                                                   is_rho0_scalar,
-                                                   rho0_data);
-
-}// end of ComputePressurePartsNonLinear
-//--------------------------------------------------------------------------------------------------
+}// end of computePressureTermsNonLinear
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Calculate two temporary sums in the new pressure formula, linear absorbing case.
- *
- * @param [out] rhoxyz_sum   -rhox_sgx + rhoy_sgy + rhoz_sgz
- * @param [out] rho0_du_sum - rho0* (duxdx + duydy + duzdz);
  */
-void TKSpaceFirstOrder3DSolver::ComputePressurePartsLinear(RealMatrix& rhoxyz_sum,
-                                                           RealMatrix& rho0_du_sum)
+void KSpaceFirstOrder3DSolver::computePressureTermsLinear(RealMatrix& densitySum,
+                                                          RealMatrix& velocityGradientSum)
 {
-  const bool   is_rho0_scalar = parameters.getRho0ScalarFlag();
-  const float* rho0_matrix    = (is_rho0_scalar) ? nullptr : Get_rho0().getDeviceData();
+  const float* rho0 = (mParameters.getRho0ScalarFlag()) ? nullptr : getRho0().getDeviceData();
 
-  SolverCUDAKernels::ComputePressurePartsLinear(rhoxyz_sum,
-                                                rho0_du_sum,
-                                                Get_rhox(),
-                                                Get_rhoy(),
-                                                Get_rhoz(),
-                                                Get_duxdx(),
-                                                Get_duydy(),
-                                                Get_duzdz(),
-                                                is_rho0_scalar,
-                                                rho0_matrix);
-}// end of ComputePressurePartsLinear
-//--------------------------------------------------------------------------------------------------
+  SolverCUDAKernels::ComputePressurePartsLinear(densitySum,
+                                                velocityGradientSum,
+                                                getRhoX(),
+                                                getRhoY(),
+                                                getRhoZ(),
+                                                getDuxdx(),
+                                                getDuydy(),
+                                                getDuzdz(),
+                                                mParameters.getRho0ScalarFlag(),
+                                                rho0);
+}// end of computePressurePartsLinear
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Sum sub-terms to calculate new pressure, non-linear case.
-
- * @param [in] absorb_tau_temp  -  tau component
- * @param [in] absorb_eta_temp  -   BonA + rho ^2 / 2 rho0  +
- *                                      (rhox_sgx + rhoy_sgy + rhoz_sgz)
- * @param [in] BonA_temp        -   rho0* (duxdx + duydy + duzdz)
  */
-void TKSpaceFirstOrder3DSolver::SumPressureTermsNonlinear(RealMatrix& absorb_tau_temp,
-                                                          RealMatrix& absorb_eta_temp,
-                                                          RealMatrix& BonA_temp)
+void KSpaceFirstOrder3DSolver::sumPressureTermsNonlinear(const RealMatrix& absorbTauTerm,
+                                                         const RealMatrix& absorbEtaTerm,
+                                                         const RealMatrix& nonlinearTerm)
 {
-  const bool is_c2_scalar      = parameters.getC0ScalarFlag();
-  const bool is_tau_eta_scalar = parameters.getC0ScalarFlag() &&
-                                 parameters.getAlphaCoeffScalarFlag();
+  const bool isC2Scalar         = mParameters.getC0ScalarFlag();
+  // in sound speed and alpha coeff are sclars, then both AbsorbTau and absorbEta must be scalar.
+  const bool areTauAndEtaScalars = mParameters.getC0ScalarFlag() && mParameters.getAlphaCoeffScalarFlag();
 
-  const float* c2_data_matrix  = (is_c2_scalar)      ? nullptr : Get_c2().getDeviceData();
-  const float* tau_data_matrix = (is_tau_eta_scalar) ? nullptr : Get_absorb_tau().getDeviceData();
-  const float* eta_data_matrix = (is_tau_eta_scalar) ? nullptr : Get_absorb_eta().getDeviceData();
+  const float* c2        = (isC2Scalar)          ? nullptr : getC2().getDeviceData();
+  const float* absorbTau = (areTauAndEtaScalars) ? nullptr : getAbsorbTau().getDeviceData();
+  const float* absorbEta = (areTauAndEtaScalars) ? nullptr : getAbsorbEta().getDeviceData();
 
-  const float* Absorb_tau_data = absorb_tau_temp.getDeviceData();
-  const float* Absorb_eta_data = absorb_eta_temp.getDeviceData();
-
-  SolverCUDAKernels::SumPressureTermsNonlinear(Get_p(),
-                                               BonA_temp,
-                                               is_c2_scalar,
-                                               c2_data_matrix,
-                                               is_tau_eta_scalar,
-                                               Absorb_tau_data,
-                                               tau_data_matrix,
-                                               Absorb_eta_data,
-                                               eta_data_matrix);
-}// end of SumPressureTermsNonlinear
-//--------------------------------------------------------------------------------------------------
+  SolverCUDAKernels::SumPressureTermsNonlinear(getP(),
+                                               nonlinearTerm,
+                                               isC2Scalar,
+                                               c2,
+                                               areTauAndEtaScalars,
+                                               absorbTauTerm.getDeviceData(),
+                                               absorbTau,
+                                               absorbEtaTerm.getDeviceData(),
+                                               absorbEta);
+}// end of sumPressureTermsNonlinear
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Sum sub-terms to calculate new pressure, linear case.
- *
- * @param [in] absorb_tau_temp - sub-term with absorb_tau
- * @param [in] absorb_eta_temp - sub-term with absorb_eta
- * @param [in] rhoxyz_sum      - rhox_sgx + rhoy_sgy + rhoz_sgz
  */
-void TKSpaceFirstOrder3DSolver::SumPressureTermsLinear(RealMatrix& absorb_tau_temp,
-                                                       RealMatrix& absorb_eta_temp,
-                                                       RealMatrix& rhoxyz_sum)
+void KSpaceFirstOrder3DSolver::sumPressureTermsLinear(const RealMatrix& absorbTauTerm,
+                                                      const RealMatrix& absorbEtaTerm,
+                                                      const RealMatrix& densitySum)
 {
-  const bool is_c2_scalar      = parameters.getC0ScalarFlag();
-  const bool is_tau_eta_scalar = parameters.getC0ScalarFlag() &&
-                                 parameters.getAlphaCoeffScalarFlag();
+  const bool isC2Scalar          = mParameters.getC0ScalarFlag();
+  const bool areTauAndEtaScalars = mParameters.getC0ScalarFlag() && mParameters.getAlphaCoeffScalarFlag();
 
-  const float* c2_data_matrix  = (is_c2_scalar)      ? nullptr : Get_c2().getDeviceData();
-  const float* tau_data_matrix = (is_tau_eta_scalar) ? nullptr : Get_absorb_tau().getDeviceData();
-  const float* eta_data_matrix = (is_tau_eta_scalar) ? nullptr : Get_absorb_eta().getDeviceData();
+  const float* c2        = (isC2Scalar)          ? nullptr : getC2().getDeviceData();
+  const float* absorbTau = (areTauAndEtaScalars) ? nullptr : getAbsorbTau().getDeviceData();
+  const float* absorbEta = (areTauAndEtaScalars) ? nullptr : getAbsorbEta().getDeviceData();
 
-  SolverCUDAKernels::SumPressureTermsLinear(Get_p(),
-                                            absorb_tau_temp,
-                                            absorb_eta_temp,
-                                            rhoxyz_sum,
-                                            is_c2_scalar,
-                                            c2_data_matrix,
-                                            is_tau_eta_scalar,
-                                            tau_data_matrix,
-                                            eta_data_matrix);
-}// end of SumPressureTermsLinear
-//--------------------------------------------------------------------------------------------------
+  SolverCUDAKernels::SumPressureTermsLinear(getP(),
+                                            absorbTauTerm,
+                                            absorbEtaTerm,
+                                            densitySum,
+                                            isC2Scalar,
+                                            c2,
+                                            areTauAndEtaScalars,
+                                            absorbTau,
+                                            absorbEta);
+}// end of sumPressureTermsLinear
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Sum sub-terms for new p, non-linear lossless case.
  */
-void TKSpaceFirstOrder3DSolver::SumPressureNonlinearLossless()
+void KSpaceFirstOrder3DSolver::sumPressureTermsNonlinearLossless()
 {
-  const bool   is_c2_scalar   = parameters.getC0ScalarFlag();
-  const bool   is_BonA_scalar = parameters.getBOnAScalarFlag();
-  const bool   is_rho0_scalar = parameters.getRho0ScalarFlag();
+  const bool   isC2Scalar   = mParameters.getC0ScalarFlag();
+  const bool   isBOnAScalar = mParameters.getBOnAScalarFlag();
+  const bool   isRho0Scalar = mParameters.getRho0ScalarFlag();
 
-  const float* c2_data_matrix   = (is_c2_scalar)   ? nullptr : Get_c2().getDeviceData();
-  const float* BonA_data_matrix = (is_BonA_scalar) ? nullptr : Get_BonA().getDeviceData();
-  const float* rho0_data_matrix = (is_rho0_scalar) ? nullptr : Get_rho0().getDeviceData();
+  const float* c2   = (isC2Scalar)   ? nullptr : getC2().getDeviceData();
+  const float* bOnA = (isBOnAScalar) ? nullptr : geBOnA().getDeviceData();
+  const float* rho0 = (isRho0Scalar) ? nullptr : getRho0().getDeviceData();
 
-  SolverCUDAKernels::SumPressureNonlinearLossless(Get_p(),
-                                                  Get_rhox(),
-                                                  Get_rhoy(),
-                                                  Get_rhoz(),
-                                                  is_c2_scalar,
-                                                  c2_data_matrix,
-                                                  is_BonA_scalar,
-                                                  BonA_data_matrix,
-                                                  is_rho0_scalar,
-                                                  rho0_data_matrix);
+  SolverCUDAKernels::SumPressureNonlinearLossless(getP(),
+                                                  getRhoX(),
+                                                  getRhoY(),
+                                                  getRhoZ(),
+                                                  isC2Scalar,
+                                                  c2,
+                                                  isBOnAScalar,
+                                                  bOnA,
+                                                  isRho0Scalar,
+                                                  rho0);
 
-}// end of SumPressureNonlinearLossless
-//--------------------------------------------------------------------------------------------------
+}// end of sumPressureTermsNonlinearLossless
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Sum sub-terms for new p, linear lossless case.
  */
-void TKSpaceFirstOrder3DSolver::SumPressureLinearLossless()
+void KSpaceFirstOrder3DSolver::sumPressureTermsLinearLossless()
 {
-  const bool  is_c2_scalar =  parameters.getC0ScalarFlag();
-  const float* c2_matrix    = (is_c2_scalar) ? nullptr : Get_c2().getDeviceData();
+  const float* c2  = (mParameters.getC0ScalarFlag()) ? nullptr : getC2().getDeviceData();
 
-  SolverCUDAKernels::SumPressureLinearLossless(Get_p(),
-                                               Get_rhox(),
-                                               Get_rhoy(),
-                                               Get_rhoz(),
-                                               is_c2_scalar,
-                                               c2_matrix);
+  SolverCUDAKernels::SumPressureLinearLossless(getP(),
+                                               getRhoX(),
+                                               getRhoY(),
+                                               getRhoZ(),
+                                               mParameters.getC0ScalarFlag(),
+                                               c2);
 
-}// end of SumPressureLinearLossless
-//--------------------------------------------------------------------------------------------------
+}// end of sumPressureTermsLinearLossless
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
@@ -1875,45 +1909,44 @@ void TKSpaceFirstOrder3DSolver::SumPressureLinearLossless()
  * uz_shifted = real(ifft(bsxfun(\@times, z_shift_neg, fft(uz_sgz, [], 3)), [], 3)); \n
  */
 
-void TKSpaceFirstOrder3DSolver::CalculateShiftedVelocity()
+void KSpaceFirstOrder3DSolver::computeShiftedVelocity()
 {
+  // uxShifted
+  getTempCufftShift().computeR2CFft1DX(getUxSgx());
+  SolverCUDAKernels::ComputeVelocityShiftInX(getTempCufftShift(), getXShiftNegR());
+  getTempCufftShift().computeC2RFft1DX(getUxShifted());
 
-  // ux_shifted
-  Get_cufft_shift_temp().computeR2CFft1DX(Get_ux_sgx());
-  SolverCUDAKernels::ComputeVelocityShiftInX(Get_cufft_shift_temp(), Get_x_shift_neg_r());
-  Get_cufft_shift_temp().computeC2RFft1DX(Get_ux_shifted());
+  // uyShifted
+  getTempCufftShift().computeR2CFft1DY(getUySgy());
+  SolverCUDAKernels::ComputeVelocityShiftInY(getTempCufftShift(), getYShiftNegR());
+  getTempCufftShift().computeC2RFft1DY(getUyShifted());
 
-  // uy_shifted
-  Get_cufft_shift_temp().computeR2CFft1DY(Get_uy_sgy());
-  SolverCUDAKernels::ComputeVelocityShiftInY(Get_cufft_shift_temp(), Get_y_shift_neg_r());
-  Get_cufft_shift_temp().computeC2RFft1DY(Get_uy_shifted());
+  // uzShifted
+  getTempCufftShift().computeR2CFft1DZ(getUzSgz());
+  SolverCUDAKernels::ComputeVelocityShiftInZ(getTempCufftShift(), getZShiftNegR());
+  getTempCufftShift().computeC2RFft1DZ(getUzShifted());
 
-  // uz_shifted
-  Get_cufft_shift_temp().computeR2CFft1DZ(Get_uz_sgz());
-  SolverCUDAKernels::ComputeVelocityShiftInZ(Get_cufft_shift_temp(), Get_z_shift_neg_r());
-  Get_cufft_shift_temp().computeC2RFft1DZ(Get_uz_shifted());
-
-}// end of CalculateShiftedVelocity
-//--------------------------------------------------------------------------------------------------
+}// end of computeShiftedVelocity
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Print progress statistics.
  */
-void TKSpaceFirstOrder3DSolver::PrintStatistics()
+void KSpaceFirstOrder3DSolver::printStatistics()
 {
-  const float  nt = (float) parameters.getNt();
-  const size_t t_index = parameters.getTimeIndex();
+  const float  nt = static_cast<float>(mParameters.getNt());
+  const size_t timeIndex = mParameters.getTimeIndex();
 
-  if (t_index > (actPercent * nt * 0.01f) )
+  if (timeIndex > (mActPercent * nt * 0.01f) )
   {
-    actPercent += parameters.getProgressPrintInterval();
+    mActPercent += mParameters.getProgressPrintInterval();
 
-    iterationTime.stop();
+    mIterationTime.stop();
 
-    const double elTime = iterationTime.getElapsedTime();
-    const double elTimeWithLegs = iterationTime.getElapsedTime() +
-                                  simulationTime.getElapsedTimeOverPreviousLegs();
-    const double toGo   = ((elTimeWithLegs / (float) (t_index + 1)) *  nt) - elTimeWithLegs;
+    const double elTime = mIterationTime.getElapsedTime();
+    const double elTimeWithLegs = mIterationTime.getElapsedTime() +
+                                  mSimulationTime.getElapsedTimeOverPreviousLegs();
+    const double toGo   = ((elTimeWithLegs / static_cast<float>((timeIndex + 1)) *  nt)) - elTimeWithLegs;
 
     struct tm* current;
     time_t now;
@@ -1922,75 +1955,69 @@ void TKSpaceFirstOrder3DSolver::PrintStatistics()
     current = localtime(&now);
 
     Logger::log(Logger::LogLevel::kBasic,
-                 kOutFmtSimulationProgress,
-                 (size_t) ((t_index) / (nt * 0.01f)),'%',
-                 elTime, toGo,
-                 current->tm_mday, current->tm_mon+1, current->tm_year-100,
-                 current->tm_hour, current->tm_min, current->tm_sec);
+                kOutFmtSimulationProgress,
+                static_cast<size_t>(((timeIndex) / (nt * 0.01f))),'%',
+                elTime, toGo,
+                current->tm_mday, current->tm_mon+1, current->tm_year-100,
+                current->tm_hour, current->tm_min, current->tm_sec);
     Logger::flush(Logger::LogLevel::kBasic);
   }
-}// end of PrintStatistics
-//--------------------------------------------------------------------------------------------------
+}// end of printStatistics
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Is time to checkpoint?
- *
- * @return true if it is necessary to stop to checkpoint
  */
-bool TKSpaceFirstOrder3DSolver::IsTimeToCheckpoint()
+bool KSpaceFirstOrder3DSolver::isTimeToCheckpoint()
 {
-  if (!parameters.isCheckpointEnabled()) return false;
+  if (!mParameters.isCheckpointEnabled()) return false;
 
-  totalTime.stop();
+  mTotalTime.stop();
 
-  return (totalTime.getElapsedTime() > static_cast<float>(parameters.getCheckpointInterval()));
-}// end of IsTimeToCheckpoint
-//--------------------------------------------------------------------------------------------------
+  return (mTotalTime.getElapsedTime() > static_cast<float>(mParameters.getCheckpointInterval()));
+}// end of isTimeToCheckpoint
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Was the loop interrupted to checkpoint?
- *
- * @return true if it is time to checkpoint
  */
-bool TKSpaceFirstOrder3DSolver::IsCheckpointInterruption() const
+bool KSpaceFirstOrder3DSolver::isCheckpointInterruption() const
 {
-  return (parameters.getTimeIndex() != parameters.getNt());
-}// end of IsCheckpointInterruption
-//--------------------------------------------------------------------------------------------------
+  return (mParameters.getTimeIndex() != mParameters.getNt());
+}// end of isCheckpointInterruption
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Check the output file has the correct format and version.
- *
- * @throw ios::failure if an error happens
  */
-void TKSpaceFirstOrder3DSolver::CheckOutputFile()
+void KSpaceFirstOrder3DSolver::checkOutputFile()
 {
   // The header has already been read
-  Hdf5FileHeader& fileHeader = parameters.getFileHeader();
-  Hdf5File&       outputFile = parameters.getOutputFile();
+  Hdf5FileHeader& fileHeader = mParameters.getFileHeader();
+  Hdf5File&       outputFile = mParameters.getOutputFile();
 
   // test file type
   if (fileHeader.getFileType() != Hdf5FileHeader::FileType::kOutput)
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadOutputFileFormat,
-                                              parameters.getOutputFileName().c_str()));
+                                             mParameters.getOutputFileName().c_str()));
   }
 
   // test file major version
   if (!fileHeader.checkMajorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMajorFileVersion,
-                                              parameters.getCheckpointFileName().c_str(),
-                                              fileHeader.getFileMajorVersion().c_str()));
+                                             mParameters.getCheckpointFileName().c_str(),
+                                             fileHeader.getFileMajorVersion().c_str()));
   }
 
   // test file minor version
   if (!fileHeader.checkMinorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMinorFileVersion,
-                                              parameters.getCheckpointFileName().c_str(),
-                                              fileHeader.getFileMinorVersion().c_str()));
+                                             mParameters.getCheckpointFileName().c_str(),
+                                             fileHeader.getFileMinorVersion().c_str()));
   }
 
   // Check dimension sizes
@@ -1999,31 +2026,28 @@ void TKSpaceFirstOrder3DSolver::CheckOutputFile()
   outputFile.readScalarValue(outputFile.getRootGroup(), kNyName, outputDimSizes.ny);
   outputFile.readScalarValue(outputFile.getRootGroup(), kNzName, outputDimSizes.nz);
 
- if (parameters.getFullDimensionSizes() != outputDimSizes)
+ if (mParameters.getFullDimensionSizes() != outputDimSizes)
  {
    throw ios::failure(Logger::formatMessage(kErrFmtOutputDimensionsNotMatch,
-                                             outputDimSizes.nx,
-                                             outputDimSizes.ny,
-                                             outputDimSizes.nz,
-                                             parameters.getFullDimensionSizes().nx,
-                                             parameters.getFullDimensionSizes().ny,
-                                             parameters.getFullDimensionSizes().nz));
+                                            outputDimSizes.nx,
+                                            outputDimSizes.ny,
+                                            outputDimSizes.nz,
+                                            mParameters.getFullDimensionSizes().nx,
+                                            mParameters.getFullDimensionSizes().ny,
+                                            mParameters.getFullDimensionSizes().nz));
  }
-}// end of CheckOutputFile
-//--------------------------------------------------------------------------------------------------
+}// end of checkOutputFile
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Check the file type and the version of the checkpoint file.
- *
- * @throw ios::failure if an error happens
- *
  */
-void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
+void KSpaceFirstOrder3DSolver::checkCheckpointFile()
 {
   // read the header and check the file version
   Hdf5FileHeader fileHeader;
-  Hdf5File&     checkpointFile = parameters.getCheckpointFile();
+  Hdf5File&      checkpointFile = mParameters.getCheckpointFile();
 
   fileHeader.readHeaderFromCheckpointFile(checkpointFile);
 
@@ -2031,23 +2055,23 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
   if (fileHeader.getFileType() != Hdf5FileHeader::FileType::kCheckpoint)
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadCheckpointFileFormat,
-                                              parameters.getCheckpointFileName().c_str()));
+                                             mParameters.getCheckpointFileName().c_str()));
   }
 
   // test file major version
   if (!fileHeader.checkMajorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMajorFileVersion,
-                                              parameters.getCheckpointFileName().c_str(),
-                                              fileHeader.getFileMajorVersion().c_str()));
+                                             mParameters.getCheckpointFileName().c_str(),
+                                             fileHeader.getFileMajorVersion().c_str()));
   }
 
   // test file minor version
   if (!fileHeader.checkMinorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMinorFileVersion,
-                                              parameters.getCheckpointFileName().c_str(),
-                                              fileHeader.getFileMinorVersion().c_str()));
+                                             mParameters.getCheckpointFileName().c_str(),
+                                             fileHeader.getFileMinorVersion().c_str()));
   }
 
   // Check dimension sizes
@@ -2056,41 +2080,38 @@ void TKSpaceFirstOrder3DSolver::CheckCheckpointFile()
   checkpointFile.readScalarValue(checkpointFile.getRootGroup(), kNyName, checkpointDimSizes.ny);
   checkpointFile.readScalarValue(checkpointFile.getRootGroup(), kNzName, checkpointDimSizes.nz);
 
- if (parameters.getFullDimensionSizes() != checkpointDimSizes)
+ if (mParameters.getFullDimensionSizes() != checkpointDimSizes)
  {
    throw ios::failure(Logger::formatMessage(kErrFmtCheckpointDimensionsNotMatch,
-                                             checkpointDimSizes.nx,
-                                             checkpointDimSizes.ny,
-                                             checkpointDimSizes.nz,
-                                             parameters.getFullDimensionSizes().nx,
-                                             parameters.getFullDimensionSizes().ny,
-                                             parameters.getFullDimensionSizes().nz));
+                                            checkpointDimSizes.nx,
+                                            checkpointDimSizes.ny,
+                                            checkpointDimSizes.nz,
+                                            mParameters.getFullDimensionSizes().nx,
+                                            mParameters.getFullDimensionSizes().ny,
+                                            mParameters.getFullDimensionSizes().nz));
  }
-}// end of CheckCheckpointFile
-//--------------------------------------------------------------------------------------------------
+}// end of checkCheckpointFile
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Restore cumulated elapsed time from the output file.  Open the header, read this and store
- * into TMPI_Time classes
- *
- * @param [in] outputFile - Output file
+ * Restore cumulated elapsed time from the output file.
  */
-void TKSpaceFirstOrder3DSolver::LoadElapsedTimeFromOutputFile(Hdf5File& outputFile)
+void KSpaceFirstOrder3DSolver::loadElapsedTimeFromOutputFile()
 {
   double totalTime, dataLoadTime, preProcessingTime, simulationTime, postProcessingTime;
 
   // Get execution times stored in the output file header
-  parameters.getFileHeader().getExecutionTimes(totalTime,
-                                               dataLoadTime,
-                                               preProcessingTime,
-                                               simulationTime,
-                                               postProcessingTime);
+  mParameters.getFileHeader().getExecutionTimes(totalTime,
+                                                dataLoadTime,
+                                                preProcessingTime,
+                                                simulationTime,
+                                                postProcessingTime);
 
-  this->totalTime.SetElapsedTimeOverPreviousLegs(totalTime);
-  this->dataLoadTime.SetElapsedTimeOverPreviousLegs(dataLoadTime);
-  this->preProcessingTime.SetElapsedTimeOverPreviousLegs(preProcessingTime);
-  this->simulationTime.SetElapsedTimeOverPreviousLegs(simulationTime);
-  this->postProcessingTime.SetElapsedTimeOverPreviousLegs(postProcessingTime);
+  mTotalTime.SetElapsedTimeOverPreviousLegs(totalTime);
+  mDataLoadTime.SetElapsedTimeOverPreviousLegs(dataLoadTime);
+  mPreProcessingTime.SetElapsedTimeOverPreviousLegs(preProcessingTime);
+  mSimulationTime.SetElapsedTimeOverPreviousLegs(simulationTime);
+  mPostProcessingTime.SetElapsedTimeOverPreviousLegs(postProcessingTime);
 
-}// end of LoadElapsedTimeFromOutputFile
-//--------------------------------------------------------------------------------------------------
+}// end of loadElapsedTimeFromOutputFile
+//----------------------------------------------------------------------------------------------------------------------

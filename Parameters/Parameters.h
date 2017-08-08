@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        08 December 2011, 16:34 (created)      \n
- *              20 July     2017, 17:01 (revised)
+ *              08 August   2017, 13:41 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -572,7 +572,10 @@ class Parameters
      * @brief  Is --u_non_staggered_raw set?
      * @return True if the flag is set.
      */
-    bool getStoreVelocityNonStaggeredRaw() const {return mCommandLineParameters.getStoreVelocityNonStaggeredRawFlag();};
+    bool getStoreVelocityNonStaggeredRawFlag () const
+    {
+      return mCommandLineParameters.getStoreVelocityNonStaggeredRawFlag();
+    };
     /**
      * @brief  Is --u_rms set?
      * @return True if the flag is set.

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        20 July     2017, 14:42 (created) \n
- *              21 July     2017, 14:05 (revised)
+ *              08 July     2017, 13:38 (revised)
  *
  * @section Hdf5FileHeader HDF5 File Header Structure
  *
@@ -249,14 +249,14 @@ class Hdf5FileHeader
     };
 
     /// Set major file version.
-    void SetMajorFileVersion()
+    void setMajorFileVersion()
     {
       mHeaderValues[FileHeaderItems::kMajorVersion] = getFileMajorVersion();
     };
 
 
     /// Set minor file version.
-    void SetMinorFileVersion()
+    void setMinorFileVersion()
     {
       mHeaderValues[FileHeaderItems::kMinorVersion] = getFileMinorVersion();
     };

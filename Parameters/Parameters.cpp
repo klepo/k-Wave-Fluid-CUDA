@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2012, 13:39 (created) \n
- *              20 July      2017, 14:23 (revised)
+ *              08 August    2017, 13:41 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -260,7 +260,7 @@ void Parameters::readScalarsFromInputFile()
     mSensorMaskIndexSize = mInputFile.getDatasetSize(rootGroup, kSensorMaskIndexName);
 
     //if -u_non_staggered_raw enabled, throw an error - not supported
-    if (getStoreVelocityNonStaggeredRaw())
+    if (getStoreVelocityNonStaggeredRawFlag())
     {
       throw ios::failure(kErrFmtNonStaggeredVelocityNotSupportedFileVersion);
     }
@@ -522,7 +522,7 @@ Parameters::Parameters()
     mRho0SgxScalar(0.0f),   mRho0SgyScalar(0.0f), mRho0SgzScalar(0.0f),
     mNonUniformGridFlag(0), mAbsorbingFlag(0), mNonLinearFlag(0),
     mAlphaCoeffScalarFlag(false), mAlphaCoeffScalar(0.0f), mAlphaPower(0.0f),
-    mAbsorbEtaScalar(0.0f), mAbsorbTauScalar (0.0f),
+    mAbsorbEtaScalar(0.0f), mAbsorbTauScalar(0.0f),
     mBOnAScalarFlag(false), mBOnAScalar (0.0f),
     mPmlXSize(0), mPmlYSize(0), mPmlZSize(0),
     mPmlXAlpha(0.0f), mPmlYAlpha(0.0f), mPmlZAlpha(0.0f),

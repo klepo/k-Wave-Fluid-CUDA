@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        04 December  2014, 11:41 (created) \n
- *              21 July      2017, 16:48 (revised)
+ *              08 August    2017, 13:38 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -130,7 +130,7 @@ void OutputStreamContainer::addStreams(MatrixContainer& matrixContainer)
             = createNewOutputStream(matrixContainer, MatrixIdx::kUzSgz, kUzName, ReductionOp::kNone);
   }
 
-  if (params.getStoreVelocityNonStaggeredRaw())
+  if (params.getStoreVelocityNonStaggeredRawFlag())
   {
     mContainer[OutputStreamIdx::kVelocityXNonStaggeredRaw]
             = createNewOutputStream(matrixContainer, MatrixIdx::kUxShifted, kUxNonStaggeredName, ReductionOp::kNone);

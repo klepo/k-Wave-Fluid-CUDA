@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2012, 10:57 (created) \n
- *              17 July     2017, 16:28 (revised)
+ *              08 July     2017, 13:39 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -744,11 +744,11 @@ using std::string;
 int main(int argc, char** argv)
 {
   // Create k-Space solver
-  TKSpaceFirstOrder3DSolver KSpaceSolver;
+  KSpaceFirstOrder3DSolver KSpaceSolver;
 
   // print header
   Logger::log(Logger::LogLevel::kBasic, kOutFmtFirstSeparator);
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtCodeName, KSpaceSolver.GetCodeName().c_str());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtCodeName, KSpaceSolver.getCodeName().c_str());
   Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
 
   // Create parameters and parse command line
@@ -765,7 +765,7 @@ int main(int argc, char** argv)
     // When we know the GPU, we can print out the code version
     if (params.isPrintVersionOnly())
     {
-      KSpaceSolver.PrintFullNameCodeAndLicense();
+      KSpaceSolver.printFullCodeNameAndLicense();
       return EXIT_SUCCESS;
     }
   }
@@ -776,7 +776,7 @@ int main(int argc, char** argv)
     // and all GPUs are busy
     if (params.isPrintVersionOnly())
     {
-      KSpaceSolver.PrintFullNameCodeAndLicense();
+      KSpaceSolver.printFullCodeNameAndLicense();
     }
 
     if (!params.isPrintVersionOnly())
@@ -799,7 +799,7 @@ int main(int argc, char** argv)
   //-------------- Allocate memory----------------//
   try
   {
-    KSpaceSolver.AllocateMemory();
+    KSpaceSolver.allocateMemory();
   }
   catch (const std::bad_alloc& e)
   {
@@ -817,7 +817,7 @@ int main(int argc, char** argv)
   //-------------- Load input data ----------------//
   try
   {
-    KSpaceSolver.LoadInputData();
+    KSpaceSolver.loadInputData();
   }
   catch (const std::ios::failure& e)
   {
@@ -834,7 +834,7 @@ int main(int argc, char** argv)
     Logger::errorAndTerminate(Logger::wordWrapString(ErrorMessage, kErrFmtPathDelimiters, 13).c_str());
   }
 
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, KSpaceSolver.GetDataLoadTime());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, KSpaceSolver.getDataLoadTime());
 
 
   if (params.getTimeIndex() > 0)
@@ -847,23 +847,23 @@ int main(int argc, char** argv)
   // start computation
   Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
   // exception are caught inside due to different log formats
-  KSpaceSolver.Compute();
+  KSpaceSolver.compute();
 
 
 
   // summary
   Logger::log(Logger::LogLevel::kBasic, kOutFmtSummaryHeader);
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtHostMemoryUsage,   KSpaceSolver.GetHostMemoryUsageInMB());
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceMemoryUsage, KSpaceSolver.GetDeviceMemoryUsageInMB());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtHostMemoryUsage,   KSpaceSolver.getHostMemoryUsage());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceMemoryUsage, KSpaceSolver.getDeviceMemoryUsage());
 
 Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
 
 // Elapsed Time time
-if (KSpaceSolver.GetCumulatedTotalTime() != KSpaceSolver.GetTotalTime())
+if (KSpaceSolver.getCumulatedTotalTime() != KSpaceSolver.getTotalTime())
   {
-    Logger::log(Logger::LogLevel::kBasic, kOutFmtLegExecutionTime, KSpaceSolver.GetTotalTime());
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtLegExecutionTime, KSpaceSolver.getTotalTime());
   }
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtTotalExecutionTime, KSpaceSolver.GetCumulatedTotalTime());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtTotalExecutionTime, KSpaceSolver.getCumulatedTotalTime());
 
 
   // end of computation
