@@ -1,5 +1,5 @@
 /**
- * @file        SolverCUDAKernels.cuh
+ * @file        SolverCudaKernels.cuh
  *
  * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              10 August   2017, 15:22 (revised)
+ *              10 August   2017, 16:41 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox

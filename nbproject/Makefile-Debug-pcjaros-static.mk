@@ -41,7 +41,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/Hdf5/Hdf5File.o \
 	${OBJECTDIR}/Hdf5/Hdf5FileHeader.o \
 	${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o \
-	${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o \
+	${OBJECTDIR}/KSpaceSolver/SolverCudaKernels.o \
 	${OBJECTDIR}/Logger/Logger.o \
 	${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o \
 	${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o \
@@ -123,9 +123,9 @@ ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o: KSpaceSolver/KSpaceFirstOr
 	${MKDIR} -p ${OBJECTDIR}/KSpaceSolver
 	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o KSpaceSolver/KSpaceFirstOrder3DSolver.cpp
 
-${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o: KSpaceSolver/SolverCUDAKernels.cu
+${OBJECTDIR}/KSpaceSolver/SolverCudaKernels.o: KSpaceSolver/SolverCudaKernels.cu
 	${MKDIR} -p ${OBJECTDIR}/KSpaceSolver
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o KSpaceSolver/SolverCUDAKernels.cu
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/KSpaceSolver/SolverCudaKernels.o KSpaceSolver/SolverCudaKernels.cu
 
 ${OBJECTDIR}/Logger/Logger.o: Logger/Logger.cpp
 	${MKDIR} -p ${OBJECTDIR}/Logger

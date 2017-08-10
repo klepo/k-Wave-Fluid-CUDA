@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July      2012, 10:27 (created)\n
- *              10 August    2017, 15:30 (revised)
+ *              10 August    2017, 16:42 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -44,7 +44,7 @@
 
 #include <Utils/TimeMeasure.h>
 
-#include <KSpaceSolver/SolverCUDAKernels.cuh>
+#include <KSpaceSolver/SolverCudaKernels.cuh>
 
 
 /**

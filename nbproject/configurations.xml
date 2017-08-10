@@ -24,8 +24,8 @@
                    projectFiles="true">
       <itemPath>KSpaceSolver/KSpaceFirstOrder3DSolver.cpp</itemPath>
       <itemPath>KSpaceSolver/KSpaceFirstOrder3DSolver.h</itemPath>
-      <itemPath>KSpaceSolver/SolverCUDAKernels.cu</itemPath>
-      <itemPath>KSpaceSolver/SolverCUDAKernels.cuh</itemPath>
+      <itemPath>KSpaceSolver/SolverCudaKernels.cu</itemPath>
+      <itemPath>KSpaceSolver/SolverCudaKernels.cuh</itemPath>
     </logicalFolder>
     <logicalFolder name="Logger" displayName="Logger" projectFiles="true">
       <itemPath>Logger/ErrorMessages.h</itemPath>
@@ -47,6 +47,8 @@
       <itemPath>MatrixClasses/BaseMatrix.h</itemPath>
       <itemPath>MatrixClasses/ComplexMatrix.cpp</itemPath>
       <itemPath>MatrixClasses/ComplexMatrix.h</itemPath>
+      <itemPath>MatrixClasses/CufftComplexMatrix.cpp</itemPath>
+      <itemPath>MatrixClasses/CufftComplexMatrix.h</itemPath>
       <itemPath>MatrixClasses/IndexMatrix.cpp</itemPath>
       <itemPath>MatrixClasses/IndexMatrix.h</itemPath>
       <itemPath>MatrixClasses/RealMatrix.cpp</itemPath>
@@ -73,8 +75,6 @@
       <itemPath>Parameters/CudaDeviceConstants.cuh</itemPath>
       <itemPath>Parameters/CudaParameters.cpp</itemPath>
       <itemPath>Parameters/CudaParameters.h</itemPath>
-      <itemPath>MatrixClasses/CufftComplexMatrix.cpp</itemPath>
-      <itemPath>MatrixClasses/CufftComplexMatrix.h</itemPath>
       <itemPath>Parameters/Parameters.cpp</itemPath>
       <itemPath>Parameters/Parameters.h</itemPath>
     </logicalFolder>
@@ -106,7 +106,6 @@
     <itemPath>main.cpp</itemPath>
   </logicalFolder>
   <sourceRootList>
-    <Elem>CUDA</Elem>
     <Elem>Hdf5</Elem>
     <Elem>KSpaceSolver</Elem>
     <Elem>MatrixClasses</Elem>
@@ -161,16 +160,6 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2  -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 -lineinfo</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Hdf5/Hdf5FileHeader.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="Hdf5/Hdf5FileHeader.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -190,6 +179,10 @@
       </item>
       <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Hdf5/Hdf5FileHeader.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
             tool="1"
@@ -200,9 +193,9 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cu" ex="false" tool="1" flavor2="0">
+      <item path="KSpaceSolver/SolverCudaKernels.cu" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cuh" ex="false" tool="3" flavor2="0">
+      <item path="KSpaceSolver/SolverCudaKernels.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Logger/ErrorMessages.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -359,16 +352,6 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 -lineinfo</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Hdf5/Hdf5FileHeader.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="Hdf5/Hdf5FileHeader.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -388,6 +371,10 @@
       </item>
       <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Hdf5/Hdf5FileHeader.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
             tool="1"
@@ -398,9 +385,9 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cu" ex="false" tool="1" flavor2="8">
+      <item path="KSpaceSolver/SolverCudaKernels.cu" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cuh" ex="false" tool="3" flavor2="0">
+      <item path="KSpaceSolver/SolverCudaKernels.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Logger/ErrorMessages.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -557,16 +544,6 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp" -G -lineinfo</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Hdf5/Hdf5FileHeader.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="Hdf5/Hdf5FileHeader.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -586,6 +563,10 @@
       </item>
       <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Hdf5/Hdf5FileHeader.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
             tool="1"
@@ -596,9 +577,9 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cu" ex="false" tool="1" flavor2="8">
+      <item path="KSpaceSolver/SolverCudaKernels.cu" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cuh" ex="false" tool="3" flavor2="0">
+      <item path="KSpaceSolver/SolverCudaKernels.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Logger/ErrorMessages.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -754,16 +735,6 @@
           <commandLine>-Xcompiler="-g3 -gdwarf-2  -Wall -fopenmp" -G -lineinfo</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Hdf5/Hdf5FileHeader.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="Hdf5/Hdf5FileHeader.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -783,6 +754,10 @@
       </item>
       <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Hdf5/Hdf5FileHeader.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
             tool="1"
@@ -793,9 +768,9 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cu" ex="false" tool="1" flavor2="8">
+      <item path="KSpaceSolver/SolverCudaKernels.cu" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cuh" ex="false" tool="3" flavor2="0">
+      <item path="KSpaceSolver/SolverCudaKernels.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Logger/ErrorMessages.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -953,16 +928,6 @@
           <commandLine>-Xcompiler="-Wall -fopenmp -mavx" -arch=compute_52 -code=sm_52</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Hdf5/Hdf5FileHeader.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="Hdf5/Hdf5FileHeader.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -982,6 +947,10 @@
       </item>
       <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Hdf5/Hdf5FileHeader.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
             tool="1"
@@ -992,9 +961,9 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cu" ex="false" tool="1" flavor2="8">
+      <item path="KSpaceSolver/SolverCudaKernels.cu" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cuh" ex="false" tool="3" flavor2="0">
+      <item path="KSpaceSolver/SolverCudaKernels.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Logger/ErrorMessages.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -1150,16 +1119,6 @@
           <commandLine>-Xcompiler="-Wall -O3 -fopenmp -mavx" -arch=compute_52 -code=sm_52</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Hdf5/Hdf5FileHeader.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="Hdf5/Hdf5FileHeader.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -1179,6 +1138,10 @@
       </item>
       <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Hdf5/Hdf5FileHeader.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
             tool="1"
@@ -1189,9 +1152,9 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cu" ex="false" tool="1" flavor2="8">
+      <item path="KSpaceSolver/SolverCudaKernels.cu" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cuh" ex="false" tool="3" flavor2="0">
+      <item path="KSpaceSolver/SolverCudaKernels.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Logger/ErrorMessages.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -1347,16 +1310,6 @@
           <commandLine>-Xcompiler="-Wall -fopenmp "</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Hdf5/Hdf5FileHeader.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="Hdf5/Hdf5FileHeader.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -1376,6 +1329,10 @@
       </item>
       <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Hdf5/Hdf5FileHeader.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
             tool="1"
@@ -1386,9 +1343,9 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cu" ex="false" tool="1" flavor2="8">
+      <item path="KSpaceSolver/SolverCudaKernels.cu" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cuh" ex="false" tool="3" flavor2="0">
+      <item path="KSpaceSolver/SolverCudaKernels.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Logger/ErrorMessages.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -1543,16 +1500,6 @@
           <commandLine>-Xcompiler="-Wall -O3 -fopenmp"</commandLine>
         </linkerTool>
       </compileType>
-      <item path="Hdf5/Hdf5FileHeader.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="Hdf5/Hdf5FileHeader.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
       </item>
       <item path="Containers/MatrixContainer.h" ex="false" tool="3" flavor2="0">
@@ -1572,6 +1519,10 @@
       </item>
       <item path="Hdf5/Hdf5File.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Hdf5/Hdf5FileHeader.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
             ex="false"
             tool="1"
@@ -1582,9 +1533,9 @@
             tool="3"
             flavor2="0">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cu" ex="false" tool="1" flavor2="8">
+      <item path="KSpaceSolver/SolverCudaKernels.cu" ex="false" tool="1" flavor2="8">
       </item>
-      <item path="KSpaceSolver/SolverCUDAKernels.cuh" ex="false" tool="3" flavor2="0">
+      <item path="KSpaceSolver/SolverCudaKernels.cuh" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Logger/ErrorMessages.h" ex="false" tool="3" flavor2="0">
       </item>
