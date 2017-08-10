@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2011, 13:10 (created) \n
- *              19 July      2017, 12:15 (revised)
+ *              10 August    2017, 15:32 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -463,7 +463,7 @@ void CufftComplexMatrix::computeR2CFft1DY(RealMatrix& inMatrix)
                 static_cast<unsigned int>(inMatrix.getDimensionSizes().ny),
                 static_cast<unsigned int>(inMatrix.getDimensionSizes().nz));
 
-  SolverCUDAKernels::TrasposeReal3DMatrixXY<SolverCUDAKernels::TransposePadding::kOutput>
+  SolverCudaKernels::trasposeReal3DMatrixXY<SolverCudaKernels::TransposePadding::kOutput>
                                            (mDeviceData,
                                             inMatrix.getDeviceData(),
                                             dimSizes);
@@ -489,7 +489,7 @@ void CufftComplexMatrix::computeR2CFft1DZ(RealMatrix& inMatrix)
                 static_cast<unsigned int>(inMatrix.getDimensionSizes().ny),
                 static_cast<unsigned int>(inMatrix.getDimensionSizes().nz));
 
-  SolverCUDAKernels::TrasposeReal3DMatrixXZ<SolverCUDAKernels::TransposePadding::kOutput>
+  SolverCudaKernels::trasposeReal3DMatrixXZ<SolverCudaKernels::TransposePadding::kOutput>
                                            (mDeviceData,
                                             inMatrix.getDeviceData(),
                                             dimSizes);
@@ -539,7 +539,7 @@ void CufftComplexMatrix::computeC2RFft1DY(RealMatrix& outMatrix)
                 static_cast<unsigned int>(outMatrix.getDimensionSizes().nx),
                 static_cast<unsigned int>(outMatrix.getDimensionSizes().nz));
 
-  SolverCUDAKernels::TrasposeReal3DMatrixXY<SolverCUDAKernels::TransposePadding::kInput>
+  SolverCudaKernels::trasposeReal3DMatrixXY<SolverCudaKernels::TransposePadding::kInput>
                                            (outMatrix.getDeviceData(),
                                             mDeviceData,
                                             dimSizes);
@@ -566,7 +566,7 @@ void CufftComplexMatrix::computeC2RFft1DZ(RealMatrix& outMatrix)
                 static_cast<unsigned int>(outMatrix.getDimensionSizes().ny),
                 static_cast<unsigned int>(outMatrix.getDimensionSizes().nx));
 
-  SolverCUDAKernels::TrasposeReal3DMatrixXZ<SolverCUDAKernels::TransposePadding::kInput>
+  SolverCudaKernels::trasposeReal3DMatrixXZ<SolverCudaKernels::TransposePadding::kInput>
                                            (outMatrix.getDeviceData(),
                                             getDeviceData(),
                                             DimSizes);

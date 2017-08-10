@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July      2012, 10:27 (created)\n
- *              08 August    2017, 11:37 (revised)
+ *              10 August    2017, 15:27 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -516,7 +516,7 @@ void KSpaceFirstOrder3DSolver::printFullCodeNameAndLicense() const
   {
     Logger::log(Logger::LogLevel::kBasic,
                 kOutFmtCudaCodeArch,
-                SolverCUDAKernels::GetCUDACodeVersion() / 10.f);
+                SolverCudaKernels::getCudaCodeVersion() / 10.f);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtCudaDevice, cudaParameters.getDeviceIdx());
 
@@ -770,10 +770,10 @@ void KSpaceFirstOrder3DSolver::computeMainLoop()
     // add in the transducer source term (t = t1) to ux
     if (mParameters.getTransducerSourceFlag() > timeIndex)
     {
-      SolverCUDAKernels::AddTransducerSource(getUxSgx(),
+      SolverCudaKernels::addTransducerSource(getUxSgx(),
                                              getVelocitySourceIndex(),
-                                             getDelayMask(),
-                                             getTransducerSourceInput());
+                                             getTransducerSourceInput(),
+                                             getDelayMask());
     }
 
     // compute gradient of velocity
@@ -1034,13 +1034,13 @@ void KSpaceFirstOrder3DSolver::computeVelocity()
   // fftn(p);
   getTempCufftX().computeR2CFft3D(getP());
   // bsxfun(@times, ddx_k_shift_pos, kappa .* pre_result) , for all 3 dims
-  SolverCUDAKernels::ComputePressurelGradient(getTempCufftX(),
-                                              getTempCufftY(),
-                                              getTempCufftZ(),
-                                              getKappa(),
-                                              getDdxKShiftPos(),
-                                              getDdyKShiftPos(),
-                                              getDdzKShiftPos());
+  SolverCudaKernels::computePressureGradient(getTempCufftX(),
+                                             getTempCufftY(),
+                                             getTempCufftZ(),
+                                             getKappa(),
+                                             getDdxKShiftPos(),
+                                             getDdyKShiftPos(),
+                                             getDdzKShiftPos());
 
   // ifftn(pre_result)
   getTempCufftX().computeC2RFft3D(getTemp1Real3D());
@@ -1052,35 +1052,35 @@ void KSpaceFirstOrder3DSolver::computeVelocity()
   { // scalars
     if (mParameters.getNonUniformGridFlag())
     {
-      SolverCUDAKernels::ComputeVelocityScalarNonuniform(getUxSgx(),
-                                                         getUySgy(),
-                                                         getUzSgz(),
-                                                         getTemp1Real3D(),
-                                                         getTemp2Real3D(),
-                                                         getTemp3Real3D(),
-                                                         getDxudxnSgx(),
-                                                         getDyudynSgy(),
-                                                         getDzudznSgz(),
-                                                         getPmlXSgx(),
-                                                         getPmlYSgy(),
-                                                         getPmlZSgz());
+      SolverCudaKernels::computeVelocityHomogeneousNonuniform(getUxSgx(),
+                                                              getUySgy(),
+                                                              getUzSgz(),
+                                                              getTemp1Real3D(),
+                                                              getTemp2Real3D(),
+                                                              getTemp3Real3D(),
+                                                              getDxudxnSgx(),
+                                                              getDyudynSgy(),
+                                                              getDzudznSgz(),
+                                                              getPmlXSgx(),
+                                                              getPmlYSgy(),
+                                                              getPmlZSgz());
     }
     else
     {
-      SolverCUDAKernels::ComputeVelocityScalarUniform(getUxSgx(),
-                                                      getUySgy(),
-                                                      getUzSgz(),
-                                                      getTemp1Real3D(),
-                                                      getTemp2Real3D(),
-                                                      getTemp3Real3D(),
-                                                      getPmlXSgx(),
-                                                      getPmlYSgy(),
-                                                      getPmlZSgz());
+      SolverCudaKernels::computeVelocityHomogeneousUniform(getUxSgx(),
+                                                           getUySgy(),
+                                                           getUzSgz(),
+                                                           getTemp1Real3D(),
+                                                           getTemp2Real3D(),
+                                                           getTemp3Real3D(),
+                                                           getPmlXSgx(),
+                                                           getPmlYSgy(),
+                                                           getPmlZSgz());
     }
   }
   else
   {// matrices
-    SolverCUDAKernels::ComputeVelocity(getUxSgx(),
+    SolverCudaKernels::computeVelocity(getUxSgx(),
                                        getUySgy(),
                                        getUzSgz(),
                                        getTemp1Real3D(),
@@ -1115,7 +1115,7 @@ void KSpaceFirstOrder3DSolver::computeVelocityGradient()
   getTempCufftZ().computeR2CFft3D(getUzSgz());
 
   // calculate Duxyz on uniform grid
-  SolverCUDAKernels::ComputeVelocityGradient(getTempCufftX(),
+  SolverCudaKernels::computeVelocityGradient(getTempCufftX(),
                                              getTempCufftY(),
                                              getTempCufftZ(),
                                              getKappa(),
@@ -1130,12 +1130,12 @@ void KSpaceFirstOrder3DSolver::computeVelocityGradient()
   // Non-uniform grid
   if (mParameters.getNonUniformGridFlag() != 0)
   {
-    SolverCUDAKernels::ComputeVelocityGradientNonuniform(getDuxdx(),
-                                                         getDuydy(),
-                                                         getDuzdz(),
-                                                         getDxudxn(),
-                                                         getDyudyn(),
-                                                         getDzudzn());
+    SolverCudaKernels::computeVelocityGradientShiftNonuniform(getDuxdx(),
+                                                              getDuydy(),
+                                                              getDuzdz(),
+                                                              getDxudxn(),
+                                                              getDyudyn(),
+                                                              getDzudzn());
   }// non-uniform grid
 }// end of computeVelocityGradient
 //--------------------------------------------------------------------------------------------------------
@@ -1154,33 +1154,18 @@ void KSpaceFirstOrder3DSolver::computeVelocityGradient()
  */
 void KSpaceFirstOrder3DSolver::computeDensityNonliner()
 {
-  // Homogenous density
-  if (mParameters.getRho0ScalarFlag())
-  {
-    SolverCUDAKernels::ComputeDensityNonlinearHomogeneous(getRhoX(),
-                                                          getRhoY(),
-                                                          getRhoZ(),
-                                                          getPmlX(),
-                                                          getPmlY(),
-                                                          getPmlZ(),
-                                                          getDuxdx(),
-                                                          getDuydy(),
-                                                          getDuzdz());
-}
-else
-{
-  // heterogenous density
-  SolverCUDAKernels::ComputeDensityNonlinearHeterogeneous(getRhoX(),
-                                                          getRhoY(),
-                                                          getRhoZ(),
-                                                          getPmlX(),
-                                                          getPmlY(),
-                                                          getPmlZ(),
-                                                          getDuxdx(),
-                                                          getDuydy(),
-                                                          getDuzdz(),
-                                                          getRho0());
-  } // end matrix
+  SolverCudaKernels::computeDensityNonlinear(getRhoX(),
+                                             getRhoY(),
+                                             getRhoZ(),
+                                             getPmlX(),
+                                             getPmlY(),
+                                             getPmlZ(),
+                                             getDuxdx(),
+                                             getDuydy(),
+                                             getDuzdz(),
+                                             mParameters.getRho0ScalarFlag(),
+                                             (mParameters.getRho0ScalarFlag()) ? nullptr :getRho0().getDeviceData());
+
 }// end of computeDensityNonliner
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -1198,33 +1183,18 @@ else
  */
 void KSpaceFirstOrder3DSolver::computeDensityLinear()
 {
-  // Homogeneous acoustic density
-  if (mParameters.getRho0ScalarFlag())
-  {
-    SolverCUDAKernels::ComputeDensityLinearHomogeneous(getRhoX(),
-                                                       getRhoY(),
-                                                       getRhoZ(),
-                                                       getPmlX(),
-                                                       getPmlY(),
-                                                       getPmlZ(),
-                                                       getDuxdx(),
-                                                       getDuydy(),
-                                                       getDuzdz());
-  }
-  else
-  {
-    // Heterogeneous acoustic density
-    SolverCUDAKernels::ComputeDensityLinearHeterogeneous(getRhoX(),
-                                                         getRhoY(),
-                                                         getRhoZ(),
-                                                         getPmlX(),
-                                                         getPmlY(),
-                                                         getPmlZ(),
-                                                         getDuxdx(),
-                                                         getDuydy(),
-                                                         getDuzdz(),
-                                                         getRho0());
-  } // end heterogeneous
+  SolverCudaKernels::computeDensityLinear(getRhoX(),
+                                          getRhoY(),
+                                          getRhoZ(),
+                                          getPmlX(),
+                                          getPmlY(),
+                                          getPmlZ(),
+                                          getDuxdx(),
+                                          getDuydy(),
+                                          getDuzdz(),
+                                          mParameters.getRho0ScalarFlag(),
+                                          (mParameters.getRho0ScalarFlag()) ? nullptr :getRho0().getDeviceData());
+
 }// end of computeDensityLinear
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -1262,12 +1232,12 @@ void KSpaceFirstOrder3DSolver::computePressureNonlinear()
     RealMatrix& absorbTauTerm = velocitGradientSum;
     RealMatrix& absorbEtaTerm = densitySum;
 
-    computePressureTermsNonLinear(densitySum, nonlinearTerm, velocitGradientSum);
+    computePressureTermsNonlinear(densitySum, nonlinearTerm, velocitGradientSum);
 
     getTempCufftX().computeR2CFft3D(velocitGradientSum);
     getTempCufftY().computeR2CFft3D(densitySum);
 
-    SolverCUDAKernels::ComputeAbsorbtionTerm(getTempCufftX(), getTempCufftY(), getAbsorbNabla1(), getAbsorbNabla2());
+    SolverCudaKernels::computeAbsorbtionTerm(getTempCufftX(), getTempCufftY(), getAbsorbNabla1(), getAbsorbNabla2());
 
     getTempCufftX().computeC2RFft3D(absorbTauTerm);
     getTempCufftY().computeC2RFft3D(absorbEtaTerm);
@@ -1318,7 +1288,7 @@ void KSpaceFirstOrder3DSolver::computePressureLinear()
     getTempCufftX().computeR2CFft3D(velocityGradientTerm);
     getTempCufftY().computeR2CFft3D(densitySum);
 
-    SolverCUDAKernels::ComputeAbsorbtionTerm(getTempCufftX(), getTempCufftY(), getAbsorbNabla1(), getAbsorbNabla2());
+    SolverCudaKernels::computeAbsorbtionTerm(getTempCufftX(), getTempCufftY(), getAbsorbNabla1(), getAbsorbNabla2());
 
     getTempCufftX().computeC2RFft3D(absorbTauTerm);
     getTempCufftY().computeC2RFft3D(absorbEtaTerm);
@@ -1342,21 +1312,21 @@ void KSpaceFirstOrder3DSolver::addVelocitySource()
 
   if (mParameters.getVelocityXSourceFlag() > timeIndex)
   {
-    SolverCUDAKernels::AddVelocitySource(getUxSgx(),
+    SolverCudaKernels::addVelocitySource(getUxSgx(),
                                          GetVelocityXSourceInput(),
                                          getVelocitySourceIndex(),
                                          timeIndex);
   }
   if (mParameters.getVelocityYSourceFlag() > timeIndex)
   {
-    SolverCUDAKernels::AddVelocitySource(getUySgy(),
+    SolverCudaKernels::addVelocitySource(getUySgy(),
                                          GetVelocityYSourceInput(),
                                          getVelocitySourceIndex(),
                                          timeIndex);
   }
   if (mParameters.getVelocityZSourceFlag() > timeIndex)
   {
-    SolverCUDAKernels::AddVelocitySource(getUzSgz(),
+    SolverCudaKernels::addVelocitySource(getUzSgz(),
                                          getVelocityZSourceInput(),
                                          getVelocitySourceIndex(),
                                          timeIndex);
@@ -1373,7 +1343,7 @@ void KSpaceFirstOrder3DSolver::addPressureSource()
 
   if (mParameters.getPressureSourceFlag() > timeIndex)
   {
-    SolverCUDAKernels::AddPressureSource(getRhoX(),
+    SolverCudaKernels::addPressureSource(getRhoX(),
                                          getRhoY(),
                                          getRhoZ(),
                                          getPressureSourceInput(),
@@ -1409,13 +1379,13 @@ void KSpaceFirstOrder3DSolver::addInitialPressureSource()
   const float* c2 = (isSoundScalar) ? nullptr : getC2().getDeviceData();
 
   //-- add the initial pressure to rho as a mass source --//
-  SolverCUDAKernels::Compute_p0_AddInitialPressure(getP(),
-                                                   getRhoX(),
-                                                   getRhoY(),
-                                                   getRhoZ(),
-                                                   getInitialPressureSourceInput(),
-                                                   isSoundScalar,
-                                                   c2);
+  SolverCudaKernels::addInitialPressureSource(getP(),
+                                              getRhoX(),
+                                              getRhoY(),
+                                              getRhoZ(),
+                                              getInitialPressureSourceInput(),
+                                              isSoundScalar,
+                                              c2);
 
   //-----------------------------------------------------------------------//
   //--compute u(t = t1 + dt/2) based on the assumption u(dt/2) = -u(-dt/2)-//
@@ -1423,13 +1393,13 @@ void KSpaceFirstOrder3DSolver::addInitialPressureSource()
   //-----------------------------------------------------------------------//
   getTempCufftX().computeR2CFft3D(getP());
 
-  SolverCUDAKernels::ComputePressurelGradient(getTempCufftX(),
-                                              getTempCufftY(),
-                                              getTempCufftZ(),
-                                              getKappa(),
-                                              getDdxKShiftPos(),
-                                              getDdyKShiftPos(),
-                                              getDdzKShiftPos());
+  SolverCudaKernels::computePressureGradient(getTempCufftX(),
+                                             getTempCufftY(),
+                                             getTempCufftZ(),
+                                             getKappa(),
+                                             getDdxKShiftPos(),
+                                             getDdyKShiftPos(),
+                                             getDdzKShiftPos());
 
   getTempCufftX().computeC2RFft3D(getUxSgx());
   getTempCufftY().computeC2RFft3D(getUySgy());
@@ -1439,28 +1409,28 @@ void KSpaceFirstOrder3DSolver::addInitialPressureSource()
   {
     if (mParameters.getNonUniformGridFlag())
     { // non uniform grid, homogeneous
-      SolverCUDAKernels::Compute_p0_VelocityScalarNonUniform(getUxSgx(),
-                                                             getUySgy(),
-                                                             getUzSgz(),
-                                                             getDxudxnSgx(),
-                                                             getDyudynSgy(),
-                                                             getDzudznSgz());
+      SolverCudaKernels::computeInitialVelocityHomogeneousNonuniform(getUxSgx(),
+                                                                     getUySgy(),
+                                                                     getUzSgz(),
+                                                                     getDxudxnSgx(),
+                                                                     getDyudynSgy(),
+                                                                     getDzudznSgz());
     }
     else
     { //uniform grid, homogeneous
-      SolverCUDAKernels::Compute_p0_Velocity(getUxSgx(), getUySgy(), getUzSgz());
+      SolverCudaKernels::computeInitialVelocity(getUxSgx(), getUySgy(), getUzSgz());
     }
   }
   else
   {
     // heterogeneous, uniform grid
     // divide the matrix by 2 and multiply with st./rho0_sg
-    SolverCUDAKernels::Compute_p0_Velocity(getUxSgx(),
-                                           getUySgy(),
-                                           getUzSgz(),
-                                           getDtRho0Sgx(),
-                                           getDtRho0Sgy(),
-                                           getDtRho0Sgz());
+    SolverCudaKernels::computeInitialVelocity(getUxSgx(),
+                                              getUySgy(),
+                                              getUzSgz(),
+                                              getDtRho0Sgx(),
+                                              getDtRho0Sgy(),
+                                              getDtRho0Sgz());
   }
 }// end of addInitialPressureSource
 //----------------------------------------------------------------------------------------------------------------------
@@ -1757,14 +1727,14 @@ void KSpaceFirstOrder3DSolver::computeC2()
 /**
  * Compute three temporary sums in the new pressure formula, non-linear absorbing case.
  */
-void KSpaceFirstOrder3DSolver::computePressureTermsNonLinear(RealMatrix& densitySum,
+void KSpaceFirstOrder3DSolver::computePressureTermsNonlinear(RealMatrix& densitySum,
                                                              RealMatrix& nonlinearTerm,
                                                              RealMatrix& velocityGradientSum)
 {
   const float* bOnA = (mParameters.getBOnAScalarFlag()) ? nullptr : geBOnA().getDeviceData();
   const float* rho0 = (mParameters.getRho0ScalarFlag()) ? nullptr : getRho0().getDeviceData();
 
-  SolverCUDAKernels::ComputePressurePartsNonLinear(densitySum,
+  SolverCudaKernels::computePressureTermsNonlinear(densitySum,
                                                    nonlinearTerm,
                                                    velocityGradientSum,
                                                    getRhoX(),
@@ -1778,7 +1748,7 @@ void KSpaceFirstOrder3DSolver::computePressureTermsNonLinear(RealMatrix& density
                                                    mParameters.getRho0ScalarFlag(),
                                                    rho0);
 
-}// end of computePressureTermsNonLinear
+}// end of computePressureTermsNonlinear
 //----------------------------------------------------------------------------------------------------------------------
 
 
@@ -1790,7 +1760,7 @@ void KSpaceFirstOrder3DSolver::computePressureTermsLinear(RealMatrix& densitySum
 {
   const float* rho0 = (mParameters.getRho0ScalarFlag()) ? nullptr : getRho0().getDeviceData();
 
-  SolverCUDAKernels::ComputePressurePartsLinear(densitySum,
+  SolverCudaKernels::computePressureTermsLinear(densitySum,
                                                 velocityGradientSum,
                                                 getRhoX(),
                                                 getRhoY(),
@@ -1818,14 +1788,14 @@ void KSpaceFirstOrder3DSolver::sumPressureTermsNonlinear(const RealMatrix& absor
   const float* absorbTau = (areTauAndEtaScalars) ? nullptr : getAbsorbTau().getDeviceData();
   const float* absorbEta = (areTauAndEtaScalars) ? nullptr : getAbsorbEta().getDeviceData();
 
-  SolverCUDAKernels::SumPressureTermsNonlinear(getP(),
+  SolverCudaKernels::sumPressureTermsNonlinear(getP(),
                                                nonlinearTerm,
+                                               absorbTauTerm,
+                                               absorbEtaTerm,
                                                isC2Scalar,
                                                c2,
                                                areTauAndEtaScalars,
-                                               absorbTauTerm.getDeviceData(),
                                                absorbTau,
-                                               absorbEtaTerm.getDeviceData(),
                                                absorbEta);
 }// end of sumPressureTermsNonlinear
 //----------------------------------------------------------------------------------------------------------------------
@@ -1844,7 +1814,7 @@ void KSpaceFirstOrder3DSolver::sumPressureTermsLinear(const RealMatrix& absorbTa
   const float* absorbTau = (areTauAndEtaScalars) ? nullptr : getAbsorbTau().getDeviceData();
   const float* absorbEta = (areTauAndEtaScalars) ? nullptr : getAbsorbEta().getDeviceData();
 
-  SolverCUDAKernels::SumPressureTermsLinear(getP(),
+  SolverCudaKernels::sumPressureTermsLinear(getP(),
                                             absorbTauTerm,
                                             absorbEtaTerm,
                                             densitySum,
@@ -1869,7 +1839,7 @@ void KSpaceFirstOrder3DSolver::sumPressureTermsNonlinearLossless()
   const float* bOnA = (isBOnAScalar) ? nullptr : geBOnA().getDeviceData();
   const float* rho0 = (isRho0Scalar) ? nullptr : getRho0().getDeviceData();
 
-  SolverCUDAKernels::SumPressureNonlinearLossless(getP(),
+  SolverCudaKernels::sumPressureNonlinearLossless(getP(),
                                                   getRhoX(),
                                                   getRhoY(),
                                                   getRhoZ(),
@@ -1890,7 +1860,7 @@ void KSpaceFirstOrder3DSolver::sumPressureTermsLinearLossless()
 {
   const float* c2  = (mParameters.getC0ScalarFlag()) ? nullptr : getC2().getDeviceData();
 
-  SolverCUDAKernels::SumPressureLinearLossless(getP(),
+  SolverCudaKernels::sumPressureLinearLossless(getP(),
                                                getRhoX(),
                                                getRhoY(),
                                                getRhoZ(),
@@ -1913,17 +1883,17 @@ void KSpaceFirstOrder3DSolver::computeShiftedVelocity()
 {
   // uxShifted
   getTempCufftShift().computeR2CFft1DX(getUxSgx());
-  SolverCUDAKernels::ComputeVelocityShiftInX(getTempCufftShift(), getXShiftNegR());
+  SolverCudaKernels::computeVelocityShiftInX(getTempCufftShift(), getXShiftNegR());
   getTempCufftShift().computeC2RFft1DX(getUxShifted());
 
   // uyShifted
   getTempCufftShift().computeR2CFft1DY(getUySgy());
-  SolverCUDAKernels::ComputeVelocityShiftInY(getTempCufftShift(), getYShiftNegR());
+  SolverCudaKernels::computeVelocityShiftInY(getTempCufftShift(), getYShiftNegR());
   getTempCufftShift().computeC2RFft1DY(getUyShifted());
 
   // uzShifted
   getTempCufftShift().computeR2CFft1DZ(getUzSgz());
-  SolverCUDAKernels::ComputeVelocityShiftInZ(getTempCufftShift(), getZShiftNegR());
+  SolverCudaKernels::computeVelocityShiftInZ(getTempCufftShift(), getZShiftNegR());
   getTempCufftShift().computeC2RFft1DZ(getUzShifted());
 
 }// end of computeShiftedVelocity

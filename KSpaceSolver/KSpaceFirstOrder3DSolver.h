@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July      2012, 10:27 (created)\n
- *              09 August    2017, 11:32 (revised)
+ *              10 August    2017, 15:30 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -229,7 +229,7 @@ class KSpaceFirstOrder3DSolver
      * @param [out] nonlinearTerm       - BOnA + densitySum ^2 / 2 * rho0
      * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz)
      */
-    void computePressureTermsNonLinear(RealMatrix& densitySum,
+    void computePressureTermsNonlinear(RealMatrix& densitySum,
                                        RealMatrix& nonlinearTerm,
                                        RealMatrix& velocityGradientSum);
     /**

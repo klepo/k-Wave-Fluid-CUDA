@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 November 2015, 16:49 (created) \n
- *              17 July     2017, 16:16 (revised)
+ *              10 August   2017, 16:16 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -335,6 +335,6 @@ void CudaParameters::checkCudaVersion()
  */
 bool CudaParameters::checkCudaCodeVersion()
 {
-  return (SolverCUDAKernels::GetCUDACodeVersion() >= 20);
+  return (SolverCudaKernels::getCudaCodeVersion() >= 20);
 }// end of checkCudaCodeVersion
 //----------------------------------------------------------------------------------------------------------------------
