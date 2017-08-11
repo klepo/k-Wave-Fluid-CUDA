@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        17 February 2016, 10:53 (created) \n
- *              17 July     2017, 16:16 (revised)
+ *              11 August   2017, 15:45 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -49,7 +49,7 @@
  * @var      cudaDeviceConstants
  * @brief    This variable holds basic simulation constants for GPU.
  * @details  This variable holds necessary simulation constants in the CUDA GPU.
- *           memory. This variable is imported as extern into other CUDA units
+ *           memory. This variable is imported as extern into other CUDA units.
  */
 __constant__ CudaDeviceConstants cudaDeviceConstants;
 
@@ -60,7 +60,7 @@ __constant__ CudaDeviceConstants cudaDeviceConstants;
 //--------------------------------------------------------------------------------------------------------------------//
 
 /**
- * Copy the structure with simulation constants to the CUDA constant memory
+ * Copy the structure with simulation constants to the CUDA constant memory.
  */
 __host__ void CudaDeviceConstants::uploadDeviceConstants()
 {

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        08 December 2011, 16:34 (created)      \n
- *              08 August   2017, 13:41 (revised)
+ *              11 August   2017, 15:32 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,8 +29,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef ParametersH
-#define ParametersH
+#ifndef PARAMETERS_H
+#define PARAMETERS_H
 
 #include <string>
 
@@ -58,13 +58,13 @@ class Parameters
      */
     enum class SensorMaskType
     {
-      /// Linear sensor mask
+      /// Linear sensor mask.
       kIndex   = 0,
-      /// Cuboid corners sensor mask
+      /// Cuboid corners sensor mask.
       kCorners = 1
     };
 
-    /// Copy constructor not allowed
+    /// Copy constructor not allowed.
     Parameters(const Parameters&) = delete;
     /// Destructor.
     virtual ~Parameters();
@@ -79,8 +79,8 @@ class Parameters
 
     /**
      * @brief Parse command line and read scalar values form the input file.
-     * @param [in] argc - Number of commandline parameters
-     * @param [in] argv - Commandline parameters
+     * @param [in] argc - Number of commandline parameters.
+     * @param [in] argv - Commandline parameters.
      * @throw std::invalid_argument - If sampling is supposed to start out of the simulation time span.
      */
     void init(int argc, char** argv);
@@ -109,7 +109,7 @@ class Parameters
 
     /**
      * @brief Get git hash of the code
-     * @return Git hash compiled in using -D parameter
+     * @return Git hash compiled in using -D parameter.
      */
     std::string getGitHash() const;
 
@@ -118,7 +118,7 @@ class Parameters
      * @throw std::runtime_error - If there is no free CUDA devices.
      * @throw std::runtime_error - If there is no device of such and deviceIdx.
      * @throw std::runtime_error - If the GPU chosen is not supported (i.e., the code was not compiled for its
-     *                             architecture)
+     *                             architecture).
      */
     void selectDevice();
 
@@ -126,83 +126,83 @@ class Parameters
      * @brief  Get class with CudaParameters (runtime setup), const version.
      * @return CudaParameters class.
      */
-    const CudaParameters& getCudaParameters() const {return mCudaParameters;};
+    const CudaParameters& getCudaParameters() const { return mCudaParameters; };
 
     /**
      * @brief  Get class with CudaParameters (runtime setup), mutable version.
      * @return CudaParameters class.
      */
-    CudaParameters&       getCudaParameters()       {return mCudaParameters;};
+    CudaParameters&       getCudaParameters()       { return mCudaParameters; };
 
 
     /**
-     * @brief Get number of CPU threads to use
-     * @return Number of CPU threads to use
+     * @brief Get number of CPU threads to use.
+     * @return Number of CPU threads to use.
      */
-    size_t getNumberOfThreads()        const {return mCommandLineParameters.getNumberOfThreads();};
+    size_t getNumberOfThreads()        const { return mCommandLineParameters.getNumberOfThreads(); };
 
     /**
      * @brief  Get compression level.
      * @return Compression level value for output and checkpoint files.
      */
-    size_t getCompressionLevel()       const {return mCommandLineParameters.getCompressionLevel();};
+    size_t getCompressionLevel()       const { return mCommandLineParameters.getCompressionLevel(); };
 
     /**
      * @brief Get progress print interval.
      * @return How often to print progress.
      */
-    size_t getProgressPrintInterval()  const {return mCommandLineParameters.getProgressPrintInterval();};
+    size_t getProgressPrintInterval()  const { return mCommandLineParameters.getProgressPrintInterval(); };
 
 
     /**
      * @brief  Is checkpoint enabled?
      * @return true if checkpointing is enabled.
      */
-    bool   isCheckpointEnabled()        const {return mCommandLineParameters.isCheckpointEnabled();};
+    bool   isCheckpointEnabled()        const { return mCommandLineParameters.isCheckpointEnabled(); };
     /**
      * @brief  Get checkpoint interval.
      * @return Checkpoint interval in seconds.
      */
-    size_t getCheckpointInterval()      const {return mCommandLineParameters.getCheckpointInterval();};
+    size_t getCheckpointInterval()      const { return mCommandLineParameters.getCheckpointInterval(); };
 
     //---------------------------------------------------- Files -----------------------------------------------------//
     /**
      * @brief Get input file handle.
      * @return Handle to the input file.
      */
-    Hdf5File& getInputFile()                 {return mInputFile;};
+    Hdf5File& getInputFile()                 { return mInputFile; };
     /**
      * @brief Get output file handle.
      * @return Handle to the output file.
      */
-    Hdf5File& getOutputFile()                {return mOutputFile;};
+    Hdf5File& getOutputFile()                { return mOutputFile; };
     /**
      * @brief Get checkpoint file handle.
      * @return Handle to the checkpoint file.
      */
-    Hdf5File& getCheckpointFile()            {return mCheckpointFile;};
+    Hdf5File& getCheckpointFile()            { return mCheckpointFile; };
     /**
      * @brief Get file header handle.
      * @return Handle to the file header.
      */
-    Hdf5FileHeader& getFileHeader()          {return mFileHeader;};
+    Hdf5FileHeader& getFileHeader()          { return mFileHeader; };
 
 
     /**
      * @brief  Get input file name.
      * @return Input file name
      */
-    std::string getInputFileName()      const {return mCommandLineParameters.getInputFileName();};
+    std::string getInputFileName()      const { return mCommandLineParameters.getInputFileName(); };
     /**
      * @brief  Get output file name.
      * @return Output file name.
      */
-    std::string getOutputFileName()     const {return mCommandLineParameters.getOutputFileName();};
+    std::string getOutputFileName()     const { return mCommandLineParameters.getOutputFileName(); };
     /**
      * @brief  Get checkpoint file name.
      * @return Checkpoint file name
      */
-    std::string getCheckpointFileName() const {return mCommandLineParameters.getCheckpointFileName();};
+    std::string getCheckpointFileName() const { return mCommandLineParameters.getCheckpointFileName(); };
 
 
 
@@ -211,218 +211,218 @@ class Parameters
      * @brief  Get full dimension sizes of the simulation (real classes).
      * @return Dimension sizes of 3D real matrices.
      */
-    DimensionSizes getFullDimensionSizes()    const {return mFullDimensionSizes; };
+    DimensionSizes getFullDimensionSizes()    const { return mFullDimensionSizes;  };
     ///
     /**
      * @brief  Get reduced dimension sizes of the simulation (complex classes).
-     * @return Dimension sizes of reduced complex 3D matrices
+     * @return Dimension sizes of reduced complex 3D matrices.
      */
-    DimensionSizes getReducedDimensionSizes() const {return mReducedDimensionSizes;};
+    DimensionSizes getReducedDimensionSizes() const { return mReducedDimensionSizes; };
 
     /**
      * @brief  Get total number of time steps.
      * @return Total number of time steps.
      */
-    size_t  getNt()                           const {return mNt;};
+    size_t  getNt()                           const { return mNt; };
 
     /**
      * @brief  Get actual simulation time step.
      * @return Actual time step.
      */
-    size_t  getTimeIndex()                    const {return mTimeIndex;};
+    size_t  getTimeIndex()                    const { return mTimeIndex; };
 
     /**
-     * @brief  Set simulation time step - should be used only when recovering from checkpoint
+     * @brief  Set simulation time step - should be used only when recovering from checkpoint.
      * @param [in] timeIndex - Actual time step.
      */
-    void setTimeIndex(const size_t timeIndex)       {mTimeIndex = timeIndex;};
+    void setTimeIndex(const size_t timeIndex)       { mTimeIndex = timeIndex; };
     /// Increment simulation time step.
-    void incrementTimeIndex()                       {mTimeIndex++;};
+    void incrementTimeIndex()                       { mTimeIndex++; };
 
     //----------------------------------------------- Grid parameters ------------------------------------------------//
     /**
      * @brief  Get time step size.
      * @return dt value.
      */
-    float getDt() const {return mDt;};
+    float getDt() const { return mDt; };
     /**
      * @brief  Get spatial displacement in x.
      * @return dx value.
      */
-    float getDx() const {return mDx;};
+    float getDx() const { return mDx; };
     /**
      * @brief  Get spatial displacement in y.
      * @return dy value.
      */
-    float getDy() const {return mDy;};
+    float getDy() const { return mDy; };
     /**
      * @brief  Get spatial displacement in z.
      * @return dz value
      */
-    float getDz() const {return mDz;};
+    float getDz() const { return mDz; };
 
     //------------------------------------------- Sound speed and density --------------------------------------------//
     /**
      * @brief  Get reference sound speed.
      * @return Reference sound speed.
      */
-    float  getCRef()            const {return mCRef;};
+    float  getCRef()            const { return mCRef; };
     /**
      * @brief  Is sound speed in the medium homogeneous (scalar value)?
-     * @return True if scalar
+     * @return True if scalar.
      */
-    bool   getC0ScalarFlag()    const {return mC0ScalarFlag;};
+    bool   getC0ScalarFlag()    const { return mC0ScalarFlag; };
     /**
      * @brief  Get scalar value of sound speed.
      * @return Sound speed.
      */
-    float  getC0Scalar()        const {return mC0Scalar;};
+    float  getC0Scalar()        const { return mC0Scalar; };
    /**
      * @brief  Get scalar value of sound speed squared.
      * @return Sound speed.
      */
-    float  getC2Scalar()        const {return mC0Scalar * mC0Scalar;};
+    float  getC2Scalar()        const { return mC0Scalar * mC0Scalar; };
 
     /**
      * @brief  Is density in the medium homogeneous (scalar value)?
-     * @return True if scalar
+     * @return True if scalar.
      */
-    bool   getRho0ScalarFlag()  const {return mRho0ScalarFlag;};
+    bool   getRho0ScalarFlag()  const { return mRho0ScalarFlag; };
     /**
      * @brief  Get value of homogeneous medium density.
      * @return Density.
      */
-    float  getRho0Scalar()      const {return mRho0Scalar;};
+    float  getRho0Scalar()      const { return mRho0Scalar; };
     /**
      * @brief  Get value of homogeneous medium density on staggered grid in x direction.
      * @return Staggered density.
      */
-    float  getRho0SgxScalar()   const {return mRho0SgxScalar;};
+    float  getRho0SgxScalar()   const { return mRho0SgxScalar; };
     /**
      * @brief  Get value of dt / rho0Sgx.
      * @return Staggered density.
      */
-    float  getDtRho0SgxScalar() const {return mDt / mRho0SgxScalar;};
+    float  getDtRho0SgxScalar() const { return mDt / mRho0SgxScalar; };
     /**
      * @brief  Get value of homogeneous medium density on staggered grid in y direction.
      * @return Staggered density.
      */
-    float  getRho0SgyScalar()   const {return mRho0SgyScalar;};
+    float  getRho0SgyScalar()   const { return mRho0SgyScalar; };
     /**
      * @brief  Get value of dt / rho0Sgy.
      * @return Staggered density.
      */
-    float  getDtRho0SgyScalar() const {return mDt / mRho0SgyScalar;};
+    float  getDtRho0SgyScalar() const { return mDt / mRho0SgyScalar; };
     /**
      * @brief  Get value of homogeneous medium density on staggered grid in z direction.
      * @return Staggered density.
      */
-    float  getRho0SgzScalar()   const {return mRho0SgzScalar;};
+    float  getRho0SgzScalar()   const { return mRho0SgzScalar; };
     /**
      * @brief  Get value of dt / rho0Sgz.
      * @return Staggered density.
      */
-    float  getDtRho0SgzScalar() const {return mDt / mRho0SgzScalar;};
+    float  getDtRho0SgzScalar() const { return mDt / mRho0SgzScalar; };
 
     //----------------------------------------- Absorption and nonlinearity ------------------------------------------//
     /**
      * @brief  Enable non uniform grid? - not implemented yet.
-     * @return Non uniform flag
+     * @return Non uniform flag.
      */
-    size_t getNonUniformGridFlag()   const {return mNonUniformGridFlag;};
+    size_t getNonUniformGridFlag()   const { return mNonUniformGridFlag; };
     /**
      * @brief  Is the simulation absrobing or lossless?
      * @return 0 if the medium is lossless, 1 otherwise.
      */
-    size_t getAbsorbingFlag()        const {return mAbsorbingFlag;};
+    size_t getAbsorbingFlag()        const { return mAbsorbingFlag; };
     /**
      * @brief  Is the wave propagation nonlinear?
      * @return 0 if the simulation is linear, 1 otherwise.
      */
-    size_t getNonLinearFlag()        const {return mNonLinearFlag;};
+    size_t getNonLinearFlag()        const { return mNonLinearFlag; };
 
 
     /**
      * @brief  Is alpha absorption coefficient homogeneous (scalar value)?
-     * @return True if scalar
+     * @return True if scalar.
      */
-    bool   getAlphaCoeffScalarFlag() const {return mAlphaCoeffScalarFlag;};
+    bool   getAlphaCoeffScalarFlag() const { return mAlphaCoeffScalarFlag; };
     /**
      * @brief  Get value of alpha absorption coefficient.
      * @return Alpha absorption coefficient.
      */
-    float  getAlphaCoeffScalar()     const {return mAlphaCoeffScalar; }
+    float  getAlphaCoeffScalar()     const { return mAlphaCoeffScalar; }
     /**
      * @brief  Get alpha power value for the absorption law.
      * @return Alpha power value.
      */
-    float  getAlphaPower()           const {return mAlphaPower;};
+    float  getAlphaPower()           const { return mAlphaPower; };
     /**
      * @brief  Get absorb eta coefficient for homogeneous medium (scalar value)?
      * @return Absorb eta coefficient.
      */
-    float  getAbsorbEtaScalar()      const {return mAbsorbEtaScalar;};
+    float  getAbsorbEtaScalar()      const { return mAbsorbEtaScalar; };
     /**
      * @brief Set absorb eta coefficient for homogeneous medium (scalar value).
      * @param [in] absrobEta - New value for absorb eta
      */
-    void   setAbsorbEtaScalar(const float absrobEta) {mAbsorbEtaScalar = absrobEta;};
+    void   setAbsorbEtaScalar(const float absrobEta) { mAbsorbEtaScalar = absrobEta; };
     /**
      * @brief  Get absorb tau coefficient for homogeneous medium.
      * @return Absorb tau coefficient.
      */
-    float  getAbsorbTauScalar()      const {return mAbsorbTauScalar;};
+    float  getAbsorbTauScalar()      const { return mAbsorbTauScalar; };
     /**
-     * @brief Set absorb tau coefficient for homogeneous medium (scalar value)
+     * @brief Set absorb tau coefficient for homogeneous medium (scalar value).
      * @param [in] absorbTau - New value for absorb tau.
      */
-    void   setAbsorbTauScalar(const float absorbTau) {mAbsorbTauScalar = absorbTau;};
+    void   setAbsorbTauScalar(const float absorbTau) { mAbsorbTauScalar = absorbTau; };
 
 
     /**
      * @brief  Is nonlinear coefficient homogeneous in the medium (scalar value)?
      * @return True if scalar
      */
-    bool   getBOnAScalarFlag()       const {return mBOnAScalarFlag;};
+    bool   getBOnAScalarFlag()       const { return mBOnAScalarFlag; };
     /**
      * @brief  Get nonlinear coefficient for homogenous medium.
      * @return Nonlinear coefficient.
      */
-    float  getBOnAScalar()           const {return mBOnAScalar;};
+    float  getBOnAScalar()           const { return mBOnAScalar; };
 
 
     //------------------------------------------ Perfectly matched layer ---------------------------------------------//
     /**
      * @brief  Get depth of the perfectly matched layer in x.
-     * @return PML size in x
+     * @return PML size in x.
      */
-    size_t getPmlXSize()  const {return mPmlXSize;};
+    size_t getPmlXSize()  const { return mPmlXSize; };
     /**
      * @brief  Get depth of the perfectly matched layer in y.
      * @return PML size in y.
      */
-    size_t getPmlYSize()  const {return mPmlYSize;};
+    size_t getPmlYSize()  const { return mPmlYSize; };
     /**
      * @brief  Get depth of the perfectly matched layer in z.
      * @return PML size in z.
      */
-    size_t getPmlZSize()  const {return mPmlZSize;};
+    size_t getPmlZSize()  const { return mPmlZSize; };
 
     /**
      * @brief  Get Perfectly matched layer attenuation in x, not implemented.
      * @return Attenuation for PML in x.
      */
-    float  getPmlXAlpha() const {return mPmlXAlpha;};
+    float  getPmlXAlpha() const { return mPmlXAlpha; };
     /**
      * @brief  Get Perfectly matched layer attenuation in y, not implemented.
      * @return Attenuation for PML in y.
      */
-    float  getPmlYAlpha() const {return mPmlYAlpha;};
+    float  getPmlYAlpha() const { return mPmlYAlpha; };
     /**
      * @brief  Get Perfectly matched layer attenuation in z , not implemented.
      * @return Attenuation for PML in z.
      */
-    float  getPmlZAlpha() const {return mPmlZAlpha;};
+    float  getPmlZAlpha() const { return mPmlZAlpha; };
 
     //-------------------------------------------------- Sources -----------------------------------------------------//
     /**
@@ -430,76 +430,76 @@ class Parameters
      * @return 0 if the source is disabled.
      * @return Length of the input signal in time steps.
      */
-    size_t getPressureSourceFlag()        const {return mPressureSourceFlag; };
+    size_t getPressureSourceFlag()        const { return mPressureSourceFlag; };
     /**
      * @brief  Get initial pressure source flag (p0).
      * @return 0 if the source is disabled, 1 otherwise.
      */
-    size_t getInitialPressureSourceFlag() const {return mInitialPressureSourceFlag;};
+    size_t getInitialPressureSourceFlag() const { return mInitialPressureSourceFlag; };
     /**
      * @brief  Get transducer source flag.
      * @return 0 if the transducer is disabled.
      * @return Length of the input signal in time steps.
      */
-    size_t getTransducerSourceFlag()      const {return mTransducerSourceFlag;};
+    size_t getTransducerSourceFlag()      const { return mTransducerSourceFlag; };
     /**
      * @brief  Get velocity in x source flag.
      * @return 0 if the source is disabled.
      * @return Length of the input signal in time steps.
      */
-    size_t getVelocityXSourceFlag()       const {return mVelocityXSourceFlag;};
+    size_t getVelocityXSourceFlag()       const { return mVelocityXSourceFlag; };
     /**
      * @brief  Get velocity in y source flag.
      * @return 0 if the source is disabled.
      * @return Length of the input signal in time steps.
      */
-    size_t getVelocityYSourceFlag()       const {return mVelocityYSourceFlag;};
+    size_t getVelocityYSourceFlag()       const { return mVelocityYSourceFlag; };
     /**
      * @brief  Get velocity in z source flag.
      * @return 0 if the source is disabled.
      * @return Length of the input signal in time steps.
      */
-    size_t getVelocityZSourceFlag()       const {return mVelocityZSourceFlag;};
+    size_t getVelocityZSourceFlag()       const { return mVelocityZSourceFlag; };
 
 
     /**
      * @brief  Get spatial size of the pressure source.
      * @return Size of the pressure source in grid points.
      */
-    size_t getPressureSourceIndexSize()   const { return mPressureSourceIndexSize;}
+    size_t getPressureSourceIndexSize()   const { return mPressureSourceIndexSize; }
     /**
      * @brief  Get spatial size of the transducer source.
      * @return Size of the transducer source in grid points.
      */
-    size_t getTransducerSourceInputSize() const { return mTransducerSourceInputSize;}
+    size_t getTransducerSourceInputSize() const { return mTransducerSourceInputSize; }
     /**
      * @brief  Get spatial size of the velocity source.
      * @return Size of the velocity source in grid points.
      */
-    size_t getVelocitySourceIndexSize()   const { return mVelocitySourceIndexSize;}
+    size_t getVelocitySourceIndexSize()   const { return mVelocitySourceIndexSize; }
 
 
     /**
      * @brief  Get pressure source mode.
      * @return Pressure source mode (Dirichlet or additive).
      */
-    size_t getPressureSourceMode()        const {return mPressureSourceMode;};
+    size_t getPressureSourceMode()        const { return mPressureSourceMode; };
     /**
      * @brief  Get number of time series in the pressure source.
-     * @return Number of time series in the pressure source
+     * @return Number of time series in the pressure source.
      */
-    size_t getPressureSourceMany()        const {return mPressureSourceMany;};
+    size_t getPressureSourceMany()        const { return mPressureSourceMany; };
 
     /**
      * @brief  Get velocity source mode.
      * @return Pressure source mode (Dirichlet or additive).
      */
-    size_t getVelocitySourceMode()        const {return mVelocitySourceMode;};
+    size_t getVelocitySourceMode()        const { return mVelocitySourceMode; };
     /**
      * @brief  Get number of time series in the velocity sources.
      * @return Number of time series in the velocity sources.
      */
-    size_t  getVelocitySourceMany()       const {return mVelocitySourceMany;};
+    size_t  getVelocitySourceMany()       const { return mVelocitySourceMany; };
 
 
 
@@ -508,66 +508,66 @@ class Parameters
      * @brief  Get sensor mask type (linear or corners).
      * @return Sensor mask type.
      */
-    SensorMaskType getSensorMaskType()     const {return mSensorMaskType;};
+    SensorMaskType getSensorMaskType()     const { return mSensorMaskType; };
     /**
      * @brief  Get spatial size of the index sensor mask.
      * @return Number of grid points.
      */
-    size_t getSensorMaskIndexSize()        const {return mSensorMaskIndexSize;}
+    size_t getSensorMaskIndexSize()        const { return mSensorMaskIndexSize ;}
     /**
      * @brief  Get number of cuboids the sensor is composed of.
      * @return Number of cuboids.
      */
-    size_t getSensorMaskCornersSize()      const {return mSensorMaskCornersSize;};
+    size_t getSensorMaskCornersSize()      const { return mSensorMaskCornersSize; };
     /**
      * @brief  Get start time index when sensor data collection begins
      * @return When to start sampling data.
      */
-    size_t getSamplingStartTimeIndex()     const {return mCommandLineParameters.getSamplingStartTimeIndex();};
+    size_t getSamplingStartTimeIndex()     const { return mCommandLineParameters.getSamplingStartTimeIndex(); };
 
 
     /**
      * @brief  Is  -p or --p_raw specified at the command line?
      * @return True if the flag is set.
      */
-    bool getStorePressureRawFlag()         const {return mCommandLineParameters.getStorePressureRawFlag();};
+    bool getStorePressureRawFlag()         const { return mCommandLineParameters.getStorePressureRawFlag(); };
     /**
      * @brief  Is --p_rms set?
      * @return True if the flag is set.
      */
-    bool getStorePressureRmsFlag()         const {return mCommandLineParameters.getStorePressureRmsFlag();};
+    bool getStorePressureRmsFlag()         const { return mCommandLineParameters.getStorePressureRmsFlag(); };
     /**
      * @brief  Is --p_max set?
      * @return True if the flag is set.
      */
-    bool getStorePressureMaxFlag()         const {return mCommandLineParameters.getStorePressureMaxFlag();};
+    bool getStorePressureMaxFlag()         const { return mCommandLineParameters.getStorePressureMaxFlag(); };
     /**
      * @brief  Is --p_min set?
      * @return True if the flag is set.
      */
-    bool getStorePressureMinFlag()         const {return mCommandLineParameters.getStorePressureMinFlag();};
+    bool getStorePressureMinFlag()         const { return mCommandLineParameters.getStorePressureMinFlag(); };
     /**
      * @brief  Is --p_max_all set?
      * @return True if the flag is set.
      */
-    bool getStorePressureMaxAllFlag()      const {return mCommandLineParameters.getStorePressureMaxAllFlag();};
+    bool getStorePressureMaxAllFlag()      const { return mCommandLineParameters.getStorePressureMaxAllFlag(); };
     /**
      * @brief  Is --p_min_all set?
      * @return true if the flag is set.
      */
-    bool getStorePressureMinAllFlag()      const {return mCommandLineParameters.getStorePressureMinAllFlag();};
+    bool getStorePressureMinAllFlag()      const { return mCommandLineParameters.getStorePressureMinAllFlag(); };
     /**
      * @brief  Is --p_final set?
      * @return True if the flag is set.
      */
-    bool getStorePressureFinalAllFlag()    const {return mCommandLineParameters.getStorePressureFinalAllFlag();};
+    bool getStorePressureFinalAllFlag()    const { return mCommandLineParameters.getStorePressureFinalAllFlag(); };
 
 
     /**
      * @brief  Is -u or --u_raw specified at the command line?
      * @return True if the flag is set.
      */
-    bool getStoreVelocityRawFlag()         const {return mCommandLineParameters.getStoreVelocityRawFlag();};
+    bool getStoreVelocityRawFlag()         const { return mCommandLineParameters.getStoreVelocityRawFlag(); };
     /**
      * @brief  Is --u_non_staggered_raw set?
      * @return True if the flag is set.
@@ -580,38 +580,38 @@ class Parameters
      * @brief  Is --u_rms set?
      * @return True if the flag is set.
      */
-    bool getStoreVelocityRmsFlag()         const {return mCommandLineParameters.getStoreVelocityRmsFlag();};
+    bool getStoreVelocityRmsFlag()         const { return mCommandLineParameters.getStoreVelocityRmsFlag(); };
     /**
      * @brief  Is --u_max set?
      * @return True if the flag is set.
      */
-    bool getVelocityMaxFlag()              const {return mCommandLineParameters.getStoreVelocityMaxFlag();};
+    bool getVelocityMaxFlag()              const { return mCommandLineParameters.getStoreVelocityMaxFlag(); };
     /**
      * @brief  Is --u_min set?
      * @return True if the flag is set.
      */
-    bool getStoreVelocityMinFlag()         const {return mCommandLineParameters.getStoreVelocityMinFlag();};
+    bool getStoreVelocityMinFlag()         const { return mCommandLineParameters.getStoreVelocityMinFlag(); };
     /**
      * @brief  Is --u_max_all set?
      * @return True if the flag is set.
      */
-    bool getStoreVelocityMaxAllFlag()      const {return mCommandLineParameters.getStoreVelocityMaxAllFlag();};
+    bool getStoreVelocityMaxAllFlag()      const { return mCommandLineParameters.getStoreVelocityMaxAllFlag(); };
     /**
      * @brief  Is --u_min set?
      * @return True if the flag is set.
      */
-    bool getStoreStoreVelocityMinAllFlag() const {return mCommandLineParameters.getStoreVelocityMinAllFlag();};
+    bool getStoreStoreVelocityMinAllFlag() const { return mCommandLineParameters.getStoreVelocityMinAllFlag(); };
     /**
      * @brief  Is --u_final set?
      * @return True if the flag is set.
      */
-    bool getStoreVelocityFinalAllFlag()    const {return mCommandLineParameters.getStoreVelocityFinalAllFlag();};
+    bool getStoreVelocityFinalAllFlag()    const { return mCommandLineParameters.getStoreVelocityFinalAllFlag(); };
 
     /**
      * @brief  Is --copy_mask set set?
      * @return True if the flag is set.
      */
-    bool getCopySensorMaskFlag()           const {return mCommandLineParameters.getCopySensorMaskFlag();};
+    bool getCopySensorMaskFlag()           const { return mCommandLineParameters.getCopySensorMaskFlag(); };
 
   protected:
     /// Constructor.
@@ -754,4 +754,4 @@ class Parameters
 };// end of Parameters
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* ParametersH */
+#endif	/* PARAMETERS_H */

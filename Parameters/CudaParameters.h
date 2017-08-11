@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 November 2015, 16:49 (created) \n
- *              16 July     2017, 16:58 (revised)
+ *              11 August   2017, 15:41 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,8 +29,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef CudaParametersH
-#define CudaParametersH
+#ifndef CUDA_PARAMETERS_H
+#define CUDA_PARAMETERS_H
 
 #include <cuda_runtime.h>
 
@@ -62,43 +62,43 @@ class CudaParameters
      * @brief   Get index of the device being used.
      * @return  Index of selected CUDA device.
      */
-    int getDeviceIdx()                 const {return mDeviceIdx;}
+    int getDeviceIdx()                 const { return mDeviceIdx; }
 
     /**
      * @brief Get number of threads for 1D block used by kSpaceSolver.
      * @return Number of threads per block.
      */
-    int getSolverBlockSize1D()         const {return mSolverBlockSize1D;}
+    int getSolverBlockSize1D()         const { return mSolverBlockSize1D; }
 
     /**
      * @brief Get number of block for 1D grid used by kSpaceSolver.
      * @return Number of blocks per grid.
      */
-    int getSolverGridSize1D()          const {return mSolverGridSize1D;}
+    int getSolverGridSize1D()          const { return mSolverGridSize1D; }
 
     /**
      * @brief  Get block size for the transposition kernels.
      * @return Number of threads per block.
      */
-    dim3 getSolverTransposeBlockSize() const {return mSolverTransposeBlockSize;}
+    dim3 getSolverTransposeBlockSize() const { return mSolverTransposeBlockSize; }
 
     /**
      * @brief  Get grid size for the transposition kernels.
      * @return Number of blocks per grid.
      */
-    dim3 getSolverTransposeGirdSize()  const {return mSolverTransposeGirdSize;}
+    dim3 getSolverTransposeGirdSize()  const { return mSolverTransposeGirdSize; }
 
     /**
      * @brief  Get number of threads for the 1D data sampling kernels.
      * @return Number of threads per block.
      */
-    int getSamplerBlockSize1D()        const {return mSamplerBlockSize1D;}
+    int getSamplerBlockSize1D()        const { return mSamplerBlockSize1D; }
 
     /**
      * @brief  Get Number of blocks for the 1D data sampling kernels.
      * @return Number of blocks per grid.
      */
-    int getSamplerGridSize1D()         const {return mSamplerGridSize1D;}
+    int getSamplerGridSize1D()         const { return mSamplerGridSize1D; }
 
     /**
      * @brief  Get the name of the device used.
@@ -128,7 +128,7 @@ class CudaParameters
      * @brief  Return properties of currently used GPU
      * @return Structure holding the properties of GPU being used.
      */
-    const cudaDeviceProp& getDeviceProperties() const {return mDeviceProperties;};
+    const cudaDeviceProp& getDeviceProperties() const { return mDeviceProperties; };
 
     /// Default Device Index - no default GPU
     static constexpr int kDefaultDeviceIdx = -1;
@@ -146,7 +146,7 @@ class CudaParameters
 
     /**
      * @brief  Check whether the code was compiled for a given SM model.
-     * @return true if we can run the code, SM > 2.0
+     * @return true if we can run the code, SM >= 2.0 (Fermi).
      */
     bool checkCudaCodeVersion();
 
@@ -159,22 +159,22 @@ class CudaParameters
     /// Number of block for 1D grid used by kSpaceSolver.
     int  mSolverGridSize1D;
 
-    /// Block size for the transposition kernels
+    /// Block size for the transposition kernels.
     dim3 mSolverTransposeBlockSize;
-    /// Grid size for the transposition kernels
+    /// Grid size for the transposition kernels.
     dim3 mSolverTransposeGirdSize;
 
-    /// Number of threads for the 1D data sampling kernels
+    /// Number of threads for the 1D data sampling kernels.
     int  mSamplerBlockSize1D;
-    /// Number of blocks for the 1D data sampling kernels
+    /// Number of blocks for the 1D data sampling kernels.
     int  mSamplerGridSize1D;
 
     /// Device properties of the selected GPU.
     cudaDeviceProp mDeviceProperties;
 
-    /// Undefined block or grid size
+    /// Undefined block or grid size.
     static constexpr int kUndefinedSize = -1;
 };// end of CudaParameters
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif /* CudaParametersH */
+#endif /* CUDA_PARAMETERS_H */

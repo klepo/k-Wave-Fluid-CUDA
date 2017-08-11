@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2012, 13:39 (created) \n
- *              08 August    2017, 13:41 (revised)
+ *              11 August    2017, 15:41 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -135,7 +135,7 @@ void Parameters::init(int argc, char** argv)
 
 
 /**
- * Select a GPU device for execution.
+ * Select a device device for execution.
  */
 void Parameters::selectDevice()
 {
@@ -333,7 +333,8 @@ void Parameters::readScalarsFromInputFile()
     mTransducerSourceInputSize =mInputFile.getDatasetSize(rootGroup, kTransducerSourceInputName);
   }
 
-  if ((mTransducerSourceFlag > 0) || (mVelocityXSourceFlag > 0) || (mVelocityYSourceFlag > 0) || (mVelocityZSourceFlag > 0))
+  if ((mTransducerSourceFlag > 0) || (mVelocityXSourceFlag > 0) ||
+      (mVelocityYSourceFlag > 0)  || (mVelocityZSourceFlag > 0))
   {
     mVelocitySourceIndexSize = mInputFile.getDatasetSize(rootGroup, kVelocitySourceIndexName);
   }
@@ -400,7 +401,7 @@ void Parameters::readScalarsFromInputFile()
   mRho0ScalarFlag = mInputFile.getDatasetDimensionSizes(rootGroup, kRho0Name) == scalarSizes;
   if (mRho0ScalarFlag)
   {
-    mInputFile.readScalarValue(rootGroup, kRho0Name,     mRho0Scalar);
+    mInputFile.readScalarValue(rootGroup, kRho0Name,    mRho0Scalar);
     mInputFile.readScalarValue(rootGroup, kRho0SgxName, mRho0SgxScalar);
     mInputFile.readScalarValue(rootGroup, kRho0SgyName, mRho0SgyScalar);
     mInputFile.readScalarValue(rootGroup, kRho0SgzName, mRho0SgzScalar);
@@ -535,5 +536,3 @@ Parameters::Parameters()
 
 }// end of Parameters()
 //----------------------------------------------------------------------------------------------------------------------
-
-

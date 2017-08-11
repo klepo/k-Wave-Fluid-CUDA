@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August   2012, 11:25 (created) \n
- *              16 July     2017, 16:57 (revised)
+ *              11 August   2017, 15:46 (revised)
  *
  * @section Params Command Line Parameters
  *
@@ -199,8 +199,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef CommandLineParamettersH
-#define CommandLineParamettersH
+#ifndef COMMAND_LINE_PARAMETERS_H
+#define COMMAND_LINE_PARAMETERS_H
 
 #include <cstdlib>
 #include <string>
@@ -229,178 +229,178 @@ class CommandLineParameters
      * @brief Get input file name.
      * @return Input file name.
      */
-    const std::string& getInputFileName()      const {return mInputFileName;};
+    const std::string& getInputFileName()      const { return mInputFileName; };
 
     /**
      * @brief  Get output file name.
-     * @return Output file name
+     * @return Output file name.
      */
-    const std::string& getOutputFileName()     const {return mOutputFileName;};
+    const std::string& getOutputFileName()     const { return mOutputFileName; };
 
     /**
      * @brief  Get Checkpoint file name.
      * @return Checkpoint file name.
      */
-    const std::string& getCheckpointFileName() const {return mCheckpointFileName;};
+    const std::string& getCheckpointFileName() const { return mCheckpointFileName; };
 
 
     /**
      * @brief  Get number of threads.
      * @return Number of CPU threads value.
      */
-    size_t getNumberOfThreads()         const {return mNumberOfThreads;};
+    size_t getNumberOfThreads()         const { return mNumberOfThreads; };
 
     /**
      * @brief  Get GPU device id specified by the user (not necessary the one the code runs on).
-     * @return Device id specifed by the user.
+     * @return Device id specified by the user.
      */
-    int    getCudaDeviceIdx()           const {return mCudaDeviceIdx;};
+    int    getCudaDeviceIdx()           const { return mCudaDeviceIdx; };
 
     /**
      * @brief Get progress print interval.
      * @return How often to print progress.
      */
-    size_t getProgressPrintInterval()   const {return mProgressPrintInterval;};
+    size_t getProgressPrintInterval()   const { return mProgressPrintInterval; };
 
     /**
      * @brief  Get compression level.
      * @return Compression level value for output and checkpoint files.
      */
-    size_t getCompressionLevel()        const {return mCompressionLevel;};
+    size_t getCompressionLevel()        const { return mCompressionLevel; };
 
     /**
      * @brief  Is --benchmark set?
      * @return true if the flag is set.
      */
-    bool   isBenchmarkEnabled()         const {return mBenchmarkFlag;};
+    bool   isBenchmarkEnabled()         const { return mBenchmarkFlag; };
 
     /**
      * @brief  Get benchmark time step count.
      * @return Number of time steps used to benchmark the code.
      */
-    size_t getBenchmarkTimeStepsCount() const {return mBenchmarkTimeStepCount;};
+    size_t getBenchmarkTimeStepsCount() const { return mBenchmarkTimeStepCount; };
 
     /**
      * @brief  Is checkpoint enabled?
      * @return true if checkpointing is enabled.
      */
-    bool   isCheckpointEnabled()        const {return (mCheckpointInterval > 0);};
+    bool   isCheckpointEnabled()        const { return (mCheckpointInterval > 0); };
 
     /**
      * @brief  Get checkpoint interval.
      * @return Checkpoint interval in seconds.
      */
-    size_t getCheckpointInterval()      const {return mCheckpointInterval;};
+    size_t getCheckpointInterval()      const { return mCheckpointInterval; };
 
     /**
      * @brief  Is --version set?
      * @return true if the flag is set.
      */
-    bool   isPrintVersionOnly()         const {return mPrintVersionFlag;};
+    bool   isPrintVersionOnly()         const { return mPrintVersionFlag; };
 
 
     /**
      * @brief Is --p_raw set?
      * @return true if the flag is set.
      */
-    bool   getStorePressureRawFlag()      const {return mStorePressureRawFlag;};
+    bool   getStorePressureRawFlag()      const { return mStorePressureRawFlag; };
 
     /**
      * @brief  Is --p_rms set?
      * @return true if the flag is set.
      */
-    bool   getStorePressureRmsFlag()      const {return mStorePressureRmsFlag;};
+    bool   getStorePressureRmsFlag()      const { return mStorePressureRmsFlag; };
 
     /**
      * @brief  Is --p_max set?
      * @return true if the flag is set.
      */
-    bool   getStorePressureMaxFlag()      const {return mStorePressureMaxFlag;};
+    bool   getStorePressureMaxFlag()      const { return mStorePressureMaxFlag; };
 
     /**
      * @brief  Is --p_min set?
      * @return true if the flag is set.
      */
-    bool   getStorePressureMinFlag()      const {return mStorePressureMinFlag;};
+    bool   getStorePressureMinFlag()      const { return mStorePressureMinFlag; };
 
     /**
      * @brief  Is --p_max_all set?
      * @return true if the flag is set.
      */
-    bool   getStorePressureMaxAllFlag()   const {return mStorePressureMaxAllFlag;};
+    bool   getStorePressureMaxAllFlag()   const { return mStorePressureMaxAllFlag; };
 
     /**
      * @brief  Is --p_min_all set?
      * @return true if the flag is set.
      */
-    bool   getStorePressureMinAllFlag()   const {return mStorePressureMinAllFlag;};
+    bool   getStorePressureMinAllFlag()   const { return mStorePressureMinAllFlag; };
 
     /**
      * @brief  Is --p_final set?
      * @return true if the flag is set.
      */
-    bool   getStorePressureFinalAllFlag() const {return mStorePressureFinalAllFlag;};
+    bool   getStorePressureFinalAllFlag() const { return mStorePressureFinalAllFlag; };
 
 
     /**
      * @brief  Is --u_raw set?
      * @return true if the flag is set.
      */
-    bool   getStoreVelocityRawFlag()             const {return mStoreVelocityRawFlag;};
+    bool   getStoreVelocityRawFlag()             const { return mStoreVelocityRawFlag; };
 
     /**
      * @brief  Is --u_non_staggered_raw set?
      * @return true if the flag is set.
      */
-    bool   getStoreVelocityNonStaggeredRawFlag() const {return mStoreVelocityNonStaggeredRawFlag;};
+    bool   getStoreVelocityNonStaggeredRawFlag() const { return mStoreVelocityNonStaggeredRawFlag; };
 
     /**
      * @brief  Is --u_rms set?
      * @return true if the flag is set.
      */
-    bool   getStoreVelocityRmsFlag()             const {return mStoreVelocityRmsFlag;};
+    bool   getStoreVelocityRmsFlag()             const { return mStoreVelocityRmsFlag; };
 
     /**
      * @brief  Is --u_max set?
      * @return true if the flag is set.
      */
-    bool   getStoreVelocityMaxFlag()             const {return mStoreVelocityMaxFlag;};
+    bool   getStoreVelocityMaxFlag()             const { return mStoreVelocityMaxFlag; };
 
     /**
      * @brief  Is --u_min set?
      * @return true if the flag is set.
      */
-    bool   getStoreVelocityMinFlag()             const {return mStoreVelocityMinFlag;};
+    bool   getStoreVelocityMinFlag()             const { return mStoreVelocityMinFlag; };
 
     /**
      * @brief  Is --u_max_all set?
      * @return true if the flag is set.
      */
-    bool   getStoreVelocityMaxAllFlag()          const {return mStoreVelocityMaxAllFlag;};
+    bool   getStoreVelocityMaxAllFlag()          const { return mStoreVelocityMaxAllFlag; };
 
     /**
      * @brief  Is --u_min set?
      * @return true if the flag is set.
      */
-    bool getStoreVelocityMinAllFlag()            const {return mStoreVelocityMinAllFlag;};
+    bool getStoreVelocityMinAllFlag()            const { return mStoreVelocityMinAllFlag; };
 
     /**
      * @brief  Is --u_final set?
      * @return true if the flag is set.
      */
-    bool   getStoreVelocityFinalAllFlag()        const {return mStoreVelocityFinalAllFlag;};
+    bool   getStoreVelocityFinalAllFlag()        const { return mStoreVelocityFinalAllFlag; };
 
     /**
      * @brief  Is --copy_mask set set?
      * @return true if the flag is set.
      */
-    bool   getCopySensorMaskFlag()               const {return mCopySensorMaskFlag;};
+    bool   getCopySensorMaskFlag()               const { return mCopySensorMaskFlag; };
 
     /**
      * @brief  Get start time index when sensor data collection begins.
      * @return When to start sampling data.
      */
-    size_t getSamplingStartTimeIndex()           const {return mSamplingStartTimeStep;};
+    size_t getSamplingStartTimeIndex()           const { return mSamplingStartTimeStep; };
 
 
     /// Print usage of the code
@@ -409,11 +409,11 @@ class CommandLineParameters
     void printComandlineParamers();
 
     /**
-     * @brief Parse commandline parameters
+     * @brief Parse commandline parameters.
      * @param [in, out] argc - number of commandline parameters.
      * @param [in, out] argv - commandline parameters.
      *
-     * @throw call exit when error in commandline
+     * @throw call exit when error in commandline.
      */
     void parseCommandLine(int argc, char** argv);
 
@@ -495,4 +495,4 @@ class CommandLineParameters
 };// end of class CommandLineParameters
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif /* CommandLineParamettersH */
+#endif /* COMMAND_LINE_PARAMETERS_H */

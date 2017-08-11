@@ -30,8 +30,8 @@
  */
 
 
-#ifndef CudaDeviceConstantsCuh
-#define CudaDeviceConstantsCuh
+#ifndef CUDA_DEVICE_CONSTANTS_H
+#define CUDA_DEVICE_CONSTANTS_H
 
 /**
   * @struct CudaDeviceConstants
@@ -41,7 +41,7 @@
   */
 struct CudaDeviceConstants
 {
-  /// Upload device constants into GPU memory
+  /// Upload device constants into GPU memory.
   __host__ void uploadDeviceConstants();
 
   /// size of X dimension.
@@ -76,41 +76,41 @@ struct CudaDeviceConstants
   /// c^2
   float c2;
 
-  /// rho0 in homogeneous case
+  /// rho0 in homogeneous case.
   float rho0;
-  /// dt * rho0 in homogeneous case
+  /// dt * rho0 in homogeneous case.
   float dtRho0;
-  /// dt / rho0_sgx in homogeneous case
+  /// dt / rho0Sgx in homogeneous case.
   float dtRho0Sgx;
-  /// dt / rho0_sgy in homogeneous case
+  /// dt / rho0Sgy in homogeneous case.
   float dtRho0Sgy;
-  /// dt / rho0_sgz in homogeneous case
+  /// dt / rho0Sgz in homogeneous case.
   float dtRho0Sgz;
 
-  /// BonA value for homogeneous case
+  /// BonA value for homogeneous case.
   float bOnA;
 
-  /// Absorb_tau value for homogeneous case
+  /// AbsorbTau value for homogeneous case.
   float absorbTau;
-  /// Absorb_eta value for homogeneous case
+  /// AbsorbEta value for homogeneous case.
   float absorbEta;
 
-  ///  size of the u source index
+  ///  size of the u source index.
   unsigned int velocitySourceSize;
-  /// u source mode
+  /// u source mode.
   unsigned int velocitySourceMode;
-  /// u source many
+  /// u source many.
   unsigned int velocitySourceMany;
 
-  /// size of the p_source mask
+  /// size of the p_source mask.
   unsigned int presureSourceSize;
-  /// p source mode
+  /// p source mode.
   unsigned int presureSourceMode;
-  /// p source many
+  /// p source many.
   unsigned int presureSourceMany;
 
 }; // end of CudaDeviceConstants
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif /* CudaDeviceConstantsCuh */
+#endif /* CUDA_DEVICE_CONSTANTS_H */
 
