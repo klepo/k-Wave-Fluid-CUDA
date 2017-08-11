@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              21 July     2017, 16:53 (revised)
+ *              11 August   2017, 13:56 (revised)
  *
  *
  * @section HDF HDF5 File Structure
@@ -465,8 +465,8 @@ Name                            Size           Data type       Domain Type      
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef Hdf5FileH
-#define Hdf5FileH
+#ifndef HDF5_FILE_H
+#define HDF5_FILE_H
 
 
 #include <hdf5.h>
@@ -596,7 +596,6 @@ class Hdf5File
                     MatrixName& groupName);
     /**
      * @brief Close a group.
-     *
      * @param[in] group - Group to close.
      */
     void closeGroup(const hid_t group);
@@ -871,4 +870,4 @@ class Hdf5File
 }; // Hdf5File
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* Hdf5FileH */
+#endif	/* HDF5_FILE_H */

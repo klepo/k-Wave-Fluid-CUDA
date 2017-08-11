@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        20 July      2017, 14:54 (created) \n
- *              21 July      2017, 16:48 (revised)
+ *              11 August    2017, 13:35 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -130,34 +130,24 @@ void Hdf5FileHeader::readHeaderFromInputFile(Hdf5File& inputFile)
 {
   // Get file root handle
   hid_t rootGroup = inputFile.getRootGroup();
+  // shortcut for the
+  using FHI = FileHeaderItems;
+
   // read file type
-  mHeaderValues[FileHeaderItems::kFileType] =
-          inputFile.readStringAttribute(rootGroup,
-                                        "/",
-                                        sHeaderNames[FileHeaderItems::kFileType].c_str());
+  mHeaderValues[FHI::kFileType] = inputFile.readStringAttribute(rootGroup, "/", sHeaderNames[FHI::kFileType]);
 
   if (getFileType() == FileType::kInput)
   {
-    mHeaderValues[FileHeaderItems::kCreatedBy]
-            = inputFile.readStringAttribute(rootGroup,
-                                            "/",
-                                            sHeaderNames[FileHeaderItems::kCreatedBy].c_str());
-    mHeaderValues[FileHeaderItems::kCreationDate]
-            = inputFile.readStringAttribute(rootGroup,
-                                            "/",
-                                            sHeaderNames[FileHeaderItems::kCreationDate].c_str());
-    mHeaderValues[FileHeaderItems::kFileDescription]
-            = inputFile.readStringAttribute(rootGroup,
-                                            "/",
-                                            sHeaderNames[FileHeaderItems::kFileDescription].c_str());
-    mHeaderValues[FileHeaderItems::kMajorVersion]
-            = inputFile.readStringAttribute(rootGroup,
-                                            "/",
-                                            sHeaderNames[FileHeaderItems::kMajorVersion].c_str());
-    mHeaderValues[FileHeaderItems::kMinorVersion]
-            = inputFile.readStringAttribute(rootGroup,
-                                            "/",
-                                            sHeaderNames[FileHeaderItems::kMinorVersion].c_str());
+    mHeaderValues[FHI::kCreatedBy]
+            = inputFile.readStringAttribute(rootGroup, "/", sHeaderNames[FHI::kCreatedBy]);
+    mHeaderValues[FHI::kCreationDate]
+            = inputFile.readStringAttribute(rootGroup, "/", sHeaderNames[FHI::kCreationDate]);
+    mHeaderValues[FHI::kFileDescription]
+            = inputFile.readStringAttribute(rootGroup, "/", sHeaderNames[FHI::kFileDescription]);
+    mHeaderValues[FHI::kMajorVersion]
+            = inputFile.readStringAttribute(rootGroup, "/", sHeaderNames[FHI::kMajorVersion]);
+    mHeaderValues[FHI::kMinorVersion]
+            = inputFile.readStringAttribute(rootGroup, "/", sHeaderNames[FHI::kMinorVersion]);
   }
   else
   {
@@ -174,34 +164,23 @@ void Hdf5FileHeader::readHeaderFromOutputFile(Hdf5File& outputFile)
 {
   // Get file root handle
   hid_t rootGroup = outputFile.getRootGroup();
+  // shortcut for the
+  using FHI = FileHeaderItems;
 
-  mHeaderValues[FileHeaderItems::kFileType]
-          = outputFile.readStringAttribute(rootGroup,
-                                           "/",
-                                           sHeaderNames[FileHeaderItems::kFileType].c_str());
+  mHeaderValues[FHI::kFileType] = outputFile.readStringAttribute(rootGroup, "/", sHeaderNames[FHI::kFileType]);
 
   if (getFileType() == FileType::kOutput)
   {
-    mHeaderValues[FileHeaderItems::kTotalExecutionTime]
-            = outputFile.readStringAttribute(rootGroup,
-                                             "/",
-                                             sHeaderNames[FileHeaderItems::kTotalExecutionTime].c_str());
-    mHeaderValues[FileHeaderItems::kDataLoadTime]
-            = outputFile.readStringAttribute(rootGroup,
-                                             "/",
-                                             sHeaderNames[FileHeaderItems::kDataLoadTime].c_str());
-    mHeaderValues[FileHeaderItems::kPreProcessingTime]
-            = outputFile.readStringAttribute(rootGroup,
-                                             "/",
-                                             sHeaderNames[FileHeaderItems::kPreProcessingTime].c_str());
-    mHeaderValues[FileHeaderItems::kSimulationTime]
-            = outputFile.readStringAttribute(rootGroup,
-                                             "/",
-                                             sHeaderNames[FileHeaderItems::kSimulationTime].c_str());
-    mHeaderValues[FileHeaderItems::kPostProcessingTime]
-            = outputFile.readStringAttribute(rootGroup,
-                                             "/",
-                                             sHeaderNames[FileHeaderItems::kPostProcessingTime].c_str());
+    mHeaderValues[FHI::kTotalExecutionTime]
+            = outputFile.readStringAttribute(rootGroup, "/", sHeaderNames[FHI::kTotalExecutionTime]);
+    mHeaderValues[FHI::kDataLoadTime]
+            = outputFile.readStringAttribute(rootGroup, "/", sHeaderNames[FHI::kDataLoadTime]);
+    mHeaderValues[FHI::kPreProcessingTime]
+            = outputFile.readStringAttribute(rootGroup, "/", sHeaderNames[FHI::kPreProcessingTime]);
+    mHeaderValues[FHI::kSimulationTime]
+            = outputFile.readStringAttribute(rootGroup, "/", sHeaderNames[FHI::kSimulationTime]);
+    mHeaderValues[FHI::kPostProcessingTime]
+            = outputFile.readStringAttribute(rootGroup, "/", sHeaderNames[FHI::kPostProcessingTime]);
   }
   else
   {
@@ -217,23 +196,25 @@ void Hdf5FileHeader::readHeaderFromOutputFile(Hdf5File& outputFile)
 void Hdf5FileHeader::readHeaderFromCheckpointFile(Hdf5File& checkpointFile)
 {
   // Get file root handle
-  hid_t rootGroup = checkpointFile.getRootGroup();
+  hid_t group = checkpointFile.getRootGroup();
+  // shortcut for the
+  using FHI = FileHeaderItems;
+
   // read file type
-  mHeaderValues[FileHeaderItems::kFileType] =
-          checkpointFile.readStringAttribute(rootGroup, "/", sHeaderNames[FileHeaderItems::kFileType]);
+  mHeaderValues[FHI::kFileType] = checkpointFile.readStringAttribute(group, "/", sHeaderNames[FHI::kFileType]);
 
   if (getFileType() == FileType::kCheckpoint)
   {
-    mHeaderValues[FileHeaderItems::kCreatedBy]
-            = checkpointFile.readStringAttribute(rootGroup, "/", sHeaderNames[FileHeaderItems::kCreatedBy]);
-    mHeaderValues[FileHeaderItems::kCreationDate]
-            = checkpointFile.readStringAttribute(rootGroup, "/", sHeaderNames[FileHeaderItems::kCreationDate]);
-    mHeaderValues[FileHeaderItems::kFileDescription]
-            = checkpointFile.readStringAttribute(rootGroup, "/", sHeaderNames[FileHeaderItems::kFileDescription]);
-    mHeaderValues[FileHeaderItems::kMajorVersion]
-            = checkpointFile.readStringAttribute(rootGroup, "/", sHeaderNames[FileHeaderItems::kMajorVersion]);
-    mHeaderValues[FileHeaderItems::kMinorVersion]
-            = checkpointFile.readStringAttribute(rootGroup, "/", sHeaderNames[FileHeaderItems::kMinorVersion]);
+    mHeaderValues[FHI::kCreatedBy]
+            = checkpointFile.readStringAttribute(group, "/", sHeaderNames[FHI::kCreatedBy]);
+    mHeaderValues[FHI::kCreationDate]
+            = checkpointFile.readStringAttribute(group, "/", sHeaderNames[FHI::kCreationDate]);
+    mHeaderValues[FHI::kFileDescription]
+            = checkpointFile.readStringAttribute(group, "/", sHeaderNames[FHI::kFileDescription]);
+    mHeaderValues[FHI::kMajorVersion]
+            = checkpointFile.readStringAttribute(group, "/", sHeaderNames[FHI::kMajorVersion]);
+    mHeaderValues[FHI::kMinorVersion]
+            = checkpointFile.readStringAttribute(group, "/", sHeaderNames[FHI::kMinorVersion]);
   }
   else
   {
@@ -264,37 +245,39 @@ void Hdf5FileHeader::writeHeaderToCheckpointFile(Hdf5File& checkpointFile)
 {
   // Get file root handle
   hid_t rootGroup = checkpointFile.getRootGroup();
+  // shortcut for the
+  using FHI = FileHeaderItems;
 
   // Write header
   checkpointFile.writeStringAttribute(rootGroup,
                                       "/",
-                                      sHeaderNames [FileHeaderItems::kFileType].c_str(),
-                                      mHeaderValues[FileHeaderItems::kFileType].c_str());
+                                      sHeaderNames [FHI::kFileType],
+                                      mHeaderValues[FHI::kFileType]);
 
   checkpointFile.writeStringAttribute(rootGroup,
                                       "/",
-                                      sHeaderNames [FileHeaderItems::kCreatedBy].c_str(),
-                                      mHeaderValues[FileHeaderItems::kCreatedBy].c_str());
+                                      sHeaderNames [FHI::kCreatedBy],
+                                      mHeaderValues[FHI::kCreatedBy]);
 
   checkpointFile.writeStringAttribute(rootGroup,
                                       "/",
-                                      sHeaderNames [FileHeaderItems::kCreationDate].c_str(),
-                                      mHeaderValues[FileHeaderItems::kCreationDate].c_str());
+                                      sHeaderNames [FHI::kCreationDate],
+                                      mHeaderValues[FHI::kCreationDate]);
 
   checkpointFile.writeStringAttribute(rootGroup,
                                       "/",
-                                      sHeaderNames [FileHeaderItems::kFileDescription].c_str(),
-                                      mHeaderValues[FileHeaderItems::kFileDescription].c_str());
+                                      sHeaderNames [FHI::kFileDescription],
+                                      mHeaderValues[FHI::kFileDescription]);
 
   checkpointFile.writeStringAttribute(rootGroup,
                                       "/",
-                                      sHeaderNames [FileHeaderItems::kMajorVersion].c_str(),
-                                      mHeaderValues[FileHeaderItems::kMajorVersion].c_str());
+                                      sHeaderNames [FHI::kMajorVersion],
+                                      mHeaderValues[FHI::kMajorVersion]);
 
   checkpointFile.writeStringAttribute(rootGroup,
                                       "/",
-                                      sHeaderNames [FileHeaderItems::kMinorVersion].c_str(),
-                                      mHeaderValues[FileHeaderItems::kMinorVersion].c_str());
+                                      sHeaderNames [FHI::kMinorVersion],
+                                      mHeaderValues[FHI::kMinorVersion]);
 }// end of writeHeaderToCheckpointFile
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -451,4 +434,9 @@ void Hdf5FileHeader::setNumberOfCores()
 
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------- Protected methods ------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+
+
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Private methods --------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//

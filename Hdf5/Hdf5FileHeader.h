@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        20 July     2017, 14:42 (created) \n
- *              08 July     2017, 13:38 (revised)
+ *              11 August   2017, 10:23 (revised)
  *
  * @section Hdf5FileHeader HDF5 File Header Structure
  *
@@ -72,8 +72,8 @@ total_memory_in_use Total               Peak memory in use
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef Hdf5FileHeaderH
-#define Hdf5FileHeaderH
+#ifndef HDF5_FILE_HEADER_H
+#define HDF5_FILE_HEADER_H
 
 
 #include <hdf5.h>
@@ -199,7 +199,7 @@ class Hdf5FileHeader
      *
      * We need the header to verify the file version and type.
      * @param [in, out] checkpointFile - Checkpoint file handle.
-     * @throw ios:failure          - If error happens.
+     * @throw ios:failure              - If error happens.
      */
     void readHeaderFromCheckpointFile(Hdf5File& checkpointFile);
 
@@ -219,7 +219,7 @@ class Hdf5FileHeader
     void writeHeaderToCheckpointFile(Hdf5File& checkpointFile);
 
     /**
-     * @brief   Set code name.
+     * @brief Set code name.
      * @param [in] codeName - Code version.
      */
     void setCodeName(const std::string& codeName)
@@ -240,8 +240,8 @@ class Hdf5FileHeader
     };
 
     /**
-     * @brief   Get string representing of current Minor version of the file.
-     * @return  Current minor file version.
+     * @brief  Get string representing of current Minor version of the file.
+     * @return Current minor file version.
      */
     static std::string getFileMinorVersion()
     {
@@ -262,22 +262,22 @@ class Hdf5FileHeader
     };
 
     /**
-     * Get file version as an enum.
+     * @brief  Get file version as an enum.
      * @return File version as an enum.
      */
     FileVersion getFileVersion();
 
     /**
-     * @brief   check major file version.
-     * @return true if ok
+     * @brief  Check major file version.
+     * @return true - If the file version is supported.
      */
     bool checkMajorFileVersion()
     {
       return (mHeaderValues[FileHeaderItems::kMajorVersion] == getFileMajorVersion());
     };
     /**
-     * @brief   Check minor file version.
-     * @return true if ok
+     * @brief  Check minor file version.
+     * @return true - If the file version is supported.
      */
     bool checkMinorFileVersion()
     {
@@ -318,7 +318,7 @@ class Hdf5FileHeader
                            const double simulationTime,
                            const double postprocessingTime);
   /**
-   * Get execution times stored in the output file header.
+   * @brief Get execution times stored in the output file header.
    *
    * @param [out] totalTime          - Total time.
    * @param [out] loadTime           - Time to load data.
@@ -351,4 +351,4 @@ private:
 };// Hdf5FileHeader
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* Hdf5FileHeaderH */
+#endif	/* HDF5_FILE_HEADER_H */

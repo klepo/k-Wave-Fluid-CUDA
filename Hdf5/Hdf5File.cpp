@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              21 July     2017, 17:00 (revised)
+ *              11 August   2017, 14:01 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -415,7 +415,7 @@ void Hdf5File::writeHyperSlab(const hid_t           dataset,
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Write a hyperslab into the dataset, float version.
+ * Write a hyperslab into the dataset, float version explicit instance.
  */
 template
 void Hdf5File::writeHyperSlab<float>(const hid_t           dataset,
@@ -424,13 +424,14 @@ void Hdf5File::writeHyperSlab<float>(const hid_t           dataset,
                                      const float*          data);
 //----------------------------------------------------------------------------------------------------------------------
 /**
- * Write a hyperslab into the dataset, index version.
+ * Write a hyperslab into the dataset, index version explicit instance.
  */
 template
 void Hdf5File::writeHyperSlab<size_t>(const hid_t           dataset,
                                       const DimensionSizes& position,
                                       const DimensionSizes& size,
                                       const size_t*         data);
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write a cuboid selected within the matrixData into a hyperslab.
@@ -617,7 +618,7 @@ void Hdf5File::writeScalarValue(const hid_t parentGroup,
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Write the scalar value under a specified group, float value.
+ * Write the scalar value under a specified group, float value explicit instance.
  */
 template
 void Hdf5File::writeScalarValue<float>
@@ -626,7 +627,7 @@ void Hdf5File::writeScalarValue<float>
                                 const float value);
 //----------------------------------------------------------------------------------------------------------------------
 /**
- * Write the scalar value under a specified group, index value.
+ * Write the scalar value under a specified group, index value explicit instance.
  */
 template
 void Hdf5File::writeScalarValue<size_t>
@@ -636,7 +637,7 @@ void Hdf5File::writeScalarValue<size_t>
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Read the scalar value under a specified group, float value.
+ * Read the scalar value under a specified group.
  */
 template<class T>
 void Hdf5File::readScalarValue(const hid_t parentGroup,
@@ -657,7 +658,7 @@ void Hdf5File::readScalarValue<float>
                               float&      value);
 //----------------------------------------------------------------------------------------------------------------------
 /**
- * Read the scalar value under a specified group, float value, explicit instance.
+ * Read the scalar value under a specified group, float value, explicit instance
  *
  */
 template
@@ -701,7 +702,7 @@ void Hdf5File::readCompleteDataset(const hid_t           parentGroup,
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Read data from the dataset at a specified place in the file tree, float version.
+ * Read data from the dataset at a specified place in the file tree, float version explicit instance.
  */
 template
 void Hdf5File::readCompleteDataset<float>
@@ -711,7 +712,7 @@ void Hdf5File::readCompleteDataset<float>
                                    float*               data);
 //----------------------------------------------------------------------------------------------------------------------
 /**
- * Read data from the dataset at a specified place in the file tree, index version.
+ * Read data from the dataset at a specified place in the file tree, index version explicit instance.
  */
 template
 void Hdf5File::readCompleteDataset<size_t>
@@ -720,9 +721,6 @@ void Hdf5File::readCompleteDataset<size_t>
                                    const DimensionSizes& dimensionSizes,
                                    size_t*               data);
 //----------------------------------------------------------------------------------------------------------------------
-
-
-
 
 /**
   * Get dimension sizes of the dataset  under a specified group.
@@ -865,9 +863,9 @@ Hdf5File::MatrixDomainType Hdf5File::readMatrixDomainType(const hid_t parentGrou
   }
 
   throw ios::failure(Logger::formatMessage(kErrFmtBadAttributeValue,
-                                            datasetName.c_str(),
-                                            kMatrixDomainTypeName.c_str(),
-                                            paramValue.c_str()));
+                                           datasetName.c_str(),
+                                           kMatrixDomainTypeName.c_str(),
+                                           paramValue.c_str()));
 
   // This line will never be executed (just to prevent warning)
   return static_cast<MatrixDomainType> (0);
@@ -883,15 +881,10 @@ void Hdf5File::writeStringAttribute(const hid_t   parentGroup,
                                     MatrixName&   attributeName,
                                     const string& value)
 {
-  herr_t status = H5LTset_attribute_string(parentGroup,
-                                           datasetName.c_str(),
-                                           attributeName.c_str(),
-                                           value.c_str());
+  herr_t status = H5LTset_attribute_string(parentGroup, datasetName.c_str(), attributeName.c_str(), value.c_str());
   if (status < 0)
   {
-    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteAttribute,
-                                             attributeName.c_str(),
-                                             datasetName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteAttribute, attributeName.c_str(), datasetName.c_str()));
   }
 }// end of writeIntAttribute
 //----------------------------------------------------------------------------------------------------------------------
@@ -911,16 +904,11 @@ string Hdf5File::readStringAttribute(const hid_t  parentGroup,
                                      MatrixName& attributeName)
 {
   char value[256] = "";
-  herr_t status = H5LTget_attribute_string(parentGroup,
-                                           datasetName.c_str(),
-                                           attributeName.c_str(),
-                                           value);
+  herr_t status = H5LTget_attribute_string(parentGroup, datasetName.c_str(), attributeName.c_str(), value);
 
   if (status < 0)
   {
-    throw ios::failure(Logger::formatMessage(kErrFmtCannotReadAttribute,
-                                             attributeName.c_str(),
-                                             datasetName.c_str()));
+    throw ios::failure(Logger::formatMessage(kErrFmtCannotReadAttribute, attributeName.c_str(), datasetName.c_str()));
   }
 
   return string(value);
