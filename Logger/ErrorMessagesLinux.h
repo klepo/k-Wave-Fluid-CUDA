@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 July     2016, 11:26 (created) \n
- *              19 July     2017, 12:10 (revised)
+ *              11 August   2017, 14:25 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,8 +30,8 @@
  */
 
 
-#ifndef ErrorMessagesLinuxH
-#define ErrorMessagesLinuxH
+#ifndef ERROR_MESSAGES_LINUX_H
+#define ERROR_MESSAGES_LINUX_H
 
 
 /**
@@ -52,4 +52,4 @@ ErrorMessage kErrFmtTail =
   "│                      Execution terminated                     │\n"
   "└───────────────────────────────────────────────────────────────┘\n";
 
-#endif	/* ErrorMessagesLinuxH */
+#endif	/* ERROR_MESSAGES_LINUX_H */

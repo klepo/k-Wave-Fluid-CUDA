@@ -13,7 +13,7 @@
  * @version     kspaceFirstOrder3D 3.4
 
  * @date        09 August    2011, 12:34 (created) \n
- *              21 July      2017, 16:50 (revised)
+ *              11 August    2017, 14:24 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -32,8 +32,8 @@
  */
 
 
-#ifndef ErrorMessagesH
-#define ErrorMessagesH
+#ifndef ERROR_MESSAGES_H
+#define ERROR_MESSAGES_H
 
 #ifdef __linux__
   #include <Logger/ErrorMessagesLinux.h>
@@ -59,7 +59,6 @@ ErrorMessage  kErrFmtUnknownError
   = "Error: An unknown error happened. ";
 
 //----------------------------------------------- HDF5 error messages ------------------------------------------------//
-
 /// HDF5 error message
 ErrorMessage kErrFmtCannotCreateFile
   = "Error: File \"%s\" could not be created.";
@@ -120,7 +119,6 @@ ErrorMessage kErrFmtBadCheckpointFileType
 
 
 //------------------------------------------------- Matrix Classes ---------------------------------------------------//
-
 /// Matrix class error message
 ErrorMessage  kErrFmtMatrixNotFloat
   = "Error: Matrix [%s] data type is not of single precision floating point.";
@@ -136,7 +134,6 @@ ErrorMessage  kErrFmtMatrixNotIndex
 
 
 //------------------------------------------------ Matrix Container --------------------------------------------------//
-
 /// Matrix container error message
 ErrorMessage  kErrFmtBadMatrixType =
   "Error: Matrix [%s] has unknown type in the C++ code. [File, Line] : [%s,%d].";
@@ -147,7 +144,6 @@ ErrorMessage  kErrFmtRelocationError =
 
 
 //-------------------------------------------- Command line Parameters -----------------------------------------------//
-
 /// Command line parameters error message
 ErrorMessage kErrFmtNoProgressPrintInterval
   = "Error: No or invalid progress print interval.";
@@ -214,7 +210,6 @@ ErrorMessage kErrFmtNonStaggeredVelocityNotSupportedFileVersion
 
 
 //-------------------------------------------- KSpaceFirstOrder3DSolver ----------------------------------------------//
-
 /// KSpaceFirstOrder3DSolver error message
 ErrorMessage kErrFmtBadCheckpointFileFormat
   = "Error: Incorrect checkpoint file \"%s\" format.";
@@ -235,7 +230,7 @@ ErrorMessage kErrFmtOutputDimensionsNotMatch
 
 
 
-//------------------------------------------------ CUDA FFT Errors ---------------------------------------------------//
+//------------------------------------------------ Cuda fft errors ---------------------------------------------------//
 /// CUDA FFT error message.
 ErrorMessage kErrFmtCufftInvalidPlan
   = "Error: cuFFT was passed an invalid plan handle while %s.";
@@ -365,7 +360,7 @@ ErrorMessage kErrFmtExecuteC2RFftPlan1DZ
   = "executing 1D complex-to-real fft plan in Z direction";
 
 
-//---------------------------------------------- CUDAParameters Class ------------------------------------------------//
+//---------------------------------------------- CudaParameters Class ------------------------------------------------//
 /// CUDATuner error message
 ErrorMessage kErrFmtBadDeviceIndex
   = "Error: Wrong CUDA device id %d. Allowed devices <0, %d>.";
@@ -394,4 +389,4 @@ ErrorMessage kErrFmtDeviceError
   = "GPU error: %s routine name: %s in file %s, line %d.";
 
 
-#endif	/* ErrorMessagesH */
+#endif	/* ERROR_MESSAGES_H */

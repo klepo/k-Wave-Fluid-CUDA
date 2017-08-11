@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 July     2016, 12:33 (created) \n
- *              19 July     2017, 12:10 (revised)
+ *              11 August   2017, 14:26 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,8 +29,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef OutputMessagesLinuxH
-#define OutputMessagesLinuxH
+#ifndef OUTPUT_MESSAGES_LINUX_H
+#define OUTPUT_MESSAGES_LINUX_H
 
 /**
  * @brief   Datatype for output messages.
@@ -440,4 +440,4 @@ OutputMessage kOutFmtUsageThreads
   = "│ -t <num_threads>              │ Number of CPU threads         │\n"
     "│                               │  (default = %2d)               │\n";
 
-#endif /* OutputMessagesLinuxH */
+#endif /* OUTPUT_MESSAGES_LINUX_H */

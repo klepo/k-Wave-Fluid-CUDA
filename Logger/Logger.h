@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        19 April    2016, 12:52 (created) \n
- *              17 July     2017, 15:21 (revised)
+ *              11 August   2017, 14:21 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -31,8 +31,8 @@
  */
 
 
-#ifndef LoggerH
-#define LoggerH
+#ifndef LOGGER_H
+#define LOGGER_H
 
 #include <memory>
 #include <iostream>
@@ -90,9 +90,9 @@ class Logger
     /**
      * @brief   Log desired activity for a given log level, version with string format.
      *
-     * @param [in] queryLevel - What level to use
-     * @param [in] format     - Format string
-     * @param [in] args       - Arguments, std::string is not accepted
+     * @param [in] queryLevel - What level to use.
+     * @param [in] format     - Format string.
+     * @param [in] args       - Arguments, std::string is not accepted.
      */
     template<typename... Args>
     static void log(const LogLevel queryLevel,
@@ -107,8 +107,8 @@ class Logger
 
     /**
      * @brief Log desired activity for a given log level.
-     * @param [in] queryLevel - Log level of the message
-     * @param [in] message    - Message to log
+     * @param [in] queryLevel - Log level of the message.
+     * @param [in] message    - Message to log.
      */
     static void log(const LogLevel     queryLevel,
                     const std::string& message);
@@ -131,11 +131,11 @@ class Logger
     /**
      * Wrap the line based on delimiters and align it with the rest of the logger output.
      *
-     * @param [in] inputString - Input string
-     * @param [in] delimiters  - String of delimiters, every char is a delimiter
-     * @param [in] indentation - Indentation from the beginning
-     * @param [in] lineSize    - Line size
-     * @return Wrapped string
+     * @param [in] inputString - Input string.
+     * @param [in] delimiters  - String of delimiters, every char is a delimiter.
+     * @param [in] indentation - Indentation from the beginning.
+     * @param [in] lineSize    - Line size.
+     * @return Wrapped string.
      *
      * @note The string must not contain tabulator and end-of-line characters.
      */
@@ -150,9 +150,9 @@ class Logger
      *          http://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
      *          and should work with both Linux and VS 2015.
      *          However it still does not support string in formated arguments
-     * @param [in] format - Format string
-     * @param [in] args   - Arguments, std::string is not accepted
-     * @return Formated string
+     * @param [in] format - Format string.
+     * @param [in] args   - Arguments, std::string is not accepted.
+     * @return Formated string.
      */
     template<typename ... Args>
     static std::string formatMessage(const std::string& format,
@@ -170,9 +170,9 @@ class Logger
     /**
      * @brief Extract a word from a string stream based on delimiters.
      *
-     * @param [in,out] textStream - Input text stream
-     * @param [in]     delimiters - List of delimiters as a single string
-     * @return         A word from the string
+     * @param [in,out] textStream - Input text stream.
+     * @param [in]     delimiters - List of delimiters as a single string.
+     * @return         A word from the string.
      */
     static std::string getWord(std::istringstream& textStream,
                                const std::string&  delimiters);
@@ -231,5 +231,5 @@ inline void checkErrors(const cudaError_t errorCode,
 #define cudaCheckErrors(val) checkErrors ( (val), #val, __FILE__, __LINE__ )
 
 
-#endif /* LoggerH */
+#endif /* LOGGER_H */
 
