@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July      2012, 10:27 (created)\n
- *              10 August    2017, 16:42 (revised)
+ *              11 August    2017, 14:07 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,8 +30,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef KSpaceFirstOrder3DSolverH
-#define	KSpaceFirstOrder3DSolverH
+#ifndef KSPACE_FIRST_ORDER_3D_SOLVER_H
+#define	KSPACE_FIRST_ORDER_3D_SOLVER_H
 
 
 #include <Parameters/Parameters.h>
@@ -358,7 +358,7 @@ class KSpaceFirstOrder3DSolver
     };
 
     /**
-     * @brief  Get velocity shifted on normal grid in x direction
+     * @brief  Get velocity shifted on normal grid in x direction.
      * @return Unstaggeted velocity matrix.
      */
     RealMatrix& getUxShifted()
@@ -366,7 +366,7 @@ class KSpaceFirstOrder3DSolver
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kUxShifted);
     };
     /**
-     * @brief  Get velocity shifted on normal grid in y direction
+     * @brief  Get velocity shifted on normal grid in y direction.
      * @return Unstaggered velocity matrix.
      */
     RealMatrix& getUyShifted()
@@ -374,7 +374,7 @@ class KSpaceFirstOrder3DSolver
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kUyShifted);
     };
     /**
-     * @brief  Get velocity shifted on normal grid in z direction
+     * @brief  Get velocity shifted on normal grid in z direction.
      * @return Unstaggered velocity matrix.
      */
     RealMatrix& getUzShifted()
@@ -692,7 +692,7 @@ class KSpaceFirstOrder3DSolver
       return mMatrixContainer.getMatrix<IndexMatrix>(MatrixContainer::MatrixIdx::kSensorMaskIndex);
     };
     /**
-     * @brief  Get cuboid corners sensor mask. (Spatial geometry of mulitple sensors).
+     * @brief  Get cuboid corners sensor mask. (Spatial geometry of multiple sensors).
      * @return Sensor mask data.
      */
     IndexMatrix& getSensorMaskCorners()
@@ -855,7 +855,7 @@ private:
     size_t mActPercent;
 
     /// This variable is true when calculating first time step after restore from checkpoint (to allow asynchronous IO).
-    bool mIsTimestepRightAfterRestore;
+    bool   mIsTimestepRightAfterRestore;
 
     /// Total time of the simulation.
     TimeMeasure mTotalTime;
@@ -873,4 +873,4 @@ private:
 };// end of KSpaceFirstOrder3DSolver
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif /* TKSpaceFirstOrder3DSolverH */
+#endif /* KSPACE_FIRST_ORDER_3D_SOLVER_H */

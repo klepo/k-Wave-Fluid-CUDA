@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July      2012, 10:27 (created)\n
- *              10 August    2017, 16:41 (revised)
+ *              11 August    2017, 09:34 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -131,7 +131,7 @@ void KSpaceFirstOrder3DSolver::allocateMemory()
  */
 void KSpaceFirstOrder3DSolver::freeMemory()
 {
-  mMatrixContainer.FreeMatrices();
+  mMatrixContainer.freeMatrices();
   mOutputStreamContainer.freeStreams();
 }// end of freeMemory
 //----------------------------------------------------------------------------------------------------------------------
@@ -275,7 +275,7 @@ void KSpaceFirstOrder3DSolver::compute()
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
 
-    Logger::errorAndTerminate(Logger::wordWrapString(e.what(),kErrFmtPathDelimiters, 9).c_str());
+    Logger::errorAndTerminate(Logger::wordWrapString(e.what(),kErrFmtPathDelimiters, 9));
   }
 
   // Logger header for simulation
@@ -311,7 +311,7 @@ void KSpaceFirstOrder3DSolver::compute()
   catch (const std::exception& e)
   {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtSimulatoinFinalSeparator);
-    Logger::errorAndTerminate(Logger::wordWrapString(e.what(),kErrFmtPathDelimiters, 9).c_str());
+    Logger::errorAndTerminate(Logger::wordWrapString(e.what(),kErrFmtPathDelimiters, 9));
   }
 
   // Post processing region
@@ -341,7 +341,6 @@ void KSpaceFirstOrder3DSolver::compute()
     }
     else
     { // Finish
-
       Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, mSimulationTime.getElapsedTime());
       Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
       Logger::log(Logger::LogLevel::kBasic, kOutFmtPostProcessing);
@@ -362,7 +361,7 @@ void KSpaceFirstOrder3DSolver::compute()
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
 
-    Logger::errorAndTerminate(Logger::wordWrapString(e.what(),kErrFmtPathDelimiters,9).c_str());
+    Logger::errorAndTerminate(Logger::wordWrapString(e.what(), kErrFmtPathDelimiters,9));
   }
   mPostProcessingTime.stop();
 
@@ -377,7 +376,7 @@ void KSpaceFirstOrder3DSolver::compute()
   catch (const std::exception &e)
   {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
-    Logger::errorAndTerminate(Logger::wordWrapString(e.what(),kErrFmtPathDelimiters, 9).c_str());
+    Logger::errorAndTerminate(Logger::wordWrapString(e.what(), kErrFmtPathDelimiters, 9));
   }
 }// end of compute()
 //----------------------------------------------------------------------------------------------------------------------
@@ -409,7 +408,7 @@ size_t KSpaceFirstOrder3DSolver::getHostMemoryUsage()
 
     return pmc.PeakWorkingSetSize >> 20;
   #endif
-}// end of getHostMemoryUsageInMB
+}// end of getHostMemoryUsage
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -421,7 +420,7 @@ size_t KSpaceFirstOrder3DSolver::getDeviceMemoryUsage()
   cudaMemGetInfo(&free,&total);
 
   return ((total - free) >> 20);
-}// end of getDeviceMemoryUsageInMB
+}// end of getDeviceMemoryUsage
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -440,8 +439,8 @@ void KSpaceFirstOrder3DSolver::printFullCodeNameAndLicense() const
 {
   Logger::log(Logger::LogLevel::kBasic,
               kOutFmtBuildNoDataTime,
-              10,11, __DATE__,
-              8,8, __TIME__);
+              10, 11, __DATE__,
+              8, 8, __TIME__);
 
   if (mParameters.getGitHash() != "")
   {
@@ -882,7 +881,6 @@ void KSpaceFirstOrder3DSolver::storeSensorData()
   // Unless the time for sampling has come, exit.
   if (mParameters.getTimeIndex() >= mParameters.getSamplingStartTimeIndex())
   {
-
     // Read event for t_index-1. If sampling did not occur by then, ignored it.
     // if it did store data on disk (flush) - the GPU is running asynchronously.
     // But be careful, flush has to be one step delayed to work correctly.
@@ -900,7 +898,6 @@ void KSpaceFirstOrder3DSolver::storeSensorData()
 
     // Sample data for step t  (store event for sampling in next turn)
     mOutputStreamContainer.sampleStreams();
-
     // the last step (or data after) checkpoint are flushed in the main loop
   }
 }// end of storeSensorData
@@ -1279,8 +1276,8 @@ void KSpaceFirstOrder3DSolver::computePressureLinear()
     RealMatrix& densitySum           = getTemp1Real3D();
     RealMatrix& velocityGradientTerm = getTemp2Real3D();
 
-    RealMatrix& absorbTauTerm    = getTemp2Real3D();
-    RealMatrix& absorbEtaTerm    = getTemp3Real3D();
+    RealMatrix& absorbTauTerm        = getTemp2Real3D();
+    RealMatrix& absorbEtaTerm        = getTemp3Real3D();
 
     computePressureTermsLinear(densitySum, velocityGradientTerm);
 
@@ -2085,3 +2082,7 @@ void KSpaceFirstOrder3DSolver::loadElapsedTimeFromOutputFile()
 
 }// end of loadElapsedTimeFromOutputFile
 //----------------------------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Private methods --------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//

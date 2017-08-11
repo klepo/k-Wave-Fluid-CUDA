@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              10 August   2017, 16:41 (revised)
+ *              11 August   2017, 14:14 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,8 +29,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef SolverCudaKernelsH
-#define	SolverCudaKernelsH
+#ifndef SOLVER_CUDA_KERNELS_H
+#define	SOLVER_CUDA_KERNELS_H
 
 #include <MatrixClasses/RealMatrix.h>
 #include <MatrixClasses/ComplexMatrix.h>
@@ -543,7 +543,6 @@ namespace SolverCudaKernels
 
   //--------------------------------------------- unstaggered velocity -----------------------------------------------//
 
-
   /**
    * @brief Transpose a real 3D matrix in the X-Y direction. It is done out-of-place.
    *
@@ -598,4 +597,4 @@ namespace SolverCudaKernels
                                const ComplexMatrix& zShiftNegR);
 }// SolverCudaKernels
 //----------------------------------------------------------------------------------------------------------------------
-#endif /* SolverCudaKernelsH */
+#endif /* SOLVER_CUDA_KERNELS_H */
