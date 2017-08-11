@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        04 December  2014, 11:41 (created) \n
- *              08 August    2017, 13:38 (revised)
+ *              11 August    2017, 10:03 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -68,144 +68,127 @@ OutputStreamContainer::~OutputStreamContainer()
 
 /**
  * Add all streams in the simulation to the container, set all streams records here!
-
  */
 void OutputStreamContainer::addStreams(MatrixContainer& matrixContainer)
 {
   Parameters& params = Parameters::getInstance();
 
-  using MatrixIdx    = MatrixContainer::MatrixIdx;
-  using ReductionOp = BaseOutputStream::ReduceOperator;
-  //--------------------------------------------------- pressure  ----------------------------------------------------//
+  // shortcuts for long data types
+  using OI = OutputStreamIdx;
+  using MI = MatrixContainer::MatrixIdx;
+  using RO = BaseOutputStream::ReduceOperator;
+  //--------------------------------------------------- pressure -----------------------------------------------------//
   if (params.getStorePressureRawFlag())
   {
-    mContainer[OutputStreamIdx::kPressureRaw]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kP, kPressureRawName, ReductionOp::kNone);
+    mContainer[OI::kPressureRaw] = createNewOutputStream(matrixContainer, MI::kP, kPressureRawName, RO::kNone);
   }
 
   if (params.getStorePressureRmsFlag())
   {
-    mContainer[OutputStreamIdx::kPressureRms]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kP, kPressureRmsName, ReductionOp::kRms);
+    mContainer[OI::kPressureRms] = createNewOutputStream(matrixContainer, MI::kP, kPressureRmsName, RO::kRms);
   }
 
   if (params.getStorePressureMaxFlag())
   {
-    mContainer[OutputStreamIdx::kPressureMax]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kP, kPressureMaxName, ReductionOp::kMax);
+    mContainer[OI::kPressureMax] = createNewOutputStream(matrixContainer, MI::kP, kPressureMaxName, RO::kMax);
   }
 
   if (params.getStorePressureMinFlag())
   {
-    mContainer[OutputStreamIdx::kPressureMin]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kP, kPressureMinName, ReductionOp::kMin);
+    mContainer[OI::kPressureMin] = createNewOutputStream(matrixContainer, MI::kP, kPressureMinName, RO::kMin);
   }
 
   if (params.getStorePressureMaxAllFlag())
   {
-    mContainer[OutputStreamIdx::kPressureMaxAll]
-            = new WholeDomainOutputStream(params.getOutputFile(),
-                                          kPressureMaxAllName,
-                                          matrixContainer.getMatrix<RealMatrix>(MatrixIdx::kP),
-                                          ReductionOp::kMax);
+    mContainer[OI::kPressureMaxAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                  kPressureMaxAllName,
+                                                                  matrixContainer.getMatrix<RealMatrix>(MI::kP),
+                                                                  RO::kMax);
   }
 
   if (params.getStorePressureMinAllFlag())
   {
-    mContainer[OutputStreamIdx::kPressureMinAll]
-            = new WholeDomainOutputStream(params.getOutputFile(),
-                                          kPressureMinAllName,
-                                          matrixContainer.getMatrix<RealMatrix>(MatrixIdx::kP),
-                                          ReductionOp::kMin);
+    mContainer[OI::kPressureMinAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                  kPressureMinAllName,
+                                                                  matrixContainer.getMatrix<RealMatrix>(MI::kP),
+                                                                  RO::kMin);
   }
 
   //-------------------------------------------------- velocity ------------------------------------------------------//
   if (params.getStoreVelocityRawFlag())
   {
-    mContainer[OutputStreamIdx::kVelocityXRaw]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUxSgx, kUxName, ReductionOp::kNone);
-    mContainer[OutputStreamIdx::kVelocityYRaw]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUySgy, kUyName, ReductionOp::kNone);
-    mContainer[OutputStreamIdx::kVelocityZRaw]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUzSgz, kUzName, ReductionOp::kNone);
+    mContainer[OI::kVelocityXRaw] = createNewOutputStream(matrixContainer, MI::kUxSgx, kUxName, RO::kNone);
+    mContainer[OI::kVelocityYRaw] = createNewOutputStream(matrixContainer, MI::kUySgy, kUyName, RO::kNone);
+    mContainer[OI::kVelocityZRaw] = createNewOutputStream(matrixContainer, MI::kUzSgz, kUzName, RO::kNone);
   }
 
   if (params.getStoreVelocityNonStaggeredRawFlag())
   {
-    mContainer[OutputStreamIdx::kVelocityXNonStaggeredRaw]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUxShifted, kUxNonStaggeredName, ReductionOp::kNone);
-    mContainer[OutputStreamIdx::kVelocityYNonStaggeredRaw]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUyShifted, kUyNonStaggeredName, ReductionOp::kNone);
-    mContainer[OutputStreamIdx::kVelocityZNonStaggeredRaw]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUzShifted, kUzNonStaggeredName, ReductionOp::kNone);
+    mContainer[OI::kVelocityXNonStaggeredRaw] = createNewOutputStream(matrixContainer,
+                                                                      MI::kUxShifted,
+                                                                      kUxNonStaggeredName,
+                                                                      RO::kNone);
+    mContainer[OI::kVelocityYNonStaggeredRaw] = createNewOutputStream(matrixContainer,
+                                                                      MI::kUyShifted,
+                                                                      kUyNonStaggeredName,
+                                                                      RO::kNone);
+    mContainer[OI::kVelocityZNonStaggeredRaw] = createNewOutputStream(matrixContainer,
+                                                                      MI::kUzShifted,
+                                                                      kUzNonStaggeredName,
+                                                                      RO::kNone);
   }
 
   if (params.getStoreVelocityRmsFlag())
   {
-    mContainer[OutputStreamIdx::kVelocityXRms]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUxSgx, kUxRmsName, ReductionOp::kRms);
-    mContainer[OutputStreamIdx::kVelocityYRms]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUySgy, kUyRmsName, ReductionOp::kRms);
-    mContainer[OutputStreamIdx::kVelocityZRms]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUzSgz, kUzRmsName, ReductionOp::kRms);
+    mContainer[OI::kVelocityXRms] = createNewOutputStream(matrixContainer, MI::kUxSgx, kUxRmsName, RO::kRms);
+    mContainer[OI::kVelocityYRms] = createNewOutputStream(matrixContainer, MI::kUySgy, kUyRmsName, RO::kRms);
+    mContainer[OI::kVelocityZRms] = createNewOutputStream(matrixContainer, MI::kUzSgz, kUzRmsName, RO::kRms);
   }
 
    if (params.getVelocityMaxFlag())
   {
-    mContainer[OutputStreamIdx::kVelocityXMax]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUxSgx, kUxMaxName, ReductionOp::kMax);
-    mContainer[OutputStreamIdx::kVelocityYMax]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUySgy, kUyMaxName, ReductionOp::kMax);
-    mContainer[OutputStreamIdx::kVelocityZMax]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUzSgz, kUzMaxName, ReductionOp::kMax);
+    mContainer[OI::kVelocityXMax] = createNewOutputStream(matrixContainer, MI::kUxSgx, kUxMaxName, RO::kMax);
+    mContainer[OI::kVelocityYMax] = createNewOutputStream(matrixContainer, MI::kUySgy, kUyMaxName, RO::kMax);
+    mContainer[OI::kVelocityZMax] = createNewOutputStream(matrixContainer, MI::kUzSgz, kUzMaxName, RO::kMax);
   }
 
   if (params.getStoreVelocityMinFlag())
   {
-    mContainer[OutputStreamIdx::kVelocityXMin]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUxSgx, kUxMinName, ReductionOp::kMin);
-    mContainer[OutputStreamIdx::kVelocityYMin]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUySgy, kUyMinName, ReductionOp::kMin);
-    mContainer[OutputStreamIdx::kVelocityZMin]
-            = createNewOutputStream(matrixContainer, MatrixIdx::kUzSgz, kUzMinName, ReductionOp::kMin);
+    mContainer[OI::kVelocityXMin] = createNewOutputStream(matrixContainer, MI::kUxSgx, kUxMinName, RO::kMin);
+    mContainer[OI::kVelocityYMin] = createNewOutputStream(matrixContainer, MI::kUySgy, kUyMinName, RO::kMin);
+    mContainer[OI::kVelocityZMin] = createNewOutputStream(matrixContainer, MI::kUzSgz, kUzMinName, RO::kMin);
   }
 
   if (params.getStoreVelocityMaxAllFlag())
   {
-    mContainer[OutputStreamIdx::kVelocityXMaxAll] =
-            new WholeDomainOutputStream(params.getOutputFile(),
-                                             kUxMaxAllName,
-                                             matrixContainer.getMatrix<RealMatrix>(MatrixIdx::kUxSgx),
-                                             ReductionOp::kMax);
-    mContainer[OutputStreamIdx::kVelocityYMaxAll] =
-            new WholeDomainOutputStream(params.getOutputFile(),
-                                             kUyMaxAllName,
-                                             matrixContainer.getMatrix<RealMatrix>(MatrixIdx::kUySgy),
-                                             ReductionOp::kMax);
-    mContainer[OutputStreamIdx::kVelocityZMaxAll] =
-            new WholeDomainOutputStream(params.getOutputFile(),
-                                             kUzMaxAllName,
-                                             matrixContainer.getMatrix<RealMatrix>(MatrixIdx::kUzSgz),
-                                             ReductionOp::kMax);
+    mContainer[OI::kVelocityXMaxAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                   kUxMaxAllName,
+                                                                   matrixContainer.getMatrix<RealMatrix>(MI::kUxSgx),
+                                                                   RO::kMax);
+    mContainer[OI::kVelocityYMaxAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                   kUyMaxAllName,
+                                                                   matrixContainer.getMatrix<RealMatrix>(MI::kUySgy),
+                                                                   RO::kMax);
+    mContainer[OI::kVelocityZMaxAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                   kUzMaxAllName,
+                                                                   matrixContainer.getMatrix<RealMatrix>(MI::kUzSgz),
+                                                                   RO::kMax);
   }
 
   if (params.getStoreStoreVelocityMinAllFlag())
   {
-    mContainer[OutputStreamIdx::kVelocityXMinAll] =
-            new WholeDomainOutputStream(params.getOutputFile(),
-                                             kUxMinAllName,
-                                             matrixContainer.getMatrix<RealMatrix>(MatrixIdx::kUxSgx),
-                                             ReductionOp::kMin);
-    mContainer[OutputStreamIdx::kVelocityYMinAll] =
-            new WholeDomainOutputStream(params.getOutputFile(),
-                                             kUyMinAllName,
-                                             matrixContainer.getMatrix<RealMatrix>(MatrixIdx::kUySgy),
-                                             ReductionOp::kMin);
-    mContainer[OutputStreamIdx::kVelocityZMinAll] =
-            new WholeDomainOutputStream(params.getOutputFile(),
-                                             kUzMinAllName,
-                                             matrixContainer.getMatrix<RealMatrix>(MatrixIdx::kUzSgz),
-                                             ReductionOp::kMin);
+    mContainer[OI::kVelocityXMinAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                   kUxMinAllName,
+                                                                   matrixContainer.getMatrix<RealMatrix>(MI::kUxSgx),
+                                                                   RO::kMin);
+    mContainer[OI::kVelocityYMinAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                   kUyMinAllName,
+                                                                   matrixContainer.getMatrix<RealMatrix>(MI::kUySgy),
+                                                                   RO::kMin);
+    mContainer[OI::kVelocityZMinAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                   kUzMinAllName,
+                                                                   matrixContainer.getMatrix<RealMatrix>(MI::kUzSgz),
+                                                                   RO::kMin);
   }
 }// end of addStreams
 //----------------------------------------------------------------------------------------------------------------------
@@ -243,7 +226,6 @@ void OutputStreamContainer::reopenStreams()
 
 /**
  * Sample all streams.
- * @warning In the GPU implementation, no data is flushed on disk (just data is sampled)
  */
 void OutputStreamContainer::sampleStreams()
 {

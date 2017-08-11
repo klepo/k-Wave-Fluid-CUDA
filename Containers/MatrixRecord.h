@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December 2014, 15:44 (created) \n
- *              21 July      2017, 16:48 (revised)
+ *              11 August   2017, 09:50 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,8 +29,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef MatrixRecordH
-#define MatrixRecordH
+#ifndef MATRIX_RECORD_H
+#define MATRIX_RECORD_H
 
 #include <MatrixClasses/BaseMatrix.h>
 #include <MatrixClasses/BaseFloatMatrix.h>
@@ -70,13 +70,13 @@ struct MatrixRecord
   ~MatrixRecord() {};
 
   /**
-   * @brief Copy constructor of TMatrixRecord.
-   * @param [in] src - Source
+   * @brief Copy constructor of MatrixRecord.
+   * @param [in] src - Source.
    */
   MatrixRecord(const MatrixRecord& src);
   /**
    * operator=
-   * @param [in] src - Source object
+   * @param [in] src - Source object/
    * @return A new object.
    */
   MatrixRecord& operator= (const MatrixRecord& src);
@@ -110,5 +110,5 @@ struct MatrixRecord
 };// end of MatrixRecord
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* MatrixRecordH */
+#endif	/* MATRIX_RECORD_H */
 

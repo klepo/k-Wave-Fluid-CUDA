@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December  2014, 16:17 (created) \n
- *              21 July      2017, 16:48 (revised)
+ *              11 August    2017, 10:14 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,8 +30,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef MatrixContainerH
-#define MatrixContainerH
+#ifndef MATRIX_CONTAINER_H
+#define MATRIX_CONTAINER_H
 
 #include <map>
 
@@ -240,7 +240,7 @@ class MatrixContainer
     /**
      * @brief   operator[]
      * @param [in]  matrixIdx - Matrix identifier
-     * @return Matrix record
+     * @return Matrix record.
      */
     inline MatrixRecord& operator[](const MatrixIdx matrixIdx)
     {
@@ -248,11 +248,11 @@ class MatrixContainer
     };
 
     /**
-     * @brief   Get the matrix with a specific type from the container.
-     * @details This template routine returns the reference to the matrix re-casted to the specific
-     *          class type.
-     * @param [in] matrixIdx - Matrix identifier
-     * @return     Reference to the Matrix
+     * @brief      Get the matrix with a specific type from the container.
+     * @details    This template routine returns the reference to the matrix re-casted to the specific
+     *             class type.
+     * @param [in] matrixIdx - Matrix identifier,
+     * @return     Reference to the Matrix,
      */
     template <typename T>
     inline T& getMatrix(const MatrixIdx matrixIdx)
@@ -270,16 +270,16 @@ class MatrixContainer
     /// Populate the container based on the simulation type.
     void addMatrices();
     /// Destroy and free all matrices.
-    void FreeMatrices();
+    void freeMatrices();
 
     /**
      * @brief Load all marked matrices from the input HDF5 file.
-     * @param [in] inputFile - HDF5 input file handle
+     * @param [in] inputFile - HDF5 input file handle.
      */
     void loadDataFromInputFile(Hdf5File& inputFile);
     /**
      * @brief Load selected matrices from the checkpoint HDF5 file.
-     * @param [in] checkpointFile - HDF5 checkpoint file handle
+     * @param [in] checkpointFile - HDF5 checkpoint file handle.
      */
     void loadDataFromCheckpointFile(Hdf5File& checkpointFile);
     /**
@@ -303,5 +303,5 @@ class MatrixContainer
 
 };// end of MatrixContainer
 //----------------------------------------------------------------------------------------------------------------------
-#endif	/* MatrixContainerH */
+#endif	/* MATRIX_CONTAINER_H */
 

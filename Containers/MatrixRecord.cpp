@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        02 December 2014, 15:44 (created) \n
- *              21 July      2017, 16:48 (revised)
+ *              11 August   2017, 09:51 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -50,7 +50,7 @@ MatrixRecord::MatrixRecord()
     dimensionSizes(),
     loadData(false),
     checkpoint(false),
-       matrixName()
+    matrixName()
 {
 
 }// end of constructor
@@ -70,7 +70,6 @@ MatrixRecord::MatrixRecord(const MatrixRecord& src)
 
 }// end of copy constructor
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * operator =

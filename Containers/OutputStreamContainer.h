@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        04 December  2014, 11:00 (created)
- *              21 July      2017, 16:48 (revised)
+ *              11 August    2017, 09:36 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,8 +29,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef OutputStreamContainerH
-#define OutputStreamContainerH
+#ifndef OUTPUT_STREAM_CONTAINER_H
+#define OUTPUT_STREAM_CONTAINER_H
 
 #include <cstring>
 #include <map>
@@ -105,17 +105,17 @@ class OutputStreamContainer
       /// Min of velocity z over sensor mask.
       kVelocityZMin,
 
-      /// Max of velocity x over all domain
+      /// Max of velocity x over all domain.
       kVelocityXMaxAll,
-      /// Max of velocity y over all domain
+      /// Max of velocity y over all domain.
       kVelocityYMaxAll,
-      /// Max of velocity z over all domain
+      /// Max of velocity z over all domain.
       kVelocityZMaxAll,
-      /// Min of velocity x over all domain
+      /// Min of velocity x over all domain.
       kVelocityXMinAll,
-      /// Min of velocity y over all domain
+      /// Min of velocity y over all domain.
       kVelocityYMinAll,
-      /// Min of velocity z over all domain
+      /// Min of velocity z over all domain.
       kVelocityZMinAll,
     };// end of OutputStreamIdx
 
@@ -131,7 +131,7 @@ class OutputStreamContainer
     OutputStreamContainer& operator=(OutputStreamContainer&) = delete;
 
     /**
-     * @brief Get size of the container.
+     * @brief  Get size of the container.
      * @return the size of the container
      */
     inline size_t size() const
@@ -141,7 +141,7 @@ class OutputStreamContainer
 
     /**
      * @brief   Is the container empty?
-     * @return  true - If the container is empty
+     * @return  true - If the container is empty.
      */
     inline bool isEmpty() const
     {
@@ -149,9 +149,9 @@ class OutputStreamContainer
     };
 
     /**
-     * @brief     Operator []
-     * @param [in] outputStreamIdx - Id of the output stream
-     * @return An element of the container
+     * @brief operator []
+     * @param [in] outputStreamIdx - Id of the output stream.
+     * @return An element of the container.
      */
     BaseOutputStream& operator[] (const OutputStreamIdx outputStreamIdx)
     {
@@ -175,7 +175,7 @@ class OutputStreamContainer
 
     /**
      * @brief   Sample all streams.
-     * @warning In the GPU implementation, no data is flushed on disk (just data is sampled)
+     * @warning In the GPU implementation, no data is flushed on disk (just data is sampled).
      */
     void sampleStreams();
     /// Flush streams to disk - only raw streams.
@@ -214,4 +214,4 @@ class OutputStreamContainer
 }; // end of OutputStreamContainer
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/*  OutputStreamContainerH */
+#endif	/* OUTPUT_STREAM_CONTAINER_H */
