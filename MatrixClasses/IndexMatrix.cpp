@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              21 July     2017, 13:05 (revised)
+ *              11 August   2017, 14:35 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -68,7 +68,7 @@ IndexMatrix::~IndexMatrix()
 {
   freeMemory();
 }// end of ~IndexMatrix
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read data from HDF5 file (only from the root group).

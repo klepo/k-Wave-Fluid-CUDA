@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2011, 14:02 (created) \n
- *              20 July     2017, 14:17 (revised)
+ *              11 August   2017, 14:138(revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,8 +29,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef ComplexMatrixH
-#define ComplexMatrixH
+#ifndef COMPLEX_MATRIX_H
+#define COMPLEX_MATRIX_H
 
 #include <complex>
 
@@ -71,8 +71,8 @@ class ComplexMatrix : public BaseFloatMatrix
     /**
      * @brief   Read matrix from HDF5 file.
      * @details Read matrix from HDF5 file.
-     * @param [in] file       - Handle to the HDF5 file
-     * @param [in] matrixName - HDF5 dataset name to read from
+     * @param [in] file       - Handle to the HDF5 file.
+     * @param [in] matrixName - HDF5 dataset name to read from.
      * @throw ios::failure    - If error occurred.
      */
     virtual void readData(Hdf5File&   file,
@@ -82,8 +82,8 @@ class ComplexMatrix : public BaseFloatMatrix
      * @brief   Write data into HDF5 file.
      * @details Write data into HDF5 file.
      * @param [in] file             - Handle to the HDF5 file
-     * @param [in] matrixName       - HDF5 dataset name to write to
-     * @param [in] compressionLevel - Compression level for the HDF5 dataset
+     * @param [in] matrixName       - HDF5 dataset name to write to.
+     * @param [in] compressionLevel - Compression level for the HDF5 dataset.
      * @throw ios::failure          - If an error occurred.
      */
     virtual void writeData(Hdf5File&    file,
@@ -120,5 +120,5 @@ private:
 };// end of ComplexMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* ComplexMatrixH */
+#endif	/* CUFFT_COMPLEX_MATRIX_H */
 

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2011, 12:13 (created) \n
- *              19 July      2017, 12:15 (revised)
+ *              11 August    2017, 14:42 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,8 +30,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef BaseFloatMatrixH
-#define BaseFloatMatrixH
+#ifndef BASE_FLOAT_MATRIX_H
+#define BASE_FLOAT_MATRIX_H
 
 #include <MatrixClasses/BaseMatrix.h>
 #include <Utils/DimensionSizes.h>
@@ -62,17 +62,17 @@ class BaseFloatMatrix : public BaseMatrix
      * @brief  Get dimension sizes of the matrix.
      * @return Dimension sizes of the matrix.
      */
-    virtual const DimensionSizes& getDimensionSizes() const {return mDimensionSizes;}
+    virtual const DimensionSizes& getDimensionSizes() const { return mDimensionSizes; }
     /**
      * @brief  Size of the matrix.
      * @return Number of elements.
      */
-    virtual size_t size()                             const {return mSize;};
+    virtual size_t size()                             const { return mSize; };
     /**
      * @brief  The capacity of the matrix (this may differ from size due to padding, etc.).
      * @return Capacity of the currently allocated storage.
      */
-    virtual size_t capacity()                         const {return mCapacity;};
+    virtual size_t capacity()                         const { return mCapacity; };
 
     /// Zero all elements of the matrix (NUMA first touch).
     virtual void   zeroMatrix();
@@ -88,22 +88,22 @@ class BaseFloatMatrix : public BaseMatrix
      * @brief  Get matrix data stored stored on the host side (for direct host kernels).
      * @return Pointer to matrix data stored on the host side.
      */
-    virtual float*       getHostData()                      {return mHostData;}
+    virtual float*       getHostData()                      { return mHostData; }
     /**
      * @brief  Get matrix data stored stored on the host side (for direct host kernels).
      * @return Pointer to matrix data stored on the host side.
      */
-    virtual const float* getHostData()                const {return mHostData;}
+    virtual const float* getHostData()                const { return mHostData; }
     /**
      * @brief  Get matrix data stored stored on the device side (for direct device kernels).
      * @return Pointer to matrix data on the device side.
      */
-    virtual float*       getDeviceData()                    {return mDeviceData;}
+    virtual float*       getDeviceData()                    { return mDeviceData; }
     /**
      * @brief  Get matrix data stored stored on the device side (for direct device kernels).
      * @return Pointer to matrix data on the device side.
      */
-    virtual const float* getDeviceData()              const {return mDeviceData;}
+    virtual const float* getDeviceData()              const { return mDeviceData; }
 
     /// Copy data from CPU -> GPU (Host -> Device).
     virtual void copyToDevice();
@@ -143,4 +143,4 @@ class BaseFloatMatrix : public BaseMatrix
 };//end of class BaseFloatMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif /* BaseFloatMatrixH */
+#endif /* BASE_INDEX_MATRIX_H */

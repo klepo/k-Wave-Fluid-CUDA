@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2011, 10:30 (created) \n
- *              20 July      2017, 14:19 (revised)
+ *              11 August    2017, 14:30 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -28,8 +28,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef RealMatrixH
-#define RealMatrixH
+#ifndef REAL_MATRIX_H
+#define REAL_MATRIX_H
 
 #include <MatrixClasses/BaseFloatMatrix.h>
 #include <Utils/DimensionSizes.h>
@@ -39,8 +39,8 @@ class ComplexMatrix;
 
 /**
  * @class   RealMatrix
- * @brief   The class for real matrices
- * @details The class for real matrices (floats) on both CPU and GPU side
+ * @brief   The class for real matrices.
+ * @details The class for real matrices (floats) on both CPU and GPU side.
  */
 class RealMatrix : public BaseFloatMatrix
 {
@@ -65,7 +65,7 @@ class RealMatrix : public BaseFloatMatrix
      * @details Read matrix from HDF5 file.
      * @param [in] file       - Handle to the HDF5 file
      * @param [in] matrixName - HDF5 dataset name to read from
-     * @throw ios::failure    - if error occurred.
+     * @throw ios::failure    - If error occurred.
      */
     virtual void readData(Hdf5File&   file,
                           MatrixName& matrixName);
@@ -75,39 +75,39 @@ class RealMatrix : public BaseFloatMatrix
      * @param [in] file             - Handle to the HDF5 file
      * @param [in] matrixName       - HDF5 dataset name to write to
      * @param [in] compressionLevel - Compression level for the HDF5 dataset
-     * @throw ios::failure          - if an error occurred.
+     * @throw ios::failure          - If an error occurred.
      */
     virtual void writeData(Hdf5File&    file,
                            MatrixName&  matrixName,
                            const size_t compressionLevel);
 
     /**
-     * @brief  Operator [].
+     * @brief  operator[].
      * @param [in] index - 1D index into the matrix.
      * @return An element of the matrix.
      */
-    inline float&       operator[](const size_t& index)       {return mHostData[index];};
+    inline float&       operator[](const size_t& index)       { return mHostData[index]; };
     /**
      * @brief   Operator [], constant version.
      * @param [in] index - 1D index into the matrix.
      * @return An element of the matrix.
      */
-    inline const float& operator[](const size_t& index) const {return mHostData[index];};
+    inline const float& operator[](const size_t& index) const { return mHostData[index]; };
 
-private:
-   /**
-     * @brief Initialize dimension sizes
+  private:
+    /**
+     * @brief Initialize dimension sizes.
      * @param [in] dimensionSizes - Dimension sizes of the matrix.
      */
     void initDimensions(const DimensionSizes& dimensionSizes);
 
      /// Number of elements to get 4MB block of data.
      static constexpr size_t kChunkSize1D4MB   = 1048576; //(4MB)
-    /// Number of elements to get 1MB block of data.
-    static constexpr size_t kChunkSize1D1MB   =  262144; //(1MB)
-    /// Number of elements to get 256KB block of data.
-    static constexpr size_t kChunkSize1D256kB =   65536; //(256KB)
+     /// Number of elements to get 1MB block of data.
+      static constexpr size_t kChunkSize1D1MB   =  262144; //(1MB)
+      /// Number of elements to get 256KB block of data.
+      static constexpr size_t kChunkSize1D256kB =   65536; //(256KB)
 };// end of class RealMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* RealMatrixH */
+#endif	/* REAL_MATRIX_H */

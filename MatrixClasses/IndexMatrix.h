@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              20 July     2017, 14:18 (revised)
+ *              11 August   2017, 14:39 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,8 +29,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef IndexMatrixH
-#define	IndexMatrixH
+#ifndef INDEX_MATRIX_H
+#define INDEX_MATRIX_H
 
 #include <MatrixClasses/BaseIndexMatrix.h>
 #include <Utils/DimensionSizes.h>
@@ -83,17 +83,17 @@ class IndexMatrix : public BaseIndexMatrix
                            const size_t compressionLevel);
 
     /**
-     * @brief  Operator [].
+     * @brief  operator [].
      * @param [in] index - 1D index into the matrix.
      * @return An element of the matrix.
      */
-    inline size_t&       operator[](const size_t& index)       {return mHostData[index];};
+    inline size_t&       operator[](const size_t& index)       { return mHostData[index]; };
     /**
-     * @brief  Operator [], constant version.
+     * @brief  operator [], constant version.
      * @param [in] index - 1D index into the matrix.
      * @return An element of the matrix.
      */
-    inline const size_t& operator[](const size_t& index) const {return mHostData[index];};
+    inline const size_t& operator[](const size_t& index) const { return mHostData[index]; };
 
     /**
      * @brief  Get the top left corner of the index-th cuboid.
@@ -130,6 +130,6 @@ class IndexMatrix : public BaseIndexMatrix
     static constexpr size_t kChunkSize1D256kB =   65536; //(256KB)
 
 };// end of IndexMatrix
-//--------------------------------------------------------------------------------------------------
-#endif /* IndexMatrixH */
+//----------------------------------------------------------------------------------------------------------------------
+#endif /* INDEX_MATRIX_H */
 

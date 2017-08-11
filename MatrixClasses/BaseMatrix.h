@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2012, 11:34 (created) \n
- *              20 July     2017, 17:01 (revised)
+ *              11 August   2017, 14:39 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,8 +30,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef BaseMatrixH
-#define BaseMatrixH
+#ifndef BASE_MATRIX_H
+#define BASE_MATRIX_H
 
 #include <Utils/DimensionSizes.h>
 #include <Hdf5/Hdf5File.h>
@@ -104,5 +104,5 @@ class BaseMatrix
 };// end of BaseMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif /* BaseMatrixH */
+#endif /* BASE_MATRIX_H */
 

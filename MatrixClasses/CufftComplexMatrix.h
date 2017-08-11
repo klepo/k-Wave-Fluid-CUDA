@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August    2011, 13:10 (created) \n
- *              18 July      2017, 16:24 (revised)
+ *              11 August    2017, 14:36 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,8 +30,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef CufftComplexMatrixH
-#define CufftComplexMatrixH
+#ifndef CUFFT_COMPLEX_MATRIX_H
+#define CUFFT_COMPLEX_MATRIX_H
 
 #include <map>
 #include <cufft.h>
@@ -50,7 +50,7 @@ class CufftComplexMatrix : public ComplexMatrix
     /// Default constructor not allowed.
     CufftComplexMatrix() = delete;
     /**
-     * @brief Constructor, inherited from ComplexMatrix
+     * @brief Constructor, inherited from ComplexMatrix.
      * @param [in] dimensionSizes - Dimension sizes of the matrix.
      */
     CufftComplexMatrix(const DimensionSizes& dimensionSizes) : ComplexMatrix(dimensionSizes) {};
@@ -90,7 +90,7 @@ class CufftComplexMatrix : public ComplexMatrix
      *          batch. Data is transposed and padded according to the cuFFT data layout before the
      *          transform. The FFT is done in-place.
      *
-     * @param [in] inMatrixDims  - The dimension sizes of the input matrix
+     * @param [in] inMatrixDims  - The dimension sizes of the input matrix.
      * @throw std::runtime_error - If the plan can't be created.
      */
     static void createR2CFftPlan1DY(const DimensionSizes& inMatrixDims);
@@ -172,7 +172,6 @@ class CufftComplexMatrix : public ComplexMatrix
      * @throw std::runtime_error - If the plan is not valid.
      */
     void computeR2CFft1DY(RealMatrix& inMatrix);
-
     /**
      * @brief   Compute 1D out-of-place Real-to-Complex FFT in the Z dimension.
      * @details Computer forward out-of-place 1DY Real-to-Complex FFT. The matrix is first X<->Z transposed
@@ -246,4 +245,4 @@ class CufftComplexMatrix : public ComplexMatrix
     static std::map<cufftResult, ErrorMessage> sCufftErrorMessages;
 };// CufftComplexMatrix
 //----------------------------------------------------------------------------------------------------------------------
-#endif /* CufftComplexMatrixH */
+#endif /* CUFFT_COMPLEX_MATRIX_H */
