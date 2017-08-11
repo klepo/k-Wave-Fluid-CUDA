@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2012, 10:57 (created) \n
- *              08 July     2017, 13:39 (revised)
+ *              11 August   2017, 09:27 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -736,25 +736,26 @@ Name                            Size           Data type       Domain Type      
 using std::string;
 
 /**
- * The main function of the kspaceFirstOrder3D-CUDA
- * @param [in] argc
- * @param [in] argv
+ * The main function of the kspaceFirstOrder3D-CUDA.
+ *
+ * @param [in] argc  - Number of commandline parameters.
+ * @param [in] argv  - Commandline parameters.
  * @return
  */
 int main(int argc, char** argv)
 {
   // Create k-Space solver
-  KSpaceFirstOrder3DSolver KSpaceSolver;
+  KSpaceFirstOrder3DSolver kSpaceSolver;
 
   // print header
   Logger::log(Logger::LogLevel::kBasic, kOutFmtFirstSeparator);
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtCodeName, KSpaceSolver.getCodeName().c_str());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtCodeName, kSpaceSolver.getCodeName().c_str());
   Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
 
   // Create parameters and parse command line
   Parameters& params = Parameters::getInstance();
 
-  //-------------- Init simulation ----------------//
+  //------------------------------------- Init simulation ---------------------------------------//
   try
   {
     // Initialise Parameters by parsing the command line and reading input file scalars
@@ -765,25 +766,24 @@ int main(int argc, char** argv)
     // When we know the GPU, we can print out the code version
     if (params.isPrintVersionOnly())
     {
-      KSpaceSolver.printFullCodeNameAndLicense();
+      kSpaceSolver.printFullCodeNameAndLicense();
       return EXIT_SUCCESS;
     }
   }
   catch (const std::exception &e)
   {
      Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
-    // must be repeated in case the GPU we want to printout the code version
-    // and all GPUs are busy
+    // must be repeated in case the GPU we want to print out the code version for and all GPUs are busy
     if (params.isPrintVersionOnly())
     {
-      KSpaceSolver.printFullCodeNameAndLicense();
+      kSpaceSolver.printFullCodeNameAndLicense();
     }
 
     if (!params.isPrintVersionOnly())
     {
       Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
     }
-    Logger::errorAndTerminate(Logger::wordWrapString(e.what(),kErrFmtPathDelimiters, 9).c_str());
+    Logger::errorAndTerminate(Logger::wordWrapString(e.what(),kErrFmtPathDelimiters, 9));
   }
 
   // set number of threads and bind them to cores
@@ -796,47 +796,50 @@ int main(int argc, char** argv)
 
   Logger::log(Logger::LogLevel::kBasic, kOutFmtInitializationHeader);
 
-  //-------------- Allocate memory----------------//
+  //-------------------------------------- Allocate memory --------------------------------------//
   try
   {
-    KSpaceSolver.allocateMemory();
+    kSpaceSolver.allocateMemory();
   }
   catch (const std::bad_alloc& e)
   {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
-    Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtOutOfMemory," ", 9).c_str());
+    // 9 = Indentation of Error:
+    Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtOutOfMemory," ", 9));
   }
   catch (const std::exception& e)
   {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
-    Logger::errorAndTerminate(Logger::wordWrapString(e.what(), kErrFmtPathDelimiters, 13).c_str());
+    const string errorMessage = string(kErrFmtUnknownError) + e.what();
+    Logger::errorAndTerminate(Logger::wordWrapString(errorMessage, kErrFmtPathDelimiters, 9));
   }
 
-  //-------------- Load input data ----------------//
+  //-------------------------------------- Load input data --------------------------------------//
   try
   {
-    KSpaceSolver.loadInputData();
+    kSpaceSolver.loadInputData();
   }
   catch (const std::ios::failure& e)
   {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
-    Logger::errorAndTerminate(Logger::wordWrapString(e.what(), kErrFmtPathDelimiters, 9).c_str());
+    // 9 = Indentation of Error:
+    Logger::errorAndTerminate(Logger::wordWrapString(e.what(), kErrFmtPathDelimiters, 9));
   }
   catch (const std::exception& e)
   {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
 
-    const string ErrorMessage = string(kErrFmtUnknownError) + e.what();
-    Logger::errorAndTerminate(Logger::wordWrapString(ErrorMessage, kErrFmtPathDelimiters, 13).c_str());
+    const string errorMessage = string(kErrFmtUnknownError) + e.what();
+    Logger::errorAndTerminate(Logger::wordWrapString(errorMessage, kErrFmtPathDelimiters, 9));
   }
 
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, KSpaceSolver.getDataLoadTime());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, kSpaceSolver.getDataLoadTime());
 
-
+  // did we recover from checkpoint?
   if (params.getTimeIndex() > 0)
   {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
@@ -844,31 +847,27 @@ int main(int argc, char** argv)
   }
 
 
-  // start computation
+  //----------------------------------------- Simulation ----------------------------------------//
   Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
   // exception are caught inside due to different log formats
-  KSpaceSolver.compute();
+  kSpaceSolver.compute();
 
-
-
-  // summary
+  //------------------------------------------- Summary -----------------------------------------//
   Logger::log(Logger::LogLevel::kBasic, kOutFmtSummaryHeader);
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtHostMemoryUsage,   KSpaceSolver.getHostMemoryUsage());
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceMemoryUsage, KSpaceSolver.getDeviceMemoryUsage());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtHostMemoryUsage,   kSpaceSolver.getHostMemoryUsage());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceMemoryUsage, kSpaceSolver.getDeviceMemoryUsage());
 
-Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
 
 // Elapsed Time time
-if (KSpaceSolver.getCumulatedTotalTime() != KSpaceSolver.getTotalTime())
+if (kSpaceSolver.getCumulatedTotalTime() != kSpaceSolver.getTotalTime())
   {
-    Logger::log(Logger::LogLevel::kBasic, kOutFmtLegExecutionTime, KSpaceSolver.getTotalTime());
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtLegExecutionTime, kSpaceSolver.getTotalTime());
   }
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtTotalExecutionTime, KSpaceSolver.getCumulatedTotalTime());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtTotalExecutionTime, kSpaceSolver.getCumulatedTotalTime());
 
-
-  // end of computation
   Logger::log(Logger::LogLevel::kBasic, kOutFmtEndOfSimulation);
 
   return EXIT_SUCCESS;
 }// end of main
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
