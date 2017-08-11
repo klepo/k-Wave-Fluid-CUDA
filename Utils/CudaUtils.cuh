@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        22 March    2016, 15:25 (created) \n
- *              12 July     2017, 09:43 (revised)
+ *              11 August   2017, 15:52 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,8 +30,8 @@
  */
 
 
-#ifndef CudaUtilsCuh
-#define CudaUtilsCuh
+#ifndef CUDA_UTILS_H
+#define CUDA_UTILS_H
 
 #include <Parameters/CudaDeviceConstants.cuh>
 
@@ -40,7 +40,7 @@
 //--------------------------------------------------------------------------------------------------------------------//
 /**
  * This variable holds necessary simulation constants in the CUDA GPU memory. The variable is
- * defined in CUDADeviceConstants.cu
+ * defined in CUDADeviceConstants.cu.
  */
 extern __constant__ CudaDeviceConstants cudaDeviceConstants;
 
@@ -52,7 +52,7 @@ extern __constant__ CudaDeviceConstants cudaDeviceConstants;
  * @brief   Get global 1D coordinate for 1D CUDA block.
  * @details Get global 1D coordinate for 1D CUDA block.
  *
- * @return  x-coordinate for 1D CUDA block
+ * @return  x-coordinate for 1D CUDA block.
  */
 inline __device__ unsigned int getIndex()
 {
@@ -64,7 +64,7 @@ inline __device__ unsigned int getIndex()
  * @brief   Get x-stride for 3D CUDA block (for processing multiple grid points by a single thread).
  * @details Get x-stride for 3D CUDA block (for processing multiple grid points by a single thread).
  *
- * @return x stride for 3D CUDA block
+ * @return x stride for 3D CUDA block.
  */
 inline __device__ unsigned int getStride()
 {
@@ -76,8 +76,8 @@ inline __device__ unsigned int getStride()
  * @brief   Get 3D coordinates for a real matrix form a 1D index.
  * @details Get 3D coordinates for a real matrix form a 1D index.
  *
- * @param [in] i - index
- * @return 3D coordinates
+ * @param [in] i - index.
+ * @return 3D coordinates.
  */
 inline __device__ dim3 getReal3DCoords(const unsigned int i)
 {
@@ -91,8 +91,8 @@ inline __device__ dim3 getReal3DCoords(const unsigned int i)
  * @brief   Get 3D coordinates for a complex matrix form a 1D index.
  * @details Get 3D coordinates for a complex matrix form a 1D index.
  *
- * @param [in] i - index
- * @return 3D coordinates
+ * @param [in] i - index.
+ * @return 3D coordinates.
  */
 inline __device__ dim3 getComplex3DCoords(const unsigned int i)
 {
@@ -265,4 +265,4 @@ inline __device__ void operator+=(float2&     a,
 }// end of operator+=
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif /* CudaUtilsCuh */
+#endif /* CUDA_UTILS_H */

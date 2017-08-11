@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        15 August   2012, 09:35 (created) \n
- *              12 July     2017, 11:56 (revised)
+ *              11 August   2017, 15:54 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,9 +29,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-
-#ifndef TimeMeasureH
-#define	TimeMeasureH
+#ifndef TIME_MEASURE_H
+#define TIME_MEASURE_H
 
 #ifdef _OPENMP
   #include <omp.h>
@@ -178,7 +177,7 @@ class TimeMeasure
     /// Elapsed time in previous simulation legs
     double mElapsedTimeOverPreviousLegs;
 
-};// end of TTimeMeasure
+};// end of TimeMeasure
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* TimeMeasureH */
+#endif	/* TIME_MEASURE_H */

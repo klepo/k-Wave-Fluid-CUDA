@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        09 August     2011, 12:34 (created) \n
- *              11 July       2017, 10:25 (revised)
+ *              11 August     2017, 15:52 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,8 +30,8 @@
  */
 
 
-#ifndef DimensionSizesH
-#define	DimensionSizesH
+#ifndef DIMENSION_SIZES_H
+#define DIMENSION_SIZES_H
 
 #include <cstdlib>
 
@@ -102,8 +102,8 @@ struct DimensionSizes
 
   /**
    * @brief Operator ==
-   * @param [in] other  - The second operand to compare with
-   * @return true if the dimension sizes are equal
+   * @param [in] other  - The second operand to compare with.
+   * @return true if the dimension sizes are equal.
    */
   inline bool operator==(const DimensionSizes& other) const
   {
@@ -112,7 +112,7 @@ struct DimensionSizes
 
   /**
    * @brief Operator !=
-   * @param [in] other     - the second operand to compare with
+   * @param [in] other    - the second operand to compare with.
    * @return true if !=
    */
   inline bool operator!=(const DimensionSizes& other) const
@@ -121,10 +121,12 @@ struct DimensionSizes
   };
 
   /**
-   * Operator -
-   * Get the size of the cube defined by two corners
-   * @param [in] op1 - Usually bottom right corner
-   * @param [in] op2 - Usually top left corner
+   * @brief Operator -
+   *
+   * Get the size of the cube defined by two corners.
+   *
+   * @param [in] op1 - Usually bottom right corner.
+   * @param [in] op2 - Usually top left corner.
    * @return the size of the inner cuboid
    */
   inline friend DimensionSizes operator-(const DimensionSizes& op1,
@@ -142,15 +144,15 @@ struct DimensionSizes
     }
   };
 
-  /// number of elements in the x direction
+  /// Number of elements in the x direction.
   size_t nx;
-  /// number of elements in the y direction
+  /// Number of elements in the y direction.
   size_t ny;
-  /// number of elements in the z direction
+  /// Number of elements in the z direction.
   size_t nz;
   /// Number of time steps (for time series datasets).
   size_t nt;
 }; // end of TDimensionSizes
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* #define	DimensionSizesH */
+#endif	/* #define	DIMENSION_SIZES_H */
