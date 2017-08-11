@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August    2014, 10:00 (created)
- *              20 July      2017, 14:21 (revised)
+ *              11 August    2017, 15:21 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,8 +29,8 @@
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
  * If not, see http://www.gnu.org/licenses/.
  */
-#ifndef IndexOutputStreamH
-#define IndexOutputStreamH
+#ifndef INDEX_OUTPUT_STREAM_H
+#define INDEX_OUTPUT_STREAM_H
 
 #include <cuda_runtime.h>
 
@@ -56,11 +56,11 @@ class IndexOutputStream : public BaseOutputStream
      * operator together. The constructor DOES NOT allocate memory because the size of the sensor mask
      * is not known at the time the instance of  the class is being created.
      *
-     * @param [in] file         - Handle to the HDF5 (output) file
-     * @param [in] datasetName  - The dataset's name (index based sensor data stored in a single dataset)
-     * @param [in] sourceMatrix - The source matrix (only real matrices are supported)
-     * @param [in] sensorMask   - Index based sensor mask
-     * @param [in] reduceOp     - Reduce operator
+     * @param [in] file         - Handle to the HDF5 (output) file.
+     * @param [in] datasetName  - The dataset's name (index based sensor data stored in a single dataset).
+     * @param [in] sourceMatrix - The source matrix (only real matrices are supported).
+     * @param [in] sensorMask   - Index based sensor mask.
+     * @param [in] reduceOp     - Reduce operator.
      */
     IndexOutputStream(Hdf5File&            file,
                       MatrixName&          datasetName,
@@ -85,7 +85,7 @@ class IndexOutputStream : public BaseOutputStream
     virtual void reopen();
 
     /**
-     * @brief Sample data into buffer, apply reduction or copy to the CPU side
+     * @brief Sample data into buffer, apply reduction or copy to the CPU side.
      * @warning data is not flushed, there is no sync.
      */
     virtual void sample();
@@ -119,8 +119,8 @@ class IndexOutputStream : public BaseOutputStream
     /// Has the sampling finished?
     cudaEvent_t mEventSamplingFinished;
 
-}; // end of TIndexOutputHDF5Stream
+}; // end of IndexOutputStream
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif /* IndexOutputStreamH */
+#endif /* INDEX_OUTPUT_STREAM_H */
 

@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        28 August    2014, 10:20 (created)
- *              20 July      2017, 14:22 (revised)
+ *              11 August    2017, 15:21 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,8 +30,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef WholeDomainOutputStreamH
-#define WholeDomainOutputStreamH
+#ifndef WHOLE_DOMAIN_OUTPUT_STREAM_H
+#define WHOLE_DOMAIN_OUTPUT_STREAM_H
 
 #include <OutputStreams/BaseOutputStream.h>
 
@@ -49,10 +49,10 @@ class WholeDomainOutputStream : public BaseOutputStream
     WholeDomainOutputStream() = delete;
     /**
      * @brief Constructor - links the HDF5 dataset and SourceMatrix
-     * @param [in] file         - HDF5 file to write the output to
-     * @param [in] datasetName  - The name of the HDF5 group containing datasets for particular cuboids
-     * @param [in] sourceMatrix - Source matrix to be sampled
-     * @param [in] reduceOp     - Reduce operator
+     * @param [in] file         - HDF5 file to write the output to.
+     * @param [in] datasetName  - The name of the HDF5 group containing datasets for particular cuboids.
+     * @param [in] sourceMatrix - Source matrix to be sampled.
+     * @param [in] reduceOp     - Reduce operator.
      */
     WholeDomainOutputStream(Hdf5File&            file,
                             MatrixName&          datasetName,
@@ -79,7 +79,7 @@ class WholeDomainOutputStream : public BaseOutputStream
     /// Sample data (copy from GPU memory and then flush - no overlapping implemented!)
     virtual void sample();
 
-    /// Flush data to disk (from raw streams only) - empty routine (no overlapping implemented)
+    /// Flush data to disk (from raw streams only) - empty routine (no overlapping implemented).
     virtual void flushRaw() {};
 
     /// Apply post-processing on the buffer and flush it to the file.
@@ -103,5 +103,5 @@ class WholeDomainOutputStream : public BaseOutputStream
 };// end of WholeDomainOutputHDF5Stream
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif /* WholeDomainOutputStreamH */
+#endif /* WHOLE_DOMAIN_OUTPUT_STREAM_H */
 

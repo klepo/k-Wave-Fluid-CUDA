@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 February  2015, 12:51 (created)
- *              20 July      2017, 14:21 (revised)
+ *              11 August    2017, 15:22 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,8 +30,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef CuboidOutputStreamH
-#define CuboidOutputStreamH
+#ifndef CUBOID_OUTPUT_STREAM_H
+#define CUBOID_OUTPUT_STREAM_H
 
 #include <vector>
 #include <cuda_runtime.h>
@@ -88,7 +88,6 @@ class CuboidOutputStream : public BaseOutputStream
 
     /**
      * @brief Sample grid points, line them up in the buffer, if necessary a reduce operator is applied.
-     *
      * @warning data is not flushed, there is no sync.
      */
     virtual void sample();
@@ -121,7 +120,7 @@ class CuboidOutputStream : public BaseOutputStream
 
     /**
      * @brief  Create a new dataset for a given cuboid specified by index (order).
-     * @param  [in] cuboidIdx - Index of the cuboid in the sensor mask
+     * @param  [in] cuboidIdx - Index of the cuboid in the sensor mask.
      * @return HDF5 handle to the dataset.
      */
     virtual hid_t createCuboidDataset(const size_t cuboidIdx);
@@ -138,7 +137,7 @@ class CuboidOutputStream : public BaseOutputStream
     /// vector keeping handles and positions of all cuboids
     std::vector<CuboidInfo> mCuboidsInfo;
 
-    /// Timestep to store (N/A for aggregated).
+    /// Time step to store (N/A for aggregated).
     size_t mSampledTimeStep;
 
     /// Has the sampling finished?
@@ -146,5 +145,5 @@ class CuboidOutputStream : public BaseOutputStream
 };// end of CuboidOutputStream
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* CuboidOutputStreamH */
+#endif	/* CUBOID_OUTPUT_STREAM_H */
 

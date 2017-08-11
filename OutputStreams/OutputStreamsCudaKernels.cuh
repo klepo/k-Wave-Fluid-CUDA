@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 January   2015, 16:25 (created) \n
- *              19 July      2017, 15:22 (revised)
+ *              11 August    2017, 15:27 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,8 +30,8 @@
  */
 
 
-#ifndef OutputStreamsCudaKernelsH
-#define OutputStreamsCudaKernelsH
+#ifndef OUTPUT_STREAMS_CUDA_KERNELS_H
+#define OUTPUT_STREAMS_CUDA_KERNELS_H
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -106,5 +106,5 @@ namespace OutputStreamsCudaKernels
 }// end of OutputStreamsCudaKernels
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* OutputStreamsCudaKernelsH */
+#endif	/* OUTPUT_STREAMS_CUDA_KERNELS_H */
 

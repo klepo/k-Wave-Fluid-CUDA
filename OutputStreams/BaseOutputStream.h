@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July      2012, 10:30 (created) \n
- *              20 July      2017, 17:01 (revised)
+ *              11 August    2017, 15:25 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -29,8 +29,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef BaseOutputStreamH
-#define BaseOutputStreamH
+#ifndef BASE_OUTPUT_STREAM_H
+#define BASE_OUTPUT_STREAM_H
 
 
 #include <MatrixClasses/RealMatrix.h>
@@ -56,11 +56,11 @@ class BaseOutputStream
     {
       /// Store actual data (time series).
       kNone,
-       /// Calculate root mean square
+       /// Calculate root mean square.
       kRms,
-      /// Store maximum
+      /// Store maximum.
       kMax,
-      /// Store minimum
+      /// Store minimum.
       kMin
     };
 
@@ -151,17 +151,17 @@ class BaseOutputStream
     /// Buffer size
     size_t  mSize;
 
-    /// Temporary buffer for store on the GPU side
+    /// Temporary buffer for store on the GPU side.
     float* mHostBuffer;
-    /// Temporary buffer on the GPU side - only for aggregated quantities
+    /// Temporary buffer on the GPU side - only for aggregated quantities.
     float* mDeviceBuffer;
 
-    /// chunk size of 4MB in number of float elements
+    /// chunk size of 4MB in number of float elements.
     static constexpr size_t kChunkSize4MB = 1048576;
-    /// The minimum number of elements to start sampling in parallel (4MB)
+    /// The minimum number of elements to start sampling in parallel (4MB).
     static constexpr size_t kMinGridpointsToSampleInParallel = 1048576;
 
 };// end of BaseOutputStream
 //----------------------------------------------------------------------------------------------------------------------
-#endif /* BaseOutputStreamH */
+#endif /* BASE_OUTPUT_STREAM_H */
 
