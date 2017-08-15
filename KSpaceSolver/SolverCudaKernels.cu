@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              10 August   2017, 16:41 (revised)
+ *              15 August   2017, 14:59 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -443,18 +443,19 @@ void SolverCudaKernels::computeVelocityHomogeneousNonuniform(RealMatrix&       u
  * @param [in, out] uxSgx                 - Here we add the signal.
  * @param [in]      velocitySourceIndex   - Where to add the signal (source).
  * @param [in]      transducerSourceInput - Transducer signal.
- * @param [in, out] delayMask             - Delay mask to push the signal in the domain (incremented per invocation).
+ * @param [in]      delayMask             - Delay mask to push the signal in the domain (incremented per invocation).
+ * @param [in]      timeIndex             - Actual time step.
 
  */
 __global__ void cudaAddTransducerSource(float*        uxSgx,
                                         const size_t* velocitySourceIndex,
                                         const float*  transducerSourceInput,
-                                        size_t*       delayMask)
+                                        const size_t* delayMask,
+                                        const size_t  timeIndex)
 {
   for (auto i = getIndex(); i < cudaDeviceConstants.velocitySourceSize; i += getStride())
   {
-    uxSgx[velocitySourceIndex[i]] += transducerSourceInput[delayMask[i]];
-    delayMask[i]++;
+    uxSgx[velocitySourceIndex[i]] += transducerSourceInput[delayMask[i] + timeIndex];
   }
 }// end of cudaAddTransducerSource
 //----------------------------------------------------------------------------------------------------------------------
@@ -465,7 +466,8 @@ __global__ void cudaAddTransducerSource(float*        uxSgx,
 void SolverCudaKernels::addTransducerSource(RealMatrix&        uxSgx,
                                             const IndexMatrix& velocitySourceIndex,
                                             const RealMatrix&  transducerSourceInput,
-                                            IndexMatrix&       delayMask)
+                                            const IndexMatrix& delayMask,
+                                            const size_t       timeIndex)
 {
   // cuda only supports 32bits anyway
   const int sourceSize = static_cast<int>(velocitySourceIndex.size());
@@ -479,7 +481,8 @@ void SolverCudaKernels::addTransducerSource(RealMatrix&        uxSgx,
                          (uxSgx.getDeviceData(),
                           velocitySourceIndex.getDeviceData(),
                           transducerSourceInput.getDeviceData(),
-                          delayMask.getDeviceData());
+                          delayMask.getDeviceData(),
+                          timeIndex);
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of AddTransducerSource
