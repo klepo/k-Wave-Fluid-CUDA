@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        12 July      2012, 10:27 (created)\n
- *              11 August    2017, 09:34 (revised)
+ *              15 August    2017, 14:59 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -772,7 +772,8 @@ void KSpaceFirstOrder3DSolver::computeMainLoop()
       SolverCudaKernels::addTransducerSource(getUxSgx(),
                                              getVelocitySourceIndex(),
                                              getTransducerSourceInput(),
-                                             getDelayMask());
+                                             getDelayMask(),
+                                             timeIndex);
     }
 
     // compute gradient of velocity

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 March    2013, 13:10 (created) \n
- *              11 August   2017, 14:14 (revised)
+ *              15 August   2017, 14:15 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -166,12 +166,14 @@ namespace SolverCudaKernels
    * @param [in, out] uxSgx                 - Here we add the signal.
    * @param [in]      velocitySourceIndex   - Where to add the signal (source geometry).
    * @param [in]      transducerSourceInput - Transducer signal.
-   * @param [in, out] delayMask             - Delay mask to push the signal in the domain (incremented per invocation).
+   * @param [in]      delayMask             - Delay mask to push the signal in the domain (incremented per invocation).
+   * @param [in]      timeIndex             - Actual time step.
    */
   void addTransducerSource(RealMatrix&        uxSgx,
                            const IndexMatrix& velocitySourceIndex,
                            const RealMatrix&  transducerSourceInput,
-                           IndexMatrix&       delayMask);
+                           const IndexMatrix& delayMask,
+                           const size_t       timeIndex);
 
   /**
    * @brief Add in velocity source terms.
