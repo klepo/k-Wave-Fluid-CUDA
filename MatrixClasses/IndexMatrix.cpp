@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              28 June     2017, 15:14 (revised)
+ *              11 August   2017, 14:35 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -32,205 +32,187 @@
 #include <MatrixClasses/IndexMatrix.h>
 #include <Logger/Logger.h>
 
-//------------------------------------------------------------------------------------------------//
-//------------------------------------------ Constants -------------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------- Constants -----------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Public methods -----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Public methods ---------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+
 
 /**
  * Constructor allocating memory.
- *
- * @param [in] dimensionSizes - Dimension sizes
  */
-TIndexMatrix::TIndexMatrix(const TDimensionSizes& dimensionSizes)
-        : TBaseIndexMatrix()
+IndexMatrix::IndexMatrix(const DimensionSizes& dimensionSizes)
+  : BaseIndexMatrix()
 {
-  this->dimensionSizes = dimensionSizes;
+  mDimensionSizes = dimensionSizes;
 
-  nElements = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
+  mSize = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
 
-  nAllocatedElements = nElements;
+  mCapacity = mSize;
 
-  rowSize  = dimensionSizes.nx;
-  slabSize = dimensionSizes.nx * dimensionSizes.ny;
+  mRowSize  = dimensionSizes.nx;
+  mSlabSize = dimensionSizes.nx * dimensionSizes.ny;
 
-  AllocateMemory();
-}// end of TIndexMatrix
-//--------------------------------------------------------------------------------------------------
+  allocateMemory();
+}// end of IndexMatrix
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Destructor.
  */
-TIndexMatrix::~TIndexMatrix()
+IndexMatrix::~IndexMatrix()
 {
-  FreeMemory();
-}
-//--------------------------------------------------------------------------------------------------
+  freeMemory();
+}// end of ~IndexMatrix
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read data from HDF5 file (only from the root group).
- *
- * @param [in] file       - HDF5 file handle
- * @param [in] matrixName - HDF5 dataset name
- *
- * @throw ios:failure if error occurs.
  */
-void TIndexMatrix::ReadDataFromHDF5File(THDF5_File&  file,
-                                        TMatrixName& matrixName)
+void IndexMatrix::readData(Hdf5File&   file,
+                           MatrixName& matrixName)
 {
-  if (file.ReadMatrixDataType(file.GetRootGroup(), matrixName) != THDF5_File::TMatrixDataType::LONG)
+  if (file.readMatrixDataType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDataType::kLong)
   {
-    throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_INDEX, matrixName.c_str()));
+    throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotIndex, matrixName.c_str()));
   }
 
-  if (file.ReadMatrixDomainType(file.GetRootGroup(),matrixName) != THDF5_File::TMatrixDomainType::REAL)
+  if (file.readMatrixDomainType(file.getRootGroup(),matrixName) != Hdf5File::MatrixDomainType::kReal)
   {
-    throw std::ios::failure(TLogger::FormatMessage(ERR_FMT_MATRIX_NOT_REAL,matrixName.c_str()));
+    throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotReal,matrixName.c_str()));
   }
 
-  file.ReadCompleteDataset(file.GetRootGroup(), matrixName, dimensionSizes, hostData);
-}// end of LoadDataFromMatlabFile
-//--------------------------------------------------------------------------------------------------
+  file.readCompleteDataset(file.getRootGroup(), matrixName, mDimensionSizes, mHostData);
+}// end of readData
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write data to HDF5 file.
- *
- * @param [in] file             - HDF5 file handle
- * @param [in] matrixName       - HDF5 dataset name
- * @param [in] compressionLevel - compression level
- *
- * @throw ios:failure if error occurs.
  */
-void TIndexMatrix::WriteDataToHDF5File(THDF5_File&  file,
-                                       TMatrixName& matrixName,
-                                       const size_t compressionLevel)
+void IndexMatrix::writeData(Hdf5File&    file,
+                            MatrixName&  matrixName,
+                            const size_t compressionLevel)
 {
   // set chunks - may be necessary for long index based sensor masks
-  TDimensionSizes chunks = dimensionSizes;
+  DimensionSizes chunks = mDimensionSizes;
   chunks.nz = 1;
 
   //1D matrices
-  if ((dimensionSizes.ny == 1) && (dimensionSizes.nz == 1))
+  if ((mDimensionSizes.ny == 1) && (mDimensionSizes.nz == 1))
   {
     // Chunk = 4MB
-    if (dimensionSizes.nx > (4 * CHUNK_SIZE_1D_4MB))
+    if (mDimensionSizes.nx > (4 * kChunkSize1D4MB))
     {
-      chunks.nx = CHUNK_SIZE_1D_4MB;
+      chunks.nx = kChunkSize1D4MB;
     }
-    else if (dimensionSizes.nx > (4 * CHUNK_SIZE_1D_1MB))
+    else if (mDimensionSizes.nx > (4 * kChunkSize1D1MB))
     {
-      chunks.nx = CHUNK_SIZE_1D_1MB;
+      chunks.nx = kChunkSize1D1MB;
     }
-    else if (dimensionSizes.nx > (4 * CHUNK_SIZE_1D_256KB))
+    else if (mDimensionSizes.nx > (4 * kChunkSize1D256kB))
     {
-      chunks.nx = CHUNK_SIZE_1D_256KB;
+      chunks.nx = kChunkSize1D256kB;
     }
   }
 
   // create dataset and write a slab
-  hid_t dataset = file.CreateIndexDataset(file.GetRootGroup(),
-                                          matrixName,
-                                          dimensionSizes,
-                                          chunks,
-                                          compressionLevel);
+  hid_t dataset = file.createDataset(file.getRootGroup(),
+                                     matrixName,
+                                     mDimensionSizes,
+                                     chunks,
+                                     Hdf5File::MatrixDataType::kLong,
+                                     compressionLevel);
 
-  file.WriteHyperSlab(dataset, TDimensionSizes(0, 0, 0), dimensionSizes, hostData);
+  file.writeHyperSlab(dataset, DimensionSizes(0, 0, 0), mDimensionSizes, mHostData);
 
-  file.CloseDataset(dataset);
+  file.closeDataset(dataset);
 
   // write data and domain types
-  file.WriteMatrixDataType(file.GetRootGroup(),   matrixName, THDF5_File::TMatrixDataType::LONG);
-  file.WriteMatrixDomainType(file.GetRootGroup(), matrixName, THDF5_File::TMatrixDomainType::REAL);
-}// end of WriteDataToHDF5File
-//--------------------------------------------------------------------------------------------------
+  file.writeMatrixDataType(file.getRootGroup(),   matrixName, Hdf5File::MatrixDataType::kLong);
+  file.writeMatrixDomainType(file.getRootGroup(), matrixName, Hdf5File::MatrixDomainType::kReal);
+}// end of writeData
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Get the top left corner of the index-th cuboid. Cuboids are stored as 6-tuples (two 3D
  * coordinates). This gives the first three coordinates.
- *
- * @param [in] index - Index of the cuboid
- * @return The top left corner
  */
-TDimensionSizes TIndexMatrix::GetTopLeftCorner(const size_t& index) const
+DimensionSizes IndexMatrix::getTopLeftCorner(const size_t& index) const
 {
-  size_t x =  hostData[6 * index    ];
-  size_t y =  hostData[6 * index + 1];
-  size_t z =  hostData[6 * index + 2];
+  size_t x =  mHostData[6 * index    ];
+  size_t y =  mHostData[6 * index + 1];
+  size_t z =  mHostData[6 * index + 2];
 
-  return TDimensionSizes(x, y, z);
-}// end of GetTopLeftCorner
-//--------------------------------------------------------------------------------------------------
+  return DimensionSizes(x, y, z);
+}// end of getTopLeftCorner
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get the top bottom right of the index-th cuboid. Cuboids are stored as 6-tuples (two 3D
  * coordinates). This gives the first three coordinates. This routine works only on the CPU side.
- *
- * @param [in] index -Index of the cuboid
- * @return The bottom right corner
 */
-TDimensionSizes TIndexMatrix::GetBottomRightCorner(const size_t& index) const
+DimensionSizes IndexMatrix::getBottomRightCorner(const size_t& index) const
 {
-  size_t x =  hostData[6 * index + 3];
-  size_t y =  hostData[6 * index + 4];
-  size_t z =  hostData[6 * index + 5];
+  size_t x =  mHostData[6 * index + 3];
+  size_t y =  mHostData[6 * index + 4];
+  size_t z =  mHostData[6 * index + 5];
 
-  return TDimensionSizes(x, y, z);
+  return DimensionSizes(x, y, z);
 }// end of GetBottomRightCorner
-//-------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Recompute indeces, MATLAB -> C++.
  */
-void TIndexMatrix::RecomputeIndicesToCPP()
+void IndexMatrix::recomputeIndicesToCPP()
 {
-  #pragma omp parallel for if (nElements > 1e5)
-  for (size_t i = 0; i < nElements; i++)
+  #pragma omp parallel for if (mSize > 1e5)
+  for (size_t i = 0; i < mSize; i++)
   {
-    hostData[i]--;
+    mHostData[i]--;
   }
-}// end of RecomputeIndices
-//--------------------------------------------------------------------------------------------------
+}// end of recomputeIndicesToCPP
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Recompute indeces, C++ -> MATLAB.
  */
-void TIndexMatrix::RecomputeIndicesToMatlab()
+void IndexMatrix::recomputeIndicesToMatlab()
 {
-  #pragma omp parallel for if (nElements > 1e5)
-  for (size_t i = 0; i < nElements; i++)
+  #pragma omp parallel for if (mSize > 1e5)
+  for (size_t i = 0; i < mSize; i++)
   {
-    hostData[i]++;
+    mHostData[i]++;
   }
-}// end of RecomputeIndicesToMatlab
-//--------------------------------------------------------------------------------------------------
+}// end of recomputeIndicesToMatlab
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get total number of elements in all cuboids to be able to allocate output file.
- *
- * @return Total sampled grid points
  */
-size_t TIndexMatrix::GetTotalNumberOfElementsInAllCuboids() const
+size_t IndexMatrix::getSizeOfAllCuboids() const
 {
   size_t elementSum = 0;
-  for (size_t cuboidIdx = 0; cuboidIdx < dimensionSizes.ny; cuboidIdx++)
+  for (size_t cuboidIdx = 0; cuboidIdx < mDimensionSizes.ny; cuboidIdx++)
   {
-    elementSum += (GetBottomRightCorner(cuboidIdx) - GetTopLeftCorner(cuboidIdx)).GetElementCount();
+    elementSum += (getBottomRightCorner(cuboidIdx) - getTopLeftCorner(cuboidIdx)).nElements();
   }
 
   return elementSum;
-}// end of GetTotalNumberOfElementsInAllCuboids
-//--------------------------------------------------------------------------------------------------
+}// end of getSizeOfAllCuboids
+//----------------------------------------------------------------------------------------------------------------------
 
 
-//------------------------------------------------------------------------------------------------//
-//-------------------------------------- Protected methods ---------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------ Protected methods -------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Private methods ----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Private methods --------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//

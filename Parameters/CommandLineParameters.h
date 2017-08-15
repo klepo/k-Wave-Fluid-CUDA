@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August   2012, 11:25 (created) \n
- *              07 July     2017, 19:06 (revised)
+ *              11 August   2017, 15:46 (revised)
  *
  * @section Params Command Line Parameters
  *
@@ -199,181 +199,300 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef TCOMMAND_LINE_PARAMETERS_H
-#define TCOMMAND_LINE_PARAMETERS_H
+#ifndef COMMAND_LINE_PARAMETERS_H
+#define COMMAND_LINE_PARAMETERS_H
 
 #include <cstdlib>
 #include <string>
 
 /**
- * @class TCommandLineParameters
- * @brief The class to parse and store command line parameters.
+ * @class   CommandLineParameters
+ * @brief   The class to parse and store command line parameters.
  * @details The class to parse and store command line parameters.
  */
-class TCommandLineParameters
+class CommandLineParameters
 {
   public:
     /// Only TParameters can create this class.
-    friend class TParameters;
+    friend class Parameters;
 
     /// Copy constructor not allowed.
-    TCommandLineParameters(const TCommandLineParameters&) = delete;
+    CommandLineParameters(const CommandLineParameters&) = delete;
 
     /// Destructor.
-    virtual ~TCommandLineParameters() {};
+    virtual ~CommandLineParameters() {};
 
     /// operator= not allowed.
-    TCommandLineParameters& operator= (const TCommandLineParameters&) = delete;
+    CommandLineParameters& operator=(const CommandLineParameters&) = delete;
 
-    /// Get input file name.
-    const std::string& GetInputFileName()      const {return inputFileName;};
-    /// Get output file name.
-    const std::string& GetOutputFileName()     const {return outputFileName;};
-    /// Get Checkpoint file name.
-    const std::string& GetCheckpointFileName() const {return checkpointFileName;};
+    /**
+     * @brief Get input file name.
+     * @return Input file name.
+     */
+    const std::string& getInputFileName()      const { return mInputFileName; };
 
-    /// Get GPU device ID specified by the user (not necessary the one the code runs on).
-    int GetCUDADeviceIdx()              const {return cudaDeviceIdx;};
+    /**
+     * @brief  Get output file name.
+     * @return Output file name.
+     */
+    const std::string& getOutputFileName()     const { return mOutputFileName; };
 
-    /// Is --benchmark flag set?
-    bool IsBenchmarkFlag()              const {return benchmarkFlag;};
-    /// Is --version flag set?
-    bool IsVersion()                    const {return printVersion; };
-    /// Get benchmark time step count.
-    size_t GetBenchmarkTimeStepsCount() const {return benchmarkTimeStepCount;};
+    /**
+     * @brief  Get Checkpoint file name.
+     * @return Checkpoint file name.
+     */
+    const std::string& getCheckpointFileName() const { return mCheckpointFileName; };
 
-    /// Get compression level.
-    size_t GetCompressionLevel()        const {return compressionLevel;};
-    /// Get number of threads.
-    size_t GetNumberOfThreads()         const {return numberOfThreads;};
-    /// Get progress print interval.
-    size_t GetProgressPrintInterval()   const {return progressPrintInterval;};
-    /// Get start time index when sensor data collection begins.
-    size_t GetStartTimeIndex()          const {return startTimeStep;};
 
-    /// Is checkpoint enabled?
-    bool IsCheckpointEnabled()          const {return (checkpointInterval > 0); };
-    /// Get checkpoint interval
-    size_t GetCheckpointInterval()      const {return checkpointInterval; };
+    /**
+     * @brief  Get number of threads.
+     * @return Number of CPU threads value.
+     */
+    size_t getNumberOfThreads()         const { return mNumberOfThreads; };
 
-    /// Is --p_raw set?
-    bool IsStore_p_raw()                const {return store_p_raw;};
-    /// Is --p_rms set?
-    bool IsStore_p_rms()                const {return store_p_rms;};
-    /// Is --p_max set?
-    bool IsStore_p_max()                const {return store_p_max;};
-    /// Is --p_min set?
-    bool IsStore_p_min()                const {return store_p_min;};
-    /// Is --p_max_all set?
-    bool IsStore_p_max_all()            const {return store_p_max_all;};
-    /// Is --p_min_all set?
-    bool IsStore_p_min_all()            const {return store_p_min_all;};
-    /// Is --p_final set?
-    bool IsStore_p_final()              const {return store_p_final;};
+    /**
+     * @brief  Get GPU device id specified by the user (not necessary the one the code runs on).
+     * @return Device id specified by the user.
+     */
+    int    getCudaDeviceIdx()           const { return mCudaDeviceIdx; };
 
-    /// Is --u_raw set?
-    bool IsStore_u_raw()                const {return store_u_raw;};
-    /// Is --u_non_staggered_raw set?
-    bool IsStore_u_non_staggered_raw()  const {return store_u_non_staggered_raw;};
-    /// Is --u_rms set?
-    bool IsStore_u_rms()                const {return store_u_rms;};
-    /// Is --u_max set?
-    bool IsStore_u_max()                const {return store_u_max;};
-    /// Is --u_min set?
-    bool IsStore_u_min()                const {return store_u_min;};
-    /// Is --u_max_all set?
-    bool IsStore_u_max_all()            const {return store_u_max_all;};
-    /// Is --u_min set?
-    bool IsStore_u_min_all()            const {return store_u_min_all;};
-    /// Is --u_final set?
-    bool IsStore_u_final()              const {return store_u_final;};
+    /**
+     * @brief Get progress print interval.
+     * @return How often to print progress.
+     */
+    size_t getProgressPrintInterval()   const { return mProgressPrintInterval; };
 
-    /// Is --copy_mask set set?
-    bool IsCopySensorMask()             const {return copySensorMask;};
+    /**
+     * @brief  Get compression level.
+     * @return Compression level value for output and checkpoint files.
+     */
+    size_t getCompressionLevel()        const { return mCompressionLevel; };
 
-    /// Print usage..
-    void PrintUsage();
-    /// Print setup.
-    void PrintComandlineParamers();
-    /// Parse command line.
-    void ParseCommandLine(int argc, char** argv);
+    /**
+     * @brief  Is --benchmark set?
+     * @return true if the flag is set.
+     */
+    bool   isBenchmarkEnabled()         const { return mBenchmarkFlag; };
+
+    /**
+     * @brief  Get benchmark time step count.
+     * @return Number of time steps used to benchmark the code.
+     */
+    size_t getBenchmarkTimeStepsCount() const { return mBenchmarkTimeStepCount; };
+
+    /**
+     * @brief  Is checkpoint enabled?
+     * @return true if checkpointing is enabled.
+     */
+    bool   isCheckpointEnabled()        const { return (mCheckpointInterval > 0); };
+
+    /**
+     * @brief  Get checkpoint interval.
+     * @return Checkpoint interval in seconds.
+     */
+    size_t getCheckpointInterval()      const { return mCheckpointInterval; };
+
+    /**
+     * @brief  Is --version set?
+     * @return true if the flag is set.
+     */
+    bool   isPrintVersionOnly()         const { return mPrintVersionFlag; };
+
+
+    /**
+     * @brief Is --p_raw set?
+     * @return true if the flag is set.
+     */
+    bool   getStorePressureRawFlag()      const { return mStorePressureRawFlag; };
+
+    /**
+     * @brief  Is --p_rms set?
+     * @return true if the flag is set.
+     */
+    bool   getStorePressureRmsFlag()      const { return mStorePressureRmsFlag; };
+
+    /**
+     * @brief  Is --p_max set?
+     * @return true if the flag is set.
+     */
+    bool   getStorePressureMaxFlag()      const { return mStorePressureMaxFlag; };
+
+    /**
+     * @brief  Is --p_min set?
+     * @return true if the flag is set.
+     */
+    bool   getStorePressureMinFlag()      const { return mStorePressureMinFlag; };
+
+    /**
+     * @brief  Is --p_max_all set?
+     * @return true if the flag is set.
+     */
+    bool   getStorePressureMaxAllFlag()   const { return mStorePressureMaxAllFlag; };
+
+    /**
+     * @brief  Is --p_min_all set?
+     * @return true if the flag is set.
+     */
+    bool   getStorePressureMinAllFlag()   const { return mStorePressureMinAllFlag; };
+
+    /**
+     * @brief  Is --p_final set?
+     * @return true if the flag is set.
+     */
+    bool   getStorePressureFinalAllFlag() const { return mStorePressureFinalAllFlag; };
+
+
+    /**
+     * @brief  Is --u_raw set?
+     * @return true if the flag is set.
+     */
+    bool   getStoreVelocityRawFlag()             const { return mStoreVelocityRawFlag; };
+
+    /**
+     * @brief  Is --u_non_staggered_raw set?
+     * @return true if the flag is set.
+     */
+    bool   getStoreVelocityNonStaggeredRawFlag() const { return mStoreVelocityNonStaggeredRawFlag; };
+
+    /**
+     * @brief  Is --u_rms set?
+     * @return true if the flag is set.
+     */
+    bool   getStoreVelocityRmsFlag()             const { return mStoreVelocityRmsFlag; };
+
+    /**
+     * @brief  Is --u_max set?
+     * @return true if the flag is set.
+     */
+    bool   getStoreVelocityMaxFlag()             const { return mStoreVelocityMaxFlag; };
+
+    /**
+     * @brief  Is --u_min set?
+     * @return true if the flag is set.
+     */
+    bool   getStoreVelocityMinFlag()             const { return mStoreVelocityMinFlag; };
+
+    /**
+     * @brief  Is --u_max_all set?
+     * @return true if the flag is set.
+     */
+    bool   getStoreVelocityMaxAllFlag()          const { return mStoreVelocityMaxAllFlag; };
+
+    /**
+     * @brief  Is --u_min set?
+     * @return true if the flag is set.
+     */
+    bool getStoreVelocityMinAllFlag()            const { return mStoreVelocityMinAllFlag; };
+
+    /**
+     * @brief  Is --u_final set?
+     * @return true if the flag is set.
+     */
+    bool   getStoreVelocityFinalAllFlag()        const { return mStoreVelocityFinalAllFlag; };
+
+    /**
+     * @brief  Is --copy_mask set set?
+     * @return true if the flag is set.
+     */
+    bool   getCopySensorMaskFlag()               const { return mCopySensorMaskFlag; };
+
+    /**
+     * @brief  Get start time index when sensor data collection begins.
+     * @return When to start sampling data.
+     */
+    size_t getSamplingStartTimeIndex()           const { return mSamplingStartTimeStep; };
+
+
+    /// Print usage of the code
+    void printUsage();
+    /// Print setup commandline parameters.
+    void printComandlineParamers();
+
+    /**
+     * @brief Parse commandline parameters.
+     * @param [in, out] argc - number of commandline parameters.
+     * @param [in, out] argv - commandline parameters.
+     *
+     * @throw call exit when error in commandline.
+     */
+    void parseCommandLine(int argc, char** argv);
 
   protected:
     /// Default constructor - only friend class can create an instance.
-    TCommandLineParameters();
+    CommandLineParameters();
 
   private:
     /// Input file name.
-    std::string inputFileName;
+    std::string mInputFileName;
     /// Output file name.
-    std::string outputFileName;
+    std::string mOutputFileName;
     /// Checkpoint file name.
-    std::string checkpointFileName;
+    std::string mCheckpointFileName;
 
     /// Number of CPU threads value.
-    size_t numberOfThreads;
+    size_t mNumberOfThreads;
 
     /// Id of selected GPU devices.
-    int  cudaDeviceIdx;
+    int    mCudaDeviceIdx;
 
-    /// ProgressInterval value.
-    size_t progressPrintInterval;
-    /// CompressionLevel value.
-    size_t compressionLevel;
+    /// Progress interval value.
+    size_t mProgressPrintInterval;
+    /// Compression level value for output and checkpoint files.
+    size_t mCompressionLevel;
 
     /// BenchmarkFlag value.
-    bool   benchmarkFlag;
-    /// BenchmarkTimeStepsCount value.
-    size_t benchmarkTimeStepCount;
+    bool   mBenchmarkFlag;
+    /// Number of time steps used to benchmark the code
+    size_t mBenchmarkTimeStepCount;
     /// Checkpoint interval in seconds
-    size_t checkpointInterval;
+    size_t mCheckpointInterval;
 
-    /// print version of the code and exit.
-    bool printVersion;
+    /// Print version of the code and exit.
+    bool mPrintVersionFlag;
 
-    /// Store_p_raw value.
-    bool store_p_raw;
-    /// Store_p_rms value.
-    bool store_p_rms;
-    /// Store_p_max value.
-    bool store_p_max;
-    /// Store_p_min value.
-    bool store_p_min;
-    /// Store_p_max_all value.
-    bool store_p_max_all;
-    /// Store_p_min_all value.
-    bool store_p_min_all;
-    /// Store_p_final value.
-    bool store_p_final;
+    /// Store raw time-series of pressure over the sensor mask?
+    bool mStorePressureRawFlag;
+    /// Store RMS of pressure over the the sensor mask?
+    bool mStorePressureRmsFlag;
+    /// Store maximum of pressure over the sensor mask?
+    bool mStorePressureMaxFlag;
+    /// Store minimum of pressure over the sensor mask?
+    bool mStorePressureMinFlag;
+    /// Store maximum of pressure over the whole domain?
+    bool mStorePressureMaxAllFlag;
+    /// Store minimum of pressure over the whole domain?
+    bool mStorePressureMinAllFlag;
+    /// Store pressure in the final time step over the whole domain?
+    bool mStorePressureFinalAllFlag;
 
-    /// Store_u_raw value.
-    bool store_u_raw;
-    /// Store_u_non_staggered_raw value.
-    bool store_u_non_staggered_raw;
-    /// Store_u_rms value.
-    bool store_u_rms;
-    /// Store_u_max value.
-    bool store_u_max;
-    /// Store_u_min value.
-    bool store_u_min;
-    /// Store_u_max_all value.
-    bool store_u_max_all;
-    /// Store_u_min_all value.
-    bool store_u_min_all;
-    /// Store_u_final value.
-    bool store_u_final;
+    /// Store raw time-series of velocity over the sensor mask?
+    bool mStoreVelocityRawFlag;
+    /// Store un staggered raw time-series of velocity over the sensor mask?
+    bool mStoreVelocityNonStaggeredRawFlag;
+    /// Store RMS of velocity over the the sensor mask?
+    bool mStoreVelocityRmsFlag;
+    /// Store maximum of velocity over the sensor mask?
+    bool mStoreVelocityMaxFlag;
+    /// Store minimum of velocity over the sensor mask?
+    bool mStoreVelocityMinFlag;
+    /// Store maximum of velocity over the whole domain?
+    bool mStoreVelocityMaxAllFlag;
+    /// Store minimum of velocity over the whole domain?
+    bool mStoreVelocityMinAllFlag;
+    /// Store velocity in the final time step over the whole domain?
+    bool mStoreVelocityFinalAllFlag;
 
-    /// Copy sensor mask to the output file.
-    bool copySensorMask;
-    /// StartTimeStep value.
-    size_t startTimeStep;
+    /// Copy sensor mask to the output file?
+    bool mCopySensorMaskFlag;
+
+    /// When to start sampling data.
+    size_t mSamplingStartTimeStep;
 
     /// Default compression level.
-    static constexpr size_t DEFAULT_COMPRESSION_LEVEL = 0;
+    static constexpr size_t kDefaultCompressionLevel      = 0;
     /// Default progress print interval.
-    static constexpr size_t DEFAULT_PROGRESS_PRINT_INTERVAL  = 5;
-};// end of class TCommandLineParameters
-//--------------------------------------------------------------------------------------------------
+    static constexpr size_t kDefaultProgressPrintInterval = 5;
+};// end of class CommandLineParameters
+//----------------------------------------------------------------------------------------------------------------------
 
-#endif /* TCOMMAND_LINE_PARAMETERS_H */
-
+#endif /* COMMAND_LINE_PARAMETERS_H */

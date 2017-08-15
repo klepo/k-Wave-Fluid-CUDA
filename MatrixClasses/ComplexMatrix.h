@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        11 July     2011, 14:02 (created) \n
- *              07 July     2017, 18:42 (revised)
+ *              11 August   2017, 14:138(revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,7 +30,7 @@
  */
 
 #ifndef COMPLEX_MATRIX_H
-#define	COMPLEX_MATRIX_H
+#define COMPLEX_MATRIX_H
 
 #include <complex>
 
@@ -40,71 +40,85 @@
 #include <Utils/DimensionSizes.h>
 
 /**
- * @brief   C++ complex single precision values
- * @details C++ complex single precision values
+ * @brief   C++ complex single precision values.
+ * @details C++ complex single precision values.
  */
-using TFloatComplex=std::complex<float>;
+using FloatComplex = std::complex<float>;
 
 /**
- * @class   TComplexMatrix
+ * @class   ComplexMatrix
  * @brief   The class for complex matrices.
  * @details The class for complex matrices.
  */
-class TComplexMatrix : public TBaseFloatMatrix
+class ComplexMatrix : public BaseFloatMatrix
 {
   public:
     /// Default constructor not allowed.
-    TComplexMatrix() = delete;
-    /// Constructor.
-    TComplexMatrix(const TDimensionSizes& dimensionSizes);
+    ComplexMatrix() = delete;
+    /**
+     * @brief Constructor.
+     * @param [in] dimensionSizes - Dimension sizes of the matrix.
+     */
+    ComplexMatrix(const DimensionSizes& dimensionSizes);
     /// Copy constructor not allowed.
-    TComplexMatrix(const TComplexMatrix&) = delete;
+    ComplexMatrix(const ComplexMatrix&) = delete;
     /// Destructor.
-    virtual ~TComplexMatrix();
+    virtual ~ComplexMatrix();
 
     /// Operator= is not allowed.
-    TComplexMatrix& operator= (const TComplexMatrix&);
+    ComplexMatrix& operator= (const ComplexMatrix&);
 
     /**
-     * @brief   Operator [].
-     * @details Operator [].
-     * @param [in] index - 1D index into the array
-     * @return An element of the matrix
+     * @brief   Read matrix from HDF5 file.
+     * @details Read matrix from HDF5 file.
+     * @param [in] file       - Handle to the HDF5 file.
+     * @param [in] matrixName - HDF5 dataset name to read from.
+     * @throw ios::failure    - If error occurred.
      */
-    inline TFloatComplex& operator[](const size_t& index)
-    {
-      return reinterpret_cast<TFloatComplex*>(hostData)[index];
-    };
+    virtual void readData(Hdf5File&   file,
+                          MatrixName& matrixName);
 
+    /**
+     * @brief   Write data into HDF5 file.
+     * @details Write data into HDF5 file.
+     * @param [in] file             - Handle to the HDF5 file
+     * @param [in] matrixName       - HDF5 dataset name to write to.
+     * @param [in] compressionLevel - Compression level for the HDF5 dataset.
+     * @throw ios::failure          - If an error occurred.
+     */
+    virtual void writeData(Hdf5File&    file,
+                           MatrixName&  matrixName,
+                           const size_t compressionLevel);
+
+    /**
+     * @brief  Operator [].
+     * @param [in] index - 1D index into the matrix.
+     * @return An element of the matrix.
+     */
+    inline FloatComplex& operator[](const size_t& index)
+    {
+      return reinterpret_cast<FloatComplex*>(mHostData)[index];
+    };
     /**
      * @brief   Operator [], constant version.
-     * @details Operator [], constant version.
-     * @param [in] index - 1D index into the array
-     * @return element of the matrix
+     * @param [in] index - 1D index into the matrix.
+     * @return An element of the matrix.
      */
-    inline const TFloatComplex& operator[](const size_t& index) const
+    inline const FloatComplex& operator[](const size_t& index) const
     {
-      return reinterpret_cast<TFloatComplex*> (hostData)[index];
+      return reinterpret_cast<FloatComplex*> (mHostData)[index];
     };
-
-    /// Load data from the HDF5_File.
-    virtual void ReadDataFromHDF5File(THDF5_File& file,
-                                      TMatrixName& matrixName);
-
-    /// Write data into the HDF5_File
-    virtual void WriteDataToHDF5File(THDF5_File&  file,
-                                     TMatrixName& matrixName,
-                                     const size_t compressionLevel);
-
-
-protected:
-    /// Initialize dimension sizes and related structures.
-    virtual void InitDimensions(const TDimensionSizes& dimensionSizes);
 
 private:
 
-};// end of TComplexMatrix
-//--------------------------------------------------------------------------------------------------
+    /**
+     * @brief Initialize dimension sizes
+     * @param [in] dimensionSizes - Dimension sizes of the matrix.
+     */
+    void initDimensions(const DimensionSizes& dimensionSizes);
 
-#endif	/* COMPLEX_MATRIX_H */
+};// end of ComplexMatrix
+//----------------------------------------------------------------------------------------------------------------------
+
+#endif	/* CUFFT_COMPLEX_MATRIX_H */
 

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 July     2016, 12:27 (created) \n
- *              07 July     2016, 18:22 (revised)
+ *              11 August   2017, 14:25 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -31,25 +31,25 @@
 
 
 #ifndef ERROR_MESSAGES_WINDOWS_H
-#define	ERROR_MESSAGES_WINDOWS_H
+#define ERROR_MESSAGES_WINDOWS_H
 
 /**
  * @brief   Datatype for error messages.
  * @details Datatype for error messages.
  */
-using TErrorMessage = const std::string;
+using ErrorMessage = const std::string;
 
 /// Error message header
-TErrorMessage ERR_FMT_HEAD =
-        "+---------------------------------------------------------------+\n"
-        "|            !!! K-Wave experienced a fatal error !!!           |\n"
-        "+---------------------------------------------------------------+\n";
+ErrorMessage kErrFmtHead =
+  "+---------------------------------------------------------------+\n"
+  "|            !!! K-Wave experienced a fatal error !!!           |\n"
+  "+---------------------------------------------------------------+\n";
 
 /// Error message tailer
-TErrorMessage ERR_FMT_TAIL =
-        "+---------------------------------------------------------------+\n"
-        "|                      Execution terminated                     |\n"
-        "+---------------------------------------------------------------+\n";
+ErrorMessage kErrFmtTail =
+  "+---------------------------------------------------------------+\n"
+  "|                      Execution terminated                     |\n"
+  "+---------------------------------------------------------------+\n";
 
 
 #endif	/* ERROR_MESSAGES_WINDOWS_H */

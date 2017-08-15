@@ -1,5 +1,5 @@
 /**
- * @file        CUDAUtils.cuh
+ * @file        CudaUtils.cuh
  *
  * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        22 March    2016, 15:25 (created) \n
- *              25 July     2016, 10:56 (revised)
+ *              11 August   2017, 15:52 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,82 +30,82 @@
  */
 
 
-#ifndef CUDA_UTILS_CUH
-#define CUDA_UTILS_CUH
+#ifndef CUDA_UTILS_H
+#define CUDA_UTILS_H
 
-#include <Parameters/CUDADeviceConstants.cuh>
+#include <Parameters/CudaDeviceConstants.cuh>
 
-//------------------------------------------------------------------------------------------------//
-//------------------------------------------ Variables -------------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//--------------------------------------------------- Variables ------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 /**
  * This variable holds necessary simulation constants in the CUDA GPU memory. The variable is
- * defined in CUDADeviceConstants.cu
+ * defined in CUDADeviceConstants.cu.
  */
-extern __constant__ TCUDADeviceConstants cudaDeviceConstants;
+extern __constant__ CudaDeviceConstants cudaDeviceConstants;
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Index routines -----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Index routines ---------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
- * @brief  Get global 1D coordinate for 1D CUDA block.
+ * @brief   Get global 1D coordinate for 1D CUDA block.
  * @details Get global 1D coordinate for 1D CUDA block.
  *
- * @return  x-coordinate for 1D CUDA block
+ * @return  x-coordinate for 1D CUDA block.
  */
-inline __device__ unsigned int GetIndex()
+inline __device__ unsigned int getIndex()
 {
   return threadIdx.x + blockIdx.x * blockDim.x;
-}// end of GetIndex()
-//--------------------------------------------------------------------------------------------------
+}// end of getIndex()
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Get x-stride for 3D CUDA block (for processing multiple grid points by a single thread).
  * @details Get x-stride for 3D CUDA block (for processing multiple grid points by a single thread).
  *
- * @return x stride for 3D CUDA block
+ * @return x stride for 3D CUDA block.
  */
-inline __device__ unsigned int GetStride()
+inline __device__ unsigned int getStride()
 {
   return blockDim.x * gridDim.x;
-}// end of GetStride
-//--------------------------------------------------------------------------------------------------
+}// end of getStride
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- * @brief  Get 3D coordinates for a real matrix form a 1D index.
- * @details  Get 3D coordinates for a real matrix form a 1D index.
+ * @brief   Get 3D coordinates for a real matrix form a 1D index.
+ * @details Get 3D coordinates for a real matrix form a 1D index.
  *
- * @param [in] i - index
- * @return 3D coordinates
+ * @param [in] i - index.
+ * @return 3D coordinates.
  */
-inline __device__ dim3 GetReal3DCoords(const unsigned int i)
+inline __device__ dim3 getReal3DCoords(const unsigned int i)
 {
   return dim3( i % cudaDeviceConstants.nx,
               (i / cudaDeviceConstants.nx) % cudaDeviceConstants.ny,
-               i / ( cudaDeviceConstants.nx * cudaDeviceConstants.ny));
-}// end of GetReal3DCoords
-//-------------------------------------------------------------------------------------------------
+               i / (cudaDeviceConstants.nx * cudaDeviceConstants.ny));
+}// end of getReal3DCoords
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- * @brief   Get a 3D coordinates for a complex matrix form a 1D index.
- * @details Get a 3D coordinates for a complex matrix form a 1D index.
+ * @brief   Get 3D coordinates for a complex matrix form a 1D index.
+ * @details Get 3D coordinates for a complex matrix form a 1D index.
  *
- * @param [in] i - index
- * @return 3D coordinates
+ * @param [in] i - index.
+ * @return 3D coordinates.
  */
-inline __device__ dim3 GetComplex3DCoords(const unsigned int i)
+inline __device__ dim3 getComplex3DCoords(const unsigned int i)
 {
   return dim3( i % cudaDeviceConstants.nxComplex,
               (i / cudaDeviceConstants.nxComplex) % cudaDeviceConstants.nyComplex,
-               i / ( cudaDeviceConstants.nxComplex * cudaDeviceConstants.nyComplex));
-}// end of GetComplex3DCoords
-//--------------------------------------------------------------------------------------------------
+               i / (cudaDeviceConstants.nxComplex * cudaDeviceConstants.nyComplex));
+}// end of getComplex3DCoords
+//----------------------------------------------------------------------------------------------------------------------
 
 
-//------------------------------------------------------------------------------------------------//
-//----------------------------- Multiplication operators for float2 ------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//--------------------------------------- Multiplication operators for float2 ----------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
  * @brief   Operator * for float2 datatype (per element multiplication).
@@ -120,7 +120,7 @@ inline __device__ float2 operator*(const float2 a,
 {
   return make_float2(a.x * b.x, a.y * b.y);
 }// end of operator*
-//---------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * @brief  Operator * for float2 datatype (per element multiplication).
@@ -135,7 +135,7 @@ inline __device__ float2 operator*(const float2 a,
 {
   return make_float2(a.x * b, a.y * b);
 }// end of operator*
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Operator * for float2 datatype (per element multiplication).
@@ -150,7 +150,7 @@ inline __device__ float2 operator*(const float  b,
 {
   return make_float2(b * a.x, b * a.y);
 }// end of operator*
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
@@ -167,7 +167,7 @@ inline __device__ void operator*=(float2&      a,
   a.x *= b.x;
   a.y *= b.y;
 }// end of operator*=
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Operator *= for float2 datatype (per element multiplication).
@@ -183,11 +183,11 @@ inline __device__ void operator*=(float2&     a,
   a.x *= b;
   a.y *= b;
 }// end of operator*=
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------------------------//
-//-------------------------------- Addition operators for float2 ---------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------ Addition operators for float2 -------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
  * @brief   Operator + for float2 datatype (per element multiplication).
@@ -201,7 +201,7 @@ inline __device__ float2 operator+(const float2 a,
 {
   return make_float2(a.x + b.x, a.y + b.y);
 }// end of operator+
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * @brief  Operator + for float2 datatype (per element multiplication)
@@ -212,31 +212,31 @@ inline __device__ float2 operator+(const float2 a,
  * @return  a.x + b, a.y + b
  */
 inline __device__ float2 operator+(const float2 a,
-                                   const float b)
+                                   const float  b)
 {
   return make_float2(a.x + b, a.y + b);
 }// end of operator+
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- * @brief  Operator + for float2 datatype (per element multiplication).
+ * @brief   Operator + for float2 datatype (per element multiplication).
  * @details Operator + for float2 datatype (per element multiplication).
  *
  * @param [in] a
  * @param [in] b
  * @return  a + b.x, a + b.y
  */
-inline __device__ float2 operator+(const float b,
+inline __device__ float2 operator+(const float  b,
                                    const float2 a)
 {
   return make_float2(b + a.x, b + a.y);
 }// end of operator+
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
- * @brief  Operator += for float2 datatype (per element multiplication).
- * @details  Operator += for float2 datatype (per element multiplication)
+ * @brief   Operator += for float2 datatype (per element multiplication).
+ * @details Operator += for float2 datatype (per element multiplication)
  *
  * @param [in,out] a
  * @param [in]     b
@@ -248,7 +248,7 @@ inline __device__ void operator+=(float2&      a,
   a.x += b.x;
   a.y += b.y;
 }// end of operator+=
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * @brief   Operator += for float2 datatype (per element multiplication).
@@ -263,6 +263,6 @@ inline __device__ void operator+=(float2&     a,
   a.x += b;
   a.y += b;
 }// end of operator+=
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
-#endif /* CUDA_UTILS_CUH */
+#endif /* CUDA_UTILS_H */

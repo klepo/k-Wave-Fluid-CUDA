@@ -38,24 +38,25 @@ OBJECTFILES= \
 	${OBJECTDIR}/Containers/MatrixContainer.o \
 	${OBJECTDIR}/Containers/MatrixRecord.o \
 	${OBJECTDIR}/Containers/OutputStreamContainer.o \
-	${OBJECTDIR}/HDF5/HDF5_File.o \
+	${OBJECTDIR}/Hdf5/Hdf5File.o \
+	${OBJECTDIR}/Hdf5/Hdf5FileHeader.o \
 	${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o \
-	${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o \
+	${OBJECTDIR}/KSpaceSolver/SolverCudaKernels.o \
 	${OBJECTDIR}/Logger/Logger.o \
 	${OBJECTDIR}/MatrixClasses/BaseFloatMatrix.o \
 	${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o \
-	${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/ComplexMatrix.o \
+	${OBJECTDIR}/MatrixClasses/CufftComplexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/IndexMatrix.o \
 	${OBJECTDIR}/MatrixClasses/RealMatrix.o \
-	${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o \
-	${OBJECTDIR}/OutputHDF5Streams/CuboidOutputHDF5Stream.o \
-	${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o \
-	${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o \
-	${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o \
-	${OBJECTDIR}/Parameters/CUDADeviceConstants.o \
-	${OBJECTDIR}/Parameters/CUDAParameters.o \
+	${OBJECTDIR}/OutputStreams/BaseOutputStream.o \
+	${OBJECTDIR}/OutputStreams/CuboidOutputStream.o \
+	${OBJECTDIR}/OutputStreams/IndexOutputStream.o \
+	${OBJECTDIR}/OutputStreams/OutputStreamsCudaKernels.o \
+	${OBJECTDIR}/OutputStreams/WholeDomainOutputStream.o \
 	${OBJECTDIR}/Parameters/CommandLineParameters.o \
+	${OBJECTDIR}/Parameters/CudaDeviceConstants.o \
+	${OBJECTDIR}/Parameters/CudaParameters.o \
 	${OBJECTDIR}/Parameters/Parameters.o \
 	${OBJECTDIR}/main.o
 
@@ -96,17 +97,21 @@ ${OBJECTDIR}/Containers/OutputStreamContainer.o: Containers/OutputStreamContaine
 	${MKDIR} -p ${OBJECTDIR}/Containers
 	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Containers/OutputStreamContainer.o Containers/OutputStreamContainer.cpp
 
-${OBJECTDIR}/HDF5/HDF5_File.o: HDF5/HDF5_File.cpp
-	${MKDIR} -p ${OBJECTDIR}/HDF5
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/HDF5/HDF5_File.o HDF5/HDF5_File.cpp
+${OBJECTDIR}/Hdf5/Hdf5File.o: Hdf5/Hdf5File.cpp
+	${MKDIR} -p ${OBJECTDIR}/Hdf5
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Hdf5/Hdf5File.o Hdf5/Hdf5File.cpp
+
+${OBJECTDIR}/Hdf5/Hdf5FileHeader.o: Hdf5/Hdf5FileHeader.cpp
+	${MKDIR} -p ${OBJECTDIR}/Hdf5
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Hdf5/Hdf5FileHeader.o Hdf5/Hdf5FileHeader.cpp
 
 ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o: KSpaceSolver/KSpaceFirstOrder3DSolver.cpp
 	${MKDIR} -p ${OBJECTDIR}/KSpaceSolver
 	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/KSpaceSolver/KSpaceFirstOrder3DSolver.o KSpaceSolver/KSpaceFirstOrder3DSolver.cpp
 
-${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o: KSpaceSolver/SolverCUDAKernels.cu
+${OBJECTDIR}/KSpaceSolver/SolverCudaKernels.o: KSpaceSolver/SolverCudaKernels.cu
 	${MKDIR} -p ${OBJECTDIR}/KSpaceSolver
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/KSpaceSolver/SolverCUDAKernels.o KSpaceSolver/SolverCUDAKernels.cu
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/KSpaceSolver/SolverCudaKernels.o KSpaceSolver/SolverCudaKernels.cu
 
 ${OBJECTDIR}/Logger/Logger.o: Logger/Logger.cpp
 	${MKDIR} -p ${OBJECTDIR}/Logger
@@ -120,13 +125,13 @@ ${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o: MatrixClasses/BaseIndexMatrix.cpp
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
 	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/BaseIndexMatrix.o MatrixClasses/BaseIndexMatrix.cpp
 
-${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o: MatrixClasses/CUFFTComplexMatrix.cpp
-	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/CUFFTComplexMatrix.o MatrixClasses/CUFFTComplexMatrix.cpp
-
 ${OBJECTDIR}/MatrixClasses/ComplexMatrix.o: MatrixClasses/ComplexMatrix.cpp
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
 	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/ComplexMatrix.o MatrixClasses/ComplexMatrix.cpp
+
+${OBJECTDIR}/MatrixClasses/CufftComplexMatrix.o: MatrixClasses/CufftComplexMatrix.cpp
+	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/CufftComplexMatrix.o MatrixClasses/CufftComplexMatrix.cpp
 
 ${OBJECTDIR}/MatrixClasses/IndexMatrix.o: MatrixClasses/IndexMatrix.cpp
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
@@ -136,37 +141,37 @@ ${OBJECTDIR}/MatrixClasses/RealMatrix.o: MatrixClasses/RealMatrix.cpp
 	${MKDIR} -p ${OBJECTDIR}/MatrixClasses
 	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/MatrixClasses/RealMatrix.o MatrixClasses/RealMatrix.cpp
 
-${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o: OutputHDF5Streams/BaseOutputHDF5Stream.cpp
-	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/BaseOutputHDF5Stream.o OutputHDF5Streams/BaseOutputHDF5Stream.cpp
+${OBJECTDIR}/OutputStreams/BaseOutputStream.o: OutputStreams/BaseOutputStream.cpp
+	${MKDIR} -p ${OBJECTDIR}/OutputStreams
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputStreams/BaseOutputStream.o OutputStreams/BaseOutputStream.cpp
 
-${OBJECTDIR}/OutputHDF5Streams/CuboidOutputHDF5Stream.o: OutputHDF5Streams/CuboidOutputHDF5Stream.cpp
-	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/CuboidOutputHDF5Stream.o OutputHDF5Streams/CuboidOutputHDF5Stream.cpp
+${OBJECTDIR}/OutputStreams/CuboidOutputStream.o: OutputStreams/CuboidOutputStream.cpp
+	${MKDIR} -p ${OBJECTDIR}/OutputStreams
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputStreams/CuboidOutputStream.o OutputStreams/CuboidOutputStream.cpp
 
-${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o: OutputHDF5Streams/IndexOutputHDF5Stream.cpp
-	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/IndexOutputHDF5Stream.o OutputHDF5Streams/IndexOutputHDF5Stream.cpp
+${OBJECTDIR}/OutputStreams/IndexOutputStream.o: OutputStreams/IndexOutputStream.cpp
+	${MKDIR} -p ${OBJECTDIR}/OutputStreams
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputStreams/IndexOutputStream.o OutputStreams/IndexOutputStream.cpp
 
-${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o: OutputHDF5Streams/OutputStreamsCUDAKernels.cu
-	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/OutputStreamsCUDAKernels.o OutputHDF5Streams/OutputStreamsCUDAKernels.cu
+${OBJECTDIR}/OutputStreams/OutputStreamsCudaKernels.o: OutputStreams/OutputStreamsCudaKernels.cu
+	${MKDIR} -p ${OBJECTDIR}/OutputStreams
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputStreams/OutputStreamsCudaKernels.o OutputStreams/OutputStreamsCudaKernels.cu
 
-${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o: OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp
-	${MKDIR} -p ${OBJECTDIR}/OutputHDF5Streams
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputHDF5Streams/WholeDomainOutputHDF5Stream.o OutputHDF5Streams/WholeDomainOutputHDF5Stream.cpp
-
-${OBJECTDIR}/Parameters/CUDADeviceConstants.o: Parameters/CUDADeviceConstants.cu
-	${MKDIR} -p ${OBJECTDIR}/Parameters
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Parameters/CUDADeviceConstants.o Parameters/CUDADeviceConstants.cu
-
-${OBJECTDIR}/Parameters/CUDAParameters.o: Parameters/CUDAParameters.cpp
-	${MKDIR} -p ${OBJECTDIR}/Parameters
-	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Parameters/CUDAParameters.o Parameters/CUDAParameters.cpp
+${OBJECTDIR}/OutputStreams/WholeDomainOutputStream.o: OutputStreams/WholeDomainOutputStream.cpp
+	${MKDIR} -p ${OBJECTDIR}/OutputStreams
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/OutputStreams/WholeDomainOutputStream.o OutputStreams/WholeDomainOutputStream.cpp
 
 ${OBJECTDIR}/Parameters/CommandLineParameters.o: Parameters/CommandLineParameters.cpp
 	${MKDIR} -p ${OBJECTDIR}/Parameters
 	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Parameters/CommandLineParameters.o Parameters/CommandLineParameters.cpp
+
+${OBJECTDIR}/Parameters/CudaDeviceConstants.o: Parameters/CudaDeviceConstants.cu
+	${MKDIR} -p ${OBJECTDIR}/Parameters
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Parameters/CudaDeviceConstants.o Parameters/CudaDeviceConstants.cu
+
+${OBJECTDIR}/Parameters/CudaParameters.o: Parameters/CudaParameters.cpp
+	${MKDIR} -p ${OBJECTDIR}/Parameters
+	$(COMPILE.cc) -g -I./ -I${EBROOTHDF5}/include -std=c++11 -o ${OBJECTDIR}/Parameters/CudaParameters.o Parameters/CudaParameters.cpp
 
 ${OBJECTDIR}/Parameters/Parameters.o: Parameters/Parameters.cpp
 	${MKDIR} -p ${OBJECTDIR}/Parameters

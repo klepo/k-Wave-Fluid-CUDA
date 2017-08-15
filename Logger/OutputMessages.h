@@ -1,6 +1,6 @@
 /**
  * @file        OutputMessages.h
- * 
+ *
  * @author      Jiri Jaros              \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        19 April    2016, 12:52 (created) \n
- *              13 July     2016, 12:31 (revised)
+ *              11 August   2017, 14:26 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox

@@ -10,7 +10,7 @@
  *
  * @version     kspaceFirstOrder3D 3.4
  * @date        11 July      2011, 10:30 (created) \n
- *              07 July      2017, 18:45 (revised)
+ *              11 August    2017, 14:30 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -35,71 +35,79 @@
 #include <Utils/DimensionSizes.h>
 
 // Forward declaration
-class TComplexMatrix;
+class ComplexMatrix;
 
 /**
- * @class TRealMatrix
- * @brief   The class for real matrices
- * @details The class for real matrices (floats) on both CPU and GPU side
+ * @class   RealMatrix
+ * @brief   The class for real matrices.
+ * @details The class for real matrices (floats) on both CPU and GPU side.
  */
-class TRealMatrix : public TBaseFloatMatrix
+class RealMatrix : public BaseFloatMatrix
 {
   public:
     /// Default constructor is not allowed.
-    TRealMatrix() = delete;
-    /// Constructor.
-    TRealMatrix(const TDimensionSizes& dimensionSizes);
+    RealMatrix() = delete;
+    /**
+     * @brief Constructor.
+     * @param [in] dimensionSizes - Dimension sizes of the matrix.
+     */
+    RealMatrix(const DimensionSizes& dimensionSizes);
     /// Copy constructor not allowed.
-    TRealMatrix(const TRealMatrix&) = delete;
+    RealMatrix(const RealMatrix&) = delete;
     /// Destructor.
-    virtual ~TRealMatrix();
+    virtual ~RealMatrix();
 
     /// Operator= is not allowed.
-    TRealMatrix& operator=(const TRealMatrix&);
-
-    /// Read data from the HDF5 file - only from the root group.
-    virtual void ReadDataFromHDF5File(THDF5_File&  file,
-                                      TMatrixName& matrixName);
-
-    /// Write data into the HDF5 file.
-    virtual void WriteDataToHDF5File(THDF5_File&  file,
-                                     TMatrixName& matrixName,
-                                     const size_t compressionLevel);
+    RealMatrix& operator=(const RealMatrix&);
 
     /**
-     * @brief  Operator [].
-     * @details Operator [].
-     * @param [in] index - 1D index
-     * @return An element
+     * @brief   Read matrix from HDF5 file.
+     * @details Read matrix from HDF5 file.
+     * @param [in] file       - Handle to the HDF5 file
+     * @param [in] matrixName - HDF5 dataset name to read from
+     * @throw ios::failure    - If error occurred.
      */
-    inline float& operator[](const size_t& index)
-    {
-      return hostData[index];
-    };
+    virtual void readData(Hdf5File&   file,
+                          MatrixName& matrixName);
+    /**
+     * @brief   Write data into HDF5 file.
+     * @details Write data into HDF5 file.
+     * @param [in] file             - Handle to the HDF5 file
+     * @param [in] matrixName       - HDF5 dataset name to write to
+     * @param [in] compressionLevel - Compression level for the HDF5 dataset
+     * @throw ios::failure          - If an error occurred.
+     */
+    virtual void writeData(Hdf5File&    file,
+                           MatrixName&  matrixName,
+                           const size_t compressionLevel);
 
+    /**
+     * @brief  operator[].
+     * @param [in] index - 1D index into the matrix.
+     * @return An element of the matrix.
+     */
+    inline float&       operator[](const size_t& index)       { return mHostData[index]; };
     /**
      * @brief   Operator [], constant version.
-     * @details Operator [], constant version.
-     * @param [in] index - 1D index
-     * @return An element
+     * @param [in] index - 1D index into the matrix.
+     * @return An element of the matrix.
      */
-    inline const float& operator[](const size_t& index) const
-    {
-      return hostData[index];
-    };
+    inline const float& operator[](const size_t& index) const { return mHostData[index]; };
 
-    /// Init dimension sizes.
-    virtual void InitDimensions(const TDimensionSizes& dimensionSizes);
+  private:
+    /**
+     * @brief Initialize dimension sizes.
+     * @param [in] dimensionSizes - Dimension sizes of the matrix.
+     */
+    void initDimensions(const DimensionSizes& dimensionSizes);
 
-private:
-
-   /// Number of elements to get 4MB block of data.
-   static constexpr size_t CHUNK_SIZE_1D_4MB   = 1048576; //(4MB)
-   /// Number of elements to get 1MB block of data.
-   static constexpr size_t CHUNK_SIZE_1D_1MB   =  262144; //(1MB)
-   /// Number of elements to get 256KB block of data.
-   static constexpr size_t CHUNK_SIZE_1D_256KB =   65536; //(256KB)
-};// end of class TRealMatrix
-//--------------------------------------------------------------------------------------------------
+     /// Number of elements to get 4MB block of data.
+     static constexpr size_t kChunkSize1D4MB   = 1048576; //(4MB)
+     /// Number of elements to get 1MB block of data.
+      static constexpr size_t kChunkSize1D1MB   =  262144; //(1MB)
+      /// Number of elements to get 256KB block of data.
+      static constexpr size_t kChunkSize1D256kB =   65536; //(256KB)
+};// end of class RealMatrix
+//----------------------------------------------------------------------------------------------------------------------
 
 #endif	/* REAL_MATRIX_H */

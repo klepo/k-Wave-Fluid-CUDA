@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        19 April    2016, 12:52 (created) \n
- *              10 July     2017, 16:10 (revised)
+ *              17 July     2017, 15:21 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -37,105 +37,87 @@
 
 using std::string;
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Public methods -----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Public methods ---------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /// static declaration of the LogLevel private field
-TLogger::TLogLevel TLogger::logLevel = TLogLevel::BASIC;
+Logger::LogLevel Logger::slogLevel = LogLevel::kBasic;
 
 
 /**
  * Initialise or change logging level.
- *
- * @param [in] actualLogLevel - Log level for the logger
  */
-void TLogger::SetLevel(const TLogLevel actualLogLevel)
+void Logger::setLevel(const LogLevel actualLogLevel)
 {
-  logLevel = actualLogLevel;
-}/// end of SetLevel
-//--------------------------------------------------------------------------------------------------
+  slogLevel = actualLogLevel;
+}// end of setLevel
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Log desired activity.
- *
- * @param [in] queryLevel - Log level of the message
- * @param [in] message    - Message to log
  */
-void TLogger::Log(const TLogLevel queryLevel,
-                  const string&   message)
+void Logger::log(const LogLevel queryLevel,
+                 const string&  message)
 {
-  if (queryLevel <= TLogger::logLevel)
+  if (queryLevel <= Logger::slogLevel)
   {
     std::cout << message;
   }
-}// end of Log
-//--------------------------------------------------------------------------------------------------
+}// end of log
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Log an error.
- *
- * @param [in] errorMessage - Error message to be printed out.
  */
-void TLogger::Error(const string& errorMessage)
+void Logger::error(const string& errorMessage)
 {
-  std::cerr << ERR_FMT_HEAD;
+  std::cerr << kErrFmtHead;
   std::cerr << errorMessage;
-  std::cerr << ERR_FMT_TAIL;
-}// end of Error
-//--------------------------------------------------------------------------------------------------
+  std::cerr << kErrFmtTail;
+}// end of error
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Log an error and terminate the execution.
- *
- * @param [in] errorMessage - error message to be printed to stderr
  */
-void TLogger::ErrorAndTerminate(const string& errorMessage)
+void Logger::errorAndTerminate(const string& errorMessage)
 {
-  std::cerr << ERR_FMT_HEAD;
+  std::cerr << kErrFmtHead;
   std::cerr << errorMessage;
-  std::cerr << ERR_FMT_TAIL;
+  std::cerr << kErrFmtTail;
 
   exit(EXIT_FAILURE);
-}// end of ErrorAndTerminate
-//--------------------------------------------------------------------------------------------------
+}// end of errorAndTerminate
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Flush logger, output messages only.
- *
- * @param [in] queryLevel - Log level of the flush
  */
-void TLogger::Flush(const TLogLevel queryLevel)
+void Logger::flush(const LogLevel queryLevel)
 {
-  if (queryLevel <= TLogger::logLevel)
+  if (queryLevel <= Logger::slogLevel)
   {
     std::cout.flush();
   }
-}// end of Flush
-//--------------------------------------------------------------------------------------------------
+}// end of flush
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Wrap the line based on delimiters and align it with the rest of the logger output.
  *
- * @param [in] inputString - Input string
- * @param [in] delimiters  - String of delimiters, every char is a delimiter
- * @param [in] indentation - Indentation from the beginning
- * @param [in] lineSize    - Line size
- * @return Wrapped string
- *
- * @note The string must not contain tabulator and end-of-line characters.
  */
-string TLogger::WordWrapString(const string& inputString,
-                               const string& delimiters,
-                               const int     indentation,
-                               const int     lineSize)
+string Logger::wordWrapString(const string& inputString,
+                              const string& delimiters,
+                              const int     indentation,
+                              const int     lineSize)
 {
   std::istringstream textStream(inputString);
   string wrappedText;
   string word;
-  string indentationString = OUT_FMT_VERTICAL_LINE;
+  string indentationString = kOutFmtVerticalLine;
 
 
   // create indentation
@@ -144,20 +126,20 @@ string TLogger::WordWrapString(const string& inputString,
     indentationString += ' ';
   }
 
-  wrappedText += OUT_FMT_VERTICAL_LINE + " ";
+  wrappedText += kOutFmtVerticalLine + " ";
   int spaceLeft = lineSize - 2;
 
   // until the text is empty
   while (textStream.good())
   {
-    word = GetWord(textStream, delimiters);
-    if (spaceLeft < (int) word.length() + 3)
+    word = getWord(textStream, delimiters);
+    if (spaceLeft < static_cast<int>(word.length()) + 3)
     { // fill the end of the line
       for ( ; spaceLeft > 2; spaceLeft--)
       {
         wrappedText += " ";
       }
-      wrappedText += " " + OUT_FMT_VERTICAL_LINE + "\n" + indentationString + word;
+      wrappedText += " " + kOutFmtVerticalLine + "\n" + indentationString + word;
       spaceLeft = lineSize - (static_cast<int>(word.length()) + indentation);
     }
     else
@@ -180,24 +162,20 @@ string TLogger::WordWrapString(const string& inputString,
   {
     wrappedText += " ";
   }
-  wrappedText += " "+ OUT_FMT_VERTICAL_LINE + "\n";
+  wrappedText += " "+ kOutFmtVerticalLine + "\n";
 
   return wrappedText;
-}// end of WordWrapFileName
-//--------------------------------------------------------------------------------------------------
+}// end of wordWrapFileName
+//----------------------------------------------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Private methods ----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Private methods --------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
  * Extract a word from a string stream based on delimiters.
- *
- * @param [in,out] textStream - Input text stream
- * @param [in]     delimiters - List of delimiters as a single string
- * @return         A word firm the string
  */
-string TLogger::GetWord(std::istringstream& textStream,
+string Logger::getWord(std::istringstream& textStream,
                         const string&       delimiters)
 {
   string word = "";
@@ -214,5 +192,5 @@ string TLogger::GetWord(std::istringstream& textStream,
   }
 
   return word;
-}// end of GetWord
-//--------------------------------------------------------------------------------------------------
+}// end of getWord
+//----------------------------------------------------------------------------------------------------------------------

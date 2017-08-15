@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        04 December  2014, 11:41 (created) \n
- *              07 July      2017  14:00 (revised)
+ *              11 August    2017, 10:03 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -32,359 +32,280 @@
 #include <Parameters/Parameters.h>
 #include <Containers/OutputStreamContainer.h>
 
-#include <OutputHDF5Streams/BaseOutputHDF5Stream.h>
-#include <OutputHDF5Streams/IndexOutputHDF5Stream.h>
-#include <OutputHDF5Streams/CuboidOutputHDF5Stream.h>
-#include <OutputHDF5Streams/WholeDomainOutputHDF5Stream.h>
+#include <OutputStreams/BaseOutputStream.h>
+#include <OutputStreams/IndexOutputStream.h>
+#include <OutputStreams/CuboidOutputStream.h>
+#include <OutputStreams/WholeDomainOutputStream.h>
 
 
-//------------------------------------------------------------------------------------------------//
-//-------------------------------------- Constants -----------------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------- Constants -----------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Public methods -----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//-------------------------------------------------- Public methods --------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
 
 /**
  * Default constructor.
  */
-TOutputStreamContainer::TOutputStreamContainer() : outputStreamContainer()
+OutputStreamContainer::OutputStreamContainer()
+  : mContainer()
 {
 
-}// end of TOutputStreamContainer
-//--------------------------------------------------------------------------------------------------
+}// end of OutputStreamContainer
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Destructor.
  */
-TOutputStreamContainer::~TOutputStreamContainer()
+OutputStreamContainer::~OutputStreamContainer()
 {
-  outputStreamContainer.clear();
-}// end of Destructor
-//--------------------------------------------------------------------------------------------------
+  mContainer.clear();
+}// end of ~OutputStreamContainer
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Add all streams in the simulation to the container, set all streams records here! \n
- * Please note, the Matrix container has to be populated before calling this routine.
- *
- * @param [in] matrixContainer - Matrix container to link the steams with sampled matrices and
- *                               sensor masks
+ * Add all streams in the simulation to the container, set all streams records here!
  */
-void TOutputStreamContainer::AddStreams(TMatrixContainer& matrixContainer)
+void OutputStreamContainer::addStreams(MatrixContainer& matrixContainer)
 {
-  TParameters& params = TParameters::GetInstance();
+  Parameters& params = Parameters::getInstance();
 
-  using MatrixId    = TMatrixContainer::TMatrixIdx;
-  using ReductionOp = TBaseOutputHDF5Stream::TReduceOperator;
-  //----------------------------------------- pressure  ------------------------------------------//
-  if (params.IsStore_p_raw())
+  // shortcuts for long data types
+  using OI = OutputStreamIdx;
+  using MI = MatrixContainer::MatrixIdx;
+  using RO = BaseOutputStream::ReduceOperator;
+  //--------------------------------------------------- pressure -----------------------------------------------------//
+  if (params.getStorePressureRawFlag())
   {
-    outputStreamContainer[TOutputStreamIdx::p_sensor_raw]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::p,
-                                    p_NAME,
-                                    ReductionOp::NONE);
+    mContainer[OI::kPressureRaw] = createNewOutputStream(matrixContainer, MI::kP, kPressureRawName, RO::kNone);
   }
 
-  if (params.IsStore_p_rms())
+  if (params.getStorePressureRmsFlag())
   {
-    outputStreamContainer[TOutputStreamIdx::p_sensor_rms]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::p,
-                                    p_rms_NAME,
-                                    ReductionOp::RMS);
+    mContainer[OI::kPressureRms] = createNewOutputStream(matrixContainer, MI::kP, kPressureRmsName, RO::kRms);
   }
 
-  if (params.IsStore_p_max())
+  if (params.getStorePressureMaxFlag())
   {
-    outputStreamContainer[TOutputStreamIdx::p_sensor_max] =
-            CreateNewOutputStream(matrixContainer,
-                                  MatrixId::p,
-                                  p_max_NAME,
-                                  ReductionOp::MAX);
+    mContainer[OI::kPressureMax] = createNewOutputStream(matrixContainer, MI::kP, kPressureMaxName, RO::kMax);
   }
 
-  if (params.IsStore_p_min())
+  if (params.getStorePressureMinFlag())
   {
-    outputStreamContainer[TOutputStreamIdx::p_sensor_min] =
-            CreateNewOutputStream(matrixContainer,
-                                  MatrixId::p,
-                                  p_min_NAME,
-                                  ReductionOp::MIN);
+    mContainer[OI::kPressureMin] = createNewOutputStream(matrixContainer, MI::kP, kPressureMinName, RO::kMin);
   }
 
-  if (params.IsStore_p_max_all())
+  if (params.getStorePressureMaxAllFlag())
   {
-    outputStreamContainer[TOutputStreamIdx::p_sensor_max_all] =
-            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             p_max_all_NAME,
-                                             matrixContainer.GetMatrix<TRealMatrix>(MatrixId::p),
-                                             ReductionOp::MAX);
+    mContainer[OI::kPressureMaxAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                  kPressureMaxAllName,
+                                                                  matrixContainer.getMatrix<RealMatrix>(MI::kP),
+                                                                  RO::kMax);
   }
 
-  if (params.IsStore_p_min_all())
+  if (params.getStorePressureMinAllFlag())
   {
-    outputStreamContainer[TOutputStreamIdx::p_sensor_min_all] =
-            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             p_min_all_NAME,
-                                             matrixContainer.GetMatrix<TRealMatrix>(MatrixId::p),
-                                             ReductionOp::MIN);
+    mContainer[OI::kPressureMinAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                  kPressureMinAllName,
+                                                                  matrixContainer.getMatrix<RealMatrix>(MI::kP),
+                                                                  RO::kMin);
   }
 
-  //---------------------------------------- velocity --------------------------------------------//
-  if (params.IsStore_u_raw())
+  //-------------------------------------------------- velocity ------------------------------------------------------//
+  if (params.getStoreVelocityRawFlag())
   {
-    outputStreamContainer[TOutputStreamIdx::ux_sensor_raw]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::ux_sgx,
-                                    ux_NAME,
-                                    ReductionOp::NONE);
-    outputStreamContainer[TOutputStreamIdx::uy_sensor_raw]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::uy_sgy,
-                                    uy_NAME,
-                                    ReductionOp::NONE);
-    outputStreamContainer[TOutputStreamIdx::uz_sensor_raw]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::uz_sgz,
-                                    uz_NAME,
-                                    ReductionOp::NONE);
+    mContainer[OI::kVelocityXRaw] = createNewOutputStream(matrixContainer, MI::kUxSgx, kUxName, RO::kNone);
+    mContainer[OI::kVelocityYRaw] = createNewOutputStream(matrixContainer, MI::kUySgy, kUyName, RO::kNone);
+    mContainer[OI::kVelocityZRaw] = createNewOutputStream(matrixContainer, MI::kUzSgz, kUzName, RO::kNone);
   }
 
-  if (params.IsStore_u_non_staggered_raw())
+  if (params.getStoreVelocityNonStaggeredRawFlag())
   {
-    outputStreamContainer[TOutputStreamIdx::ux_shifted_sensor_raw]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::ux_shifted,
-                                    ux_non_staggered_NAME,
-                                    ReductionOp::NONE);
-    outputStreamContainer[TOutputStreamIdx::uy_shifted_sensor_raw]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::uy_shifted,
-                                    uy_non_staggered_NAME,
-                                    ReductionOp::NONE);
-    outputStreamContainer[TOutputStreamIdx::uz_shifted_sensor_raw]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::uz_shifted,
-                                    uz_non_staggered_NAME,
-                                    ReductionOp::NONE);
+    mContainer[OI::kVelocityXNonStaggeredRaw] = createNewOutputStream(matrixContainer,
+                                                                      MI::kUxShifted,
+                                                                      kUxNonStaggeredName,
+                                                                      RO::kNone);
+    mContainer[OI::kVelocityYNonStaggeredRaw] = createNewOutputStream(matrixContainer,
+                                                                      MI::kUyShifted,
+                                                                      kUyNonStaggeredName,
+                                                                      RO::kNone);
+    mContainer[OI::kVelocityZNonStaggeredRaw] = createNewOutputStream(matrixContainer,
+                                                                      MI::kUzShifted,
+                                                                      kUzNonStaggeredName,
+                                                                      RO::kNone);
   }
 
-  if (params.IsStore_u_rms())
+  if (params.getStoreVelocityRmsFlag())
   {
-    outputStreamContainer[TOutputStreamIdx::ux_sensor_rms]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::ux_sgx,
-                                    ux_rms_NAME,
-                                    ReductionOp::RMS);
-    outputStreamContainer[TOutputStreamIdx::uy_sensor_rms]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::uy_sgy,
-                                    uy_rms_NAME,
-                                    ReductionOp::RMS);
-    outputStreamContainer[TOutputStreamIdx::uz_sensor_rms]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::uz_sgz,
-                                    uz_rms_NAME,
-                                    ReductionOp::RMS);
+    mContainer[OI::kVelocityXRms] = createNewOutputStream(matrixContainer, MI::kUxSgx, kUxRmsName, RO::kRms);
+    mContainer[OI::kVelocityYRms] = createNewOutputStream(matrixContainer, MI::kUySgy, kUyRmsName, RO::kRms);
+    mContainer[OI::kVelocityZRms] = createNewOutputStream(matrixContainer, MI::kUzSgz, kUzRmsName, RO::kRms);
   }
 
-   if (params.IsStore_u_max())
+   if (params.getVelocityMaxFlag())
   {
-    outputStreamContainer[TOutputStreamIdx::ux_sensor_max]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::ux_sgx,
-                                    ux_max_NAME,
-                                    ReductionOp::MAX);
-    outputStreamContainer[TOutputStreamIdx::uy_sensor_max]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::uy_sgy,
-                                    uy_max_NAME,
-                                    ReductionOp::MAX);
-    outputStreamContainer[TOutputStreamIdx::uz_sensor_max]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::uz_sgz,
-                                    uz_max_NAME,
-                                    ReductionOp::MAX);
+    mContainer[OI::kVelocityXMax] = createNewOutputStream(matrixContainer, MI::kUxSgx, kUxMaxName, RO::kMax);
+    mContainer[OI::kVelocityYMax] = createNewOutputStream(matrixContainer, MI::kUySgy, kUyMaxName, RO::kMax);
+    mContainer[OI::kVelocityZMax] = createNewOutputStream(matrixContainer, MI::kUzSgz, kUzMaxName, RO::kMax);
   }
 
-  if (params.IsStore_u_min())
+  if (params.getStoreVelocityMinFlag())
   {
-    outputStreamContainer[TOutputStreamIdx::ux_sensor_min]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::ux_sgx,
-                                    ux_min_NAME,
-                                    ReductionOp::MIN);
-    outputStreamContainer[TOutputStreamIdx::uy_sensor_min]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::uy_sgy,
-                                    uy_min_NAME,
-                                    ReductionOp::MIN);
-    outputStreamContainer[TOutputStreamIdx::uz_sensor_min]
-            = CreateNewOutputStream(matrixContainer,
-                                    MatrixId::uz_sgz,
-                                    uz_min_NAME,
-                                    ReductionOp::MIN);
+    mContainer[OI::kVelocityXMin] = createNewOutputStream(matrixContainer, MI::kUxSgx, kUxMinName, RO::kMin);
+    mContainer[OI::kVelocityYMin] = createNewOutputStream(matrixContainer, MI::kUySgy, kUyMinName, RO::kMin);
+    mContainer[OI::kVelocityZMin] = createNewOutputStream(matrixContainer, MI::kUzSgz, kUzMinName, RO::kMin);
   }
 
-  if (params.IsStore_u_max_all())
+  if (params.getStoreVelocityMaxAllFlag())
   {
-    outputStreamContainer[TOutputStreamIdx::ux_sensor_max_all] =
-            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             ux_max_all_NAME,
-                                             matrixContainer.GetMatrix<TRealMatrix>(MatrixId::ux_sgx),
-                                             ReductionOp::MAX);
-    outputStreamContainer[TOutputStreamIdx::uy_sensor_max_all] =
-            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             uy_max_all_NAME,
-                                             matrixContainer.GetMatrix<TRealMatrix>(MatrixId::uy_sgy),
-                                             ReductionOp::MAX);
-    outputStreamContainer[TOutputStreamIdx::uz_sensor_max_all] =
-            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             uz_max_all_NAME,
-                                             matrixContainer.GetMatrix<TRealMatrix>(MatrixId::uz_sgz),
-                                             ReductionOp::MAX);
+    mContainer[OI::kVelocityXMaxAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                   kUxMaxAllName,
+                                                                   matrixContainer.getMatrix<RealMatrix>(MI::kUxSgx),
+                                                                   RO::kMax);
+    mContainer[OI::kVelocityYMaxAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                   kUyMaxAllName,
+                                                                   matrixContainer.getMatrix<RealMatrix>(MI::kUySgy),
+                                                                   RO::kMax);
+    mContainer[OI::kVelocityZMaxAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                   kUzMaxAllName,
+                                                                   matrixContainer.getMatrix<RealMatrix>(MI::kUzSgz),
+                                                                   RO::kMax);
   }
 
-  if (params.IsStore_u_min_all())
+  if (params.getStoreStoreVelocityMinAllFlag())
   {
-    outputStreamContainer[TOutputStreamIdx::ux_sensor_min_all] =
-            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             ux_min_all_NAME,
-                                             matrixContainer.GetMatrix<TRealMatrix>(MatrixId::ux_sgx),
-                                             ReductionOp::MIN);
-    outputStreamContainer[TOutputStreamIdx::uy_sensor_min_all] =
-            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             uy_min_all_NAME,
-                                             matrixContainer.GetMatrix<TRealMatrix>(MatrixId::uy_sgy),
-                                             ReductionOp::MIN);
-    outputStreamContainer[TOutputStreamIdx::uz_sensor_min_all] =
-            new TWholeDomainOutputHDF5Stream(params.GetOutputFile(),
-                                             uz_min_all_NAME,
-                                             matrixContainer.GetMatrix<TRealMatrix>(MatrixId::uz_sgz),
-                                             ReductionOp::MIN);
+    mContainer[OI::kVelocityXMinAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                   kUxMinAllName,
+                                                                   matrixContainer.getMatrix<RealMatrix>(MI::kUxSgx),
+                                                                   RO::kMin);
+    mContainer[OI::kVelocityYMinAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                   kUyMinAllName,
+                                                                   matrixContainer.getMatrix<RealMatrix>(MI::kUySgy),
+                                                                   RO::kMin);
+    mContainer[OI::kVelocityZMinAll] = new WholeDomainOutputStream(params.getOutputFile(),
+                                                                   kUzMinAllName,
+                                                                   matrixContainer.getMatrix<RealMatrix>(MI::kUzSgz),
+                                                                   RO::kMin);
   }
-}// end of AddStreams
-//--------------------------------------------------------------------------------------------------
+}// end of addStreams
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Create all streams.
  */
-void TOutputStreamContainer::CreateStreams()
+void OutputStreamContainer::createStreams()
 {
-  for (const auto& it : outputStreamContainer)
+  for (const auto& it : mContainer)
   {
     if (it.second)
     {
-      it.second->Create();
+      it.second->create();
     }
   }
-}// end of CreateStreams
-//--------------------------------------------------------------------------------------------------
+}// end of createStreams
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Reopen all streams after restarting from checkpoint.
  */
-void TOutputStreamContainer::ReopenStreams()
+void OutputStreamContainer::reopenStreams()
 {
-  for (const auto& it : outputStreamContainer)
+  for (const auto& it : mContainer)
   {
     if (it.second)
     {
-      it.second->Reopen();
+      it.second->reopen();
     }
   }
-}// end of ReopenStreams
-//--------------------------------------------------------------------------------------------------
+}// end of reopenStreams
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Sample all streams.
- * @warning In the GPU implementation, no data is flushed on disk (just data is sampled)
  */
-void TOutputStreamContainer::SampleStreams()
+void OutputStreamContainer::sampleStreams()
 {
-  for (const auto& it : outputStreamContainer)
+  for (const auto& it : mContainer)
   {
     if (it.second)
     {
-      it.second->Sample();
+      it.second->sample();
     }
   }
-}// end of SampleStreams
-//--------------------------------------------------------------------------------------------------
+}// end of sampleStreams
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Flush stream data to disk.
- * @warning In GPU implementation, data from raw streams is flushed here. Aggregated streams are
- * ignored.
  */
-void TOutputStreamContainer::FlushRawStreams()
+void OutputStreamContainer::flushRawStreams()
 {
-  for (const auto& it : outputStreamContainer)
+  for (const auto& it : mContainer)
   {
     if (it.second)
     {
-      it.second->FlushRaw();
+      it.second->flushRaw();
     }
   }
-}// end of SampleStreams
-//--------------------------------------------------------------------------------------------------
+}// end of sampleStreams
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Checkpoint streams without post-processing (flush to the file).
  */
-void TOutputStreamContainer::CheckpointStreams()
+void OutputStreamContainer::checkpointStreams()
 {
-  for (const auto& it : outputStreamContainer)
+  for (const auto& it : mContainer)
   {
     if (it.second)
     {
-      it.second->Checkpoint();
+      it.second->checkpoint();
     }
   }
-}// end of CheckpointStreams
-//--------------------------------------------------------------------------------------------------
+}// end of checkpointStreams
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Post-process all streams and flush them to the file.
  */
-void TOutputStreamContainer::PostProcessStreams()
+void OutputStreamContainer::postProcessStreams()
 {
-  for (const auto& it : outputStreamContainer)
+  for (const auto& it : mContainer)
   {
     if (it.second)
     {
-      it.second->PostProcess();
+      it.second->postProcess();
     }
   }
-}// end of CheckpointStreams
-//--------------------------------------------------------------------------------------------------
+}// end of postProcessStreams
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Close all streams (apply post-processing if necessary, flush data and close).
  */
-void TOutputStreamContainer::CloseStreams()
+void OutputStreamContainer::closeStreams()
 {
-  for (const auto& it : outputStreamContainer)
+  for (const auto& it : mContainer)
   {
     if (it.second)
     {
-      it.second->Close();
+      it.second->close();
     }
   }
-}// end of CloseStreams
-//--------------------------------------------------------------------------------------------------
+}// end of closeStreams
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  *  Free all streams - destroy them.
  */
-void TOutputStreamContainer::FreeStreams()
+void OutputStreamContainer::freeStreams()
 {
-  for (auto& it : outputStreamContainer)
+  for (auto& it : mContainer)
   {
     if (it.second)
     {
@@ -392,9 +313,9 @@ void TOutputStreamContainer::FreeStreams()
       it.second = nullptr;
     }
   }
-  outputStreamContainer.clear();
-}// end of FreeAllStreams
-//--------------------------------------------------------------------------------------------------
+  mContainer.clear();
+}// end of rreeStreams
+//----------------------------------------------------------------------------------------------------------------------
 
 
 //------------------------------------------------------------------------------------------------//
@@ -404,45 +325,38 @@ void TOutputStreamContainer::FreeStreams()
 
 /**
  * Create a new output stream.
- * @param [in] matrixContainer  - Name of the HDF5 dataset or group
- * @param [in] sampledMatrixIdx - Code id of the matrix
- * @param [in] fileDatasetName  - Name of the HDF5 dataset or group
- * @param [in] reduceOp         - Reduce operator
- *
- * @return New output stream with defined links
- *
  */
-TBaseOutputHDF5Stream* TOutputStreamContainer::CreateNewOutputStream(TMatrixContainer&                            matrixContainer,
-                                                                     const TMatrixContainer::TMatrixIdx           sampledMatrixIdx,
-                                                                     const TMatrixName&                           fileDatasetName,
-                                                                     const TBaseOutputHDF5Stream::TReduceOperator reduceOp)
+BaseOutputStream* OutputStreamContainer::createNewOutputStream(MatrixContainer&                       matrixContainer,
+                                                               const MatrixContainer::MatrixIdx       sampledMatrixIdx,
+                                                               const MatrixName&                      fileDatasetName,
+                                                               const BaseOutputStream::ReduceOperator reduceOp)
 {
-  TParameters& params = TParameters::GetInstance();
+  Parameters& params = Parameters::getInstance();
 
-  using MatrixId = TMatrixContainer::TMatrixIdx;
+  using MatrixIdx = MatrixContainer::MatrixIdx;
 
-  if (params.Get_sensor_mask_type() == TParameters::TSensorMaskType::INDEX)
+  if (params.getSensorMaskType() == Parameters::SensorMaskType::kIndex)
   {
-    return (new TIndexOutputHDF5Stream(params.GetOutputFile(),
-                                       fileDatasetName,
-                                       matrixContainer.GetMatrix<TRealMatrix>(sampledMatrixIdx),
-                                       matrixContainer.GetMatrix<TIndexMatrix>(MatrixId::sensor_mask_index),
-                                       reduceOp)
+    return (new IndexOutputStream(params.getOutputFile(),
+                                  fileDatasetName,
+                                  matrixContainer.getMatrix<RealMatrix>(sampledMatrixIdx),
+                                  matrixContainer.getMatrix<IndexMatrix>(MatrixIdx::kSensorMaskIndex),
+                                  reduceOp)
             );
   }
   else
   {
-    return (new TCuboidOutputHDF5Stream(params.GetOutputFile(),
-                                        fileDatasetName,
-                                        matrixContainer.GetMatrix<TRealMatrix>(sampledMatrixIdx),
-                                        matrixContainer.GetMatrix<TIndexMatrix>(MatrixId::sensor_mask_corners),
-                                        reduceOp)
+    return (new CuboidOutputStream(params.getOutputFile(),
+                                   fileDatasetName,
+                                   matrixContainer.getMatrix<RealMatrix>(sampledMatrixIdx),
+                                   matrixContainer.getMatrix<IndexMatrix>(MatrixIdx::kSensorMaskCorners),
+                                   reduceOp)
             );
   }
-}// end of CreateNewOutputStream
-//--------------------------------------------------------------------------------------------------
+}// end of createNewOutputStream
+//----------------------------------------------------------------------------------------------------------------------
 
 
-//------------------------------------------------------------------------------------------------//
-//--------------------------------------- Private methods ----------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------- Private methods --------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//

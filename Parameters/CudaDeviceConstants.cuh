@@ -1,6 +1,6 @@
 /**
- * @file        CUDADeviceConstants.cuh
- * 
+ * @file        CudaDeviceConstants.cuh
+ *
  * @author      Jiri Jaros \n
  *              Faculty of Information Technology \n
  *              Brno University of Technology \n
@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        17 February 2016, 10:53 (created) \n
- *              25 July     2016, 12:55 (revised)
+ *              16 July     2017, 16:57 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,19 +30,19 @@
  */
 
 
-#ifndef CUDA_DEVICE_CONSTANTS_CUH
-#define CUDA_DEVICE_CONSTANTS_CUH
+#ifndef CUDA_DEVICE_CONSTANTS_H
+#define CUDA_DEVICE_CONSTANTS_H
 
 /**
-  * @struct TCUDADeviceConstants
+  * @struct CudaDeviceConstants
   * @brief  Structure for CUDA parameters to be placed in constant memory. Only 32b values are used,
   *         since CUDA does not allow to allocate more than 2^32 elements and dim3 datatype
   *         is based on unsigned int.
   */
-struct TCUDADeviceConstants
+struct CudaDeviceConstants
 {
-  /// Set constant memory
-  __host__ void SetUpCUDADeviceConstatns();
+  /// Upload device constants into GPU memory.
+  __host__ void uploadDeviceConstants();
 
   /// size of X dimension.
   unsigned int nx;
@@ -52,8 +52,6 @@ struct TCUDADeviceConstants
   unsigned int nz;
   /// total number of elements.
   unsigned int nElements;
-  /// 2D Slab size
-  unsigned int slabSize;
   /// size of complex X dimension.
   unsigned int nxComplex;
   /// size of complex Y dimension.
@@ -62,8 +60,6 @@ struct TCUDADeviceConstants
   unsigned int nzComplex;
   /// complex number of elements.
   unsigned int nElementsComplex;
-  /// complex slab size.
-  unsigned int slabSizeComplex;
   /// normalization constant for 3D FFT.
   float  fftDivider;
   /// normalization constant for 1D FFT over X.
@@ -76,45 +72,45 @@ struct TCUDADeviceConstants
   /// dt
   float dt;
   /// 2.0 * dt
-  float dt2;
+  float dtBy2;
   /// c^2
   float c2;
 
-  /// rho0 in homogeneous case
-  float rho0_scalar;
-  /// dt * rho0 in homogeneous case
-  float dt_rho0_scalar;
-  /// dt / rho0_sgx in homogeneous case
-  float rho0_sgx_scalar;
-  /// dt / rho0_sgy in homogeneous case
-  float rho0_sgy_scalar;
-  /// dt / rho0_sgz in homogeneous case
-  float rho0_sgz_scalar;
+  /// rho0 in homogeneous case.
+  float rho0;
+  /// dt * rho0 in homogeneous case.
+  float dtRho0;
+  /// dt / rho0Sgx in homogeneous case.
+  float dtRho0Sgx;
+  /// dt / rho0Sgy in homogeneous case.
+  float dtRho0Sgy;
+  /// dt / rho0Sgz in homogeneous case.
+  float dtRho0Sgz;
 
-  /// BonA value for homogeneous case
-  float BonA_scalar;
+  /// BonA value for homogeneous case.
+  float bOnA;
 
-  /// Absorb_tau value for homogeneous case
-  float absorb_tau_scalar;
-  /// Absorb_eta value for homogeneous case
-  float absorb_eta_scalar;
+  /// AbsorbTau value for homogeneous case.
+  float absorbTau;
+  /// AbsorbEta value for homogeneous case.
+  float absorbEta;
 
-  ///  size of the u source index
-  unsigned int u_source_index_size;
-  /// u source mode
-  unsigned int u_source_mode;
-  /// u source many
-  unsigned int u_source_many;
+  ///  size of the u source index.
+  unsigned int velocitySourceSize;
+  /// u source mode.
+  unsigned int velocitySourceMode;
+  /// u source many.
+  unsigned int velocitySourceMany;
 
-  /// size of the p_source mask
-  unsigned int p_source_index_size;
-  /// p source mode
-  unsigned int p_source_mode;
-  /// p source many
-  unsigned int p_source_many;
+  /// size of the p_source mask.
+  unsigned int presureSourceSize;
+  /// p source mode.
+  unsigned int presureSourceMode;
+  /// p source many.
+  unsigned int presureSourceMany;
 
-}; // end of TCUDAConstants
-//--------------------------------------------------------------------------------------------------
+}; // end of CudaDeviceConstants
+//----------------------------------------------------------------------------------------------------------------------
 
-#endif /* CUDA_DEVICE_CONSTANTS_CUH */
+#endif /* CUDA_DEVICE_CONSTANTS_H */
 

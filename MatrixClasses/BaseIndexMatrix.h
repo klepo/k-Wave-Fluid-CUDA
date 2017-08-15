@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 14:17 (created) \n
- *              07 July     2017, 18:27 (revised)
+ *              11 August   2017, 14:40 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -38,106 +38,105 @@
 
 
 /**
- * @class TBaseIndexMatrix
- * @brief Abstract base class for index based matrices defining basic interface.
- *        Higher dimensional matrices stored as 1D arrays, row-major order.
+ * @class   BaseIndexMatrix
+ * @brief   Abstract base class for index based matrices defining basic interface.
+ *          Higher dimensional matrices stored as 1D arrays, row-major order.
 
  * @details Abstract base class for index based matrices defining basic interface. Higher
  *          dimensional matrices stored as 1D arrays, row-major order. This matrix stores the data
- *          on both the CPU and GPU side.
+ *          on both the CPU and GPU side. The I/O is done via HDF5 files.
  */
-class TBaseIndexMatrix : public TBaseMatrix
+class BaseIndexMatrix : public BaseMatrix
 {
   public:
     /// Default constructor.
-    TBaseIndexMatrix();
+    BaseIndexMatrix();
     /// Copy constructor is not allowed.
-    TBaseIndexMatrix(const TBaseIndexMatrix&) = delete;
+    BaseIndexMatrix(const BaseIndexMatrix&) = delete;
     /// Destructor.
-    virtual ~TBaseIndexMatrix(){};
+    virtual ~BaseIndexMatrix(){};
 
     /// operator= is not allowed.
-    TBaseIndexMatrix& operator=(const TBaseIndexMatrix&) = delete;
+    BaseIndexMatrix& operator=(const BaseIndexMatrix&) = delete;
 
-    /// Get dimension sizes of the matrix.
-    virtual struct TDimensionSizes GetDimensionSizes() const
-    {
-      return dimensionSizes;
-    }
+    /**
+     * @brief  Get dimension sizes of the matrix.
+     * @return Dimension sizes of the matrix.
+     */
+    virtual const DimensionSizes& getDimensionSizes() const { return mDimensionSizes; }
 
-    /// Get total element count of the matrix.
-    virtual size_t GetElementCount() const
-    {
-      return nElements;
-    };
-
-    /// Get total allocated element count (might differ from total element count used for the simulation because of padding).
-    virtual size_t GetAllocatedElementCount() const
-    {
-      return nAllocatedElements;
-    };
+    /**
+     * @brief Size of the matrix.
+     * @return Number of elements.
+     */
+    virtual size_t size()                             const { return mSize; };
+    /**
+     * @brief  The capacity of the matrix (this may differ from size due to padding, etc.).
+     * @return Capacity of the currently allocated storage.
+     */
+    virtual size_t capacity()                         const { return mCapacity; };
 
     /// Zero all elements of the matrix (NUMA first touch).
-    virtual void ZeroMatrix();
+    virtual void   zeroMatrix();
 
-    /// Get raw data out of the class (for direct CPU kernel access).
-    virtual size_t* GetHostData()
-    {
-      return hostData;
-    }
-
-    /// Get raw data out of the class (for direct CPU kernel access).
-    virtual const size_t* GetHostData() const
-    {
-      return hostData;
-    }
-
-    /// Get raw GPU data out of the class (for direct GPU kernel access).
-    virtual size_t* GetDeviceData()
-    {
-      return deviceData;
-    }
-
-    /// Get raw GPU data out of the class (for direct GPU kernel access).
-    virtual const size_t* GetDeviceData() const
-    {
-      return deviceData;
-    }
+    /**
+     * @brief  Get matrix data stored stored on the host side (for direct host kernels).
+     * @return Pointer to matrix data stored on the host side.
+     */
+    virtual size_t*       getHostData()                     { return mHostData; }
+    /**
+     * @brief  Get matrix data stored stored on the host side (for direct host kernels).
+     * @return Pointer to matrix data stored on the host side.
+     */
+    virtual const size_t* getHostData()               const { return mHostData; }
+    /**
+     * @brief  Get matrix data stored stored on the device side (for direct device kernels).
+     * @return Pointer to matrix data on the device side.
+     */
+    virtual size_t*       getDeviceData()                   { return mDeviceData; }
+    /**
+     * @brief  Get matrix data stored stored on the device side (for direct device kernels).
+     * @return Pointer to matrix data on the device side.
+     */
+    virtual const size_t* getDeviceData()             const { return mDeviceData; }
 
     /// Copy data from CPU -> GPU (Host -> Device).
-    virtual void CopyToDevice();
+    virtual void copyToDevice();
 
     /// Copy data from GPU -> CPU (Device -> Host).
-    virtual void CopyFromDevice();
+    virtual void copyFromDevice();
 
   protected:
 
-    /// Memory allocation (both on CPU and GPU)
-    virtual void AllocateMemory();
+   /**
+    * @brief Aligned memory allocation (both on CPU and GPU).
+    * @throw std::bad_alloc - If there's not enough memory.
+    */
+    virtual void allocateMemory();
     /// Memory deallocation (both on CPU and GPU)
-    virtual void FreeMemory();
+    virtual void freeMemory();
 
     /// Total number of elements.
-    size_t nElements;
-    /// Total number of allocated elements (the array size).
-    size_t nAllocatedElements;
+    size_t mSize;
+    /// Total number of allocated elements (in terms of szie_t).
+    size_t mCapacity;
 
     /// Dimension sizes.
-    struct TDimensionSizes dimensionSizes;
+    struct DimensionSizes mDimensionSizes;
 
     /// Size of 1D row in X dimension.
-    size_t rowSize;
-    /// Size of 2D slab (X,Y).
-    size_t slabSize;
+    size_t mRowSize;
+    /// Size of a XY slab.
+    size_t mSlabSize;
 
     /// Raw CPU matrix data.
-    size_t* hostData;
+    size_t* mHostData;
     /// Raw GPU matrix data.
-    size_t* deviceData;
+    size_t* mDeviceData;
 
   private:
 
-};// end of TBaseLongMatrix
-//--------------------------------------------------------------------------------------------------
+};// end of BaseLongMatrix
+//----------------------------------------------------------------------------------------------------------------------
 
 #endif /* BASE_INDEX_MATRIX_H */

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        26 July     2011, 15:16 (created) \n
- *              07 July     2017, 18:45 (revised)
+ *              11 August   2017, 14:39 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -30,88 +30,106 @@
  */
 
 #ifndef INDEX_MATRIX_H
-#define	INDEX_MATRIX_H
+#define INDEX_MATRIX_H
 
 #include <MatrixClasses/BaseIndexMatrix.h>
 #include <Utils/DimensionSizes.h>
 
 /**
- * @class TIndexMatrix
- * @brief The class for 64b unsigned integers (indices). It is used for  sensor_mask_index or
- * sensor_corners_mask to get the address of sampled voxels.
+ * @class IndexMatrix
+ * @brief   The class for 64b unsigned integers (indices). It is used for linear and cuboid corners masks to get the
+ *          address of sampled voxels.
  *
- * @details The class for 64b unsigned integers (indices). It is used for sensor_mask_index or
- * sensor_corners_mask to get the address of sampled voxels. Stores data both GPU and CPU side.
+ * @details The class for 64b unsigned integers (indices). It is used for linear and cuboid corners masks to get the
+ *          get the address of sampled voxels. Stores data both GPU and CPU side.
  */
-class TIndexMatrix : public TBaseIndexMatrix
+class IndexMatrix : public BaseIndexMatrix
 {
   public:
     /// Default constructor not allowed.
-    TIndexMatrix() = delete;
-    /// Constructor allocating memory.
-    TIndexMatrix(const TDimensionSizes& dimensionSizes);
+    IndexMatrix() = delete;
+    /**
+     * @brief Constructor.
+     * @param [in] dimensionSizes - Dimension sizes of the matrix.
+     */
+    IndexMatrix(const DimensionSizes& dimensionSizes);
     /// Copy constructor not allowed.
-    TIndexMatrix(const TIndexMatrix&);
+    IndexMatrix(const IndexMatrix&);
     /// Destructor.
-    virtual ~TIndexMatrix();
+    virtual ~IndexMatrix();
 
     /// Operator= is not allowed.
-    TIndexMatrix& operator= (const TIndexMatrix&);
+    IndexMatrix& operator= (const IndexMatrix&);
 
-    /// Read data from the HDF5 file.
-    virtual void ReadDataFromHDF5File(THDF5_File&  file,
-                                      TMatrixName& matrixName);
-    /// Write data into the HDF5 file.
-    virtual void WriteDataToHDF5File(THDF5_File&  file,
-                                     TMatrixName& matrixName,
-                                     const size_t compressionLevel);
+/**
+     * @brief   Read matrix from HDF5 file.
+     * @details Read matrix from HDF5 file.
+     * @param [in] file       - Handle to the HDF5 file
+     * @param [in] matrixName - HDF5 dataset name to read from
+     * @throw ios::failure    - If error occurred.
+     */
+    virtual void readData(Hdf5File&   file,
+                          MatrixName& matrixName);
+    /**
+     * @brief   Write data into HDF5 file.
+     * @details Write data into HDF5 file.
+     * @param [in] file             - Handle to the HDF5 file
+     * @param [in] matrixName       - HDF5 dataset name to write to
+     * @param [in] compressionLevel - Compression level for the HDF5 dataset
+     * @throw ios::failure          - If an error occurred.
+     */
+    virtual void writeData(Hdf5File&    file,
+                           MatrixName&  matrixName,
+                           const size_t compressionLevel);
 
     /**
-     * @brief   Operator [].
-     * @details Operator [].
-     * @param [in] index - 1D index into the matrix
-     * @return Value of the index
+     * @brief  operator [].
+     * @param [in] index - 1D index into the matrix.
+     * @return An element of the matrix.
      */
-    inline size_t& operator[](const size_t& index)
-    {
-      return hostData[index];
-    };
+    inline size_t&       operator[](const size_t& index)       { return mHostData[index]; };
+    /**
+     * @brief  operator [], constant version.
+     * @param [in] index - 1D index into the matrix.
+     * @return An element of the matrix.
+     */
+    inline const size_t& operator[](const size_t& index) const { return mHostData[index]; };
 
     /**
-     * @brief Operator [], constant version
-     * @details Operator [], constant version
-     * @param [in] index - 1D index into the matrix
-     * @return Value of the index
+     * @brief  Get the top left corner of the index-th cuboid.
+     * @param [in] index - Index of the cuboid
+     * @return The top left corner
      */
-    inline const size_t& operator[](const size_t& index) const
-    {
-      return hostData[index];
-    };
-
-    /// Get the top left corner of the index-th cuboid.
-    TDimensionSizes GetTopLeftCorner(const size_t& index) const;
-    /// Get the bottom right corner of the index-th cuboid
-    TDimensionSizes GetBottomRightCorner(const size_t& index) const;
+    DimensionSizes getTopLeftCorner(const size_t& index)     const;
+    /**
+     * @brief  Get the top bottom right of the index-th cuboid.
+     * @param [in] index - Index of the cuboid
+     * @return The bottom right corner
+     */
+    DimensionSizes getBottomRightCorner(const size_t& index) const;
 
     ///  Recompute indices MATALAB->C++.
-    void RecomputeIndicesToCPP();
+    void recomputeIndicesToCPP();
     ///  Recompute indices C++ -> MATLAB.
-    void RecomputeIndicesToMatlab();
+    void recomputeIndicesToMatlab();
 
-    /// Get the total number of elements to be sampled within all cuboids.
-    size_t GetTotalNumberOfElementsInAllCuboids() const;
+   /**
+    * @brief  Get total number of elements in all cuboids to be able to allocate output file.
+    * @return Total sampled grid points
+    */
+    size_t getSizeOfAllCuboids() const;
 
   protected:
 
   private:
     /// Number of elements to get 4MB block of data.
-    static constexpr size_t CHUNK_SIZE_1D_4MB   = 1048576; //(4MB)
+    static constexpr size_t kChunkSize1D4MB   = 1048576; //(4MB)
     /// Number of elements to get 1MB block of data.
-    static constexpr size_t CHUNK_SIZE_1D_1MB   =  262144; //(1MB)
+    static constexpr size_t kChunkSize1D1MB   =  262144; //(1MB)
     /// Number of elements to get 256KB block of data.
-    static constexpr size_t CHUNK_SIZE_1D_256KB =   65536; //(256KB)
+    static constexpr size_t kChunkSize1D256kB =   65536; //(256KB)
 
-};// end of TIndexMatrix
-//--------------------------------------------------------------------------------------------------
-#endif /* 	INDEX_MATRIX_H */
+};// end of IndexMatrix
+//----------------------------------------------------------------------------------------------------------------------
+#endif /* INDEX_MATRIX_H */
 

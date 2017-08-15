@@ -11,14 +11,15 @@
             <make-dep-projects/>
             <sourceRootList>
                 <sourceRootElem>CUDA</sourceRootElem>
-                <sourceRootElem>HDF5</sourceRootElem>
+                <sourceRootElem>Hdf5</sourceRootElem>
                 <sourceRootElem>KSpaceSolver</sourceRootElem>
                 <sourceRootElem>MatrixClasses</sourceRootElem>
                 <sourceRootElem>Parameters</sourceRootElem>
                 <sourceRootElem>Utils</sourceRootElem>
                 <sourceRootElem>Containers</sourceRootElem>
-                <sourceRootElem>OutputHDF5Streams</sourceRootElem>
+                <sourceRootElem>OutputStreams</sourceRootElem>
                 <sourceRootElem>Logger</sourceRootElem>
+                <sourceRootElem>OutputStreams</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>
