@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        14 September 2012, 17:28 (created) \n
- *              11 August    2017, 15:54 (revised)
+ *              15 August    2017, 10:50 (revised)
  *
  * @section License
  * This file is part of the C++ extension of thq-Wave Toolbox
@@ -30,8 +30,8 @@
  * If not, see http://www.gnu.org/licenses/.
  */
 
-#ifndef Matrix_NAMES_H
-#define Matrix_NAMES_H
+#ifndef MATRIX_NAMES_H
+#define MATRIX_NAMES_H
 
 //--------------------------------------------------------------------------------------------------------------------//
 //--------------------------------------------------- Constants ------------------------------------------------------//
@@ -338,4 +338,4 @@ MatrixName kCufftYTempName     = "CUFFT_Y_temp";
 MatrixName kCufftZTempName     = "CUFFT_Z_temp";
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* Matrix_NAMES_H */
+#endif	/* MATRIX_NAMES_H */

@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 July     2012, 14:14 (created) \n
- *              11 August   2017, 14:01 (revised)
+ *              15 August   2017, 10:57 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -332,7 +332,7 @@ hid_t Hdf5File::createDataset(const hid_t                    parentGroup,
  */
 void  Hdf5File::closeDataset(const hid_t dataset)
 {
-  H5Dclose (dataset);
+  H5Dclose(dataset);
 }// end of closeDataset
 //----------------------------------------------------------------------------------------------------------------------
 

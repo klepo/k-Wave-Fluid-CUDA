@@ -12,7 +12,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        29 August    2014, 10:10 (created)
- *              11 August    2017, 15:21 (revised)
+ *              15 August    2017, 10:52 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -168,7 +168,7 @@ void IndexOutputStream::reopen()
     }
   }
 }// end of reopen
-//---------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Sample grid points, line them up in the buffer, if necessary a reduce operator is applied.
@@ -238,8 +238,8 @@ void IndexOutputStream::flushRaw()
     // only raw time series are flushed down to the disk every time step
     flushBufferToFile();
   }
-}// end of FlushRaw
-//--------------------------------------------------------------------------------------------------
+}// end of flushRaw
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Apply post-processing on the buffer and flush it to the file.

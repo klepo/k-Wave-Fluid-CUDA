@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        27 January   2015, 17:21 (created) \n
- *              19 July      2017, 15:22 (revised)
+ *              15 August    2017, 10:53 (revised)
  *
  * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -378,8 +378,8 @@ void OutputStreamsCudaKernels::sampleAll(float*       samplingBuffer,
                 nSamples);
   // check for errors
   cudaCheckErrors(cudaGetLastError());
-}// end of SampleMaxAll
-//--------------------------------------------------------------------------------------------------
+}// end of sampleMaxAll
+//----------------------------------------------------------------------------------------------------------------------
 
 
 //------------------------------ Explicit instances of sampleAll ---------------------------------//
@@ -419,8 +419,8 @@ __global__ void cudaPostProcessingRms(float*       samplingBuffer,
   {
     samplingBuffer[i] = sqrt(samplingBuffer[i] * scalingCoeff);
   }
-}// end of CUDAPostProcessingRMS
-//--------------------------------------------------------------------------------------------------
+}// end of cudaPostProcessingRMS
+//----------------------------------------------------------------------------------------------------------------------
 
 
 /**

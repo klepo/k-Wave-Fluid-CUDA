@@ -1135,7 +1135,7 @@ void KSpaceFirstOrder3DSolver::computeVelocityGradient()
                                                               getDzudzn());
   }// non-uniform grid
 }// end of computeVelocityGradient
-//--------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Calculate new values of acoustic density for non-linear case (rhoX, rhoy and rhoZ).
