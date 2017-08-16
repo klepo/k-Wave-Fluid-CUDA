@@ -11,7 +11,7 @@
  * @version     kspaceFirstOrder3D 3.4
  *
  * @date        13 July     2016, 12:33 (created) \n
- *              11 August   2017, 14:26 (revised)
+ *              15 August   2017, 16:58 (revised)
  *
   * @section License
  * This file is part of the C++ extension of the k-Wave Toolbox
@@ -167,7 +167,7 @@ OutputMessage kOutFmtGitHashLeft
 
 ///Output message
 OutputMessage kOutFmtKWaveVersion
-  = "kspaceFirstOrder3D-CUDA v1.1";
+  = "kspaceFirstOrder3D-CUDA v1.2";
 
 ///Output message
 OutputMessage kOutFmtFftPlans
@@ -277,7 +277,7 @@ OutputMessage kOutFmtBuildNoDataTime
   = "├───────────────────────────────────────────────────────────────┤\n"
     "│                       Build information                       │\n"
     "├───────────────────────────────────────────────────────────────┤\n"
-    "│ Build number:     kspaceFirstOrder3D v3.4                     │\n"
+    "│ Build number:     kspaceFirstOrder3D v3.5                     │\n"
     "│ Build date:       %*.*s                                 │\n"
     "│ Build time:       %*.*s                                    │\n";
 
@@ -364,7 +364,7 @@ OutputMessage kOutFmtLicense
     "│ Contact email:    jarosjir@fit.vutbr.cz                       │\n"
     "│ Contact web:      http://www.k-wave.org                       │\n"
     "├───────────────────────────────────────────────────────────────┤\n"
-    "│       Copyright (C) 2016 Jiri Jaros and Bradley Treeby        │\n"
+    "│       Copyright (C) 2017 Jiri Jaros and Bradley Treeby        │\n"
     "└───────────────────────────────────────────────────────────────┘\n";
 
 
