@@ -11,47 +11,47 @@
  *
  * @version   kspaceFirstOrder3D 3.5
  *
- * @date      20 July     2017, 14:42 (created) \n
- *            16 August   2017, 15:07 (revised)
+ * @date      20 July      2017, 14:42 (created) \n
+ *            17 August    2017, 12:55 (revised)
  *
  * @section   Hdf5FileHeader HDF5 File Header Structure
  *
  *The header includes following information
  *
  * \verbatim
-==============================================================================================================
-                                        Input File/Checkpoint File Header
-=============================================================================================================
-created_by                              Short description of the tool that created this file
-creation_date                           Date when the file was created
-file_description                        Short description of the content of the file (e.g. simulation name)
-file_type                               Type of the file (input)
-major_version                           Major version of the file definition (1)
-minor_version                           Minor version of the file definition (1)
-==============================================================================================================
++----------------------------------------------------------------------------------------------------------------------+
+|                                           Input File / Checkpoint File Header                                        |
++----------------------------------------------------------------------------------------------------------------------+
+| created_by                              Short description of the tool that created this file                         |
+| creation_date                           Date when the file was created                                               |
+| file_description                        Short description of the content of the file (e.g. simulation name)          |
+| file_type                               Type of the file (input)                                                     |
+| major_version                           Major version of the file definition (1)                                     |
+| minor_version                           Minor version of the file definition (1)                                     |
++----------------------------------------------------------------------------------------------------------------------+
  \endverbatim
  *
  * \verbatim
-==============================================================================================================
-                                        Output File Header
-==============================================================================================================
-created_by                              Short description of the tool that created this file
-creation_date                           Date when the file was created
-file_description                        Short description of the content of the file (e.g. simulation name)
-file_type                               Type of the file (output)
-major_version                           Major version of the file definition (1)
-minor_version                           Minor version of the file definition (1)
--------------------------------------------------------------------------------------------------------------
-host_names                              List of hosts (computer names) the simulation was executed on
-number_of_cpu_cores                     Number of CPU cores used for the simulation
-data_loading_phase_execution_time       Time taken to load data from the file
-pre-processing_phase_execution_time     Time taken to pre-process data
-simulation_phase_execution_time         Time taken to run the simulation
-post-processing_phase_execution_time    Time taken to complete the post-processing phase
-total_execution_time                    Total execution time
-peak_core_memory_in_use                 Peak memory required per core during the simulation
-total_memory_in_use Total               Peak memory in use
-==============================================================================================================
++----------------------------------------------------------------------------------------------------------------------+
+|                                                    Output File Header                                                |
++----------------------------------------------------------------------------------------------------------------------+
+| created_by                              Short description of the tool that created this file                         |
+| creation_date                           Date when the file was created                                               |
+| file_description                        Short description of the content of the file (e.g. simulation name)          |
+| file_type                               Type of the file (output)                                                    |
+| major_version                           Major version of the file definition (1)                                     |
+| minor_version                           Minor version of the file definition (1)                                     |
++----------------------------------------------------------------------------------------------------------------------+
+| host_names                              List of hosts (computer names) the simulation was executed on                |
+| number_of_cpu_cores                     Number of CPU cores used for the simulation                                  |
+| data_loading_phase_execution_time       Time taken to load data from the file                                        |
+| pre-processing_phase_execution_time     Time taken to pre-process data                                               |
+| simulation_phase_execution_time         Time taken to run the simulation                                             |
+| post-processing_phase_execution_time    Time taken to complete the post-processing phase                             |
+| total_execution_time                    Total execution time                                                         |
+| peak_core_memory_in_use                 Peak memory required per core during the simulation                          |
+| total_memory_in_use Total               Peak memory in use                                                           |
++----------------------------------------------------------------------------------------------------------------------+
  \endverbatim
  *
  *
@@ -60,7 +60,7 @@ total_memory_in_use Total               Peak memory in use
  * This file is part of the C++ extension of the k-Wave Toolbox [k-Wave Toolbox](http://www.k-wave.org).
  *
  * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
- * of the GNU Lesser General Public License as published by the Free Software  *Foundation, either version 3 of the
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  *
  * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied

@@ -11,14 +11,14 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      27 January   2015, 17:21 (created) \n
- *            16 August    2017, 15:38 (revised)
+ *            16 August    2017, 16:26 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the k-Wave Toolbox [k-Wave Toolbox](http://www.k-wave.org).
  *
  * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
- * of the GNU Lesser General Public License as published by the Free Software  *Foundation, either version 3 of the
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  *
  * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
@@ -144,24 +144,28 @@ void OutputStreamsCudaKernels::sampleIndex(float*        samplingBuffer,
 //----------------------------------------------------------------------------------------------------------------------
 
 //------------------------------ Explicit instances of SampleIndex -------------------------------//
+/// Sample the source matrix using the index sensor mask, no post-processing.
 template
 void OutputStreamsCudaKernels::sampleIndex<BaseOutputStream::ReduceOperator::kNone>
                                           (float*        samplingBuffer,
                                            const float*  sourceData,
                                            const size_t* sensorData,
                                            const size_t  nSamples);
+/// Sample the source matrix using the index sensor mask, take the root mean square.
 template
 void OutputStreamsCudaKernels::sampleIndex<BaseOutputStream::ReduceOperator::kRms>
                                           (float*        samplingBuffer,
                                            const float*  sourceData,
                                            const size_t* sensorData,
                                            const size_t  nSamples);
+/// Sample the source matrix using the index sensor mask, take the maximum.
 template
 void OutputStreamsCudaKernels::sampleIndex<BaseOutputStream::ReduceOperator::kMax>
                                           (float*        samplingBuffer,
                                            const float*  sourceData,
                                            const size_t* sensorData,
                                            const size_t  nSamples);
+/// Sample the source matrix using the index sensor mask, take the minimum.
 template
 void OutputStreamsCudaKernels::sampleIndex<BaseOutputStream::ReduceOperator::kMin>
                                           (float*        samplingBuffer,
@@ -289,6 +293,7 @@ void OutputStreamsCudaKernels::sampleCuboid(float*       samplingBuffer,
 
 
 //----------------------------- Explicit instances of sampleCuboid -------------------------------//
+///Sample data inside one cuboid and store it to buffer, no post-processing.
 template
 void OutputStreamsCudaKernels::sampleCuboid<BaseOutputStream::ReduceOperator::kNone>
                                            (float*       samplingBuffer,
@@ -297,6 +302,7 @@ void OutputStreamsCudaKernels::sampleCuboid<BaseOutputStream::ReduceOperator::kN
                                             const dim3    bottomRightCorner,
                                             const dim3    matrixSize,
                                             const size_t  nSamples);
+/// Sample data inside one cuboid and store it to buffer, take the root mean square.
 template
 void OutputStreamsCudaKernels::sampleCuboid<BaseOutputStream::ReduceOperator::kRms>
                                            (float*       samplingBuffer,
@@ -305,6 +311,7 @@ void OutputStreamsCudaKernels::sampleCuboid<BaseOutputStream::ReduceOperator::kR
                                             const dim3   bottomRightCorner,
                                             const dim3   matrixSize,
                                             const size_t nSamples);
+/// Sample data inside one cuboid and store it to buffer, take the maximum.
 template
 void OutputStreamsCudaKernels::sampleCuboid<BaseOutputStream::ReduceOperator::kMax>
                                            (float*       samplingBuffer,
@@ -313,6 +320,7 @@ void OutputStreamsCudaKernels::sampleCuboid<BaseOutputStream::ReduceOperator::kM
                                             const dim3   bottomRightCorner,
                                             const dim3   matrixSize,
                                             const size_t nSamples);
+/// Sample data inside one cuboid and store it to buffer, take the minimum.
 template
 void OutputStreamsCudaKernels::sampleCuboid<BaseOutputStream::ReduceOperator::kMin>
                                            (float*       samplingBuffer,
@@ -383,16 +391,19 @@ void OutputStreamsCudaKernels::sampleAll(float*       samplingBuffer,
 
 
 //------------------------------ Explicit instances of sampleAll ---------------------------------//
+/// Sample and the whole domain and apply a defined operator, take the root mean square.
 template
 void OutputStreamsCudaKernels::sampleAll<BaseOutputStream::ReduceOperator::kRms>
                                         (float*       samplingBuffer,
                                          const float* sourceData,
                                          const size_t nSamples);
+/// Sample and the whole domain and apply a defined operator, take the maximum.
 template
 void OutputStreamsCudaKernels::sampleAll<BaseOutputStream::ReduceOperator::kMax>
                                         (float*       samplingBuffer,
                                          const float* sourceData,
                                          const size_t nSamples);
+/// Sample and the whole domain and apply a defined operator, take the minimum.
 template
 void OutputStreamsCudaKernels::sampleAll<BaseOutputStream::ReduceOperator::kMin>
                                         (float*       samplingBuffer,

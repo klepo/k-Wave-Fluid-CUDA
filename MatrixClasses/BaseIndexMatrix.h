@@ -11,14 +11,14 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      26 July      2011, 14:17 (created) \n
- *            16 August    2017, 15:30 (revised)
+ *            16 August    2017, 13:54 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the k-Wave Toolbox [k-Wave Toolbox](http://www.k-wave.org).
  *
  * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
- * of the GNU Lesser General Public License as published by the Free Software  *Foundation, either version 3 of the
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  *
  * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied

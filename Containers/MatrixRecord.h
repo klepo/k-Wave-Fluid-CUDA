@@ -1,24 +1,24 @@
 /**
- * @file       MatrixRecord.h
+ * @file      MatrixRecord.h
  *
- * @author     Jiri Jaros \n
- *             Faculty of Information Technology \n
- *             Brno University of Technology \n
- *             jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief      The header file containing metadata about matrices stored in the matrix container.
+ * @brief     The header file containing metadata about matrices stored in the matrix container.
  *
- * @version    kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date       02 December 2014, 15:44 (created) \n
- *             16 August   2017, 14:55 (revised)
+ * @date      02 December  2014, 15:44 (created) \n
+ *            17 August    2017, 12:53 (revised)
  *
- * @copyright  Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the k-Wave Toolbox [k-Wave Toolbox](http://www.k-wave.org).
  *
  * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
- * of the GNU Lesser General Public License as published by the Free Software  *Foundation, either version 3 of the
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  *
  * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
