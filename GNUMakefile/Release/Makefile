@@ -4,7 +4,7 @@
 # *              Faculty of Information Technology
 # *              Brno University of Technology 
 # * @email       jarosjir@fit.vutbr.cz
-# * @comments    Linux makefile for Anselm supercomputer
+# * @comments    Linux makefile for Release version on Ubuntu 16.04
 # * 
 # * @tool        kspaceFirstOrder3D 3.5
 # * @created     02 December  2014, 12:32 
@@ -66,7 +66,7 @@
 
 
 ################################################################################
-#	  Set following flags based on your compiler and library paths         #
+#	  Set following flags based on your compiler and library pats          #
 ################################################################################
 
 
@@ -79,15 +79,16 @@
 LINKING = SEMI
 
 #Set up paths to necessary libraries: 
-HDF5_DIR=/home_lustre/jarosjir/Software/hdf5-serial/1.8.19/gcc5.3.0-sse2
+HDF5_DIR=${EBROOTHDF5}
 CUDA_DIR=${CUDA_HOME}
-ZLIB_DIR=/home/jarosjir/Software/zlib/1.2.8-gcc53-sse2
-SZIP_DIR=/home/jarosjir/Software/szip/2.1-gcc53-sse2
+ZLIB_DIR=${EBROOTZLIB}
+SZIP_DIR=${EBROOTSZIP}
     
 #Get GIT hash (only if you build form Gitlab repository)
-#KWAVE_GIT_HASH=$(shell git rev-parse HEAD)
+KWAVE_GIT_HASH=$(shell git rev-parse HEAD)
 #Otherwise, use the last official build hash
-KWAVE_GIT_HASH=18b205f0e4a37175f067c66bc3e34a731503726d
+#KWAVE_GIT_HASH=18b205f0e4a37175f067c66bc3e34a731503726d
+################################################################################
 
 
 ############################## NVCC + GNU g++ ##################################
@@ -115,7 +116,7 @@ CUDA_ARCH = --generate-code arch=compute_20,code=sm_20	\
 
   
 LDFLAGS  =  -Xcompiler="-fopenmp" \
-	    -Xlinker="-rpath,$(HDF5_DIR)/lib:$(CUDA_DIR)/lib64" -std=c++11  \
+	    -Xlinker="-rpath,$(HDF5_DIR)/lib:$(CUDA_DIR)/lib64:." -std=c++11  \
 	    -L$(HDF5_DIR)/lib  -L$(CUDA_DIR)/lib64 
 
 ifeq ($(LINKING),STATIC)
