@@ -85,9 +85,9 @@ ZLIB_DIR=/home/jarosjir/Software/zlib/1.2.8-gcc53-sse2
 SZIP_DIR=/home/jarosjir/Software/szip/2.1-gcc53-sse2
     
 #Get GIT hash (only if you build form Gitlab repository)
-#KWAVE_GIT_HASH=$(shell git rev-parse HEAD)
+KWAVE_GIT_HASH=$(shell git rev-parse HEAD)
 #Otherwise, use the last official build hash
-KWAVE_GIT_HASH=18b205f0e4a37175f067c66bc3e34a731503726d
+#KWAVE_GIT_HASH=18b205f0e4a37175f067c66bc3e34a731503726d
 
 
 ############################## NVCC + GNU g++ ##################################
