@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      02 December  2014, 16:17 (created) \n
- *            17 August    2017, 12:53 (revised)
+ *            28 August    2017, 15:57 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -204,7 +204,7 @@ class MatrixContainer
       kTempCufftZ,
       /// Temporary matrix for cufft shift.
       kTempCufftShift
-    };// end of TMatrixID
+    };// end of MatrixIdx
 
 
 
@@ -231,7 +231,7 @@ class MatrixContainer
      * @brief  Is the container empty?
      * @return true - If the container is empty.
      */
-    inline bool isEmpty() const
+    inline bool empty() const
     {
       return mContainer.empty();
     };
@@ -271,22 +271,13 @@ class MatrixContainer
     /// Destroy and free all matrices.
     void freeMatrices();
 
-    /**
-     * @brief Load all marked matrices from the input HDF5 file.
-     * @param [in] inputFile - HDF5 input file handle.
-     */
-    void loadDataFromInputFile(Hdf5File& inputFile);
-    /**
-     * @brief Load selected matrices from the checkpoint HDF5 file.
-     * @param [in] checkpointFile - HDF5 checkpoint file handle.
-     */
-    void loadDataFromCheckpointFile(Hdf5File& checkpointFile);
-    /**
-     * @brief   Store selected matrices into the checkpoint file.
-     * @details Data is automatically downloaded from device memory.
-     * @param [in] checkpointFile - Checkpoint file
-     */
-    void storeDataIntoCheckpointFile(Hdf5File& checkpointFile);
+    /// Load all marked matrices from the input HDF5 file.
+    void loadDataFromInputFile();
+
+    /// Load selected matrices from the checkpoint HDF5 file.
+    void loadDataFromCheckpointFile();
+    /// Store selected matrices into the checkpoint file.
+    void storeDataIntoCheckpointFile();
 
     /// Copy all matrices from host to device (CPU -> GPU).
     void copyMatricesToDevice();

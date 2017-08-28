@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      28 August    2014, 10:20 (created) \n
- *            16 August    2017, 13:56 (revised)
+ *            28 August    2017, 16:17 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -57,6 +57,10 @@ class WholeDomainOutputStream : public BaseOutputStream
                             MatrixName&          datasetName,
                             RealMatrix&          sourceMatrix,
                             const ReduceOperator reduceOp);
+
+    /// Copy constructor not allowed.
+    WholeDomainOutputStream(const WholeDomainOutputStream&) = delete;
+
     /**
      * @brief Destructor.
      *

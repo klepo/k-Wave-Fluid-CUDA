@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      04 December  2014, 11:00 (created) \n
- *            17 August    2017, 12:53 (revised)
+ *            28 August    2017, 15:12 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -143,7 +143,7 @@ class OutputStreamContainer
      * @brief   Is the container empty?
      * @return  true - If the container is empty.
      */
-    inline bool isEmpty() const
+    inline bool empty() const
     {
       return mContainer.empty();
     };
@@ -153,7 +153,7 @@ class OutputStreamContainer
      * @param [in] outputStreamIdx - Id of the output stream.
      * @return An element of the container.
      */
-    BaseOutputStream& operator[] (const OutputStreamIdx outputStreamIdx)
+    BaseOutputStream& operator[](const OutputStreamIdx outputStreamIdx)
     {
       return (* (mContainer[outputStreamIdx]));
     };
@@ -195,19 +195,20 @@ class OutputStreamContainer
 
    private:
     /**
-     * Create a new output stream.
+     * @brief Create a new output stream.
+     *
      * @param [in] matrixContainer  - Name of the HDF5 dataset or group
      * @param [in] sampledMatrixIdx - Code id of the matrix
-     * @param [in] fileDatasetName  - Name of the HDF5 dataset or group
+     * @param [in] fileObjectName   - Name of the HDF5 dataset or group
      * @param [in] reduceOp         - Reduce operator
      *
      * @return New output stream with defined links
      *
      */
-    BaseOutputStream* createNewOutputStream(MatrixContainer&                       matrixContainer,
-                                            const MatrixContainer::MatrixIdx       sampledMatrixIdx,
-                                            const MatrixName&                      fileDatasetName,
-                                            const BaseOutputStream::ReduceOperator reduceOp);
+    BaseOutputStream* createOutputStream(MatrixContainer&                       matrixContainer,
+                                         const MatrixContainer::MatrixIdx       sampledMatrixIdx,
+                                         const MatrixName&                      fileObjectName,
+                                         const BaseOutputStream::ReduceOperator reduceOp);
 
     /// Map with output streams.
     std::map<OutputStreamIdx, BaseOutputStream*> mContainer;

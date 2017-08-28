@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            16 August    2017, 13:49 (revised)
+ *            28 August    2017, 15:19 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -161,7 +161,7 @@ namespace SolverCudaKernels
   //--------------------------------------------------- Sources ------------------------------------------------------//
 
   /**
-   * @brief Add transducer data  source to velocity x component.
+   * @brief Add transducer data source to velocity x component.
    *
    * @param [in, out] uxSgx                 - Here we add the signal.
    * @param [in]      velocitySourceIndex   - Where to add the signal (source geometry).
@@ -248,9 +248,9 @@ namespace SolverCudaKernels
    * @param [in, out] uySgy - Velocity matrix in y direction.
    * @param [in, out] uzSgz - Velocity matrix in y direction.
    */
-  void computeInitialVelocity(RealMatrix& uxSgx,
-                              RealMatrix& uySgy,
-                              RealMatrix& uzSgz);
+  void computeInitialVelocityHomogeneousUniform(RealMatrix& uxSgx,
+                                                RealMatrix& uySgy,
+                                                RealMatrix& uzSgz);
 
   /**
    * @brief Compute acoustic velocity for initial pressure problem, homogenous medium, non-uniform grid.
@@ -503,7 +503,7 @@ namespace SolverCudaKernels
                               const float*      absorbEtaData);
 
   /**
-   * @brief Sum sub-terms for new p, linear lossless case.
+   * @brief Sum sub-terms for new pressure, linear lossless case.
    * @param [out] p            - New value of pressure
    * @param [in]  rhoX         - Acoustic density in x direction.
    * @param [in]  rhoY         - Acoustic density in y direction.
@@ -527,7 +527,7 @@ namespace SolverCudaKernels
                                     const float*      rho0Data);
 
   /**
-   * @brief Sum sub-terms for new p, linear lossless case.
+   * @brief Sum sub-terms for new pressure, linear lossless case.
    *
    * @param [out] p          - New value of pressure
    * @param [in]  rhoX       - Acoustic density in x direction.

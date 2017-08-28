@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      29 August    2014, 10:10 (created) \n
- *            16 August    2017, 13:56 (revised)
+ *            28 August    2017, 16:17 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -96,7 +96,7 @@ void IndexOutputStream::create()
 
   // Set HDF5 chunk size
   DimensionSizes chunkSize(nSampledElementsPerStep, 1, 1);
-  // for chunks bigger than 32 MB
+  // for data bigger than 32 MB
   if (nSampledElementsPerStep > (kChunkSize4MB * 8))
   {
       chunkSize.nx = kChunkSize4MB; // set chunk size to MB
@@ -127,7 +127,6 @@ void IndexOutputStream::create()
 
 /**
  * Reopen the output stream after restart.
- *
  */
 void IndexOutputStream::reopen()
 {

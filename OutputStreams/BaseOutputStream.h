@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      11 July      2012, 10:30 (created) \n
- *            16 August    2017, 13:56 (revised)
+ *            28 August    2017, 15:11 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -86,7 +86,7 @@ class BaseOutputStream
 
     /// Copy constructor not allowed.
     BaseOutputStream(const BaseOutputStream&) = delete;
-    /// Destructor
+    /// Destructor.
     virtual ~BaseOutputStream() {};
 
     /// Operator= is not allowed.
@@ -131,10 +131,10 @@ class BaseOutputStream
     /// Copy data Device -> Host
     virtual void copyFromDevice();
 
-    /// Handle to HDF5 output file
+    /// Handle to HDF5 output file.
     Hdf5File& mFile;
 
-    /// HDF5 group in the output file where to store data in.
+    /// HDF5 group/dataset in the output file where to store data in.
     std::string mRootObjectName;
 
     /// Source matrix to be sampled.
@@ -156,10 +156,8 @@ class BaseOutputStream
     /// Temporary buffer on the GPU side - only for aggregated quantities.
     float* mDeviceBuffer;
 
-    /// chunk size of 4MB in number of float elements.
+    /// Chunk size of 4MB in number of float elements.
     static constexpr size_t kChunkSize4MB = 1048576;
-    /// The minimum number of elements to start sampling in parallel (4MB).
-    static constexpr size_t kMinGridpointsToSampleInParallel = 1048576;
 
 };// end of BaseOutputStream
 //----------------------------------------------------------------------------------------------------------------------

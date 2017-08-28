@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      11 July      2011, 12:13 (created) \n
- *            16 August    2017, 13:54 (revised)
+ *            28 August    2017, 16:14 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -125,7 +125,7 @@ class BaseFloatMatrix : public BaseMatrix
     size_t mCapacity;
 
     /// Dimension sizes.
-    struct DimensionSizes mDimensionSizes;
+    DimensionSizes mDimensionSizes;
 
     /// Size of a 1D row in X dimension.
     size_t mRowSize;

@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      26 July      2011, 15:16 (created) \n
- *            16 August    2017, 13:54 (revised)
+ *            28 August    2017, 16:14 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -54,14 +54,14 @@ class IndexMatrix : public BaseIndexMatrix
      */
     IndexMatrix(const DimensionSizes& dimensionSizes);
     /// Copy constructor not allowed.
-    IndexMatrix(const IndexMatrix&);
+    IndexMatrix(const IndexMatrix&) = delete;
     /// Destructor.
     virtual ~IndexMatrix();
 
     /// Operator= is not allowed.
     IndexMatrix& operator= (const IndexMatrix&);
 
-/**
+    /**
      * @brief   Read matrix from HDF5 file.
      * @details Read matrix from HDF5 file.
      * @param [in] file       - Handle to the HDF5 file

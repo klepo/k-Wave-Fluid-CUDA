@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      11 July      2011, 10:30 (created) \n
- *            16 August    2017, 13:54 (revised)
+ *            28 August    2017, 16:16 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -145,7 +145,7 @@ void RealMatrix::initDimensions(const DimensionSizes& dimensionSizes)
 {
   mDimensionSizes = dimensionSizes;
 
-  mSize = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
+  mSize     = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
 
   mCapacity = mSize;
 

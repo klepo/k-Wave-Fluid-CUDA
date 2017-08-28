@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      09 August    2011, 12:34 (created) \n
- *            16 August    2017, 13:56 (revised)
+ *            28 August    2017, 16:20 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -158,7 +158,7 @@ struct DimensionSizes
   size_t nz;
   /// Number of time steps (for time series datasets).
   size_t nt;
-}; // end of TDimensionSizes
+}; // end of DimensionSizes
 //----------------------------------------------------------------------------------------------------------------------
 
 #endif	/* #define	DIMENSION_SIZES_H */

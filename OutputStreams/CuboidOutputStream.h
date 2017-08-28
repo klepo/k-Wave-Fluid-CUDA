@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      13 February  2015, 12:51 (created) \n
- *            16 August    2017, 13:56 (revised)
+ *            28 August    2017, 16:17 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -69,6 +69,10 @@ class CuboidOutputStream : public BaseOutputStream
                        const RealMatrix&    sourceMatrix,
                        const IndexMatrix&   sensorMask,
                        const ReduceOperator reduceOp);
+
+    /// Copy constructor is not allowed.
+    CuboidOutputStream(const CuboidOutputStream&) = delete;
+
     /**
      * @brief Destructor.
      *

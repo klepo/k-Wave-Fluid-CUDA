@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      26 July      2011, 14:17 (created) \n
- *            16 August    2017, 13:54 (revised)
+ *            28 August    2017, 16:14 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -117,11 +117,11 @@ class BaseIndexMatrix : public BaseMatrix
 
     /// Total number of elements.
     size_t mSize;
-    /// Total number of allocated elements (in terms of szie_t).
+    /// Total number of allocated elements (in terms of size_t).
     size_t mCapacity;
 
     /// Dimension sizes.
-    struct DimensionSizes mDimensionSizes;
+    DimensionSizes mDimensionSizes;
 
     /// Size of 1D row in X dimension.
     size_t mRowSize;

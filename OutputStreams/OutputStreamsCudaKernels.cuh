@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      27 January   2015, 16:25 (created) \n
- *            16 August    2017, 13:56 (revised)
+ *            28 August    2017, 16:17 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -64,7 +64,7 @@ namespace OutputStreamsCudaKernels
   /**
    * @brief  Sample data inside one cuboid and store it to buffer. The operation is given in the template parameter.
    *
-   * @tparam      reduceOp         - Reduction operator
+   * @tparam      reduceOp          - Reduction operator
    * @param [out] samplingBuffer    - Buffer to sample data in
    * @param [in]  sourceData        - Source matrix
    * @param [in]  topLeftCorner     - Top left corner of the cuboid

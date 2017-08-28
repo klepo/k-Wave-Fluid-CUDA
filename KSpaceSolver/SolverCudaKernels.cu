@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            16 August    2017, 13:49 (revised)
+ *            28 August    2017, 15:19 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -810,9 +810,9 @@ void SolverCudaKernels::computeInitialVelocity(RealMatrix&       uxSgx,
 /**
  * Interface Compute acoustic velocity for initial pressure problem, homogeneous medium, uniform grid.
  */
-void SolverCudaKernels::computeInitialVelocity(RealMatrix& uxSgx,
-                                               RealMatrix& uySgy,
-                                               RealMatrix& uzSgz)
+void SolverCudaKernels::computeInitialVelocityHomogeneousUniform(RealMatrix& uxSgx,
+                                                                 RealMatrix& uySgy,
+                                                                 RealMatrix& uzSgz)
 {
   cudaComputeInitialVelocity<true>
                             <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
@@ -1787,7 +1787,7 @@ void SolverCudaKernels::sumPressureTermsLinear(RealMatrix&       p,
 
 
 /**
- * Cuda kernel that sums sub-terms for new p, non-linear lossless case.
+ * Cuda kernel that sums sub-terms for new pressure, non-linear lossless case.
  *
  * @tparam      isC2Scalar   - Is sound speed homogenous?
  * @tparam      isBOnAScalar - Is nonlinearity homogeneous?
@@ -1824,7 +1824,7 @@ __global__ void cudaSumPressureNonlinearLossless(float*       p,
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Interface to kernel that sums sub-terms for new p, non-linear lossless case.
+ * Interface to kernel that sums sub-terms for new pressure, non-linear lossless case.
  */
 void SolverCudaKernels::sumPressureNonlinearLossless(RealMatrix&       p,
                                                      const RealMatrix& rhoX,
@@ -1959,7 +1959,7 @@ void SolverCudaKernels::sumPressureNonlinearLossless(RealMatrix&       p,
 
 
 /**
- * @brief Cuda kernel that sums sub-terms for new p, linear lossless case.
+ * @brief Cuda kernel that sums sub-terms for new pressure, linear lossless case.
  *
  * @tparam      isC2Scalar - Is sound speed homogenous?
  *
@@ -1985,7 +1985,7 @@ __global__ void cudaSumPressureLinearLossless(float*       p,
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Interface to kernel that sums sub-terms for new p, linear lossless case.
+ * Interface to kernel that sums sub-terms for new pressure, linear lossless case.
  */
 void SolverCudaKernels::sumPressureLinearLossless(RealMatrix&       p,
                                                   const RealMatrix& rhoX,

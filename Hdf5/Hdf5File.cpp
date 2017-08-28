@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      27 July     2012, 14:14 (created) \n
- *            16 August   2017, 15:08 (revised)
+ *            28 August   2017, 15:59 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -33,7 +33,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <ctime>
-#include <type_traits>
 
 // Linux build
 #ifdef __linux__
@@ -62,11 +61,10 @@ using std::string;
 const string Hdf5File::kMatrixDomainTypeName    = "domain_type";
 const string Hdf5File::kMatrixDataTypeName      = "data_type";
 
-const string Hdf5File::kMatrixDomainTypeNames[] = {"real","complex"};
-const string Hdf5File::kMatrixDataTypeNames[]   = {"float","long"};
+const string Hdf5File::kMatrixDomainTypeNames[] = {"real", "complex"};
+const string Hdf5File::kMatrixDataTypeNames[]   = {"float", "long"};
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-------------------------------------------------    Hdf5File    ---------------------------------------------------//
 //------------------------------------------------- Public methods ---------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
 
@@ -86,7 +84,7 @@ Hdf5File::Hdf5File()
 Hdf5File::~Hdf5File()
 {
   if (isOpen()) close();
-}//end of ~Hdf5File
+}//end of destrucotr
 //----------------------------------------------------------------------------------------------------------------------
 
 
@@ -132,7 +130,7 @@ void Hdf5File::open(const string& fileName,
 
   if (H5Fis_hdf5(cFileName) == 0)
   {
-    throw ios::failure(Logger::formatMessage(kErrFmtNOtHdf5File, cFileName));
+    throw ios::failure(Logger::formatMessage(kErrFmtNotHdf5File, cFileName));
   }
 
   mFile = H5Fopen(cFileName, flags, H5P_DEFAULT);
@@ -176,7 +174,6 @@ void Hdf5File::close()
   mFile = H5I_BADID;
 }// end of close
 //----------------------------------------------------------------------------------------------------------------------
-
 
 
 /**
@@ -557,7 +554,7 @@ void Hdf5File::writeScalarValue(const hid_t parentGroup,
                                 MatrixName& datasetName,
                                 const T     value)
 {
-  const int rank = 3;
+  constexpr int rank = 3;
   const hsize_t dims[] = {1, 1, 1};
 
   hid_t  dataset   = H5I_INVALID_HID;
@@ -750,7 +747,7 @@ DimensionSizes Hdf5File::getDatasetDimensionSizes(const hid_t parentGroup,
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Get number of dimensions of the dataset  under a specified group.
+ * Get number of dimensions of the dataset under a specified group.
  */
 size_t Hdf5File::getDatasetNumberOfDimensions(const hid_t parentGroup,
                                               MatrixName& datasetName)

@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      09 August    2012, 13:39 (created) \n
- *            16 August    2017, 13:56 (revised)
+ *            28 August    2017, 16:11 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -33,7 +33,7 @@
   #include <omp.h>
 #endif
 
-#include <iostream>
+
 #include <string>
 #include <exception>
 #include <stdexcept>
@@ -250,7 +250,7 @@ void Parameters::readScalarsFromInputFile()
   mFullDimensionSizes.ny = y;
   mFullDimensionSizes.nz = z;
 
-  mReducedDimensionSizes.nx = ((x/2) + 1);
+  mReducedDimensionSizes.nx = ((x / 2) + 1);
   mReducedDimensionSizes.ny = y;
   mReducedDimensionSizes.nz = z;
 
@@ -414,7 +414,7 @@ void Parameters::readScalarsFromInputFile()
  */
 void Parameters::saveScalarsToOutputFile()
 {
-    const hid_t rootGroup = mOutputFile.getRootGroup();
+  const hid_t rootGroup = mOutputFile.getRootGroup();
 
   // Write dimension sizes
   mOutputFile.writeScalarValue(rootGroup, kNxName, mFullDimensionSizes.nx);
@@ -530,7 +530,7 @@ Parameters::Parameters()
     mPressureSourceFlag(0), mInitialPressureSourceFlag(0), mTransducerSourceFlag(0),
     mVelocityXSourceFlag(0), mVelocityYSourceFlag(0), mVelocityZSourceFlag(0),
     mPressureSourceIndexSize(0), mTransducerSourceInputSize(0),mVelocitySourceIndexSize(0),
-    mPressureSourceMode(0), mPressureSourceMany(0), mVelocitySourceMany(0), mVelocitySourceMode(0),
+    mPressureSourceMode(0), mPressureSourceMany(0), mVelocitySourceMode(0), mVelocitySourceMany(0),
     mSensorMaskType(SensorMaskType::kIndex), mSensorMaskIndexSize (0), mSensorMaskCornersSize(0)
 {
 

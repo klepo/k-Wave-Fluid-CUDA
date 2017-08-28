@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      29 August    2012, 11:25 (created) \n
- *            16 August    2017, 13:56 (revised)
+ *            28 August    2017, 16:19 (revised)
  *
  * @section   Params Command Line Parameters
  *
@@ -190,7 +190,6 @@
 #ifndef COMMAND_LINE_PARAMETERS_H
 #define COMMAND_LINE_PARAMETERS_H
 
-#include <cstdlib>
 #include <string>
 
 /**
@@ -201,7 +200,7 @@
 class CommandLineParameters
 {
   public:
-    /// Only TParameters can create this class.
+    /// Only Parameters can create this class.
     friend class Parameters;
 
     /// Copy constructor not allowed.
@@ -218,13 +217,11 @@ class CommandLineParameters
      * @return Input file name.
      */
     const std::string& getInputFileName()      const { return mInputFileName; };
-
     /**
      * @brief  Get output file name.
      * @return Output file name.
      */
     const std::string& getOutputFileName()     const { return mOutputFileName; };
-
     /**
      * @brief  Get Checkpoint file name.
      * @return Checkpoint file name.
@@ -287,6 +284,7 @@ class CommandLineParameters
     bool   isPrintVersionOnly()         const { return mPrintVersionFlag; };
 
 
+    //------------------------------------------------ Output flags --------------------------------------------------//
     /**
      * @brief Is --p_raw set?
      * @return true if the flag is set.

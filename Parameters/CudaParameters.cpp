@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      12 November  2015, 16:49 (created) \n
- *            16 August    2017, 13:56 (revised)
+ *            28 August    2017, 16:05 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -29,6 +29,7 @@
  * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
+#include <cstring>
 #include <stdexcept>
 #include <cuda_runtime.h>
 

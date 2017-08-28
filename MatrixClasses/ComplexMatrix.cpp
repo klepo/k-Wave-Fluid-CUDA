@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      11 July      2011, 14:02 (created) \n
- *            16 August    2017, 13:54 (revised)
+ *            28 August    2017, 16:14 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -29,8 +29,6 @@
  * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
-#include <iostream>
-
 #include <MatrixClasses/ComplexMatrix.h>
 #include <Logger/Logger.h>
 
@@ -42,10 +40,10 @@
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------- Public methods ---------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
+
 /**
  * Constructor.
  */
-
 ComplexMatrix::ComplexMatrix(const DimensionSizes& dimensionSizes)
   : BaseFloatMatrix()
 {
@@ -77,7 +75,7 @@ void ComplexMatrix::readData(Hdf5File&   file,
   }
 
   // check domain type
-  if (file.readMatrixDomainType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDomainType::kComples)
+  if (file.readMatrixDomainType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDomainType::kComplex)
   {
     throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotComplex, matrixName.c_str()));
   }
@@ -118,7 +116,7 @@ void ComplexMatrix::writeData(Hdf5File&    file,
 
  // Write data and domain type
   file.writeMatrixDataType(file.getRootGroup()  , matrixName, Hdf5File::MatrixDataType::kFloat);
-  file.writeMatrixDomainType(file.getRootGroup(), matrixName, Hdf5File::MatrixDomainType::kComples);
+  file.writeMatrixDomainType(file.getRootGroup(), matrixName, Hdf5File::MatrixDomainType::kComplex);
 }// end of writeData
 //----------------------------------------------------------------------------------------------------------------------
 

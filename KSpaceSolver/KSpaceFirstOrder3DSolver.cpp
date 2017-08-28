@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            16 August    2017, 13:49 (revised)
+ *            28 August    2017, 15:19 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -160,7 +160,7 @@ void KSpaceFirstOrder3DSolver::loadInputData()
   Logger::flush(Logger::LogLevel::kFull);
 
   // load data from the input file
-  mMatrixContainer.loadDataFromInputFile(inputFile);
+  mMatrixContainer.loadDataFromInputFile();
 
   // close the input file since we don't need it anymore.
   inputFile.close();
@@ -190,7 +190,7 @@ void KSpaceFirstOrder3DSolver::loadInputData()
     mParameters.setTimeIndex(checkpointedTimeIndex);
 
     // Read necessary matrices from the checkpoint file
-    mMatrixContainer.loadDataFromCheckpointFile(checkpointFile);
+    mMatrixContainer.loadDataFromCheckpointFile();
 
     checkpointFile.close();
     Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
@@ -385,7 +385,7 @@ void KSpaceFirstOrder3DSolver::compute()
 /**
  * Get peak CPU memory usage.
  */
-size_t KSpaceFirstOrder3DSolver::getHostMemoryUsage()
+size_t KSpaceFirstOrder3DSolver::getHostMemoryUsage() const
 {
   // Linux build
   #ifdef __linux__
@@ -415,7 +415,7 @@ size_t KSpaceFirstOrder3DSolver::getHostMemoryUsage()
 /**
  * Get peak GPU memory usage.
  */
-size_t KSpaceFirstOrder3DSolver::getDeviceMemoryUsage()
+size_t KSpaceFirstOrder3DSolver::getDeviceMemoryUsage() const
 {
   size_t free, total;
   cudaMemGetInfo(&free,&total);
@@ -745,7 +745,7 @@ void KSpaceFirstOrder3DSolver::computeMainLoop()
   {
     // We're restarting after checkpoint
     mIsTimestepRightAfterRestore = true;
-    mActPercent = (mParameters.getTimeIndex() / (mParameters.getNt() / 100));
+    mActPercent = (100 * mParameters.getTimeIndex()) / mParameters.getNt();
   }
 
   // Progress header
@@ -757,14 +757,14 @@ void KSpaceFirstOrder3DSolver::computeMainLoop()
   mIterationTime.start();
 
   // execute main loop
-  while (mParameters.getTimeIndex() < mParameters.getNt() && (!isTimeToCheckpoint()))
+  while ((mParameters.getTimeIndex() < mParameters.getNt()) && (!isTimeToCheckpoint()))
   {
     const size_t timeIndex = mParameters.getTimeIndex();
 
     // compute velocity
     computeVelocity();
 
-    // add in the velocity u source term
+    // add in the velocity source term
     addVelocitySource();
 
     // add in the transducer source term (t = t1) to ux
@@ -910,7 +910,7 @@ void KSpaceFirstOrder3DSolver::storeSensorData()
  */
 void KSpaceFirstOrder3DSolver::writeOutputDataInfo()
 {
-  // write t_index into the output file
+  // write timeIndex into the output file
   mParameters.getOutputFile().writeScalarValue(mParameters.getOutputFile().getRootGroup(),
                                                kTimeIndexName,
                                                mParameters.getTimeIndex());
@@ -962,36 +962,28 @@ void KSpaceFirstOrder3DSolver::saveCheckpointData()
   //-------------------------------------- Store Matrices ----------------------------------------//
 
   // Store all necessary matrices in Checkpoint file
-  mMatrixContainer.storeDataIntoCheckpointFile(checkpointFile);
+  mMatrixContainer.storeDataIntoCheckpointFile();
   // Write t_index
-  checkpointFile.writeScalarValue(checkpointFile.getRootGroup(),
-                                  kTimeIndexName,
-                                  mParameters.getTimeIndex());
+  checkpointFile.writeScalarValue(checkpointFile.getRootGroup(), kTimeIndexName, mParameters.getTimeIndex());
 
   // store basic dimension sizes (nx, ny, nz) - time index is not necessary
-  checkpointFile.writeScalarValue(checkpointFile.getRootGroup(),
-                                  kNxName,
-                                  mParameters.getFullDimensionSizes().nx);
-  checkpointFile.writeScalarValue(checkpointFile.getRootGroup(),
-                                  kNyName,
-                                  mParameters.getFullDimensionSizes().ny);
-  checkpointFile.writeScalarValue(checkpointFile.getRootGroup(),
-                                  kNzName,
-                                  mParameters.getFullDimensionSizes().nz);
+  checkpointFile.writeScalarValue(checkpointFile.getRootGroup(), kNxName, mParameters.getFullDimensionSizes().nx);
+  checkpointFile.writeScalarValue(checkpointFile.getRootGroup(), kNyName, mParameters.getFullDimensionSizes().ny);
+  checkpointFile.writeScalarValue(checkpointFile.getRootGroup(), kNzName, mParameters.getFullDimensionSizes().nz);
 
   // Write checkpoint file header
-  Hdf5FileHeader checkpointFileHeader = mParameters.getFileHeader();
+  Hdf5FileHeader fileHeader = mParameters.getFileHeader();
 
-  checkpointFileHeader.setFileType(Hdf5FileHeader::FileType::kCheckpoint);
-  checkpointFileHeader.setCodeName(getCodeName());
-  checkpointFileHeader.setActualCreationTime();
+  fileHeader.setFileType(Hdf5FileHeader::FileType::kCheckpoint);
+  fileHeader.setCodeName(getCodeName());
+  fileHeader.setActualCreationTime();
 
-  checkpointFileHeader.writeHeaderToCheckpointFile(checkpointFile);
+  fileHeader.writeHeaderToCheckpointFile(checkpointFile);
 
   checkpointFile.close();
   Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
 
-  // checkpoint only if necessary (t_index > start_index), we're here one step ahead!
+  // checkpoint output streams only if necessary (t_index > start_index), we're here one step ahead!
   if (mParameters.getTimeIndex() > mParameters.getSamplingStartTimeIndex())
   {
     Logger::log(Logger::LogLevel::kFull,kOutFmtStoringSensorData);
@@ -1417,7 +1409,7 @@ void KSpaceFirstOrder3DSolver::addInitialPressureSource()
     }
     else
     { //uniform grid, homogeneous
-      SolverCudaKernels::computeInitialVelocity(getUxSgx(), getUySgy(), getUzSgz());
+      SolverCudaKernels::computeInitialVelocityHomogeneousUniform(getUxSgx(), getUySgy(), getUzSgz());
     }
   }
   else
@@ -1436,7 +1428,7 @@ void KSpaceFirstOrder3DSolver::addInitialPressureSource()
 
 
 /**
- * Generate kappa matrix for non-absorbing mode.
+ * Generate kappa matrix for lossless medium.
  */
 void KSpaceFirstOrder3DSolver::generateKappa()
 {
@@ -1481,7 +1473,7 @@ void KSpaceFirstOrder3DSolver::generateKappa()
                 float k = cRefDtPi * sqrt(xPart + yzPart);
 
           // kappa element
-          kappa[(z * ny + y) * nx + x ] = (k == 0.0f) ? 1.0f : sin(k)/k;
+          kappa[(z * ny + y) * nx + x ] = (k == 0.0f) ? 1.0f : sin(k) / k;
         }//x
       }//y
     }// z
@@ -1489,8 +1481,8 @@ void KSpaceFirstOrder3DSolver::generateKappa()
 }// end of generateKappa
 //----------------------------------------------------------------------------------------------------------------------
 
-/*
- * Generate kappa, absorb_nabla1, absorb_nabla2 for absorbing media.
+/**
+ * Generate kappa, absorb_nabla1, absorb_nabla2 for absorbing medium.
  */
 void KSpaceFirstOrder3DSolver::generateKappaAndNablas()
 {
@@ -1563,7 +1555,7 @@ void KSpaceFirstOrder3DSolver::generateKappaAndNablas()
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Generate absorbTau and absorbEta in for heterogenous media.
+ * Generate absorbTau and absorbEta in for heterogenous medium.
  */
 void KSpaceFirstOrder3DSolver::generateTauAndEta()
 {
@@ -1654,7 +1646,7 @@ void KSpaceFirstOrder3DSolver::generateInitialDenisty()
     const size_t ny = getDtRho0Sgx().getDimensionSizes().ny;
     const size_t nx = getDtRho0Sgx().getDimensionSizes().nx;
 
-    const size_t sliceSize = (nx * ny );
+    const size_t sliceSize = (nx * ny);
 
     #pragma omp for schedule (static)
     for (size_t z = 0; z < nz; z++)
@@ -1730,7 +1722,7 @@ void KSpaceFirstOrder3DSolver::computePressureTermsNonlinear(RealMatrix& density
                                                              RealMatrix& nonlinearTerm,
                                                              RealMatrix& velocityGradientSum)
 {
-  const float* bOnA = (mParameters.getBOnAScalarFlag()) ? nullptr : geBOnA().getDeviceData();
+  const float* bOnA = (mParameters.getBOnAScalarFlag()) ? nullptr : getBOnA().getDeviceData();
   const float* rho0 = (mParameters.getRho0ScalarFlag()) ? nullptr : getRho0().getDeviceData();
 
   SolverCudaKernels::computePressureTermsNonlinear(densitySum,
@@ -1826,7 +1818,7 @@ void KSpaceFirstOrder3DSolver::sumPressureTermsLinear(const RealMatrix& absorbTa
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Sum sub-terms for new p, non-linear lossless case.
+ * Sum sub-terms for new pressure, non-linear lossless case.
  */
 void KSpaceFirstOrder3DSolver::sumPressureTermsNonlinearLossless()
 {
@@ -1835,7 +1827,7 @@ void KSpaceFirstOrder3DSolver::sumPressureTermsNonlinearLossless()
   const bool   isRho0Scalar = mParameters.getRho0ScalarFlag();
 
   const float* c2   = (isC2Scalar)   ? nullptr : getC2().getDeviceData();
-  const float* bOnA = (isBOnAScalar) ? nullptr : geBOnA().getDeviceData();
+  const float* bOnA = (isBOnAScalar) ? nullptr : getBOnA().getDeviceData();
   const float* rho0 = (isRho0Scalar) ? nullptr : getRho0().getDeviceData();
 
   SolverCudaKernels::sumPressureNonlinearLossless(getP(),
@@ -1853,7 +1845,7 @@ void KSpaceFirstOrder3DSolver::sumPressureTermsNonlinearLossless()
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Sum sub-terms for new p, linear lossless case.
+ * Sum sub-terms for new pressure, linear lossless case.
  */
 void KSpaceFirstOrder3DSolver::sumPressureTermsLinearLossless()
 {
@@ -1906,16 +1898,15 @@ void KSpaceFirstOrder3DSolver::printStatistics()
   const float  nt = static_cast<float>(mParameters.getNt());
   const size_t timeIndex = mParameters.getTimeIndex();
 
-  if (timeIndex > (mActPercent * nt * 0.01f) )
+  if (timeIndex > (mActPercent * nt * 0.01f))
   {
     mActPercent += mParameters.getProgressPrintInterval();
 
     mIterationTime.stop();
 
     const double elTime = mIterationTime.getElapsedTime();
-    const double elTimeWithLegs = mIterationTime.getElapsedTime() +
-                                  mSimulationTime.getElapsedTimeOverPreviousLegs();
-    const double toGo   = ((elTimeWithLegs / static_cast<float>((timeIndex + 1)) *  nt)) - elTimeWithLegs;
+    const double elTimeWithLegs = mIterationTime.getElapsedTime() + mSimulationTime.getElapsedTimeOverPreviousLegs();
+    const double toGo   = ((elTimeWithLegs / static_cast<double>((timeIndex + 1)) *  nt)) - elTimeWithLegs;
 
     struct tm* current;
     time_t now;
@@ -1997,7 +1988,7 @@ void KSpaceFirstOrder3DSolver::checkOutputFile()
 
  if (mParameters.getFullDimensionSizes() != outputDimSizes)
  {
-   throw ios::failure(Logger::formatMessage(kErrFmtOutputDimensionsNotMatch,
+   throw ios::failure(Logger::formatMessage(kErrFmtOutputDimensionsMismatch,
                                             outputDimSizes.nx,
                                             outputDimSizes.ny,
                                             outputDimSizes.nz,
@@ -2051,7 +2042,7 @@ void KSpaceFirstOrder3DSolver::checkCheckpointFile()
 
  if (mParameters.getFullDimensionSizes() != checkpointDimSizes)
  {
-   throw ios::failure(Logger::formatMessage(kErrFmtCheckpointDimensionsNotMatch,
+   throw ios::failure(Logger::formatMessage(kErrFmtCheckpointDimensionsMismatch,
                                             checkpointDimSizes.nx,
                                             checkpointDimSizes.ny,
                                             checkpointDimSizes.nz,

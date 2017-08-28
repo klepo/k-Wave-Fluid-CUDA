@@ -10,7 +10,7 @@
  *
  * @version   kspaceFirstOrder3D 3.5
  * @date      11 July      2011, 10:30 (created) \n
- *            16 August    2017, 13:54 (revised)
+ *            28 August    2017, 16:16 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -101,12 +101,12 @@ class RealMatrix : public BaseFloatMatrix
      */
     void initDimensions(const DimensionSizes& dimensionSizes);
 
-     /// Number of elements to get 4MB block of data.
-     static constexpr size_t kChunkSize1D4MB   = 1048576; //(4MB)
-     /// Number of elements to get 1MB block of data.
-      static constexpr size_t kChunkSize1D1MB   =  262144; //(1MB)
-      /// Number of elements to get 256KB block of data.
-      static constexpr size_t kChunkSize1D256kB =   65536; //(256KB)
+    /// Number of elements to get 4MB block of data.
+    static constexpr size_t kChunkSize1D4MB   = 1048576; //(4MB)
+    /// Number of elements to get 1MB block of data.
+    static constexpr size_t kChunkSize1D1MB   =  262144; //(1MB)
+    /// Number of elements to get 256KB block of data.
+    static constexpr size_t kChunkSize1D256kB =   65536; //(256KB)
 };// end of class RealMatrix
 //----------------------------------------------------------------------------------------------------------------------
 

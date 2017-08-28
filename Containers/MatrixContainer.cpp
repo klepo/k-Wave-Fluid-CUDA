@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      02 December  2014, 16:17 (created) \n
- *            17 August    2017, 12:53 (revised)
+ *            28 August    2017, 15:11 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -229,7 +229,7 @@ void MatrixContainer::addMatrices()
   // if Intial pressure source flag
   if (params.getInitialPressureSourceFlag() == 1)
   {
-    mContainer[MI::kInitialPressureSourceInput].set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kP0SourceInputName);
+    mContainer[MI::kInitialPressureSourceInput].set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kInitialPressureSourceInputName);
   }
 
   // Velocity cource index
@@ -430,8 +430,10 @@ void MatrixContainer::freeMatrices()
 /**
  * Load all marked matrices from the input HDF5 file.
  */
-void MatrixContainer::loadDataFromInputFile(Hdf5File& inputFile)
+void MatrixContainer::loadDataFromInputFile()
 {
+  Hdf5File& inputFile = Parameters::getInstance().getInputFile();
+
   for (const auto& it : mContainer)
   {
     if (it.second.loadData)
@@ -445,8 +447,10 @@ void MatrixContainer::loadDataFromInputFile(Hdf5File& inputFile)
 /**
  * Load selected matrices from the checkpoint HDF5 file.
  */
-void MatrixContainer::loadDataFromCheckpointFile(Hdf5File& checkpointFile)
+void MatrixContainer::loadDataFromCheckpointFile()
 {
+  Hdf5File& checkpointFile = Parameters::getInstance().getCheckpointFile();
+
   for (const auto& it : mContainer)
   {
     if (it.second.checkpoint)
@@ -460,8 +464,10 @@ void MatrixContainer::loadDataFromCheckpointFile(Hdf5File& checkpointFile)
 /**
  * Store selected matrices into the checkpoint file.
  */
-void MatrixContainer::storeDataIntoCheckpointFile(Hdf5File& checkpointFile)
+void MatrixContainer::storeDataIntoCheckpointFile()
 {
+  Hdf5File& checkpointFile = Parameters::getInstance().getCheckpointFile();
+
   for (const auto& it : mContainer)
   {
     if (it.second.checkpoint)

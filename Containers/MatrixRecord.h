@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      02 December  2014, 15:44 (created) \n
- *            17 August    2017, 12:53 (revised)
+ *            28 August    2017, 15:58 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -54,11 +54,11 @@ struct MatrixRecord
    */
   enum class MatrixType
   {
-    /// Matrix with real values.
+    /// Matrix for real values.
     kReal,
-    /// Matrix with complex values.
+    /// Matrix for complex values.
     kComplex,
-    /// Matrix with index values.
+    /// Matrix for index values.
     kIndex,
     /// Matrix for cuda fft.
     kCufft
@@ -79,7 +79,7 @@ struct MatrixRecord
    * @param [in] src - Source object/
    * @return A new object.
    */
-  MatrixRecord& operator= (const MatrixRecord& src);
+  MatrixRecord& operator=(const MatrixRecord& src);
 
   /**
    * @brief Set all values for the record.

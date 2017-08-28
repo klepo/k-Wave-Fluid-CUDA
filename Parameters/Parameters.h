@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      08 December  2011, 16:34 (created) \n
- *            16 August    2017, 13:56 (revised)
+ *            28 August    2017, 15:05 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -139,31 +139,31 @@ class Parameters
      * @brief Get number of CPU threads to use.
      * @return Number of CPU threads to use.
      */
-    size_t getNumberOfThreads()        const { return mCommandLineParameters.getNumberOfThreads(); };
+    size_t getNumberOfThreads()       const { return mCommandLineParameters.getNumberOfThreads(); };
 
     /**
      * @brief  Get compression level.
      * @return Compression level value for output and checkpoint files.
      */
-    size_t getCompressionLevel()       const { return mCommandLineParameters.getCompressionLevel(); };
+    size_t getCompressionLevel()      const { return mCommandLineParameters.getCompressionLevel(); };
 
     /**
      * @brief Get progress print interval.
      * @return How often to print progress.
      */
-    size_t getProgressPrintInterval()  const { return mCommandLineParameters.getProgressPrintInterval(); };
+    size_t getProgressPrintInterval() const { return mCommandLineParameters.getProgressPrintInterval(); };
 
 
     /**
      * @brief  Is checkpoint enabled?
      * @return true if checkpointing is enabled.
      */
-    bool   isCheckpointEnabled()        const { return mCommandLineParameters.isCheckpointEnabled(); };
+    bool   isCheckpointEnabled()       const { return mCommandLineParameters.isCheckpointEnabled(); };
     /**
      * @brief  Get checkpoint interval.
      * @return Checkpoint interval in seconds.
      */
-    size_t getCheckpointInterval()      const { return mCommandLineParameters.getCheckpointInterval(); };
+    size_t getCheckpointInterval()     const { return mCommandLineParameters.getCheckpointInterval(); };
 
     //---------------------------------------------------- Files -----------------------------------------------------//
     /**
@@ -277,7 +277,7 @@ class Parameters
      * @return Sound speed.
      */
     float  getC0Scalar()        const { return mC0Scalar; };
-   /**
+    /**
      * @brief  Get scalar value of sound speed squared.
      * @return Sound speed.
      */
@@ -585,7 +585,7 @@ class Parameters
      * @brief  Is --u_max set?
      * @return True if the flag is set.
      */
-    bool getVelocityMaxFlag()              const { return mCommandLineParameters.getStoreVelocityMaxFlag(); };
+    bool getStoreVelocityMaxFlag()              const { return mCommandLineParameters.getStoreVelocityMaxFlag(); };
     /**
      * @brief  Is --u_min set?
      * @return True if the flag is set.
@@ -600,7 +600,7 @@ class Parameters
      * @brief  Is --u_min set?
      * @return True if the flag is set.
      */
-    bool getStoreStoreVelocityMinAllFlag() const { return mCommandLineParameters.getStoreVelocityMinAllFlag(); };
+    bool getStoreVelocityMinAllFlag() const { return mCommandLineParameters.getStoreVelocityMinAllFlag(); };
     /**
      * @brief  Is --u_final set?
      * @return True if the flag is set.
@@ -727,7 +727,7 @@ class Parameters
     size_t mPressureSourceIndexSize;
     /// Spatial size of the transducer source.
     size_t mTransducerSourceInputSize;
-    /// Spatial size of the velocity source.
+    /// Spatial size of the velocity source.e
     size_t mVelocitySourceIndexSize;
 
     /// Pressure source mode.
@@ -736,9 +736,10 @@ class Parameters
     size_t mPressureSourceMany;
 
     /// Velocity source mode.
-    size_t mVelocitySourceMany;
-    /// Number of time series in the velocity sources.
     size_t mVelocitySourceMode;
+    /// Number of time series in the velocity sources.
+    size_t mVelocitySourceMany;
+
 
     /// Sensor mask type (index / corners).
     SensorMaskType mSensorMaskType;

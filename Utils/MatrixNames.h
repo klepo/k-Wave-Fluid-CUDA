@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      14 September 2012, 17:28 (created) \n
- *            16 August    2017, 13:56 (revised)
+ *            28 August    2017, 16:22 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -89,9 +89,9 @@ MatrixName kUzShiftedName  = "uz_shifted";
 /// pml_x_size variable name
 MatrixName kPmlXSizeName   = "pml_x_size";
 /// pml_y_size variable name
-MatrixName kPmlYSizeName   = "pml_z_size";
+MatrixName kPmlYSizeName   = "pml_y_size";
 /// pml_z_size variable name
-MatrixName kPmlZSizeName   = "pml_y_size";
+MatrixName kPmlZSizeName   = "pml_z_size";
 
 /// pml_x_sgx variable name
 MatrixName kPmlXSgxName    = "pml_x_sgx";
@@ -171,7 +171,7 @@ MatrixName kSensorMaskCornersName    = "sensor_mask_corners";
 MatrixName kTransducerSourceInputName = "transducer_source_input";
 
 /// p0_source_input variable name
-MatrixName kP0SourceInputName = "p0_source_input";
+MatrixName kInitialPressureSourceInputName = "p0_source_input";
 /// delay_mask variable name
 MatrixName kDelayMaskName     = "delay_mask";
 

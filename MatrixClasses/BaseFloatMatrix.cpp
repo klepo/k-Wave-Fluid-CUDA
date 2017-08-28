@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      11 July      2011, 12:13 (created) \n
- *            16 August    2017, 13:54 (revised)
+ *            28 August    2017, 16:14 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -31,7 +31,6 @@
  */
 
 
-#include <cstring>
 #include <immintrin.h>
 
 #include <MatrixClasses/BaseFloatMatrix.h>

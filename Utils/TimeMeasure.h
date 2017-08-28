@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      15 August    2012, 09:35 (created) \n
- *            16 August    2017, 13:56 (revised)
+ *            28 August    2017, 16:22 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -77,9 +77,9 @@ class TimeMeasure
     { };
 
     /**
-     * @brief  operator=
+     * @brief   operator=
      * @details operator=
-     * @param [in] src - source
+     * @param [in] src - Source
      * @return
      */
     TimeMeasure& operator=(const TimeMeasure& src)
@@ -93,7 +93,7 @@ class TimeMeasure
       return *this;
     };
 
-    /// Get start timestamp.
+    /// Take start timestamp.
     inline void start()
     {
       #ifdef _OPENMP
@@ -111,7 +111,7 @@ class TimeMeasure
       #endif
     };
 
-    /// Get stop timestamp.
+    /// Take stop timestamp.
     inline void stop()
     {
       #ifdef _OPENMP
@@ -130,9 +130,9 @@ class TimeMeasure
     };
 
     /**
-     * @brief Get elapsed time.
+     * @brief   Get elapsed time.
      * @details Get elapsed time.
-     * @return elapsed time between start timestamp and stop timestamp.
+     * @return  Elapsed time between start timestamp and stop timestamp.
      */
     inline double getElapsedTime() const
     {
@@ -140,9 +140,9 @@ class TimeMeasure
     };
 
     /**
-     * @brief Get cumulated elapsed time over all simulation legs.
+     * @brief   Get cumulated elapsed time over all simulation legs.
      * @details Get cumulated elapsed time over all simulation legs.
-     * @return elapsed time all (including this one) legs.
+     * @return  Elapsed time all (including this one) legs.
      */
     inline double getElapsedTimeOverAllLegs() const
     {
@@ -152,7 +152,7 @@ class TimeMeasure
     /**
      * @brief   Get time spent in previous legs.
      * @details Get time spent in previous legs.
-     * @return  elapsed time over previous legs.
+     * @return  Elapsed time over previous legs.
      */
     inline double getElapsedTimeOverPreviousLegs() const
     {

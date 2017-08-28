@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      20 July      2017, 14:42 (created) \n
- *            17 August    2017, 12:55 (revised)
+ *            28 August    2017, 15:03 (revised)
  *
  * @section   Hdf5FileHeader HDF5 File Header Structure
  *
@@ -74,10 +74,6 @@
 #ifndef HDF5_FILE_HEADER_H
 #define HDF5_FILE_HEADER_H
 
-
-#include <hdf5.h>
-#include <hdf5_hl.h>
-#include <cstring>
 #include <map>
 
 #include <Hdf5/Hdf5File.h>
@@ -131,7 +127,7 @@ class Hdf5FileHeader
       /// Time to postprocess data.
       kPostProcessingTime     = 13,
       /// Number of cores the simulation was executed.
-      kNumberofCores          = 14
+      kNumberOfCores          = 14
     };
 
     /**
@@ -316,36 +312,36 @@ class Hdf5FileHeader
                            const double preProcessingTime,
                            const double simulationTime,
                            const double postprocessingTime);
-  /**
-   * @brief Get execution times stored in the output file header.
-   *
-   * @param [out] totalTime          - Total time.
-   * @param [out] loadTime           - Time to load data.
-   * @param [out] preProcessingTime  - Preprocessing time.
-   * @param [out] simulationTime     - Simulation time.
-   * @param [out] postprocessingTime - Post processing time.
-   */
-  void getExecutionTimes(double& totalTime,
-                         double& loadTime,
-                         double& preProcessingTime,
-                         double& simulationTime,
-                         double& postprocessingTime);
-  /// Set number of cores.
-  void setNumberOfCores();
+    /**
+     * @brief Get execution times stored in the output file header.
+     *
+     * @param [out] totalTime          - Total time.
+     * @param [out] loadTime           - Time to load data.
+     * @param [out] preProcessingTime  - Preprocessing time.
+     * @param [out] simulationTime     - Simulation time.
+     * @param [out] postprocessingTime - Post processing time.
+     */
+    void getExecutionTimes(double& totalTime,
+                           double& loadTime,
+                           double& preProcessingTime,
+                           double& simulationTime,
+                           double& postprocessingTime);
+    /// Set number of cores.
+    void setNumberOfCores();
 
-private:
+  private:
 
-  /// map for the header values.
-  std::map<FileHeaderItems, std::string> mHeaderValues;
-  /// map for the header names.
-  static std::map<FileHeaderItems, std::string> sHeaderNames;
+    /// map for the header values.
+    std::map<FileHeaderItems, std::string> mHeaderValues;
+    /// map for the header names.
+    static std::map<FileHeaderItems, std::string> sHeaderNames;
 
-  ///String representation of different file types.
-  static const std::string kFileTypesNames[];
-  /// String representations of Major file versions.
-  static const std::string kMajorFileVersionsNames[];
-  /// String representations of Major file versions.
-  static const std::string kMinorFileVersionsNames[];
+    ///String representation of different file types.
+    static const std::string kFileTypesNames[];
+    /// String representations of Major file versions.
+    static const std::string kMajorFileVersionsNames[];
+    /// String representations of Major file versions.
+    static const std::string kMinorFileVersionsNames[];
 
 };// Hdf5FileHeader
 //----------------------------------------------------------------------------------------------------------------------

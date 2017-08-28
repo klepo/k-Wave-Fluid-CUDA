@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      27 July     2012, 14:14 (created) \n
- *            15 August   2017, 15:08 (revised)
+ *            28 August   2017, 15:04 (revised)
  *
  *
  * @section   HDF5File HDF5 File Structure
@@ -462,7 +462,6 @@
 
 #include <hdf5.h>
 #include <hdf5_hl.h>
-#include <cstring>
 #include <map>
 
 #include <Utils/DimensionSizes.h>
@@ -503,7 +502,7 @@ class Hdf5File
       /// The matrix is defined on real domain.
       kReal    = 0,
       /// The matrix is defined on complex domain.
-      kComples = 1
+      kComplex = 1
     };
 
 
@@ -547,7 +546,7 @@ class Hdf5File
      * @details Is the file opened?
      * @return  true - If the file is opened.
      */
-    bool isOpen() const {return mFile != H5I_BADID;};
+    bool isOpen() const { return mFile != H5I_BADID; };
     /**
      * @brief  Can I access the file.
      * @details  Can the code access the file, e.g. does it exist, do we have enough privileges, etc.
@@ -595,7 +594,7 @@ class Hdf5File
      * @details Get handle to the root group of the file.
      * @return  Handle to the root group.
      */
-    hid_t getRootGroup() const {return mFile;};
+    hid_t getRootGroup() const { return mFile; };
 
 
     //-------------------------------------------- Dataset manipulators ----------------------------------------------//
@@ -631,7 +630,7 @@ class Hdf5File
                         const size_t          compressionLevel);
     /**
      * @brief Close dataset.
-     * @param [in] dataset - Dataset to close
+     * @param [in] dataset - Dataset to close.
      */
     void  closeDataset(const hid_t dataset);
 

@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            16 August    2017, 13:49 (revised)
+ *            28 August    2017, 16:13 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -91,12 +91,12 @@ class KSpaceFirstOrder3DSolver
      * @brief  Get memory usage in MB on the host side.
      * @return Memory consumed on the host side in MB.
      */
-    size_t getHostMemoryUsage();
+    size_t getHostMemoryUsage() const;
     /**
      * @brief  Get memory usage in MB on the device side.
      * @return Memory consumed on the device side in MB.
      */
-    size_t getDeviceMemoryUsage();
+    size_t getDeviceMemoryUsage() const;
 
     /**
      * @brief  Get code name - release code version.
@@ -167,7 +167,7 @@ class KSpaceFirstOrder3DSolver
      * @brief Compute pre-processing phase.
      *
      * Initialize all indices, pre-compute constants such as c^2, rho0Sgx * dt  and create kappa,
-     * absorbEta, absorbTau, absorbNabla1, absorbNabla2  matrices.  \n
+     * absorbEta, absorbTau, absorbNabla1, absorbNabla2  matrices.
      *
      * @note Calculation is done on the host side.
      */
@@ -194,7 +194,7 @@ class KSpaceFirstOrder3DSolver
     /// Compute new values of acoustic velocity gradients.
     void computeVelocityGradient();
 
-    /// Compute new values of acoustic density for non-linear case.
+    /// Compute new values of acoustic density for nonlinear case.
     void computeDensityNonliner();
     /// Compute new values of acoustic density for linear case.
     void computeDensityLinear();
@@ -211,20 +211,20 @@ class KSpaceFirstOrder3DSolver
     /// Calculate initial pressure source.
     void addInitialPressureSource();
 
-    /// Generate kappa matrix for non-absorbing media.
+    /// Generate kappa matrix for  lossless medium.
     void generateKappa();
-    /// Generate kappa matrix, absorbNabla1, absorbNabla2 for absorbing media.
+    /// Generate kappa matrix, absorbNabla1, absorbNabla2 for absorbing medium.
     void generateKappaAndNablas();
-    /// Generate absorbTau, absorbEta for heterogenous media.
+    /// Generate absorbTau, absorbEta for heterogenous medium.
     void generateTauAndEta();
-    /// Calculate dt ./ rho0 for non-uniform grids.
+    /// Calculate dt ./ rho0 for nonuniform grids.
     void generateInitialDenisty();
     /// Calculate square of velocity
     void computeC2();
 
     /**
      * @brief Calculate three temporary sums in the new pressure formula before taking the FFT,
-     *        non-linear absorbing case.
+     *        nonlinear absorbing case.
      * @param [out] densitySum          - rhoX + rhoY + rhoZ
      * @param [out] nonlinearTerm       - BOnA + densitySum ^2 / 2 * rho0
      * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz)
@@ -235,15 +235,15 @@ class KSpaceFirstOrder3DSolver
     /**
      * @brief Calculate two temporary sums in the new pressure formula before taking the FFT,
      *        linear absorbing case.
-     * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz
-     * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz);
+     * @param [out] densitySum          - rhoxSgx + rhoySgy + rhozSgz
+     * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz)
      */
     void computePressureTermsLinear(RealMatrix& densitySum,
                                     RealMatrix& velocityGradientSum);
 
 
     /**
-     * @brief Sum sub-terms to calculate new pressure, after FFTs, non-linear case.
+     * @brief Sum sub-terms to calculate new pressure, after FFTs, nonlinear case.
      * @param [in] absorbTauTerm - tau component
      * @param [in] absorbEtaTerm - eta component  of the pressure term
      * @param [in] nonlinearTerm - rho0 * (duxdx + duydy + duzdz)
@@ -263,10 +263,10 @@ class KSpaceFirstOrder3DSolver
                                 const RealMatrix& absorbEtaTerm,
                                 const RealMatrix& densitySum);
 
-    /// Sum sub-terms for new p, linear lossless case.
+    /// Sum sub-terms for new pressure, linear lossless case.
     void sumPressureTermsNonlinearLossless();
 
-    /// Sum sub-terms for new p, linear lossless case.
+    /// Sum sub-terms for new pressure, linear lossless case.
     void sumPressureTermsLinearLossless();
 
     /// compute shifted velocity for --u_non_staggered flag.
@@ -280,7 +280,6 @@ class KSpaceFirstOrder3DSolver
      * @return true if it is time to interrupt the simulation and checkpoint.
      */
     bool isTimeToCheckpoint();
-
 
     /**
      * @brief  Was the loop interrupted to checkpoint?
@@ -332,6 +331,7 @@ class KSpaceFirstOrder3DSolver
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kP);
     };
 
+    //--------------------------------------------- Velocity matrices ------------------------------------------------//
     /**
      * @brief  Get velocity matrix on staggered grid in x direction.
      * @return Velocity matrix on staggered grid.
@@ -382,6 +382,7 @@ class KSpaceFirstOrder3DSolver
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kUzShifted);
     };
 
+    //----------------------------------------- Velocity gradient matrices -------------------------------------------//
     /**
      * @brief  Get velocity gradient on in x direction.
      * @return Velocity gradient matrix.
@@ -407,6 +408,7 @@ class KSpaceFirstOrder3DSolver
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kDuzdz);
     };
 
+    //---------------------------------------------- Density matrices ------------------------------------------------//
     /**
      * @brief  Get dt * rho0Sgx matrix (time step size * ambient velocity on staggered grid in x direction).
      * @return Density matrix
@@ -465,6 +467,7 @@ class KSpaceFirstOrder3DSolver
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kRho0);
     };
 
+    //----------------------------------------------- Shift matrices -------------------------------------------------//
     /**
      * @brief  Get positive Fourier shift in x.
      * @return Shift matrix.
@@ -539,7 +542,7 @@ class KSpaceFirstOrder3DSolver
       return mMatrixContainer.getMatrix<ComplexMatrix>(MatrixContainer::MatrixIdx::kZShiftNegR);
     };
 
-
+    //------------------------------------------------ PML matrices --------------------------------------------------//
     /**
      * @brief  Get PML on staggered grid x.
      * @return PML matrix.
@@ -589,6 +592,7 @@ class KSpaceFirstOrder3DSolver
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kPmlZ);
     };
 
+    //------------------------------------------- Nonlinear grid matrices --------------------------------------------//
     /**
      * @brief  Non uniform grid acoustic velocity in x.
      * @return Velocity matrix.
@@ -638,12 +642,12 @@ class KSpaceFirstOrder3DSolver
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kDzudznSgz);
     };
 
-
+    //-------------------------------------- Nonlinear and absorption matrices ---------------------------------------//
     /**
      * @brief  Get B on A (nonlinear coefficient).
      * @return Nonlinear coefficient.
      */
-    RealMatrix& geBOnA()
+    RealMatrix& getBOnA()
     {
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kBOnA);
     };
@@ -726,7 +730,6 @@ class KSpaceFirstOrder3DSolver
 
 
     //-------------------------------------------------- Sources  ----------------------------------------------------//
-
     /**
      * @brief  Get transducer source input data (signal).
      * @return Transducer source input data.
@@ -780,7 +783,6 @@ class KSpaceFirstOrder3DSolver
 
 
     //--------------------------------------------- Temporary matrices -----------------------------------------------//
-
     /**
      * @brief  Get first real 3D temporary matrix.
      * @return Temporary real 3D matrix.
@@ -808,7 +810,7 @@ class KSpaceFirstOrder3DSolver
 
 
     /**
-     * @brief  Get Temporary matrix for 1D fft in x.
+     * @brief  Get temporary matrix for 1D fft in x.
      * @return Temporary complex 3D matrix.
      */
     CufftComplexMatrix& getTempCufftX()
@@ -816,7 +818,7 @@ class KSpaceFirstOrder3DSolver
       return mMatrixContainer.getMatrix<CufftComplexMatrix>(MatrixContainer::MatrixIdx::kTempCufftX);
     };
     /**
-     * @brief  Get Temporary matrix for 1D fft in y.
+     * @brief  Get temporary matrix for 1D fft in y.
      * @return Temporary complex 3D matrix.
      */
     CufftComplexMatrix& getTempCufftY()
@@ -824,7 +826,7 @@ class KSpaceFirstOrder3DSolver
       return mMatrixContainer.getMatrix<CufftComplexMatrix>(MatrixContainer::MatrixIdx::kTempCufftY);
     };
     /**
-     * @brief  Get Temporary matrix for 1D fft in z.
+     * @brief  Get temporary matrix for 1D fft in z.
      * @return Temporary complex 3D matrix.
      */
     CufftComplexMatrix& getTempCufftZ()
@@ -833,7 +835,7 @@ class KSpaceFirstOrder3DSolver
     };
 
     /**
-     * @brief  Get Temporary matrix for cufft shift.
+     * @brief  Get temporary matrix for cufft shift.
      * @return Temporary complex 3D matrix.
      */
     CufftComplexMatrix& getTempCufftShift()
@@ -844,7 +846,7 @@ class KSpaceFirstOrder3DSolver
 private:
 
     /// Matrix container with all the matrix classes.
-    MatrixContainer mMatrixContainer;
+    MatrixContainer       mMatrixContainer;
     /// Output stream container.
     OutputStreamContainer mOutputStreamContainer;
 

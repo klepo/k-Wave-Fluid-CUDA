@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.5
 
  * @date      09 August    2011, 12:34 (created) \n
- *            16 August    2017, 13:49 (revised)
+ *            28 August    2017, 15:06 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -84,7 +84,7 @@ ErrorMessage kErrFmtBadDimensionSizes
 ErrorMessage kErrFmtFileNotOpen
   = "Error: File \"%s\" was not found or could not be opened.";
 /// HDF5 error message
-ErrorMessage kErrFmtNOtHdf5File
+ErrorMessage kErrFmtNotHdf5File
   = "Error: File \"%s\" is not a valid HDF5 file.";
 /// HDF5 error message
 ErrorMessage kErrFmtCannotOpenDataset
@@ -111,7 +111,7 @@ ErrorMessage kErrFmtCannotOpenGroup
 ErrorMessage kErrFmtBadInputFileType
   = "Error: The input file has not a valid format.";
 /// HDF5 error message
-ErrorMessage kErrFmtBadOutputFIleType
+ErrorMessage kErrFmtBadOutputFileType
   = "Error: The output file has not a valid format.";
 /// HDF5 error message
 ErrorMessage kErrFmtBadCheckpointFileType
@@ -219,12 +219,12 @@ ErrorMessage kErrFmtBadOutputFileFormat
   = "Error: Incorrect output file \"%s\" format.";
 
 /// KSpaceFirstOrder3DSolver error message
-ErrorMessage kErrFmtCheckpointDimensionsNotMatch
+ErrorMessage kErrFmtCheckpointDimensionsMismatch
   = "Error: The dimensions [%ld, %ld, %ld] of the checkpoint file don't match the simulation "
     "dimensions [%ld, %ld, %ld].";
 
 /// KSpaceFirstOrder3DSolver error message
-ErrorMessage kErrFmtOutputDimensionsNotMatch
+ErrorMessage kErrFmtOutputDimensionsMismatch
   = "Error: The dimensions [%ld, %ld, %ld] of the output file don't match the simulation "
     "dimensions [%ld, %ld, %ld].";
 

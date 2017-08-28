@@ -156,7 +156,7 @@ void CuboidOutputStream::reopen()
     const string datasetName = std::to_string(cuboidIdx + 1);
 
     // open the dataset
-    cuboidInfo.cuboidIdx = mFile.openDataset(mGroup,datasetName.c_str());
+    cuboidInfo.cuboidIdx = mFile.openDataset(mGroup,datasetName);
     cuboidInfo.startingPossitionInBuffer = actualPositionInBuffer;
     mCuboidsInfo.push_back(cuboidInfo);
 
@@ -173,9 +173,9 @@ void CuboidOutputStream::reopen()
                                    mSensorMask.getTopLeftCorner(cuboidIdx)).nz);
 
         mFile.readCompleteDataset(mGroup,
-                                 datasetName.c_str(),
-                                 cuboidSize,
-                                 mHostBuffer + actualPositionInBuffer);
+                                  datasetName,
+                                  cuboidSize,
+                                  mHostBuffer + actualPositionInBuffer);
       }
     }
     // move the pointer for the next cuboid beginning (this inits the locations)

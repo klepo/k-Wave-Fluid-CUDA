@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      29 August    2012, 11:25 (created) \n
- *            16 August    2017, 13:56 (revised)
+ *            28 August    2017, 16:05 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -43,7 +43,7 @@
   #include <omp.h>
 #endif
 
-
+#include <cstring>
 #include <stdexcept>
 
 #include <Logger/Logger.h>
@@ -236,9 +236,9 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
     { "copy_sensor_mask",     no_argument,       nullptr, 2 },
     { "checkpoint_file"    ,  required_argument, nullptr, 3 },
     { "checkpoint_interval",  required_argument, nullptr, 4 },
-    { "help",                 no_argument, nullptr,      'h'},
+    { "help",                 no_argument,       nullptr,'h'},
     { "verbose",              required_argument, nullptr, 5 },
-    { "version",              no_argument, nullptr,       6 },
+    { "version",              no_argument,       nullptr, 6 },
 
     { "p_raw",                no_argument, nullptr,'p' },
     { "p_rms",                no_argument, nullptr, 10 },
