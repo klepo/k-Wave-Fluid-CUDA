@@ -20,7 +20,7 @@ the simulations (AMD GPUs are not supported).
     +--GetoptWin64       - Windows version of the getopt routine
     +--Hdf5              - HDF5 classes (file access)
     +--KSpaceSolver      - Solver classes with all the kernels
-    +--Logger            - Logger class to report progress and erros
+    +--Logger            - Logger class to report progress and errors
     +--MatrixClasses     - Matrix classes to hold data
     +--Makefiles         - GNU makefiles for different systems
     +--OutputHDF5Streams - Output streams to sample data
