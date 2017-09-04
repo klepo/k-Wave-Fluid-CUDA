@@ -1,32 +1,32 @@
 /**
- * @file        Hdf5FileHeader.cpp
+ * @file      Hdf5FileHeader.cpp
  *
- * @author      Jiri Jaros              \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The implementation file containing the HDF5 related classes.
+ * @brief     The implementation of the class responsible for working with file headers.
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        20 July      2017, 14:54 (created) \n
- *              11 August    2017, 13:35 (revised)
+ * @date      20 July      2017, 14:54 (created) \n
+ *            04 September 2017, 08:42 (revised)
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 
@@ -77,7 +77,7 @@ std::map<Hdf5FileHeader::FileHeaderItems, std::string> Hdf5FileHeader::sHeaderNa
   {Hdf5FileHeader::FileHeaderItems::kFileType              , "file_type"},
 
   {Hdf5FileHeader::FileHeaderItems::kHostName              , "host_names"},
-  {Hdf5FileHeader::FileHeaderItems::kNumberofCores         , "number_of_cpu_cores"},
+  {Hdf5FileHeader::FileHeaderItems::kNumberOfCores         , "number_of_cpu_cores"},
   {Hdf5FileHeader::FileHeaderItems::kTotalMemoryConsumption, "total_memory_in_use"},
   {Hdf5FileHeader::FileHeaderItems::kPeakMemoryConsumption , "peak_core_memory_in_use"},
 
@@ -130,7 +130,7 @@ void Hdf5FileHeader::readHeaderFromInputFile(Hdf5File& inputFile)
 {
   // Get file root handle
   hid_t rootGroup = inputFile.getRootGroup();
-  // shortcut for the
+  // shortcut
   using FHI = FileHeaderItems;
 
   // read file type
@@ -164,7 +164,7 @@ void Hdf5FileHeader::readHeaderFromOutputFile(Hdf5File& outputFile)
 {
   // Get file root handle
   hid_t rootGroup = outputFile.getRootGroup();
-  // shortcut for the
+  // shortcut
   using FHI = FileHeaderItems;
 
   mHeaderValues[FHI::kFileType] = outputFile.readStringAttribute(rootGroup, "/", sHeaderNames[FHI::kFileType]);
@@ -184,7 +184,7 @@ void Hdf5FileHeader::readHeaderFromOutputFile(Hdf5File& outputFile)
   }
   else
   {
-    throw ios::failure(kErrFmtBadOutputFIleType);
+    throw ios::failure(kErrFmtBadOutputFileType);
   }
 }// end of readHeaderFromOutputFile
 //----------------------------------------------------------------------------------------------------------------------
@@ -197,7 +197,7 @@ void Hdf5FileHeader::readHeaderFromCheckpointFile(Hdf5File& checkpointFile)
 {
   // Get file root handle
   hid_t group = checkpointFile.getRootGroup();
-  // shortcut for the
+  // shortcut
   using FHI = FileHeaderItems;
 
   // read file type
@@ -245,7 +245,7 @@ void Hdf5FileHeader::writeHeaderToCheckpointFile(Hdf5File& checkpointFile)
 {
   // Get file root handle
   hid_t rootGroup = checkpointFile.getRootGroup();
-  // shortcut for the
+  // shortcut
   using FHI = FileHeaderItems;
 
   // Write header
@@ -287,7 +287,7 @@ void Hdf5FileHeader::writeHeaderToCheckpointFile(Hdf5File& checkpointFile)
  */
 void Hdf5FileHeader::setActualCreationTime()
 {
-  struct tm *current;
+  struct tm* current;
   time_t now;
   time(&now);
   current = localtime(&now);
@@ -427,7 +427,7 @@ void Hdf5FileHeader::getExecutionTimes(double& totalTime,
  */
 void Hdf5FileHeader::setNumberOfCores()
 {
-  mHeaderValues[FileHeaderItems::kNumberofCores]
+  mHeaderValues[FileHeaderItems::kNumberOfCores]
           = Logger::formatMessage("%ld", Parameters::getInstance().getNumberOfThreads());
 }// end of setNumberOfCores
 //----------------------------------------------------------------------------------------------------------------------

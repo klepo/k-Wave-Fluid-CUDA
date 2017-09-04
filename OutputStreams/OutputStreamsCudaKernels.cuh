@@ -1,32 +1,32 @@
 /**
- * @file        OutputStreamsCudaKernels.cuh
+ * @file      OutputStreamsCudaKernels.cuh
  *
- * @author      Jiri Jaros              \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The header file of cuda kernels used for data sampling (output streams).
+ * @brief     The header file of cuda kernels used for data sampling (output streams).
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        27 January   2015, 16:25 (created) \n
- *              11 August    2017, 15:27 (revised)
+ * @date      27 January   2015, 16:25 (created) \n
+ *            28 August    2017, 16:17 (revised)
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 
@@ -64,7 +64,7 @@ namespace OutputStreamsCudaKernels
   /**
    * @brief  Sample data inside one cuboid and store it to buffer. The operation is given in the template parameter.
    *
-   * @tparam      reduceOp         - Reduction operator
+   * @tparam      reduceOp          - Reduction operator
    * @param [out] samplingBuffer    - Buffer to sample data in
    * @param [in]  sourceData        - Source matrix
    * @param [in]  topLeftCorner     - Top left corner of the cuboid

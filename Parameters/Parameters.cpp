@@ -1,39 +1,39 @@
 /**
- * @file        Parameters.cpp
+ * @file      Parameters.cpp
  *
- * @author      Jiri Jaros   \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The implementation file containing parameters of the simulation.
+ * @brief     The implementation file containing parameters of the simulation.
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        09 August    2012, 13:39 (created) \n
- *              11 August    2017, 15:41 (revised)
+ * @date      09 August    2012, 13:39 (created) \n
+ *            04 September 2017, 08:46 (revised)
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 #ifdef _OPENMP
   #include <omp.h>
 #endif
 
-#include <iostream>
+
 #include <string>
 #include <exception>
 #include <stdexcept>
@@ -133,7 +133,6 @@ void Parameters::init(int argc, char** argv)
 }// end of parseCommandLine
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Select a device device for execution.
  */
@@ -150,7 +149,6 @@ void Parameters::selectDevice()
   Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceName, mCudaParameters.getDeviceName().c_str());
 }// end of selectDevice
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Print parameters of the simulation based in the actual level of verbosity.
@@ -182,9 +180,8 @@ void Parameters::printSimulatoinSetup()
   {
     Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSensorMaskCuboid);
   }
-}// end of printParametersOfTask
+}// end of printSimulatoinSetup
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Read scalar values from the input HDF5 file.
@@ -250,7 +247,7 @@ void Parameters::readScalarsFromInputFile()
   mFullDimensionSizes.ny = y;
   mFullDimensionSizes.nz = z;
 
-  mReducedDimensionSizes.nx = ((x/2) + 1);
+  mReducedDimensionSizes.nx = ((x / 2) + 1);
   mReducedDimensionSizes.ny = y;
   mReducedDimensionSizes.nz = z;
 
@@ -414,7 +411,7 @@ void Parameters::readScalarsFromInputFile()
  */
 void Parameters::saveScalarsToOutputFile()
 {
-    const hid_t rootGroup = mOutputFile.getRootGroup();
+  const hid_t rootGroup = mOutputFile.getRootGroup();
 
   // Write dimension sizes
   mOutputFile.writeScalarValue(rootGroup, kNxName, mFullDimensionSizes.nx);
@@ -502,7 +499,6 @@ string Parameters::getGitHash() const
 //----------------------------------------------------------------------------------------------------------------------
 
 
-
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------ Protected methods -------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
@@ -530,7 +526,7 @@ Parameters::Parameters()
     mPressureSourceFlag(0), mInitialPressureSourceFlag(0), mTransducerSourceFlag(0),
     mVelocityXSourceFlag(0), mVelocityYSourceFlag(0), mVelocityZSourceFlag(0),
     mPressureSourceIndexSize(0), mTransducerSourceInputSize(0),mVelocitySourceIndexSize(0),
-    mPressureSourceMode(0), mPressureSourceMany(0), mVelocitySourceMany(0), mVelocitySourceMode(0),
+    mPressureSourceMode(0), mPressureSourceMany(0), mVelocitySourceMode(0), mVelocitySourceMany(0),
     mSensorMaskType(SensorMaskType::kIndex), mSensorMaskIndexSize (0), mSensorMaskCornersSize(0)
 {
 

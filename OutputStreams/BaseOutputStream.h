@@ -1,32 +1,32 @@
 /**
- * @file        BaseOutputStream.h
+ * @file      BaseOutputStream.h
  *
- * @author      Jiri Jaros              \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The header file of the class saving RealMatrix data into the output HDF5 file.
+ * @brief     The header file of the class saving RealMatrix data into the output HDF5 file.
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        11 July      2012, 10:30 (created) \n
- *              11 August    2017, 15:25 (revised)
+ * @date      11 July      2012, 10:30 (created) \n
+ *            28 August    2017, 15:11 (revised)
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 #ifndef BASE_OUTPUT_STREAM_H
@@ -86,7 +86,7 @@ class BaseOutputStream
 
     /// Copy constructor not allowed.
     BaseOutputStream(const BaseOutputStream&) = delete;
-    /// Destructor
+    /// Destructor.
     virtual ~BaseOutputStream() {};
 
     /// Operator= is not allowed.
@@ -131,10 +131,10 @@ class BaseOutputStream
     /// Copy data Device -> Host
     virtual void copyFromDevice();
 
-    /// Handle to HDF5 output file
+    /// Handle to HDF5 output file.
     Hdf5File& mFile;
 
-    /// HDF5 group in the output file where to store data in.
+    /// HDF5 group/dataset in the output file where to store data in.
     std::string mRootObjectName;
 
     /// Source matrix to be sampled.
@@ -156,10 +156,8 @@ class BaseOutputStream
     /// Temporary buffer on the GPU side - only for aggregated quantities.
     float* mDeviceBuffer;
 
-    /// chunk size of 4MB in number of float elements.
+    /// Chunk size of 4MB in number of float elements.
     static constexpr size_t kChunkSize4MB = 1048576;
-    /// The minimum number of elements to start sampling in parallel (4MB).
-    static constexpr size_t kMinGridpointsToSampleInParallel = 1048576;
 
 };// end of BaseOutputStream
 //----------------------------------------------------------------------------------------------------------------------

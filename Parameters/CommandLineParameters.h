@@ -1,124 +1,111 @@
 /**
- * @file        CommandLineParameters.h
+ * @file      CommandLineParameters.h
  *
- * @author      Jiri Jaros              \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The header file containing the command line parameters.
+ * @brief     The header file containing the command line parameters.
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        29 August   2012, 11:25 (created) \n
- *              11 August   2017, 15:46 (revised)
+ * @date      29 August    2012, 11:25 (created) \n
+ *            28 August    2017, 16:19 (revised)
  *
- * @section Params Command Line Parameters
+ * @section   Params Command Line Parameters
  *
- * The CUDA/C++ code requires two mandatory parameters and accepts a few optional parameters and
- * flags. Ill parameters, bad simulation files, and runtime errors such as out-of-memory problems,
- * lead to an exception followed by an error message shown and execution termination.
+ * The CUDA/C++ code requires two mandatory parameters and accepts a few optional parameters and  flags. Ill parameters,
+ * bad simulation files, and runtime errors such as out-of-memory problems, lead to an exception followed by an error
+ * message shown and execution termination.
  *
- * The mandatory parameters \c -i and \c -o specify the input and output file. The file names
- * respect the path conventions for particular operating system. If any of the files is not
- * specified, cannot be found or created, an error message is shown and the code terminates.
+ * The mandatory parameters <tt>-i</tt> and <tt>-o</tt> specify the input and output file. The file names respect the
+ * path conventions for particular operating system. If any of the files is not specified, cannot be found or created,
+ * an error message is shown and the code terminates.
  *
- * The \c -t parameter sets the number of threads used, which defaults the system maximum. For the
- * CUDA version, the number of threads is not critical, as the CPU only preprocess data. When
- * running on desktops with multiple GPUs, or clusters with per-GPU resource allocations, it may
- * be useful to limit the number of CPU threads.
+ * The <tt>-t</tt> parameter sets the number of threads used, which defaults the system maximum. For the  CUDA version,
+ * the number of threads is not critical, as the CPU only preprocess data. When running on desktops with multiple GPUs,
+ * or clusters with per-GPU resource allocations, it may be useful to limit the number of CPU threads.
  *
- * The \c -g parameter allows to explicitly select a GPU for the execution. The CUDA capable GPUs
- * can be listed by the system command \c nvidia-smi. If the parameter is not specified, the code
- * uses the first free GPU. If the GPUs are set in the CUDA DEFAULT mode, the first CUDA device
- * is selected. In order to get the automatic round-robin GPU selection working (to e.g. execute
- * multiple instances of the code on distinct GPUs), please set the GPUs into PROCESS_EXCLUSIVE mode.
- * On clusters with a PBS  scheduler, this is usually done automatically, so no need to change it
- * by user.
+ * The <tt>-g</tt> parameter allows to explicitly select a GPU for the execution. The CUDA capable GPUs  can be listed
+ * by the system command <tt>nvidia-smi</tt>. If the parameter is not specified, the code uses the first free GPU. If
+ * the GPUs are set in the <tt>CUDA DEFAULT</tt> mode, the first CUDA device is selected. In order to get the automatic
+ * round-robin GPU selection working (to e.g. execute multiple instances of the code on distinct GPUs), please set the
+ * GPUs into <tt>PROCESS_EXCLUSIVE</tt> mode. On clusters with a PBS  scheduler, this is usually done automatically,
+ * so no need to change it  by user.
  *
- * The \c -r parameter specifies how often information about the simulation progress is printed out
- * to the command line. By default, the CUDA/C++ code prints out the  progress of the simulation,
- * the elapsed time, and the estimated time of completion in intervals corresponding to 5% of
- * the total number of times steps.
+ * The <tt>-r</tt> parameter specifies how often information about the simulation progress is printed out to the command
+ * line. By default, the CUDA/C++ code prints out the  progress of the simulation, the elapsed time, and the estimated
+ * time of completion in intervals corresponding to 5% of the total number of times steps.
  *
- * The \c -c parameter specifies the compression level used by the ZIP library to reduce the size of
- * the output file. The actual compression rate is highly dependent on the shape of the sensor mask
- * and the range of stored quantities and may be computationally expensive. In general, the output
- * data is very hard to compress, and using higher compression levels can greatly increase the
- * time to save data while not having a large impact on the final file size. That's why we decided
- * to disable compression in default settings.
+ * The <tt>-c</tt> parameter specifies the compression level used by the ZIP library to reduce the size of the output
+ * file. The actual compression rate is highly dependent on the shape of the sensor mask and the range of stored
+ * quantities and may be computationally expensive. In general, the output data is very hard to compress, and using
+ * higher compression levels can greatly increase the time to save data while not having a large impact on the final
+ * file size. That's why we decided to disable compression in default settings.
  *
- * The \c <tt>\--benchmark</tt> parameter enables the total length of simulation (i.e., the number
- * of time steps) to be overridden by setting a new number of time  steps to simulate. This is
- * particularly useful for performance evaluation and benchmarking. As the code performance is
- * relatively stable, 50-100 time steps is  usually enough to predict the simulation duration.
- * This parameter can also be used to quickly check the simulation is set up correctly.
+ * The <tt>\--benchmark</tt> parameter enables the total length of simulation (i.e., the number of time steps) to be
+ * overridden by setting a new number of time  steps to simulate. This is particularly useful for performance evaluation
+ * and benchmarking. As the code performance is relatively stable, 50-100 time steps is usually enough to predict the
+ * simulation duration. This parameter can also be used to quickly check the simulation is set up correctly.
  *
- * The \c <tt>\--verbose</tt> parameter enables to select between three levels of verbosity. For
- * routine simulations, the verbose level of 0 (the default one) is usually sufficient. For more
- * information about the simulation, checking the parameters of the simulation, code version,
- * GPU used, file paths, and debugging running scripts, verbose levels 1 and 2 may be very useful.
+ * The <tt>\--verbose</tt> parameter enables to select between three levels of verbosity. For  routine simulations, the
+ * verbose level of 0 (the default one) is usually sufficient. For more information about the simulation, checking the
+ * parameters of the simulation, code version, GPU used, file paths, and debugging running scripts, verbose levels
+ * 1 and 2 may be very useful.
  *
- * The \c -h and <tt>\--help</tt> parameters print all the parameters of the C++ code. The
- * <tt>\--version </tt>parameter reports detail information about the code useful for  debugging and
- * bug reports. It prints out the internal version, the build date and time, the git hash allowing
- * us to track the version of the source code, the operating system, the compiler name and version
- * and the instruction set used.
+ * The <tt>-h</tt> and <tt>\--help</tt> parameters print all the parameters of the C++ code. The <tt>\--version </tt>
+ * parameter reports detail information about the code useful for  debugging and bug reports. It prints out the internal
+ * version, the build date and time, the git hash allowing us to track the version of the source code, the operating
+ * system, the compiler name and version and the instruction set used.
  *
- * For jobs that are expected to run for a very long time, it may be useful to  checkpoint and
- * restart the execution. One motivation is the wall clock limit  per task on clusters where jobs
- * must fit within a given time span (e.g. 24 hours). The second motivation is a level of
- * fault-tolerance, where you can back up the state of the simulation after a predefined period.
- * To enable checkpoint-restart, the user is asked to specify a file to store the actual state of
- * the simulation by  <tt>\--checkpoint_file</tt> and the period in seconds after which the
- * simulation will be interrupted by <tt>\--checkpoint_interval</tt>.  When running on a cluster,
- * please allocate enough time for the checkpoint procedure  that can take a non-negligible amount
- * of time (7 matrices have to be stored in  the checkpoint file and all aggregated quantities are
- * flushed into the output file). Please note, that the checkpoint file name and path is not checked
- * at the beginning of the simulation, but at the time the code starts checkpointing. Thus make sure
- * the file path was correctly specified ((otherwise you will not find out the simulation crashed
- * until the first leg of the simulation finishes)). The rationale behind this is that to keep as
- * high level of fault tolerance as possible, the checkpoint file should be touched even when really
- * necessary.
+ * For jobs that are expected to run for a very long time, it may be useful to  checkpoint and restart the execution.
+ * One motivation is the wall clock limit  per task on clusters where jobs must fit within a given time span (e.g. 24
+ * hours). The second motivation is a level of fault-tolerance, where you can back up the state of the simulation after
+ * a predefined period. To enable checkpoint-restart, the user is asked to specify a file to store the actual state of
+ * the simulation by  <tt>\--checkpoint_file</tt> and the period in seconds after which the simulation will be
+ * interrupted by <tt>\--checkpoint_interval</tt>.  When running on a cluster, please allocate enough time for the
+ * checkpoint procedure  that can take a non-negligible amount of time (7 matrices have to be stored in  the
+ * checkpoint file and all aggregated quantities are flushed into the output file). Please note, that the checkpoint
+ * file name and path is not checked at the beginning of the simulation, but at the time the code starts
+ * checkpointing. Thus make sure the file path was correctly specified (otherwise you will not find out the simulation
+ * crashed until the first leg of the simulation finishes). The rationale behind this is that to keep as high level of
+ * fault tolerance as possible, the checkpoint file should be touched even when really necessary.
  *
- * When controlling a multi-leg simulation by a script loop, the parameters of the code remains the
- * same in all legs. The first leg of the simulation creates a checkpoint  file while the last one
- * deletes it. If the checkpoint file is not found the simulation starts from the beginning. In
- * order to find out how many steps have been finished, please open the output file and read
- * the variable <tt>t_index</tt> and compare it with <tt>Nt</tt> (e.g. by the h5dump command).
+ * When controlling a multi-leg simulation by a script loop, the parameters of the code remains the same in all legs.
+ * The first leg of the simulation creates a checkpoint  file while the last one deletes it. If the checkpoint file is
+ * not found the simulation starts from the beginning. In order to find out how many steps have been finished, please
+ * open the output file and read the variable <tt>t_index</tt> and compare it with <tt>Nt</tt> (e.g. by the h5dump
+ * command).
  *
  *
- * The remaining flags specify the output quantities to be recorded during the  simulation and
- * stored on disk analogous to  the sensor.record input. If the \c -p or <tt>\--p\_raw</tt> flags
- * are set (these are equivalent), a time series of  the acoustic pressure at the grid points
- * specified by  the sensor mask is recorded. If the <tt>\--p_rms</tt>, <tt>\--p_max</tt>,
- * <tt>\--p_min</tt> flags  are set, the root mean square and/or maximum and/or minimum values of
- * the pressure at the grid points specified by  the sensor mask are recorded. If the
- * <tt>\--p_final</tt> flag is set, the values for the entire acoustic pressure field in the final
- * time step of the simulation is stored (this will always include the PML, regardless of  the
- * setting for <tt> `PMLInside'</tt>).
- * The flags <tt>\--p_max_all</tt> and <tt>\--p_min_all</tt> allow to calculate the maximum and
- * minimum values over the entire acoustic pressure field, regardless on the shape of the sensor
- * mask. Flags to record the acoustic particle velocity are defined in an analogous fashion. For
- * proper calculation of acoustic intensity, the particle velocity has to be shifted onto the same
- * grid as the acoustic  pressure. This can be done by setting <tt>\--u_non_staggered_raw</tt> flag,
- * that first shifts the  particle velocity and then samples the grid points specified by the sensor
- * mask. Since the  shift operation requires additional FFTs, the impact on the simulation time may
- * be significant.
+ * The remaining flags specify the output quantities to be recorded during the  simulation and stored on disk analogous
+ * to  the sensor.record input. If the <tt>-p</tt> or <tt>\--p\_raw</tt> flags are set (these are equivalent), a time
+ * series of  the acoustic pressure at the grid points specified by  the sensor mask is recorded. If the
+ * <tt>\--p_rms</tt>, <tt>\--p_max</tt>, <tt>\--p_min</tt> flags  are set, the root mean square and/or maximum and/or
+ * minimum values of the pressure at the grid points specified by  the sensor mask are recorded. If the
+ * <tt>\--p_final</tt> flag is set, the values for the entire acoustic pressure field in the final time step of the
+ * simulation is stored (this will always include the PML, regardless of  the setting for <tt> 'PMLInside'</tt>).
+ * The flags <tt>\--p_max_all</tt> and <tt>\--p_min_all</tt> allow to calculate the maximum and  minimum values over the
+ * entire acoustic pressure field, regardless on the shape of the sensor mask. Flags to record the acoustic particle
+ * velocity are defined in an analogous fashion. For proper calculation of acoustic intensity, the particle velocity
+ * has to be shifted onto the same grid as the acoustic  pressure. This can be done by setting
+ * <tt>\--u_non_staggered_raw</tt> flag, that first shifts the  particle velocity and then samples the grid points
+ * specified by the sensor mask. Since the  shift operation requires additional FFTs, the impact on the simulation time
+ * may be significant.
  *
- * Any combination of <tt>p</tt> and <tt>u</tt> flags is admissible. If no output flag is set,
- * a time-series for the acoustic pressure is recorded. If it is not necessary to collect the output
- * quantities over the entire simulation, the starting time step when the collection begins can
- * be specified using the -s parameter.  Note, the index for the first time step is 1 (this follows
- * the MATLAB indexing convention).
+ * Any combination of <tt>p</tt> and <tt>u</tt> flags is admissible. If no output flag is set, a time-series for the
+ * acoustic pressure is recorded. If it is not necessary to collect the output quantities over the entire simulation,
+ * the starting time step when the collection begins can be specified using the -s parameter.  Note, the index for the
+ * first time step is 1 (this follows the MATLAB indexing convention).
  *
- * The <tt>\--copy_sensor_mask</tt> will copy the sensor from the input file to the output  one at the end
- * of the simulation. This helps in post-processing and visualisation of the outputs.
+ * The <tt>\--copy_sensor_mask</tt> will copy the sensor from the input file to the output  one at the end of the
+ * simulation. This helps in post-processing and visualisation of the outputs.
  *
  *
 \verbatim
 ┌───────────────────────────────────────────────────────────────┐
-│                 kspaceFirstOrder3D-CUDA v1.1                  │
+│                 kspaceFirstOrder3D-CUDA v1.2                  │
 ├───────────────────────────────────────────────────────────────┤
 │                             Usage                             │
 ├───────────────────────────────────────────────────────────────┤
@@ -183,26 +170,26 @@
 └───────────────────────────────┴───────────────────────────────┘
 \endverbatim
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
+ *
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 #ifndef COMMAND_LINE_PARAMETERS_H
 #define COMMAND_LINE_PARAMETERS_H
 
-#include <cstdlib>
 #include <string>
 
 /**
@@ -213,7 +200,7 @@
 class CommandLineParameters
 {
   public:
-    /// Only TParameters can create this class.
+    /// Only Parameters can create this class.
     friend class Parameters;
 
     /// Copy constructor not allowed.
@@ -230,13 +217,11 @@ class CommandLineParameters
      * @return Input file name.
      */
     const std::string& getInputFileName()      const { return mInputFileName; };
-
     /**
      * @brief  Get output file name.
      * @return Output file name.
      */
     const std::string& getOutputFileName()     const { return mOutputFileName; };
-
     /**
      * @brief  Get Checkpoint file name.
      * @return Checkpoint file name.
@@ -299,6 +284,7 @@ class CommandLineParameters
     bool   isPrintVersionOnly()         const { return mPrintVersionFlag; };
 
 
+    //------------------------------------------------ Output flags --------------------------------------------------//
     /**
      * @brief Is --p_raw set?
      * @return true if the flag is set.

@@ -1,32 +1,32 @@
 /**
- * @file        TimeMeasure.h
+ * @file      TimeMeasure.h
  *
- * @author      Jiri Jaros              \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The header file for class with time measurement
+ * @brief     The header file for class with time measurement.
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        15 August   2012, 09:35 (created) \n
- *              11 August   2017, 15:54 (revised)
+ * @date      15 August    2012, 09:35 (created) \n
+ *            28 August    2017, 16:22 (revised)
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 #ifndef TIME_MEASURE_H
@@ -77,9 +77,9 @@ class TimeMeasure
     { };
 
     /**
-     * @brief  operator=
+     * @brief   operator=
      * @details operator=
-     * @param [in] src - source
+     * @param [in] src - Source
      * @return
      */
     TimeMeasure& operator=(const TimeMeasure& src)
@@ -93,7 +93,7 @@ class TimeMeasure
       return *this;
     };
 
-    /// Get start timestamp.
+    /// Take start timestamp.
     inline void start()
     {
       #ifdef _OPENMP
@@ -111,7 +111,7 @@ class TimeMeasure
       #endif
     };
 
-    /// Get stop timestamp.
+    /// Take stop timestamp.
     inline void stop()
     {
       #ifdef _OPENMP
@@ -130,9 +130,9 @@ class TimeMeasure
     };
 
     /**
-     * @brief Get elapsed time.
+     * @brief   Get elapsed time.
      * @details Get elapsed time.
-     * @return elapsed time between start timestamp and stop timestamp.
+     * @return  Elapsed time between start timestamp and stop timestamp.
      */
     inline double getElapsedTime() const
     {
@@ -140,9 +140,9 @@ class TimeMeasure
     };
 
     /**
-     * @brief Get cumulated elapsed time over all simulation legs.
+     * @brief   Get cumulated elapsed time over all simulation legs.
      * @details Get cumulated elapsed time over all simulation legs.
-     * @return elapsed time all (including this one) legs.
+     * @return  Elapsed time all (including this one) legs.
      */
     inline double getElapsedTimeOverAllLegs() const
     {
@@ -152,7 +152,7 @@ class TimeMeasure
     /**
      * @brief   Get time spent in previous legs.
      * @details Get time spent in previous legs.
-     * @return  elapsed time over previous legs.
+     * @return  Elapsed time over previous legs.
      */
     inline double getElapsedTimeOverPreviousLegs() const
     {

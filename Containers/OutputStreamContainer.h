@@ -1,38 +1,37 @@
 /**
- * @file        OutputStreamContainer.h
+ * @file      OutputStreamContainer.h
  *
- * @author      Jiri Jaros & Beau Johnston \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The header file defining the output stream container.
+ * @brief     The header file defining the output stream container.
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        04 December  2014, 11:00 (created)
- *              11 August    2017, 09:36 (revised)
+ * @date      04 December  2014, 11:00 (created) \n
+ *            04 September 2017, 08:42 (revised)
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 #ifndef OUTPUT_STREAM_CONTAINER_H
 #define OUTPUT_STREAM_CONTAINER_H
 
-#include <cstring>
 #include <map>
 
 #include <Containers/MatrixContainer.h>
@@ -55,7 +54,7 @@ class OutputStreamContainer
       * @enum    OutputStreamIdx
       * @brief   Output streams identifiers in k-Wave.
       * @details Output streams identifiers in k-Wave.
-      * @warning the order of Idxs is mandatory! it determines the order of sampling and is used for
+      * @warning The order of Idxs is mandatory! it determines the order of sampling and is used for
       *          hiding the PCI-E latency
       */
     enum class OutputStreamIdx
@@ -143,7 +142,7 @@ class OutputStreamContainer
      * @brief   Is the container empty?
      * @return  true - If the container is empty.
      */
-    inline bool isEmpty() const
+    inline bool empty() const
     {
       return mContainer.empty();
     };
@@ -153,7 +152,7 @@ class OutputStreamContainer
      * @param [in] outputStreamIdx - Id of the output stream.
      * @return An element of the container.
      */
-    BaseOutputStream& operator[] (const OutputStreamIdx outputStreamIdx)
+    BaseOutputStream& operator[](const OutputStreamIdx outputStreamIdx)
     {
       return (* (mContainer[outputStreamIdx]));
     };
@@ -195,19 +194,20 @@ class OutputStreamContainer
 
    private:
     /**
-     * Create a new output stream.
+     * @brief Create a new output stream.
+     *
      * @param [in] matrixContainer  - Name of the HDF5 dataset or group
      * @param [in] sampledMatrixIdx - Code id of the matrix
-     * @param [in] fileDatasetName  - Name of the HDF5 dataset or group
+     * @param [in] fileObjectName   - Name of the HDF5 dataset or group
      * @param [in] reduceOp         - Reduce operator
      *
      * @return New output stream with defined links
      *
      */
-    BaseOutputStream* createNewOutputStream(MatrixContainer&                       matrixContainer,
-                                            const MatrixContainer::MatrixIdx       sampledMatrixIdx,
-                                            const MatrixName&                      fileDatasetName,
-                                            const BaseOutputStream::ReduceOperator reduceOp);
+    BaseOutputStream* createOutputStream(MatrixContainer&                       matrixContainer,
+                                         const MatrixContainer::MatrixIdx       sampledMatrixIdx,
+                                         const MatrixName&                      fileObjectName,
+                                         const BaseOutputStream::ReduceOperator reduceOp);
 
     /// Map with output streams.
     std::map<OutputStreamIdx, BaseOutputStream*> mContainer;

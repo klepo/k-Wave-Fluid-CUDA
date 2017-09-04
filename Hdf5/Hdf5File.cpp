@@ -1,39 +1,38 @@
 /**
- * @file        Hdf5File.cpp
+ * @file      Hdf5File.cpp
  *
- * @author      Jiri Jaros              \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The implementation file containing the HDF5 related classes.
+ * @brief     The implementation file containing class managing HDF5 files .
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        27 July     2012, 14:14 (created) \n
- *              15 August   2017, 10:57 (revised)
+ * @date      27 July     2012, 14:14 (created) \n
+ *            28 August   2017, 15:59 (revised)
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 
 #include <iostream>
 #include <stdexcept>
 #include <ctime>
-#include <type_traits>
 
 // Linux build
 #ifdef __linux__
@@ -62,11 +61,10 @@ using std::string;
 const string Hdf5File::kMatrixDomainTypeName    = "domain_type";
 const string Hdf5File::kMatrixDataTypeName      = "data_type";
 
-const string Hdf5File::kMatrixDomainTypeNames[] = {"real","complex"};
-const string Hdf5File::kMatrixDataTypeNames[]   = {"float","long"};
+const string Hdf5File::kMatrixDomainTypeNames[] = {"real", "complex"};
+const string Hdf5File::kMatrixDataTypeNames[]   = {"float", "long"};
 
 //--------------------------------------------------------------------------------------------------------------------//
-//-------------------------------------------------    Hdf5File    ---------------------------------------------------//
 //------------------------------------------------- Public methods ---------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
 
@@ -86,7 +84,7 @@ Hdf5File::Hdf5File()
 Hdf5File::~Hdf5File()
 {
   if (isOpen()) close();
-}//end of ~Hdf5File
+}//end of destrucotr
 //----------------------------------------------------------------------------------------------------------------------
 
 
@@ -132,7 +130,7 @@ void Hdf5File::open(const string& fileName,
 
   if (H5Fis_hdf5(cFileName) == 0)
   {
-    throw ios::failure(Logger::formatMessage(kErrFmtNOtHdf5File, cFileName));
+    throw ios::failure(Logger::formatMessage(kErrFmtNotHdf5File, cFileName));
   }
 
   mFile = H5Fopen(cFileName, flags, H5P_DEFAULT);
@@ -176,7 +174,6 @@ void Hdf5File::close()
   mFile = H5I_BADID;
 }// end of close
 //----------------------------------------------------------------------------------------------------------------------
-
 
 
 /**
@@ -557,7 +554,7 @@ void Hdf5File::writeScalarValue(const hid_t parentGroup,
                                 MatrixName& datasetName,
                                 const T     value)
 {
-  const int rank = 3;
+  constexpr int rank = 3;
   const hsize_t dims[] = {1, 1, 1};
 
   hid_t  dataset   = H5I_INVALID_HID;
@@ -750,7 +747,7 @@ DimensionSizes Hdf5File::getDatasetDimensionSizes(const hid_t parentGroup,
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Get number of dimensions of the dataset  under a specified group.
+ * Get number of dimensions of the dataset under a specified group.
  */
 size_t Hdf5File::getDatasetNumberOfDimensions(const hid_t parentGroup,
                                               MatrixName& datasetName)

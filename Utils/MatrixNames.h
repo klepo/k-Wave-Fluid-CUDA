@@ -1,33 +1,32 @@
 /**
- * @file        MatrixNames.h
+ * @file      MatrixNames.h
  *
- * @author      Jiri Jaros              \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The header file storing names of all variables/matrices/output streams used in the
- *              simulation
+ * @brief     The header file storing names of all variables/matrices/output streams used in the simulation
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        14 September 2012, 17:28 (created) \n
- *              15 August    2017, 10:50 (revised)
+ * @date      14 September 2012, 17:28 (created) \n
+ *            28 August    2017, 16:22 (revised)
  *
- * @section License
- * This file is part of the C++ extension of thq-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 #ifndef MATRIX_NAMES_H
@@ -90,9 +89,9 @@ MatrixName kUzShiftedName  = "uz_shifted";
 /// pml_x_size variable name
 MatrixName kPmlXSizeName   = "pml_x_size";
 /// pml_y_size variable name
-MatrixName kPmlYSizeName   = "pml_z_size";
+MatrixName kPmlYSizeName   = "pml_y_size";
 /// pml_z_size variable name
-MatrixName kPmlZSizeName   = "pml_y_size";
+MatrixName kPmlZSizeName   = "pml_z_size";
 
 /// pml_x_sgx variable name
 MatrixName kPmlXSgxName    = "pml_x_sgx";
@@ -172,7 +171,7 @@ MatrixName kSensorMaskCornersName    = "sensor_mask_corners";
 MatrixName kTransducerSourceInputName = "transducer_source_input";
 
 /// p0_source_input variable name
-MatrixName kP0SourceInputName = "p0_source_input";
+MatrixName kInitialPressureSourceInputName = "p0_source_input";
 /// delay_mask variable name
 MatrixName kDelayMaskName     = "delay_mask";
 

@@ -1,33 +1,32 @@
 /**
- * @file        MatrixContainer.h
+ * @file      MatrixContainer.h
  *
- * @author      Jiri Jaros              \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The header file containing the matrix container and the related
- *              matrix record class.
+ * @brief     The header file containing the matrix container.
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        02 December  2014, 16:17 (created) \n
- *              11 August    2017, 10:14 (revised)
+ * @date      02 December  2014, 16:17 (created) \n
+ *            28 August    2017, 15:57 (revised)
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 #ifndef MATRIX_CONTAINER_H
@@ -205,7 +204,7 @@ class MatrixContainer
       kTempCufftZ,
       /// Temporary matrix for cufft shift.
       kTempCufftShift
-    };// end of TMatrixID
+    };// end of MatrixIdx
 
 
 
@@ -232,7 +231,7 @@ class MatrixContainer
      * @brief  Is the container empty?
      * @return true - If the container is empty.
      */
-    inline bool isEmpty() const
+    inline bool empty() const
     {
       return mContainer.empty();
     };
@@ -272,22 +271,13 @@ class MatrixContainer
     /// Destroy and free all matrices.
     void freeMatrices();
 
-    /**
-     * @brief Load all marked matrices from the input HDF5 file.
-     * @param [in] inputFile - HDF5 input file handle.
-     */
-    void loadDataFromInputFile(Hdf5File& inputFile);
-    /**
-     * @brief Load selected matrices from the checkpoint HDF5 file.
-     * @param [in] checkpointFile - HDF5 checkpoint file handle.
-     */
-    void loadDataFromCheckpointFile(Hdf5File& checkpointFile);
-    /**
-     * @brief   Store selected matrices into the checkpoint file.
-     * @details Data is automatically downloaded from device memory.
-     * @param [in] checkpointFile - Checkpoint file
-     */
-    void storeDataIntoCheckpointFile(Hdf5File& checkpointFile);
+    /// Load all marked matrices from the input HDF5 file.
+    void loadDataFromInputFile();
+
+    /// Load selected matrices from the checkpoint HDF5 file.
+    void loadDataFromCheckpointFile();
+    /// Store selected matrices into the checkpoint file.
+    void storeDataIntoCheckpointFile();
 
     /// Copy all matrices from host to device (CPU -> GPU).
     void copyMatricesToDevice();

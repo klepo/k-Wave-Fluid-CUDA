@@ -1,32 +1,32 @@
 /**
- * @file        SolverCudaKernels.cuh
+ * @file      SolverCudaKernels.cuh
  *
- * @author      Jiri Jaros \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       Name space for all CUDA kernels used in the 3D solver
+ * @brief     The header file for all cuda kernels of the GPU implementation used in the 3D solver.
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        11 March    2013, 13:10 (created) \n
- *              15 August   2017, 14:15 (revised)
+ * @date      11 March     2013, 13:10 (created) \n
+ *            28 August    2017, 15:19 (revised)
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 #ifndef SOLVER_CUDA_KERNELS_H
@@ -161,7 +161,7 @@ namespace SolverCudaKernels
   //--------------------------------------------------- Sources ------------------------------------------------------//
 
   /**
-   * @brief Add transducer data  source to velocity x component.
+   * @brief Add transducer data source to velocity x component.
    *
    * @param [in, out] uxSgx                 - Here we add the signal.
    * @param [in]      velocitySourceIndex   - Where to add the signal (source geometry).
@@ -248,9 +248,9 @@ namespace SolverCudaKernels
    * @param [in, out] uySgy - Velocity matrix in y direction.
    * @param [in, out] uzSgz - Velocity matrix in y direction.
    */
-  void computeInitialVelocity(RealMatrix& uxSgx,
-                              RealMatrix& uySgy,
-                              RealMatrix& uzSgz);
+  void computeInitialVelocityHomogeneousUniform(RealMatrix& uxSgx,
+                                                RealMatrix& uySgy,
+                                                RealMatrix& uzSgz);
 
   /**
    * @brief Compute acoustic velocity for initial pressure problem, homogenous medium, non-uniform grid.
@@ -503,7 +503,7 @@ namespace SolverCudaKernels
                               const float*      absorbEtaData);
 
   /**
-   * @brief Sum sub-terms for new p, linear lossless case.
+   * @brief Sum sub-terms for new pressure, linear lossless case.
    * @param [out] p            - New value of pressure
    * @param [in]  rhoX         - Acoustic density in x direction.
    * @param [in]  rhoY         - Acoustic density in y direction.
@@ -527,7 +527,7 @@ namespace SolverCudaKernels
                                     const float*      rho0Data);
 
   /**
-   * @brief Sum sub-terms for new p, linear lossless case.
+   * @brief Sum sub-terms for new pressure, linear lossless case.
    *
    * @param [out] p          - New value of pressure
    * @param [in]  rhoX       - Acoustic density in x direction.

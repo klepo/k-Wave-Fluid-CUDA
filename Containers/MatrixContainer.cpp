@@ -1,32 +1,32 @@
 /**
- * @file        MatrixContainer.cpp
+ * @file      MatrixContainer.cpp
  *
- * @author      Jiri Jaros              \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The implementation file containing the matrix container.
+ * @brief     The implementation file containing the matrix container.
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        02 December  2014, 16:17 (created) \n
- *              10 August    2017, 10:13 (revised)
+ * @date      02 December  2014, 16:17 (created) \n
+ *            28 August    2017, 15:11 (revised)
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 #include <stdexcept>
@@ -229,7 +229,7 @@ void MatrixContainer::addMatrices()
   // if Intial pressure source flag
   if (params.getInitialPressureSourceFlag() == 1)
   {
-    mContainer[MI::kInitialPressureSourceInput].set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kP0SourceInputName);
+    mContainer[MI::kInitialPressureSourceInput].set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kInitialPressureSourceInputName);
   }
 
   // Velocity cource index
@@ -430,8 +430,10 @@ void MatrixContainer::freeMatrices()
 /**
  * Load all marked matrices from the input HDF5 file.
  */
-void MatrixContainer::loadDataFromInputFile(Hdf5File& inputFile)
+void MatrixContainer::loadDataFromInputFile()
 {
+  Hdf5File& inputFile = Parameters::getInstance().getInputFile();
+
   for (const auto& it : mContainer)
   {
     if (it.second.loadData)
@@ -445,8 +447,10 @@ void MatrixContainer::loadDataFromInputFile(Hdf5File& inputFile)
 /**
  * Load selected matrices from the checkpoint HDF5 file.
  */
-void MatrixContainer::loadDataFromCheckpointFile(Hdf5File& checkpointFile)
+void MatrixContainer::loadDataFromCheckpointFile()
 {
+  Hdf5File& checkpointFile = Parameters::getInstance().getCheckpointFile();
+
   for (const auto& it : mContainer)
   {
     if (it.second.checkpoint)
@@ -460,8 +464,10 @@ void MatrixContainer::loadDataFromCheckpointFile(Hdf5File& checkpointFile)
 /**
  * Store selected matrices into the checkpoint file.
  */
-void MatrixContainer::storeDataIntoCheckpointFile(Hdf5File& checkpointFile)
+void MatrixContainer::storeDataIntoCheckpointFile()
 {
+  Hdf5File& checkpointFile = Parameters::getInstance().getCheckpointFile();
+
   for (const auto& it : mContainer)
   {
     if (it.second.checkpoint)

@@ -1,32 +1,32 @@
 /**
- * @file        CommandLineParameters.cpp
+ * @file      CommandLineParameters.cpp
  *
- * @author      Jiri Jaros              \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The implementation file containing the command line parameters.
+ * @brief     The implementation file containing the command line parameters.
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        29 August   2012, 11:25 (created) \n
- *              11 August   2017, 15:49 (revised)
+ * @date      29 August    2012, 11:25 (created) \n
+ *            04 September 2017, 08:45 (revised)
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 //Linux build
@@ -43,13 +43,12 @@
   #include <omp.h>
 #endif
 
-
+#include <cstring>
 #include <stdexcept>
 
 #include <Logger/Logger.h>
 #include <Parameters/CudaParameters.h>
 #include <Parameters/CommandLineParameters.h>
-#include <Hdf5/Hdf5File.h>
 
 using std::string;
 
@@ -72,14 +71,14 @@ void CommandLineParameters::printUsage()
 
   #ifdef _OPENMP
     Logger::log(Logger::LogLevel::kBasic,
-                 kOutFmtUsageThreads,
-                 omp_get_num_procs());
+                kOutFmtUsageThreads,
+                omp_get_num_procs());
   #endif
 
   Logger::log(Logger::LogLevel::kBasic,
-               kOutFmtUsagePart2,
-               kDefaultProgressPrintInterval,
-               kDefaultCompressionLevel);
+              kOutFmtUsagePart2,
+              kDefaultProgressPrintInterval,
+              kDefaultCompressionLevel);
 }// end of printUsage
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -236,9 +235,9 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
     { "copy_sensor_mask",     no_argument,       nullptr, 2 },
     { "checkpoint_file"    ,  required_argument, nullptr, 3 },
     { "checkpoint_interval",  required_argument, nullptr, 4 },
-    { "help",                 no_argument, nullptr,      'h'},
+    { "help",                 no_argument,       nullptr,'h'},
     { "verbose",              required_argument, nullptr, 5 },
-    { "version",              no_argument, nullptr,       6 },
+    { "version",              no_argument,       nullptr, 6 },
 
     { "p_raw",                no_argument, nullptr,'p' },
     { "p_rms",                no_argument, nullptr, 10 },

@@ -1,32 +1,32 @@
 /**
- * @file        Parameters.h
+ * @file      Parameters.h
  *
- * @author      Jiri Jaros              \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The header file containing the parameters of the simulation.
+ * @brief     The header file containing the parameters of the simulation.
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        08 December 2011, 16:34 (created)      \n
- *              11 August   2017, 15:32 (revised)
+ * @date      08 December  2011, 16:34 (created) \n
+ *            28 August    2017, 15:05 (revised)
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 #ifndef PARAMETERS_H
@@ -139,31 +139,31 @@ class Parameters
      * @brief Get number of CPU threads to use.
      * @return Number of CPU threads to use.
      */
-    size_t getNumberOfThreads()        const { return mCommandLineParameters.getNumberOfThreads(); };
+    size_t getNumberOfThreads()       const { return mCommandLineParameters.getNumberOfThreads(); };
 
     /**
      * @brief  Get compression level.
      * @return Compression level value for output and checkpoint files.
      */
-    size_t getCompressionLevel()       const { return mCommandLineParameters.getCompressionLevel(); };
+    size_t getCompressionLevel()      const { return mCommandLineParameters.getCompressionLevel(); };
 
     /**
      * @brief Get progress print interval.
      * @return How often to print progress.
      */
-    size_t getProgressPrintInterval()  const { return mCommandLineParameters.getProgressPrintInterval(); };
+    size_t getProgressPrintInterval() const { return mCommandLineParameters.getProgressPrintInterval(); };
 
 
     /**
      * @brief  Is checkpoint enabled?
      * @return true if checkpointing is enabled.
      */
-    bool   isCheckpointEnabled()        const { return mCommandLineParameters.isCheckpointEnabled(); };
+    bool   isCheckpointEnabled()       const { return mCommandLineParameters.isCheckpointEnabled(); };
     /**
      * @brief  Get checkpoint interval.
      * @return Checkpoint interval in seconds.
      */
-    size_t getCheckpointInterval()      const { return mCommandLineParameters.getCheckpointInterval(); };
+    size_t getCheckpointInterval()     const { return mCommandLineParameters.getCheckpointInterval(); };
 
     //---------------------------------------------------- Files -----------------------------------------------------//
     /**
@@ -277,7 +277,7 @@ class Parameters
      * @return Sound speed.
      */
     float  getC0Scalar()        const { return mC0Scalar; };
-   /**
+    /**
      * @brief  Get scalar value of sound speed squared.
      * @return Sound speed.
      */
@@ -585,7 +585,7 @@ class Parameters
      * @brief  Is --u_max set?
      * @return True if the flag is set.
      */
-    bool getVelocityMaxFlag()              const { return mCommandLineParameters.getStoreVelocityMaxFlag(); };
+    bool getStoreVelocityMaxFlag()              const { return mCommandLineParameters.getStoreVelocityMaxFlag(); };
     /**
      * @brief  Is --u_min set?
      * @return True if the flag is set.
@@ -600,7 +600,7 @@ class Parameters
      * @brief  Is --u_min set?
      * @return True if the flag is set.
      */
-    bool getStoreStoreVelocityMinAllFlag() const { return mCommandLineParameters.getStoreVelocityMinAllFlag(); };
+    bool getStoreVelocityMinAllFlag() const { return mCommandLineParameters.getStoreVelocityMinAllFlag(); };
     /**
      * @brief  Is --u_final set?
      * @return True if the flag is set.
@@ -727,7 +727,7 @@ class Parameters
     size_t mPressureSourceIndexSize;
     /// Spatial size of the transducer source.
     size_t mTransducerSourceInputSize;
-    /// Spatial size of the velocity source.
+    /// Spatial size of the velocity source.e
     size_t mVelocitySourceIndexSize;
 
     /// Pressure source mode.
@@ -736,9 +736,10 @@ class Parameters
     size_t mPressureSourceMany;
 
     /// Velocity source mode.
-    size_t mVelocitySourceMany;
-    /// Number of time series in the velocity sources.
     size_t mVelocitySourceMode;
+    /// Number of time series in the velocity sources.
+    size_t mVelocitySourceMany;
+
 
     /// Sensor mask type (index / corners).
     SensorMaskType mSensorMaskType;

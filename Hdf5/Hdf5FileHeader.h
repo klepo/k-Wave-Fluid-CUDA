@@ -1,84 +1,79 @@
 /**
- * @file        Hdf5FileHeader.h
+ * @file      Hdf5FileHeader.h
  *
- * @author      Jiri Jaros              \n
- *              Faculty of Information Technology \n
- *              Brno University of Technology \n
- *              jarosjir@fit.vutbr.cz
+ * @author    Jiri Jaros \n
+ *            Faculty of Information Technology \n
+ *            Brno University of Technology \n
+ *            jarosjir@fit.vutbr.cz
  *
- * @brief       The header file containing the HDF5 header class. Detail about the file header are described
+ * @brief     The header file containing the class processing file headers.
+ *            Detail about the file header are described below.
  *
- * @version     kspaceFirstOrder3D 3.4
+ * @version   kspaceFirstOrder3D 3.5
  *
- * @date        20 July     2017, 14:42 (created) \n
- *              11 August   2017, 10:23 (revised)
+ * @date      20 July      2017, 14:42 (created) \n
+ *            28 August    2017, 15:03 (revised)
  *
- * @section Hdf5FileHeader HDF5 File Header Structure
+ * @section   Hdf5FileHeader HDF5 File Header Structure
  *
  *The header includes following information
  *
  * \verbatim
-==============================================================================================================
-                                        Input File/Checkpoint File Header
-=============================================================================================================
-created_by                              Short description of the tool that created this file
-creation_date                           Date when the file was created
-file_description                        Short description of the content of the file (e.g. simulation name)
-file_type                               Type of the file (input)
-major_version                           Major version of the file definition (1)
-minor_version                           Minor version of the file definition (1)
-==============================================================================================================
++----------------------------------------------------------------------------------------------------------------------+
+|                                           Input File / Checkpoint File Header                                        |
++----------------------------------------------------------------------------------------------------------------------+
+| created_by                              Short description of the tool that created this file                         |
+| creation_date                           Date when the file was created                                               |
+| file_description                        Short description of the content of the file (e.g. simulation name)          |
+| file_type                               Type of the file (input)                                                     |
+| major_version                           Major version of the file definition (1)                                     |
+| minor_version                           Minor version of the file definition (1)                                     |
++----------------------------------------------------------------------------------------------------------------------+
  \endverbatim
  *
  * \verbatim
-==============================================================================================================
-                                        Output File Header
-==============================================================================================================
-created_by                              Short description of the tool that created this file
-creation_date                           Date when the file was created
-file_description                        Short description of the content of the file (e.g. simulation name)
-file_type                               Type of the file (output)
-major_version                           Major version of the file definition (1)
-minor_version                           Minor version of the file definition (1)
--------------------------------------------------------------------------------------------------------------
-host_names                              List of hosts (computer names) the simulation was executed on
-number_of_cpu_cores                     Number of CPU cores used for the simulation
-data_loading_phase_execution_time       Time taken to load data from the file
-pre-processing_phase_execution_time     Time taken to pre-process data
-simulation_phase_execution_time         Time taken to run the simulation
-post-processing_phase_execution_time    Time taken to complete the post-processing phase
-total_execution_time                    Total execution time
-peak_core_memory_in_use                 Peak memory required per core during the simulation
-total_memory_in_use Total               Peak memory in use
-==============================================================================================================
++----------------------------------------------------------------------------------------------------------------------+
+|                                                    Output File Header                                                |
++----------------------------------------------------------------------------------------------------------------------+
+| created_by                              Short description of the tool that created this file                         |
+| creation_date                           Date when the file was created                                               |
+| file_description                        Short description of the content of the file (e.g. simulation name)          |
+| file_type                               Type of the file (output)                                                    |
+| major_version                           Major version of the file definition (1)                                     |
+| minor_version                           Minor version of the file definition (1)                                     |
++----------------------------------------------------------------------------------------------------------------------+
+| host_names                              List of hosts (computer names) the simulation was executed on                |
+| number_of_cpu_cores                     Number of CPU cores used for the simulation                                  |
+| data_loading_phase_execution_time       Time taken to load data from the file                                        |
+| pre-processing_phase_execution_time     Time taken to pre-process data                                               |
+| simulation_phase_execution_time         Time taken to run the simulation                                             |
+| post-processing_phase_execution_time    Time taken to complete the post-processing phase                             |
+| total_execution_time                    Total execution time                                                         |
+| peak_core_memory_in_use                 Peak memory required per core during the simulation                          |
+| total_memory_in_use Total               Peak memory in use                                                           |
++----------------------------------------------------------------------------------------------------------------------+
  \endverbatim
  *
  *
+ * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
+ * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
- * @section License
- * This file is part of the C++ extension of the k-Wave Toolbox
- * (http://www.k-wave.org).\n Copyright (C) 2016 Jiri Jaros and Bradley Treeby.
+ * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify it under the terms
+ * of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- * This file is part of the k-Wave. k-Wave is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
- * General Public License for more details.
+ * k-Wave is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU Lesser General Public License along with k-Wave.
- * If not, see http://www.gnu.org/licenses/.
+ * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
 #ifndef HDF5_FILE_HEADER_H
 #define HDF5_FILE_HEADER_H
 
-
-#include <hdf5.h>
-#include <hdf5_hl.h>
-#include <cstring>
 #include <map>
 
 #include <Hdf5/Hdf5File.h>
@@ -132,7 +127,7 @@ class Hdf5FileHeader
       /// Time to postprocess data.
       kPostProcessingTime     = 13,
       /// Number of cores the simulation was executed.
-      kNumberofCores          = 14
+      kNumberOfCores          = 14
     };
 
     /**
@@ -317,36 +312,36 @@ class Hdf5FileHeader
                            const double preProcessingTime,
                            const double simulationTime,
                            const double postprocessingTime);
-  /**
-   * @brief Get execution times stored in the output file header.
-   *
-   * @param [out] totalTime          - Total time.
-   * @param [out] loadTime           - Time to load data.
-   * @param [out] preProcessingTime  - Preprocessing time.
-   * @param [out] simulationTime     - Simulation time.
-   * @param [out] postprocessingTime - Post processing time.
-   */
-  void getExecutionTimes(double& totalTime,
-                         double& loadTime,
-                         double& preProcessingTime,
-                         double& simulationTime,
-                         double& postprocessingTime);
-  /// Set number of cores.
-  void setNumberOfCores();
+    /**
+     * @brief Get execution times stored in the output file header.
+     *
+     * @param [out] totalTime          - Total time.
+     * @param [out] loadTime           - Time to load data.
+     * @param [out] preProcessingTime  - Preprocessing time.
+     * @param [out] simulationTime     - Simulation time.
+     * @param [out] postprocessingTime - Post processing time.
+     */
+    void getExecutionTimes(double& totalTime,
+                           double& loadTime,
+                           double& preProcessingTime,
+                           double& simulationTime,
+                           double& postprocessingTime);
+    /// Set number of cores.
+    void setNumberOfCores();
 
-private:
+  private:
 
-  /// map for the header values.
-  std::map<FileHeaderItems, std::string> mHeaderValues;
-  /// map for the header names.
-  static std::map<FileHeaderItems, std::string> sHeaderNames;
+    /// map for the header values.
+    std::map<FileHeaderItems, std::string> mHeaderValues;
+    /// map for the header names.
+    static std::map<FileHeaderItems, std::string> sHeaderNames;
 
-  ///String representation of different file types.
-  static const std::string kFileTypesNames[];
-  /// String representations of Major file versions.
-  static const std::string kMajorFileVersionsNames[];
-  /// String representations of Major file versions.
-  static const std::string kMinorFileVersionsNames[];
+    ///String representation of different file types.
+    static const std::string kFileTypesNames[];
+    /// String representations of Major file versions.
+    static const std::string kMajorFileVersionsNames[];
+    /// String representations of Major file versions.
+    static const std::string kMinorFileVersionsNames[];
 
 };// Hdf5FileHeader
 //----------------------------------------------------------------------------------------------------------------------

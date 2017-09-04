@@ -3,14 +3,13 @@
     <type>org.netbeans.modules.cnd.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>k-wave-fluid-cuda 3.4</name>
+            <name>k-wave-fluid-cuda 3.5</name>
             <c-extensions/>
             <cpp-extensions>cpp,cu</cpp-extensions>
             <header-extensions>cuh,h</header-extensions>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
             <sourceRootList>
-                <sourceRootElem>CUDA</sourceRootElem>
                 <sourceRootElem>Hdf5</sourceRootElem>
                 <sourceRootElem>KSpaceSolver</sourceRootElem>
                 <sourceRootElem>MatrixClasses</sourceRootElem>
