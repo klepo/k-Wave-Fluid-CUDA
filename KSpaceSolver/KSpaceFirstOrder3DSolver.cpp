@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            28 August    2017, 15:19 (revised)
+ *            04 September 2017, 08:43 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -1988,13 +1988,13 @@ void KSpaceFirstOrder3DSolver::checkOutputFile()
 
  if (mParameters.getFullDimensionSizes() != outputDimSizes)
  {
-   throw ios::failure(Logger::formatMessage(kErrFmtOutputDimensionsMismatch,
-                                            outputDimSizes.nx,
-                                            outputDimSizes.ny,
-                                            outputDimSizes.nz,
-                                            mParameters.getFullDimensionSizes().nx,
-                                            mParameters.getFullDimensionSizes().ny,
-                                            mParameters.getFullDimensionSizes().nz));
+    throw ios::failure(Logger::formatMessage(kErrFmtOutputDimensionsMismatch,
+                                             outputDimSizes.nx,
+                                             outputDimSizes.ny,
+                                             outputDimSizes.nz,
+                                             mParameters.getFullDimensionSizes().nx,
+                                             mParameters.getFullDimensionSizes().ny,
+                                             mParameters.getFullDimensionSizes().nz));
  }
 }// end of checkOutputFile
 //----------------------------------------------------------------------------------------------------------------------

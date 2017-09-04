@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      04 December  2014, 11:00 (created) \n
- *            28 August    2017, 15:12 (revised)
+ *            04 September 2017, 08:42 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -32,7 +32,6 @@
 #ifndef OUTPUT_STREAM_CONTAINER_H
 #define OUTPUT_STREAM_CONTAINER_H
 
-#include <cstring>
 #include <map>
 
 #include <Containers/MatrixContainer.h>

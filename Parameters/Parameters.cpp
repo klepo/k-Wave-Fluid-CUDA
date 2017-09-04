@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      09 August    2012, 13:39 (created) \n
- *            28 August    2017, 16:11 (revised)
+ *            04 September 2017, 08:46 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -133,7 +133,6 @@ void Parameters::init(int argc, char** argv)
 }// end of parseCommandLine
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Select a device device for execution.
  */
@@ -150,7 +149,6 @@ void Parameters::selectDevice()
   Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceName, mCudaParameters.getDeviceName().c_str());
 }// end of selectDevice
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Print parameters of the simulation based in the actual level of verbosity.
@@ -182,9 +180,8 @@ void Parameters::printSimulatoinSetup()
   {
     Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSensorMaskCuboid);
   }
-}// end of printParametersOfTask
+}// end of printSimulatoinSetup
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Read scalar values from the input HDF5 file.
@@ -500,7 +497,6 @@ string Parameters::getGitHash() const
 #endif
 }// end of getGitHash
 //----------------------------------------------------------------------------------------------------------------------
-
 
 
 //--------------------------------------------------------------------------------------------------------------------//

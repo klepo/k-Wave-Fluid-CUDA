@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      20 July      2017, 14:54 (created) \n
- *            28 August    2017, 16:00 (revised)
+ *            04 September 2017, 08:42 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -287,7 +287,7 @@ void Hdf5FileHeader::writeHeaderToCheckpointFile(Hdf5File& checkpointFile)
  */
 void Hdf5FileHeader::setActualCreationTime()
 {
-  struct tm *current;
+  struct tm* current;
   time_t now;
   time(&now);
   current = localtime(&now);

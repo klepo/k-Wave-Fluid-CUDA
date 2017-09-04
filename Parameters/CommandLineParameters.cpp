@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      29 August    2012, 11:25 (created) \n
- *            28 August    2017, 16:05 (revised)
+ *            04 September 2017, 08:45 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -49,7 +49,6 @@
 #include <Logger/Logger.h>
 #include <Parameters/CudaParameters.h>
 #include <Parameters/CommandLineParameters.h>
-#include <Hdf5/Hdf5File.h>
 
 using std::string;
 
@@ -72,14 +71,14 @@ void CommandLineParameters::printUsage()
 
   #ifdef _OPENMP
     Logger::log(Logger::LogLevel::kBasic,
-                 kOutFmtUsageThreads,
-                 omp_get_num_procs());
+                kOutFmtUsageThreads,
+                omp_get_num_procs());
   #endif
 
   Logger::log(Logger::LogLevel::kBasic,
-               kOutFmtUsagePart2,
-               kDefaultProgressPrintInterval,
-               kDefaultCompressionLevel);
+              kOutFmtUsagePart2,
+              kDefaultProgressPrintInterval,
+              kDefaultCompressionLevel);
 }// end of printUsage
 //----------------------------------------------------------------------------------------------------------------------
 

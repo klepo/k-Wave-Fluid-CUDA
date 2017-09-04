@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      26 July      2011, 14:17 (created) \n
- *            28 August    2017, 16:14 (revised)
+ *            04 September 2017, 08:45 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -135,7 +135,7 @@ class BaseIndexMatrix : public BaseMatrix
 
   private:
 
-};// end of BaseLongMatrix
+};// end of BaseIndexMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
 #endif /* BASE_INDEX_MATRIX_H */

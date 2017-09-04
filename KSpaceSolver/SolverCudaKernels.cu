@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            28 August    2017, 15:19 (revised)
+ *            04 September 2017, 08:44 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -923,11 +923,11 @@ __global__ void cudaComputePressureGradient(cuFloatComplex*       ifftX,
   {
     const dim3 coords = getComplex3DCoords(i);
 
-    const cuFloatComplex pKappa = ifftX[i] * kappa[i];
+    const cuFloatComplex eKappa = ifftX[i] * kappa[i];
 
-    ifftX[i] = cuCmulf(pKappa, ddxKShiftPos[coords.x]);
-    ifftY[i] = cuCmulf(pKappa, ddyKShiftPos[coords.y]);
-    ifftZ[i] = cuCmulf(pKappa, ddzKShiftPos[coords.z]);
+    ifftX[i] = cuCmulf(eKappa, ddxKShiftPos[coords.x]);
+    ifftY[i] = cuCmulf(eKappa, ddyKShiftPos[coords.y]);
+    ifftZ[i] = cuCmulf(eKappa, ddzKShiftPos[coords.z]);
   }
 }// end of cudaComputePressureGradient
 //----------------------------------------------------------------------------------------------------------------------

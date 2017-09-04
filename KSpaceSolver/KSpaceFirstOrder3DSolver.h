@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.5
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            28 August    2017, 16:13 (revised)
+ *            04 September 2017, 08:44 (revised)
  *
  * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
  *
@@ -204,7 +204,7 @@ class KSpaceFirstOrder3DSolver
     /// Compute acoustic pressure for linear case.
     void computePressureLinear();
 
-    /// Add in velocity source
+    /// Add in velocity source.
     void addVelocitySource();
     /// Add in pressure source.
     void addPressureSource();
