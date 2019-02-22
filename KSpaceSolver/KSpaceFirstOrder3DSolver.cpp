@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            22 February  2019, 11:03 (revised)
+ *            22 February  2019, 12:31 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -496,14 +496,14 @@ void KSpaceFirstOrder3DSolver::printFullCodeNameAndLicense() const
   else
   {
     Logger::log(Logger::LogLevel::kBasic,
-                kOutFmtCudaRuntime,
+                ((cudaRuntimeVersion / 1000) < 10) ? kOutFmtCudaRuntime : kOutFmtCudaRuntime10,
                 cudaRuntimeVersion / 1000, (cudaRuntimeVersion % 100) / 10);
   }
 
   int cudaDriverVersion;
   cudaDriverGetVersion(&cudaDriverVersion);
   Logger::log(Logger::LogLevel::kBasic,
-              kOutFmtCudaDriver,
+              ((cudaDriverVersion / 1000) < 10) ? kOutFmtCudaDriver : kOutFmtCudaDriver10,
               cudaDriverVersion / 1000, (cudaDriverVersion % 100) / 10);
 
   const CudaParameters& cudaParameters = mParameters.getCudaParameters();

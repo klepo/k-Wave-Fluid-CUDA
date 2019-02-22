@@ -8,12 +8,12 @@
  *
  * @brief     The header file containing all windows specific messages going to the standard output.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      13 July      2016, 12:35 (created) \n
- *            16 August    2017, 13:49 (revised)
+ *            22 February  2019, 11:22 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
@@ -76,7 +76,7 @@ OutputMessage kOutFmtNumberOfThreads
 OutputMessage kOutFmtSimulationDetailsTitle
   = "+---------------------------------------------------------------+\n"
     "|                      Simulation details                       |\n"
-         "+---------------------------------------------------------------+\n";
+    "+---------------------------------------------------------------+\n";
 /// Output message
 OutputMessage kOutFmtInitializationHeader
   = "+---------------------------------------------------------------+\n"
@@ -165,7 +165,7 @@ OutputMessage kOutFmtGitHashLeft
 
 ///Output message
 OutputMessage kOutFmtKWaveVersion
-  = "kspaceFirstOrder3D-CUDA v1.2";
+  = "kspaceFirstOrder3D-CUDA v1.3";
 
 ///Output message
 OutputMessage kOutFmtFftPlans
@@ -275,7 +275,7 @@ OutputMessage kOutFmtBuildNoDataTime
   = "+---------------------------------------------------------------+\n"
     "|                       Build information                       |\n"
     "+---------------------------------------------------------------+\n"
-    "| Build number:     kspaceFirstOrder3D v3.5                     |\n"
+    "| Build number:     kspaceFirstOrder3D v3.6                     |\n"
     "| Build date:       %*.*s                                 |\n"
     "| Build time:       %*.*s                                    |\n";
 
@@ -327,11 +327,14 @@ OutputMessage kOutFmtCudaRuntimeNA
   = "| CUDA runtime:     N/A                                         |\n";
 /// Print version output message
 OutputMessage kOutFmtCudaRuntime
-  = "| CUDA runtime:     %d.%d                                         |\n";
+  = "│ CUDA runtime:     %d.%d                                         │\n";
 /// Print version output message
+OutputMessage kOutFmtCudaRuntime10
+  = "│ CUDA runtime:     %d.%d                                        │\n";
 OutputMessage kOutFmtCudaDriver
-  = "| CUDA driver:      %d.%d                                         |\n";
-
+  = "│ CUDA driver:      %d.%d                                         │\n";
+OutputMessage kOutFmtCudaDriver10
+  = "│ CUDA driver:      %d.%d                                        │\n";
 /// Print version output message
 OutputMessage kOutFmtCudaDeviceInfoNA
   = "| CUDA code arch:   N/A                                         |\n"
@@ -361,7 +364,7 @@ OutputMessage kOutFmtLicense
     "| Contact email:    jarosjir@fit.vutbr.cz                       |\n"
     "| Contact web:      http://www.k-wave.org                       |\n"
     "+---------------------------------------------------------------+\n"
-    "|       Copyright (C) 2017 Jiri Jaros and Bradley Treeby        |\n"
+    "|       Copyright (C) 2019 Jiri Jaros and Bradley Treeby        |\n"
     "+---------------------------------------------------------------+\n";
 
 
