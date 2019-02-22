@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      13 July      2016, 12:35 (created) \n
- *            22 February  2019, 11:22 (revised)
+ *            22 February  2019, 16:55 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -331,8 +331,10 @@ OutputMessage kOutFmtCudaRuntime
 /// Print version output message
 OutputMessage kOutFmtCudaRuntime10
   = "│ CUDA runtime:     %d.%d                                        │\n";
+/// Print version output message
 OutputMessage kOutFmtCudaDriver
   = "│ CUDA driver:      %d.%d                                         │\n";
+/// Print version output message
 OutputMessage kOutFmtCudaDriver10
   = "│ CUDA driver:      %d.%d                                        │\n";
 /// Print version output message
