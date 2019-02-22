@@ -8,12 +8,12 @@
  *
  * @brief     The header file containing the base class for 64b-wide integers implemented as size_t datatype.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      26 July      2011, 14:17 (created) \n
- *            04 September 2017, 08:45 (revised)
+ *            22 February  2019, 12:36 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *

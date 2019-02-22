@@ -8,12 +8,12 @@
  *
  * @brief     The header file with the class for complex matrices.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 July      2011, 14:02 (created) \n
- *            16 August    2017, 13:54 (revised)
+ *            22 February  2019, 12:36 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
@@ -120,5 +120,5 @@ private:
 };// end of ComplexMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* CUFFT_COMPLEX_MATRIX_H */
+#endif	/* COMPLEX_MATRIX_H */
 
