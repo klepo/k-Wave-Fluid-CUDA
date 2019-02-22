@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      29 August    2012, 11:25 (created) \n
- *            22 February  2019, 15:57 (revised)
+ *            22 February  2019, 21:11 (revised)
  *
  * @section   Params Command Line Parameters
  *
@@ -167,6 +167,8 @@
 ├───────────────────────────────┼───────────────────────────────┤
 │ -s <time_step>                │ When data collection begins   │
 │                               │   (default = 1)               │
+│ --copy_sensor_mask            │ Copy sensor mask to the       │
+│                               │    output file                │
 └───────────────────────────────┴───────────────────────────────┘
 \endverbatim
  *
