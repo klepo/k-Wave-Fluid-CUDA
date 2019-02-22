@@ -4,13 +4,13 @@
 # *              Faculty of Information Technology
 # *              Brno University of Technology 
 # * @email       jarosjir@fit.vutbr.cz
-# * @comments    Linux makefile for Release version on Ubuntu 16.04
+# * @comments    Linux makefile for Release version on Ubuntu 18.04
 # * 
-# * @tool        kspaceFirstOrder3D 3.5
+# * @tool        kspaceFirstOrder3D 3.6
 # * @created     02 December  2014, 12:32 
-# * @kastModif   21 August    2017, 14:23
+# * @kastModif   22 February  2019, 16:39
 # *
-# * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+# * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
 # *
 # * This file is part of the C++ extension of the k-Wave Toolbox 
 # * (http://www.k-wave.org). 
@@ -31,12 +31,12 @@
 # */
 
 ################################################################################
-# The source codes can be compiled ONLY under Linux x64 by GNU g++ 4.9 and     #
-# newer or Intel Compiler icpc 15 and newer. The newer compiler, the more      #
+# The source codes can be compiled ONLY under Linux x64 by GNU g++ 5.3 and     #
+# newer or Intel Compiler 2016 and newer. The newer compiler, the more         #
 # advanced instruction set can be used.                                        #
-# We recommend compilation with g++ 5.3/5.4 or icpc 16                         #
+# We recommend compilation with g++ 7.3 or Intel 2018                          #
 #                                                                              #
-# The code also requires CUDA 8.0, but can work with CUDA 9.0 RC1              #
+# The code also requires CUDA 10.0, but can work with CUDA 8.0 - 9.x           #
 # The code cannot be compiled with older versions of CUDA since                #
 # the incompatibility with the cuda FFT library.                               #
 #                                                                              #

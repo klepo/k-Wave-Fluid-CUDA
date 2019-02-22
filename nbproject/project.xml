@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.cnd.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>k-wave-fluid-cuda 3.5</name>
+            <name>k-wave-fluid-cuda 3.6</name>
             <c-extensions/>
             <cpp-extensions>cpp,cu</cpp-extensions>
             <header-extensions>cuh,h</header-extensions>
