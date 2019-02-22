@@ -8,12 +8,12 @@
  *
  * @brief     The implementation of the class responsible for working with file headers.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      20 July      2017, 14:54 (created) \n
- *            04 September 2017, 08:42 (revised)
+ *            22 February  2019, 10:59 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *

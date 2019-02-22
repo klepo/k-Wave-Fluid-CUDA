@@ -9,12 +9,12 @@
  * @brief     The header file containing k-space first order solver in 3D fluid medium. This is the main class
  *            controlling the simulation.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            04 September 2017, 08:44 (revised)
+ *            22 February  2019, 11:06 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *

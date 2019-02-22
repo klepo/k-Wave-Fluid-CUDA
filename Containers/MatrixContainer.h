@@ -8,12 +8,12 @@
  *
  * @brief     The header file containing the matrix container.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      02 December  2014, 16:17 (created) \n
- *            28 August    2017, 15:57 (revised)
+ *            21 February  2019, 20:41 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
@@ -207,7 +207,6 @@ class MatrixContainer
     };// end of MatrixIdx
 
 
-
     /// Constructor.
     MatrixContainer();
     /// Copy constructor is not allowed.
@@ -237,8 +236,8 @@ class MatrixContainer
     };
 
     /**
-     * @brief   operator[]
-     * @param [in]  matrixIdx - Matrix identifier
+     * @brief  operator[]
+     * @param  [in]  matrixIdx - Matrix identifier
      * @return Matrix record.
      */
     inline MatrixRecord& operator[](const MatrixIdx matrixIdx)
@@ -248,8 +247,7 @@ class MatrixContainer
 
     /**
      * @brief      Get the matrix with a specific type from the container.
-     * @details    This template routine returns the reference to the matrix re-casted to the specific
-     *             class type.
+     * @details    This template routine returns the reference to the matrix re-casted to the specific class type.
      * @param [in] matrixIdx - Matrix identifier,
      * @return     Reference to the Matrix,
      */
@@ -259,6 +257,9 @@ class MatrixContainer
       return static_cast<T&> (*(mContainer[matrixIdx].matrixPtr));
     };
 
+    /// Populate the container based on the simulation type.
+    void init();
+
     /**
      * @brief Create all matrix objects in the container.
      * @throw std::bad_alloc        - Usually due to out of memory.
@@ -266,14 +267,11 @@ class MatrixContainer
      * @throw std::invalid_argument - If matrix type is unknown.
      */
     void createMatrices();
-    /// Populate the container based on the simulation type.
-    void addMatrices();
     /// Destroy and free all matrices.
     void freeMatrices();
 
     /// Load all marked matrices from the input HDF5 file.
     void loadDataFromInputFile();
-
     /// Load selected matrices from the checkpoint HDF5 file.
     void loadDataFromCheckpointFile();
     /// Store selected matrices into the checkpoint file.

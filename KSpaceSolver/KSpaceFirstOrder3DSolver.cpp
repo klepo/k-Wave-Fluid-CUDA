@@ -10,12 +10,12 @@
  *            controlling the simulation.
 
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            04 September 2017, 08:43 (revised)
+ *            22 February  2019, 11:03 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
@@ -117,11 +117,11 @@ void KSpaceFirstOrder3DSolver::allocateMemory()
   Logger::flush(Logger::LogLevel::kBasic);
 
   // create container, then all matrices
-  mMatrixContainer.addMatrices();
+  mMatrixContainer.init();
   mMatrixContainer.createMatrices();
 
   // add output streams into container
-  mOutputStreamContainer.addStreams(mMatrixContainer);
+  mOutputStreamContainer.init(mMatrixContainer);
 
   Logger::log(Logger::LogLevel::kBasic, kOutFmtDone);
 }// end of allocateMemory
@@ -1968,7 +1968,7 @@ void KSpaceFirstOrder3DSolver::checkOutputFile()
   if (!fileHeader.checkMajorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMajorFileVersion,
-                                             mParameters.getCheckpointFileName().c_str(),
+                                             mParameters.getOutputFileName().c_str(),
                                              fileHeader.getFileMajorVersion().c_str()));
   }
 
@@ -1976,7 +1976,7 @@ void KSpaceFirstOrder3DSolver::checkOutputFile()
   if (!fileHeader.checkMinorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMinorFileVersion,
-                                             mParameters.getCheckpointFileName().c_str(),
+                                             mParameters.getOutputFileName().c_str(),
                                              fileHeader.getFileMinorVersion().c_str()));
   }
 

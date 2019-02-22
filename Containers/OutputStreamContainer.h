@@ -8,12 +8,12 @@
  *
  * @brief     The header file defining the output stream container.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      04 December  2014, 11:00 (created) \n
- *            04 September 2017, 08:42 (revised)
+ *            21 February  2019, 20:30 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
@@ -55,7 +55,7 @@ class OutputStreamContainer
       * @brief   Output streams identifiers in k-Wave.
       * @details Output streams identifiers in k-Wave.
       * @warning The order of Idxs is mandatory! it determines the order of sampling and is used for
-      *          hiding the PCI-E latency
+      *          hiding the PCI-E latency.
       */
     enum class OutputStreamIdx
     {
@@ -131,7 +131,7 @@ class OutputStreamContainer
 
     /**
      * @brief  Get size of the container.
-     * @return the size of the container
+     * @return the size of the container.
      */
     inline size_t size() const
     {
@@ -139,8 +139,8 @@ class OutputStreamContainer
     };
 
     /**
-     * @brief   Is the container empty?
-     * @return  true - If the container is empty.
+     * @brief  Is the container empty?
+     * @return true - If the container is empty.
      */
     inline bool empty() const
     {
@@ -148,8 +148,8 @@ class OutputStreamContainer
     };
 
     /**
-     * @brief operator []
-     * @param [in] outputStreamIdx - Id of the output stream.
+     * @brief  operator[]
+     * @param  [in] outputStreamIdx - Id of the output stream.
      * @return An element of the container.
      */
     BaseOutputStream& operator[](const OutputStreamIdx outputStreamIdx)
@@ -165,7 +165,7 @@ class OutputStreamContainer
      * @param [in] matrixContainer - Matrix container to link the steams with sampled matrices and
      *                               sensor masks.
      */
-    void addStreams(MatrixContainer& matrixContainer);
+    void init(MatrixContainer& matrixContainer);
 
     /// Create all streams - opens the datasets.
     void createStreams();
@@ -185,7 +185,7 @@ class OutputStreamContainer
     /// Checkpoint streams.
     void checkpointStreams();
 
-    /// Close all streams,  apply post-processing if necessary, flush data and close.
+    /// Close all streams, apply post-processing if necessary, flush data and close.
     void closeStreams();
     /// Free all streams - destroy them.
     void freeStreams();

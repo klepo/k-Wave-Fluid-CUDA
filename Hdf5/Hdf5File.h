@@ -8,10 +8,10 @@
  *
  * @brief     The header file containing class managing HDF5 files.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      27 July     2012, 14:14 (created) \n
- *            28 August   2017, 15:04 (revised)
+ *            22 February 2019, 11:00 (revised)
  *
  *
  * @section   HDF5File HDF5 File Structure
@@ -34,7 +34,7 @@
  * (http://www.hdfgroup.org/HDF5/doc/index.html).
  *
  *
- * kspaceFirstOrder3D-CUDA v1.2 uses the file format introduced in version 1.1. The code is happy to work with both
+ * kspaceFirstOrder3D-CUDA v1.3 uses the file format introduced in version 1.1. The code is happy to work with both
  * versions (1.0 and 1.1), however when working with an input file of version 1.0, some features are not supported,
  * namely the cuboid sensor mask, and <tt>u_non_staggered_raw</tt>. When running from within the actual MATLAB K-Wave
  * Toolbox, the files will always be generated in version 1.1.
@@ -300,6 +300,7 @@
 | Ny                          (1, 1, 1)       long           real                                                      |
 | Nz                          (1, 1, 1)       long           real                                                      |
 | Nt                          (1, 1, 1)       long           real                                                      |
+| t_index                     (1, 1, 1)       long           real                                                      |
 | dt                          (1, 1, 1)       float          real                                                      |
 | dx                          (1, 1, 1)       float          real                                                      |
 | dy                          (1, 1, 1)       float          real                                                      |
@@ -314,12 +315,6 @@
 | pml_y_alpha                 (1, 1, 1)       float          real                                                      |
 | pml_z_alpha                 (1, 1, 1)       float          real                                                      |
 |                                                                                                                      |
-| pml_x                       (Nx, 1, 1)      float          real                                                      |
-| pml_x_sgx                   (Nx, 1, 1)      float          real                                                      |
-| pml_y                       (1, Ny, 1)      float          real                                                      |
-| pml_y_sgy                   (1, Ny, 1)      float          real                                                      |
-| pml_z                       (1, 1, Nz)      float          real                                                      |
-| pml_z_sgz                   (1, 1, Nz)      float          real                                                      |
 +----------------------------------------------------------------------------------------------------------------------+
 | 4. Sensor Variables (present if --copy_sensor_mask)                                                                  |
 +----------------------------------------------------------------------------------------------------------------------+
@@ -440,7 +435,7 @@
  *
  *
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
