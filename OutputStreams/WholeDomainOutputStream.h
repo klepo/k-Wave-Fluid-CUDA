@@ -8,12 +8,12 @@
  *
  * @brief     The header file of the class saving whole RealMatrix into the output HDF5 file, e.g. p_max_all.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      28 August    2014, 10:20 (created) \n
- *            28 August    2017, 16:17 (revised)
+ *            22 February  2019, 15:46 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *

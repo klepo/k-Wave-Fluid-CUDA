@@ -9,12 +9,12 @@
  * @brief     The implementation file containing the base class for single precisions floating
  *            point numbers (floats).
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 July      2011, 12:13 (created) \n
- *            28 August    2017, 16:14 (revised)
+ *            22 February  2019, 12:36 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *

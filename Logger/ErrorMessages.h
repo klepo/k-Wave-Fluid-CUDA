@@ -10,12 +10,12 @@
  *            windows version. The specific error messages are in separate files ErrorMessagesLinux.h
  *            and ErrorMessagesWindows.h
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
 
  * @date      09 August    2011, 12:34 (created) \n
- *            28 August    2017, 15:06 (revised)
+ *            22 February  2019, 11:22 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *

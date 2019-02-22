@@ -8,12 +8,12 @@
  *
  * @brief     The implementation file containing the all cuda kernels for the GPU implementation.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            04 September 2017, 08:44 (revised)
+ *            22 February  2019, 11:04 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *

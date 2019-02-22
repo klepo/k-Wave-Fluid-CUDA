@@ -8,12 +8,12 @@
  *
  * @brief     The implementation file containing the matrix container.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      02 December  2014, 16:17 (created) \n
- *            28 August    2017, 15:11 (revised)
+ *            21 February  2019, 20:47 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
@@ -66,61 +66,11 @@ MatrixContainer::~MatrixContainer()
 }// end of ~MatrixContainer
 //----------------------------------------------------------------------------------------------------------------------
 
-/*
- * Create all matrix objects in the container.
- */
-void MatrixContainer::createMatrices()
-{
-  using MatrixType = MatrixRecord::MatrixType;
-
-  for (auto& it : mContainer)
-  {
-    if (it.second.matrixPtr != nullptr)
-    { // the data is already allocated
-      throw std::invalid_argument(Logger::formatMessage(kErrFmtRelocationError, it.second.matrixName.c_str()));
-    }
-
-    switch (it.second.matrixType)
-    {
-      case MatrixType::kReal:
-      {
-        it.second.matrixPtr = new RealMatrix(it.second.dimensionSizes);
-        break;
-      }
-
-      case MatrixType::kComplex:
-      {
-        it.second.matrixPtr = new ComplexMatrix(it.second.dimensionSizes);
-        break;
-      }
-
-      case MatrixType::kIndex:
-      {
-        it.second.matrixPtr = new IndexMatrix(it.second.dimensionSizes);
-        break;
-      }
-
-      case MatrixType::kCufft:
-      {
-        it.second.matrixPtr = new CufftComplexMatrix(it.second.dimensionSizes);
-        break;
-      }
-
-      default: // unknown matrix type
-      {
-        throw std::invalid_argument(Logger::formatMessage(kErrFmtBadMatrixType, it.second.matrixName.c_str()));
-        break;
-      }
-    }// switch
-  }// end for
-}// end of createMatrices
-//----------------------------------------------------------------------------------------------------------------------
-
 /**
  * This function creates the list of matrices being used in the simulation. It is done based on the
  * simulation parameters. All matrices records are created here.
  */
-void MatrixContainer::addMatrices()
+void MatrixContainer::init()
 {
   using MT = MatrixRecord::MatrixType;
   using MI = MatrixContainer::MatrixIdx;
@@ -226,13 +176,15 @@ void MatrixContainer::addMatrices()
 
 
   //--------------------------------------------------- Sources ------------------------------------------------------//
-  // if Intial pressure source flag
+  // if initial pressure source flag
   if (params.getInitialPressureSourceFlag() == 1)
   {
-    mContainer[MI::kInitialPressureSourceInput].set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kInitialPressureSourceInputName);
+    mContainer[MI::kInitialPressureSourceInput].set(MT::kReal, fullDims,
+                                                    kLoad, kNoCheckpoint,
+                                                    kInitialPressureSourceInputName);
   }
 
-  // Velocity cource index
+  // Velocity source index
   if ((params.getTransducerSourceFlag() != 0) ||
       (params.getVelocityXSourceFlag() != 0)  ||
       (params.getVelocityYSourceFlag() != 0)  ||
@@ -408,7 +360,57 @@ void MatrixContainer::addMatrices()
   mContainer[MI::kTempCufftX].set(MT::kCufft, reducedDims, kNoLoad, kNoCheckpoint, kCufftXTempName);
   mContainer[MI::kTempCufftY].set(MT::kCufft, reducedDims, kNoLoad, kNoCheckpoint, kCufftYTempName);
   mContainer[MI::kTempCufftZ].set(MT::kCufft, reducedDims, kNoLoad, kNoCheckpoint, kCufftZTempName);
-}// end of addMatrices
+}// end of init
+//----------------------------------------------------------------------------------------------------------------------
+
+/*
+ * Create all matrix objects in the container.
+ */
+void MatrixContainer::createMatrices()
+{
+  using MatrixType = MatrixRecord::MatrixType;
+
+  for (auto& it : mContainer)
+  {
+    if (it.second.matrixPtr != nullptr)
+    { // the data is already allocated
+      throw std::invalid_argument(Logger::formatMessage(kErrFmtRelocationError, it.second.matrixName.c_str()));
+    }
+
+    switch (it.second.matrixType)
+    {
+      case MatrixType::kReal:
+      {
+        it.second.matrixPtr = new RealMatrix(it.second.dimensionSizes);
+        break;
+      }
+
+      case MatrixType::kComplex:
+      {
+        it.second.matrixPtr = new ComplexMatrix(it.second.dimensionSizes);
+        break;
+      }
+
+      case MatrixType::kIndex:
+      {
+        it.second.matrixPtr = new IndexMatrix(it.second.dimensionSizes);
+        break;
+      }
+
+      case MatrixType::kCufft:
+      {
+        it.second.matrixPtr = new CufftComplexMatrix(it.second.dimensionSizes);
+        break;
+      }
+
+      default: // unknown matrix type
+      {
+        throw std::invalid_argument(Logger::formatMessage(kErrFmtBadMatrixType, it.second.matrixName.c_str()));
+        break;
+      }
+    }// switch
+  }// end for
+}// end of createMatrices
 //----------------------------------------------------------------------------------------------------------------------
 
 /**

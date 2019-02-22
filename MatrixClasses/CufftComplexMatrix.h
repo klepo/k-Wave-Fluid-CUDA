@@ -8,12 +8,12 @@
  *
  * @brief     The header file containing the class that implements 3D and 1D FFTs using the cuFFT interface.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      09 August    2011, 13:10 (created) \n
- *            16 August    2017, 13:54 (revised)
+ *            22 February  2019, 12:36 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *

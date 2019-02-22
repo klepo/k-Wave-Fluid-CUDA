@@ -9,10 +9,10 @@
  * @brief     The header file containing the class processing file headers.
  *            Detail about the file header are described below.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      20 July      2017, 14:42 (created) \n
- *            28 August    2017, 15:03 (revised)
+ *            22 February  2019, 10:56 (revised)
  *
  * @section   Hdf5FileHeader HDF5 File Header Structure
  *
@@ -55,7 +55,7 @@
  \endverbatim
  *
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
@@ -202,7 +202,7 @@ class Hdf5FileHeader
      * @brief Write header into the output file.
      *
      * @param [in,out] outputFile - Output file handle.
-     * @throw ios:failure          - If error happens.
+     * @throw ios:failure         - If error happens.
      */
     void writeHeaderToOutputFile(Hdf5File& outputFile);
     /**

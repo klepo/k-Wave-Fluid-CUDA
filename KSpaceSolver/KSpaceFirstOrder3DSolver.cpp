@@ -10,12 +10,12 @@
  *            controlling the simulation.
 
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            04 September 2017, 08:43 (revised)
+ *            22 February  2019, 12:31 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
@@ -117,11 +117,11 @@ void KSpaceFirstOrder3DSolver::allocateMemory()
   Logger::flush(Logger::LogLevel::kBasic);
 
   // create container, then all matrices
-  mMatrixContainer.addMatrices();
+  mMatrixContainer.init();
   mMatrixContainer.createMatrices();
 
   // add output streams into container
-  mOutputStreamContainer.addStreams(mMatrixContainer);
+  mOutputStreamContainer.init(mMatrixContainer);
 
   Logger::log(Logger::LogLevel::kBasic, kOutFmtDone);
 }// end of allocateMemory
@@ -496,14 +496,14 @@ void KSpaceFirstOrder3DSolver::printFullCodeNameAndLicense() const
   else
   {
     Logger::log(Logger::LogLevel::kBasic,
-                kOutFmtCudaRuntime,
+                ((cudaRuntimeVersion / 1000) < 10) ? kOutFmtCudaRuntime : kOutFmtCudaRuntime10,
                 cudaRuntimeVersion / 1000, (cudaRuntimeVersion % 100) / 10);
   }
 
   int cudaDriverVersion;
   cudaDriverGetVersion(&cudaDriverVersion);
   Logger::log(Logger::LogLevel::kBasic,
-              kOutFmtCudaDriver,
+              ((cudaDriverVersion / 1000) < 10) ? kOutFmtCudaDriver : kOutFmtCudaDriver10,
               cudaDriverVersion / 1000, (cudaDriverVersion % 100) / 10);
 
   const CudaParameters& cudaParameters = mParameters.getCudaParameters();
@@ -1968,7 +1968,7 @@ void KSpaceFirstOrder3DSolver::checkOutputFile()
   if (!fileHeader.checkMajorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMajorFileVersion,
-                                             mParameters.getCheckpointFileName().c_str(),
+                                             mParameters.getOutputFileName().c_str(),
                                              fileHeader.getFileMajorVersion().c_str()));
   }
 
@@ -1976,7 +1976,7 @@ void KSpaceFirstOrder3DSolver::checkOutputFile()
   if (!fileHeader.checkMinorFileVersion())
   {
     throw ios::failure(Logger::formatMessage(kErrFmtBadMinorFileVersion,
-                                             mParameters.getCheckpointFileName().c_str(),
+                                             mParameters.getOutputFileName().c_str(),
                                              fileHeader.getFileMinorVersion().c_str()));
   }
 

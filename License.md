@@ -1,6 +1,6 @@
 ## License
 
-Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  
 This file is part of the C++ extension of the k-Wave Toolbox 
 (http://www.k-wave.org).

@@ -6,11 +6,11 @@
 # * @email       jarosjir@fit.vutbr.cz
 # * @comments    Linux makefile for Anselm supercomputer
 # * 
-# * @tool        kspaceFirstOrder3D 3.5
+# * @tool        kspaceFirstOrder3D 3.6
 # * @created     02 December  2014, 12:32 
-# * @kastModif   21 August    2017, 14:23
+# * @kastModif   22 February  2019, 17:23
 # *
-# * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+# * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
 # *
 # * This file is part of the C++ extension of the k-Wave Toolbox 
 # * (http://www.k-wave.org). 
@@ -31,12 +31,12 @@
 # */
 
 ################################################################################
-# The source codes can be compiled ONLY under Linux x64 by GNU g++ 4.9 and     #
-# newer or Intel Compiler icpc 15 and newer. The newer compiler, the more      #
+# The source codes can be compiled ONLY under Linux x64 by GNU g++ 5.3 and     #
+# newer or Intel Compiler 2016 and newer. The newer compiler, the more         #
 # advanced instruction set can be used.                                        #
-# We recommend compilation with g++ 5.3/5.4 or icpc 16                         #
+# We recommend compilation with g++ 7.3 or Intel 2018                          #
 #                                                                              #
-# The code also requires CUDA 8.0, but can work with CUDA 9.0 RC1              #
+# The code also requires CUDA 10.0, but can work with CUDA 8.0 - 9.x           #
 # The code cannot be compiled with older versions of CUDA since                #
 # the incompatibility with the cuda FFT library.                               #
 #                                                                              #
@@ -79,10 +79,10 @@
 LINKING = SEMI
 
 #Set up paths to necessary libraries: 
-HDF5_DIR=/home_lustre/jarosjir/Software/hdf5-serial/1.8.19/gcc5.3.0-sse2
+HDF5_DIR=/home/jarosjir/Software/hdf5-serial/1.8.21/gcc71
 CUDA_DIR=${CUDA_HOME}
-ZLIB_DIR=/home/jarosjir/Software/zlib/1.2.8-gcc53-sse2
-SZIP_DIR=/home/jarosjir/Software/szip/2.1-gcc53-sse2
+ZLIB_DIR=/home/jarosjir/Software/zlib/1.2.11-gcc71
+SZIP_DIR=/home/jarosjir/Software/szip/2.1.1-gcc71
     
 #Get GIT hash (only if you build form Gitlab repository)
 KWAVE_GIT_HASH=$(shell git rev-parse HEAD)
@@ -100,9 +100,7 @@ CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math" \
 	   -D__KWAVE_GIT_HASH__=\"$(KWAVE_GIT_HASH)\"   \
    	   --device-c
 	   
-CUDA_ARCH = --generate-code arch=compute_20,code=sm_20	\
-	    --generate-code arch=compute_20,code=sm_21	\
-	    --generate-code arch=compute_30,code=sm_30	\
+CUDA_ARCH = --generate-code arch=compute_30,code=sm_30	\
 	    --generate-code arch=compute_32,code=sm_32	\
 	    --generate-code arch=compute_35,code=sm_35	\
 	    --generate-code arch=compute_37,code=sm_37	\

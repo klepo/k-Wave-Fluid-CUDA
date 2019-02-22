@@ -138,7 +138,7 @@
             <pElem>./</pElem>
             <pElem>${EBROOTHDF5}/include</pElem>
           </incDir>
-          <commandLine>-Xcompiler=" -g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 --device-c -lineinfo -Xptxas -v</commandLine>
+          <commandLine>-Xcompiler=" -g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 --device-c -Xptxas -v</commandLine>
         </ccTool>
         <linkerTool>
           <output>${CND_DISTDIR}/${CND_CONF}/k-wave-fluid-cuda</output>
@@ -157,7 +157,7 @@
             <linkerLibFileItem>${EBROOTCUDA}/lib64/libculibos.a</linkerLibFileItem>
             <linkerLibFileItem>${EBROOTCUDA}/lib64/libcudart_static.a</linkerLibFileItem>
           </linkerLibItems>
-          <commandLine>-Xcompiler="-g3 -gdwarf-2  -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 -lineinfo</commandLine>
+          <commandLine>-Xcompiler="-g3 -gdwarf-2  -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52</commandLine>
         </linkerTool>
       </compileType>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="0">
@@ -331,7 +331,7 @@
             <pElem>./</pElem>
             <pElem>${EBROOTHDF5}/include</pElem>
           </incDir>
-          <commandLine>-Xcompiler=" -g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 --device-c -lineinfo -Xptxas -v</commandLine>
+          <commandLine>-Xcompiler=" -g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 --device-c -Xptxas -v</commandLine>
         </ccTool>
         <linkerTool>
           <output>${CND_DISTDIR}/${CND_CONF}/k-wave-fluid-cuda</output>
@@ -340,6 +340,7 @@
             <pElem>${EBDEVELCUDA}/lib64</pElem>
           </linkerAddLib>
           <linkerDepDynSerchKind>0</linkerDepDynSerchKind>
+          <linkerCopySharedLibs>true</linkerCopySharedLibs>
           <commandlineTool>nvcc</commandlineTool>
           <linkerLibItems>
             <linkerLibLibItem>hdf5</linkerLibLibItem>
@@ -349,7 +350,7 @@
             <linkerLibLibItem>cufft</linkerLibLibItem>
             <linkerLibLibItem>cudart</linkerLibLibItem>
           </linkerLibItems>
-          <commandLine>-Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 -lineinfo</commandLine>
+          <commandLine>-Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52</commandLine>
         </linkerTool>
       </compileType>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
@@ -522,7 +523,7 @@
             <pElem>./</pElem>
             <pElem>${EBROOTHDF5}/include</pElem>
           </incDir>
-          <commandLine>-Xcompiler=" -g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 --device-c -lineinfo -Xptxas -v</commandLine>
+          <commandLine>-Xcompiler=" -g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 --device-c -Xptxas -v</commandLine>
         </ccTool>
         <linkerTool>
           <output>${CND_DISTDIR}/${CND_CONF}/k-wave-fluid-cuda</output>
@@ -541,7 +542,7 @@
             <linkerLibFileItem>${EBROOTCUDA}/lib64/libculibos.a</linkerLibFileItem>
             <linkerLibFileItem>${EBROOTCUDA}/lib64/libcudart_static.a</linkerLibFileItem>
           </linkerLibItems>
-          <commandLine>-Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp" -G -lineinfo</commandLine>
+          <commandLine>-Xcompiler="-g3 -gdwarf-2 -Wall -fopenmp" -G</commandLine>
         </linkerTool>
       </compileType>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">
@@ -714,7 +715,7 @@
             <pElem>./</pElem>
             <pElem>${EBROOTHDF5}/include</pElem>
           </incDir>
-          <commandLine>-Xcompiler=" -g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 --device-c -lineinfo -Xptxas -v</commandLine>
+          <commandLine>-Xcompiler=" -g3 -gdwarf-2 -Wall -fopenmp -mavx" -G -arch=compute_52 -code=sm_52 --device-c -Xptxas -v</commandLine>
         </ccTool>
         <linkerTool>
           <output>${CND_DISTDIR}/${CND_CONF}/k-wave-fluid-cuda</output>
@@ -732,7 +733,7 @@
             <linkerLibLibItem>cufft</linkerLibLibItem>
             <linkerLibLibItem>cudart</linkerLibLibItem>
           </linkerLibItems>
-          <commandLine>-Xcompiler="-g3 -gdwarf-2  -Wall -fopenmp" -G -lineinfo</commandLine>
+          <commandLine>-Xcompiler="-g3 -gdwarf-2  -Wall -fopenmp" -G </commandLine>
         </linkerTool>
       </compileType>
       <item path="Containers/MatrixContainer.cpp" ex="false" tool="1" flavor2="8">

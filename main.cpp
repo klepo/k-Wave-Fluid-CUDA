@@ -8,10 +8,10 @@
  *
  * @brief     The main file for the kspaceFirstOrder3D-CUDA.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 July      2012, 10:57 (created) \n
- *            20 August    2017, 16:22 (revised)
+ *            22 February  2019, 16:00 (revised)
  *
  *
  * @mainpage kspaceFirstOrder3D-CUDA
@@ -35,13 +35,13 @@
  *
  * @section Compilation 2 Compilation
  *
- * The source codes of <tt>kpsaceFirstOrder3D-CUDA</tt> are written using the C++11 standard (optional OpenMP 2.0
- * library), NVIDIA CUDA 8.0 library and HDF5 1.8.x.
+ * The source codes of <tt>kpsaceFirstOrder3D-CUDA</tt> are written using the C++11 standard (optional OpenMP 4.0
+ * library), NVIDIA CUDA 10.0 library and HDF5 1.8.x.
  *
  * There are variety of different C++ compilers that can be used to compile the source codes. We recommend using the GNU
- * C++ compiler (g++) version 5.3/5.4, the Intel C++ compiler version 16.0, or Visual Studio 2015. The version of
- * the compiler is limited by the CUDA architecture version (CUDA 8.0 supports GCC up to 5.4). The code was tested with
- * CUDA 8.0, older versions are not supported, however, the code was also tested with CUDA 9.0 RC1. The codes can be
+ * C++ compiler (g++) version 7.3, the Intel C++ compiler version 2018, or Visual Studio 2017. The version of
+ * the compiler is limited by the CUDA architecture version (CUDA 10.0 supports GCC up to 7.3). The code was tested with
+ * CUDA 10.0, however, the code was also tested with CUDA 8.0 and 9.x . The codes can be
  * compiled on 64-bit Linux and Windows. 32-bit systems are not supported due to the the memory requirements even for
  * small simulations.
  *
@@ -52,8 +52,8 @@
  * non-commercial use.
 
  * The CUDA library can be downloaded from the [Nvidia website] (https://developer.nvidia.com/cuda-toolkit-archive).
- * The only supported version is 8.0, however, the code is supposed to  work with upcoming CUDA 9.0 we cannot guarantee
- * it.
+ * The only supported version are 8.0 - 10.0, however, the code is supposed to work with upcoming CUDA 11.0, but we
+ * cannot guarantee it.
  *
  * <b> 2.1 The HDF5 library installation procedure </b>
 
@@ -190,7 +190,7 @@
  *
 \verbatim
 ┌───────────────────────────────────────────────────────────────┐
-│                 kspaceFirstOrder3D-CUDA v1.2                  │
+│                 kspaceFirstOrder3D-CUDA v1.3                  │
 ├───────────────────────────────────────────────────────────────┤
 │                             Usage                             │
 ├───────────────────────────────────────────────────────────────┤
@@ -277,7 +277,7 @@
  * (http://www.hdfgroup.org/HDF5/doc/index.html).
  *
  *
- * kspaceFirstOrder3D-CUDA v1.2 uses the file format introduced in version 1.1. The code is happy to work with both
+ * kspaceFirstOrder3D-CUDA v1.3 uses the file format introduced in version 1.1. The code is happy to work with both
  * versions (1.0 and 1.1), however when working with an input file of version 1.0, some features are not supported,
  * namely the cuboid sensor mask, and <tt>u_non_staggered_raw</tt>. When running from within the actual MATLAB K-Wave
  * Toolbox, the files will always be generated in version 1.1.
@@ -543,6 +543,7 @@
 | Ny                          (1, 1, 1)       long           real                                                      |
 | Nz                          (1, 1, 1)       long           real                                                      |
 | Nt                          (1, 1, 1)       long           real                                                      |
+| t_index                     (1, 1, 1)       long           real                                                      |
 | dt                          (1, 1, 1)       float          real                                                      |
 | dx                          (1, 1, 1)       float          real                                                      |
 | dy                          (1, 1, 1)       float          real                                                      |
@@ -556,13 +557,6 @@
 | pml_x_alpha                 (1, 1, 1)       float          real                                                      |
 | pml_y_alpha                 (1, 1, 1)       float          real                                                      |
 | pml_z_alpha                 (1, 1, 1)       float          real                                                      |
-|                                                                                                                      |
-| pml_x                       (Nx, 1, 1)      float          real                                                      |
-| pml_x_sgx                   (Nx, 1, 1)      float          real                                                      |
-| pml_y                       (1, Ny, 1)      float          real                                                      |
-| pml_y_sgy                   (1, Ny, 1)      float          real                                                      |
-| pml_z                       (1, 1, Nz)      float          real                                                      |
-| pml_z_sgz                   (1, 1, Nz)      float          real                                                      |
 +----------------------------------------------------------------------------------------------------------------------+
 | 4. Sensor Variables (present if --copy_sensor_mask)                                                                  |
 +----------------------------------------------------------------------------------------------------------------------+
@@ -682,7 +676,7 @@
 \endverbatim
  *
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *

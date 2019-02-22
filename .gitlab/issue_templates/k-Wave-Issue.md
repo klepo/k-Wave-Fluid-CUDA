@@ -41,7 +41,7 @@ Details of how the feature, function, or bug fix was tested.
 Static tests
 
 1. [ ] Compile with Visual Studio 2017 and Windows 7
-1. [ ] Compile with CUDA 8.0 and GCC 5.4.0
+1. [ ] Compile with CUDA 10.0 and GCC 7.3.0
 
 Unit tests
  

@@ -39,16 +39,16 @@ the simulations (AMD GPUs are not supported).
 ## Compilation
  
 The source codes of `kpsaceFirstOrder3D-CUDA` are written using the C++11 
-standard (optional OpenMP 2.0  library), NVIDIA CUDA 8.0 library and HDF5 1.8.x. 
+standard (optional OpenMP 2.0  library), NVIDIA CUDA 10.0 library and HDF5 1.8.x. 
  
 There are variety of different C++ compilers that can be used to compile the 
-source codes. We recommend using the GNU C++ compiler (g++) version 5.3/5.4, the
-Intel C++ compiler version 16.0, or Visual Studio 2015. The version of the 
-compiler is limited by the CUDA architecture version (CUDA 8.0 supports GCC up 
-to 5.4). The code was tested with CUDA 8.0, older versions are not supported, 
-however, the code was also tested with CUDA 9.0 RC1. The codes can be compiled 
-on 64-bit Linux and Windows. 32-bit systems are not supported due to the the 
-memory requirements even for small simulations.
+source codes. We recommend using the GNU C++ compiler (g++) version 7.3, the
+Intel C++ compiler version 2018, or Visual Studio 2017. The version of the 
+compiler is limited by the CUDA architecture version (CUDA 10.0 supports GCC up 
+to 7.3). The code was tested with CUDA 10.0, however, the code was also tested 
+with CUDA 8.0 and 9.x. The codes can be compiled on 64-bit Linux and Windows. 
+32-bit systems are not supported due to the the memory requirements even for 
+small simulations.
  
  Before compiling the code, it is necessary to install CUDA, C++ compiler and 
  the HDF5 library. The GNU compiler is usually part of Linux distributions and 
@@ -59,8 +59,8 @@ memory requirements even for small simulations.
 
 The CUDA library can be downloaded from the
 (https://developer.nvidia.com/cuda-toolkit-archive).
-The only supported version is 8.0, however, the code is supposed to  work with 
-upcoming CUDA 9.0 we cannot guarantee  it.
+The only supported version is 10.0, however, the code is supposed to  work with 
+upcoming CUDA 11.0, but we cannot guarantee it.
  
 ### The HDF5 library installation procedure
 
@@ -84,7 +84,7 @@ upcoming CUDA 9.0 we cannot guarantee  it.
  
 ### The CUDA installation procedure 
  
-  1. Download CUDA version 8.0 
+  1. Download CUDA version 10.0 
      (https://developer.nvidia.com/cuda-toolkit-archive).
   2. Follow the NVIDIA official installation guide for Windows 
 (http://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) 
