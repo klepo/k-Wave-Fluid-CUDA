@@ -8,12 +8,12 @@
  *
  * @brief     The header file with CUDA utility functions. These routines are to be inlined.
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      22 March     2016, 15:25 (created) \n
- *            28 August    2017, 16:20 (revised)
+ *            22 February  2019, 15:54 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
