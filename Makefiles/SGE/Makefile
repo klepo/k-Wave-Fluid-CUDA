@@ -8,7 +8,7 @@
 # * 
 # * @tool        kspaceFirstOrder3D 3.6
 # * @created     02 December  2014, 12:32 
-# * @kastModif   22 February  2019, 16:38
+# * @kastModif   22 February  2019, 17:23
 # *
 # * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
 # *
@@ -84,7 +84,7 @@ LINKING = DYNAMIC
 
 #Set up paths to necessary libraries: 
 HDF5_DIR=/usr/local
-CUDA_DIR=/usr/local/share/cuda-8.0.61/
+CUDA_DIR=/usr/local/share/cuda-10.0.130
 ZLIB_DIR=/usr/local
 SZIP_DIR=/usr/local
     
@@ -106,9 +106,7 @@ CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math" \
 	   -D__KWAVE_GIT_HASH__=\"$(KWAVE_GIT_HASH)\"                     \
    	   --device-c
 	   
-CUDA_ARCH = --generate-code arch=compute_20,code=sm_20	\
-	    --generate-code arch=compute_20,code=sm_21	\
-	    --generate-code arch=compute_30,code=sm_30	\
+CUDA_ARCH = --generate-code arch=compute_30,code=sm_30	\
 	    --generate-code arch=compute_32,code=sm_32	\
 	    --generate-code arch=compute_35,code=sm_35	\
 	    --generate-code arch=compute_37,code=sm_37	\

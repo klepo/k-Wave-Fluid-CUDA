@@ -8,7 +8,7 @@
 # * 
 # * @tool        kspaceFirstOrder3D 3.6
 # * @created     02 December  2014, 12:32 
-# * @kastModif   22 February  2019, 16:40
+# * @kastModif   22 February  2019, 17:23
 # *
 # * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
 # *
@@ -79,10 +79,10 @@
 LINKING = SEMI
 
 #Set up paths to necessary libraries: 
-HDF5_DIR=/home_lustre/jarosjir/Software/hdf5-serial/1.8.19/gcc5.3.0-sse2
+HDF5_DIR=/home/jarosjir/Software/hdf5-serial/1.8.21/gcc71
 CUDA_DIR=${CUDA_HOME}
-ZLIB_DIR=/home/jarosjir/Software/zlib/1.2.8-gcc53-sse2
-SZIP_DIR=/home/jarosjir/Software/szip/2.1-gcc53-sse2
+ZLIB_DIR=/home/jarosjir/Software/zlib/1.2.11-gcc71
+SZIP_DIR=/home/jarosjir/Software/szip/2.1.1-gcc71
     
 #Get GIT hash (only if you build form Gitlab repository)
 KWAVE_GIT_HASH=$(shell git rev-parse HEAD)
@@ -100,9 +100,7 @@ CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math" \
 	   -D__KWAVE_GIT_HASH__=\"$(KWAVE_GIT_HASH)\"   \
    	   --device-c
 	   
-CUDA_ARCH = --generate-code arch=compute_20,code=sm_20	\
-	    --generate-code arch=compute_20,code=sm_21	\
-	    --generate-code arch=compute_30,code=sm_30	\
+CUDA_ARCH = --generate-code arch=compute_30,code=sm_30	\
 	    --generate-code arch=compute_32,code=sm_32	\
 	    --generate-code arch=compute_35,code=sm_35	\
 	    --generate-code arch=compute_37,code=sm_37	\
