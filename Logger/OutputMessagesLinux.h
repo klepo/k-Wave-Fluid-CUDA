@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      13 July      2016, 12:33 (created) \n
- *            22 February  2019, 16:55 (revised)
+ *            22 February  2019, 21:07 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -439,6 +439,8 @@ OutputMessage kOutFmtUsagePart2
     "├───────────────────────────────┼───────────────────────────────┤\n"
     "│ -s <time_step>                │ When data collection begins   │\n"
     "│                               │   (default = 1)               │\n"
+    "│ --copy_sensor_mask            │ Copy sensor mask to the       │\n"
+    "│                               │    output file                │\n"
     "└───────────────────────────────┴───────────────────────────────┘\n";
 
 /// Usage massage

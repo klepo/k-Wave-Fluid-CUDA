@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 July      2012, 10:57 (created) \n
- *            22 February  2019, 16:00 (revised)
+ *            22 February  2019, 21:11 (revised)
  *
  *
  * @mainpage kspaceFirstOrder3D-CUDA
@@ -252,6 +252,8 @@
 ├───────────────────────────────┼───────────────────────────────┤
 │ -s <time_step>                │ When data collection begins   │
 │                               │   (default = 1)               │
+│ --copy_sensor_mask            │ Copy sensor mask to the       │
+│                               │    output file                │
 └───────────────────────────────┴───────────────────────────────┘
 \endverbatim
  *
