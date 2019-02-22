@@ -8,12 +8,12 @@
  *
  * @brief     The implementation file of cuda kernels used for data sampling (output streams).
  *
- * @version   kspaceFirstOrder3D 3.5
+ * @version   kspaceFirstOrder3D 3.6
  *
  * @date      27 January   2015, 17:21 (created) \n
- *            16 August    2017, 16:26 (revised)
+ *            22 February  2019, 15:46 (revised)
  *
- * @copyright Copyright (C) 2017 Jiri Jaros and Bradley Treeby.
+ * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
  * This file is part of the C++ extension of the [k-Wave Toolbox](http://www.k-wave.org).
  *
