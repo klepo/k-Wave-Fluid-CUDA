@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      17 February  2016, 10:53 (created) \n
- *            22 February  2019, 15:54 (revised)
+ *            22 February  2019, 22:10 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -32,6 +32,8 @@
 
 #ifndef CUDA_DEVICE_CONSTANTS_H
 #define CUDA_DEVICE_CONSTANTS_H
+
+#include <Parameters/Parameters.h>
 
 /**
   * @struct CudaDeviceConstants
@@ -98,14 +100,14 @@ struct CudaDeviceConstants
   ///  size of the u source index.
   unsigned int velocitySourceSize;
   /// u source mode.
-  unsigned int velocitySourceMode;
+  Parameters::SourceMode velocitySourceMode;
   /// u source many.
   unsigned int velocitySourceMany;
 
   /// size of the p_source mask.
   unsigned int presureSourceSize;
   /// p source mode.
-  unsigned int presureSourceMode;
+  Parameters::SourceMode presureSourceMode;
   /// p source many.
   unsigned int presureSourceMany;
 

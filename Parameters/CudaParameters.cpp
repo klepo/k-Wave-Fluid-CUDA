@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 November  2015, 16:49 (created) \n
- *            22 February  2019, 15:54 (revised)
+ *            22 February  2019, 22:11 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -287,11 +287,11 @@ void CudaParameters::setUpDeviceConstants() const
 
   // source masks
   constantsToTransfer.presureSourceSize = static_cast<unsigned int>(params.getPressureSourceIndexSize());
-  constantsToTransfer.presureSourceMode = static_cast<unsigned int>(params.getPressureSourceMode());
+  constantsToTransfer.presureSourceMode = params.getPressureSourceMode();
   constantsToTransfer.presureSourceMany = static_cast<unsigned int>(params.getPressureSourceMany());
 
   constantsToTransfer.velocitySourceSize = static_cast<unsigned int>(params.getVelocitySourceIndexSize());
-  constantsToTransfer.velocitySourceMode = static_cast<unsigned int>(params.getVelocitySourceMode());
+  constantsToTransfer.velocitySourceMode = params.getVelocitySourceMode();
   constantsToTransfer.velocitySourceMany = static_cast<unsigned int>(params.getVelocitySourceMany());
 
   constantsToTransfer.uploadDeviceConstants();

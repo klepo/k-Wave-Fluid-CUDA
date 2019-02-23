@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      08 December  2011, 16:34 (created) \n
- *            22 February  2019, 15:54 (revised)
+ *            22 February  2019, 21:40 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -62,6 +62,21 @@ class Parameters
       kIndex   = 0,
       /// Cuboid corners sensor mask.
       kCorners = 1
+    };
+
+    /**
+     * @enum    SourceMode
+     * @brief   Source mode (Dirichlet, additive, additive-no-correction)
+     * @details The enum is based on the matlab definition.
+     */
+    enum class SourceMode
+    {
+      /// Dirichlet source condition
+      kDirichlet = 0,
+      /// Additive-no-correction source condition
+      kAdditiveNoCorrection = 1,
+      /// Additive source condition
+      kAdditive = 2
     };
 
     /// Copy constructor not allowed.
@@ -481,9 +496,9 @@ class Parameters
 
     /**
      * @brief  Get pressure source mode.
-     * @return Pressure source mode (Dirichlet or additive).
+     * @return Pressure source mode.
      */
-    size_t getPressureSourceMode()        const { return mPressureSourceMode; };
+    SourceMode getPressureSourceMode()    const { return mPressureSourceMode; };
     /**
      * @brief  Get number of time series in the pressure source.
      * @return Number of time series in the pressure source.
@@ -492,9 +507,9 @@ class Parameters
 
     /**
      * @brief  Get velocity source mode.
-     * @return Pressure source mode (Dirichlet or additive).
+     * @return Pressure source mode.
      */
-    size_t getVelocitySourceMode()        const { return mVelocitySourceMode; };
+    SourceMode getVelocitySourceMode()    const { return mVelocitySourceMode; };
     /**
      * @brief  Get number of time series in the velocity sources.
      * @return Number of time series in the velocity sources.
@@ -585,7 +600,7 @@ class Parameters
      * @brief  Is --u_max set?
      * @return True if the flag is set.
      */
-    bool getStoreVelocityMaxFlag()              const { return mCommandLineParameters.getStoreVelocityMaxFlag(); };
+    bool getStoreVelocityMaxFlag()         const { return mCommandLineParameters.getStoreVelocityMaxFlag(); };
     /**
      * @brief  Is --u_min set?
      * @return True if the flag is set.
@@ -600,7 +615,7 @@ class Parameters
      * @brief  Is --u_min set?
      * @return True if the flag is set.
      */
-    bool getStoreVelocityMinAllFlag() const { return mCommandLineParameters.getStoreVelocityMinAllFlag(); };
+    bool getStoreVelocityMinAllFlag()      const { return mCommandLineParameters.getStoreVelocityMinAllFlag(); };
     /**
      * @brief  Is --u_final set?
      * @return True if the flag is set.
@@ -731,22 +746,22 @@ class Parameters
     size_t mVelocitySourceIndexSize;
 
     /// Pressure source mode.
-    size_t mPressureSourceMode;
+    SourceMode mPressureSourceMode;
     /// Number of time series in the pressure source.
-    size_t mPressureSourceMany;
+    size_t     mPressureSourceMany;
 
     /// Velocity source mode.
-    size_t mVelocitySourceMode;
+    SourceMode mVelocitySourceMode;
     /// Number of time series in the velocity sources.
-    size_t mVelocitySourceMany;
+    size_t     mVelocitySourceMany;
 
 
     /// Sensor mask type (index / corners).
     SensorMaskType mSensorMaskType;
     /// How many elements there are in the linear mask
-    size_t mSensorMaskIndexSize;
+    size_t         mSensorMaskIndexSize;
     /// Sensor_mask_corners_size - how many cuboids are in the mask.
-    size_t mSensorMaskCornersSize;
+    size_t         mSensorMaskCornersSize;
 
     /// Singleton flag
     static bool        sParametersInstanceFlag;

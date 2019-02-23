@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            22 February  2019, 11:04 (revised)
+ *            22 February  2019, 21:04 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -506,7 +506,7 @@ __global__ void cudaAddVelocitySource(float*        velocity,
   auto index2D = (cudaDeviceConstants.velocitySourceMany == 0)
                  ? timeIndex : timeIndex * cudaDeviceConstants.velocitySourceSize;
 
-  if (cudaDeviceConstants.velocitySourceMode == 0)
+  if (cudaDeviceConstants.velocitySourceMode == Parameters::SourceMode::kDirichlet)
   {
     for (auto i = getIndex(); i < cudaDeviceConstants.velocitySourceSize; i += getStride())
     {
@@ -515,7 +515,7 @@ __global__ void cudaAddVelocitySource(float*        velocity,
     }// for
   }// end of Dirichlet
 
-  if (cudaDeviceConstants.velocitySourceMode == 1)
+  if (cudaDeviceConstants.velocitySourceMode == Parameters::SourceMode::kAdditiveNoCorrection)
   {
     for (auto i  = getIndex(); i < cudaDeviceConstants.velocitySourceSize; i += getStride())
     {
@@ -578,7 +578,7 @@ __global__ void cudaAddPressureSource(float*        rhoX,
   auto index2D = (cudaDeviceConstants.presureSourceMany == 0)
                  ? timeIndex : timeIndex * cudaDeviceConstants.presureSourceSize;
 
-  if (cudaDeviceConstants.presureSourceMode == 0)
+  if (cudaDeviceConstants.presureSourceMode == Parameters::SourceMode::kDirichlet)
   {
     if (cudaDeviceConstants.presureSourceMany == 0)
     { // single signal
@@ -598,9 +598,9 @@ __global__ void cudaAddPressureSource(float*        rhoX,
         rhoZ[pressureSourceIndex[i]] = pressureSourceInput[index2D + i];
       }
     }
-  }// end mode == 0 (Cauchy)
+  }// end mode == kDirichlet
 
-  if (cudaDeviceConstants.presureSourceMode == 1)
+  if (cudaDeviceConstants.presureSourceMode == Parameters::SourceMode::kAdditiveNoCorrection)
   {
     if (cudaDeviceConstants.presureSourceMany == 0)
     { // single signal
@@ -620,7 +620,7 @@ __global__ void cudaAddPressureSource(float*        rhoX,
         rhoZ[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
       }
     }
-  }// end mode == 0 (Dirichlet)
+  }// end mode == kAdditiveNoCorrection
 }// end of cudaAddPressureSource
 //----------------------------------------------------------------------------------------------------------------------
 
