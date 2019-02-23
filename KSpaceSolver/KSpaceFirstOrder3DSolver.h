@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            22 February  2019, 11:06 (revised)
+ *            23 February  2019, 11:58 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -213,6 +213,8 @@ class KSpaceFirstOrder3DSolver
 
     /// Generate kappa matrix for  lossless medium.
     void generateKappa();
+    /// Generate sourceKappa matrix for additive sources.
+    void generateSourceKappa();
     /// Generate kappa matrix, absorbNabla1, absorbNabla2 for absorbing medium.
     void generateKappaAndNablas();
     /// Generate absorbTau, absorbEta for heterogenous medium.
@@ -306,11 +308,19 @@ class KSpaceFirstOrder3DSolver
 
     /**
      * @brief  Get the kappa matrix from the container.
-     * @return kappa matrix
+     * @return Kappa matrix.
      */
     RealMatrix& getKappa()
     {
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kKappa);
+    };
+    /**
+     * @brief  Get the sourceKappa matrix from the container.
+     * @return Source kappa matrix.
+     */
+    RealMatrix& getSourceKappa()
+    {
+      return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kSourceKappa);
     };
 
     /**
@@ -323,8 +333,8 @@ class KSpaceFirstOrder3DSolver
     };
 
     /**
-     * @brief  Get pressure matrix
-     * @return Pressure matrix
+     * @brief  Get pressure matrix.
+     * @return Pressure matrix.
      */
     RealMatrix& getP()
     {
