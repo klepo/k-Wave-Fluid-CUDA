@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 July      2011, 12:13 (created) \n
- *            22 February  2019, 12:36 (revised)
+ *            23 February  2019, 20:40 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -75,6 +75,15 @@ void BaseFloatMatrix::zeroMatrix()
     mHostData[i] = 0.0f;
   }
 }// end of zeroMatrix
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Zero all allocated elements on device.
+ */
+void BaseFloatMatrix::zeroDeviceMatrix()
+{
+  cudaCheckErrors(cudaMemset(mDeviceData, 0, mCapacity * sizeof(float)));
+}// end of zeroDeviceMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
 /**

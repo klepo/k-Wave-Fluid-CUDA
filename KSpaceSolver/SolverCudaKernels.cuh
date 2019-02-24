@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            22 February  2019, 11:04 (revised)
+ *            23 February  2019, 21:58 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -204,6 +204,50 @@ namespace SolverCudaKernels
                          const RealMatrix&  pressureSourceInput,
                          const IndexMatrix& pressureSourceIndex,
                          const size_t       timeIndex);
+
+
+  /**
+   * @brief Insert source signal into scaling matrix.
+   *
+   * @param [out] scaledSource - Temporary matrix to insert the source into before scaling.
+   * @param [in]  sourceInput  - Source input signal.
+   * @param [in]  sourceIndex  - Source geometry.
+   * @param [in]  manyFlag     - Number of time series in the source input.
+   * @param [in]  timeIndex    - Actual time step.
+   */
+  void insertSourceIntoScalingMatrix(RealMatrix&        scaledSource,
+                                     const RealMatrix&  sourceInput,
+                                     const IndexMatrix& sourceIndex,
+                                     const size_t       manyFlag,
+                                     const size_t       timeIndex);
+
+  /**
+   * @brief Calculate source gradient.
+   * @param [in, out] sourceSpectrum - Source spectrum.
+   * @param [in]      sourceKappa    - Source kappa.
+   */
+  void computeSourceGradient(CufftComplexMatrix& sourceSpectrum,
+                             const RealMatrix&   sourceKappa);
+
+  /**
+   * @brief Add scaled velocity source to acoustic density.
+   * @param [in, out] velocity     - Velocity matrix to update.
+   * @param [in]      scaledSource - Scaled source.
+   */
+  void addVelocityScaledSource(RealMatrix&        velocity,
+                               const RealMatrix&  scalingSource);
+
+  /**
+   * @brief Add scaled pressure source to acoustic density.
+   * @param [in, out] rhoX         - Acoustic density.
+   * @param [in, out] rhoY         - Acoustic density.
+   * @param [in, out] rhoZ         - Acoustic density.
+   * @param [in]      scaledSource - Scaled source.
+   */
+  void addPressureScaledSource(RealMatrix&        rhoX,
+                               RealMatrix&        rhoY,
+                               RealMatrix&        rhoZ,
+                               const RealMatrix&  scalingSource);
 
    /**
     * @brief Add initial pressure source to the pressure matrix and update density matrices.

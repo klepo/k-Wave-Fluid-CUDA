@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            23 February  2019, 11:58 (revised)
+ *            24 February  2019, 12:07 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -208,6 +208,18 @@ class KSpaceFirstOrder3DSolver
     void addVelocitySource();
     /// Add in pressure source.
     void addPressureSource();
+    /**
+     * @brief Scale velocity or pressure source.
+     *
+     * @param [in] scaledSource - Generated scaled source
+     * @param [in] sourceInput  - Source input signal
+     * @param [in] sourceIndex  - Source geometry
+     * @param [in] manyFlag     - How many time series
+     */
+    void scaleSource(RealMatrix&        scaledSource,
+                     const RealMatrix&  sourceInput,
+                     const IndexMatrix& sourceIndex,
+                     const size_t       manyFlag);
     /// Calculate initial pressure source.
     void addInitialPressureSource();
 
@@ -770,7 +782,7 @@ class KSpaceFirstOrder3DSolver
      * @brief  Get Velocity source input data in x direction.
      * @return Velocity source input data.
      */
-    RealMatrix& GetVelocityXSourceInput()
+    RealMatrix& getVelocityXSourceInput()
     {
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kVelocityXSourceInput);
     };
@@ -778,7 +790,7 @@ class KSpaceFirstOrder3DSolver
      * @brief  Get Velocity source input data in y direction.
      * @return Velocity source input data.
      */
-    RealMatrix& GetVelocityYSourceInput()
+    RealMatrix& getVelocityYSourceInput()
     {
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kVelocityYSourceInput);
     };
