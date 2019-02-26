@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      13 July      2016, 12:33 (created) \n
- *            22 February  2019, 21:07 (revised)
+ *            26 February  2019, 16:42 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -148,8 +148,11 @@ OutputMessage kOutFmtDeviceName
 OutputMessage kOutFmtDomainSize
   = "│ Domain dimensions: %42s │\n";
 ///Output message
-OutputMessage kOutFmtDomainSizeFormat
+OutputMessage kOutFmt3DDomainSizeFormat
   = "%lu x %lu x %lu";
+///Output message
+OutputMessage kOutFmt2DDomainSizeFormat
+  = "%lu x %lu";
 
 
 ///Output message

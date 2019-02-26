@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      08 December  2011, 16:34 (created) \n
- *            22 February  2019, 21:40 (revised)
+ *            26 February  2019, 12:26 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -79,6 +79,19 @@ class Parameters
       kAdditive = 2
     };
 
+    /**
+     * @enum    SimulationDimension
+     * @brief   What is the simulation dimensionality.
+     * @details What is the simulation dimensionality.
+     */
+    enum class SimulationDimension
+    {
+      /// 2D simulation
+      k2D,
+      /// 3D simulation
+      k3D
+    };
+
     /// Copy constructor not allowed.
     Parameters(const Parameters&) = delete;
     /// Destructor.
@@ -123,7 +136,7 @@ class Parameters
     void saveScalarsToOutputFile();
 
     /**
-     * @brief Get git hash of the code
+     * @brief  Get git hash of the code.
      * @return Git hash compiled in using -D parameter.
      */
     std::string getGitHash() const;
@@ -151,7 +164,7 @@ class Parameters
 
 
     /**
-     * @brief Get number of CPU threads to use.
+     * @brief  Get number of CPU threads to use.
      * @return Number of CPU threads to use.
      */
     size_t getNumberOfThreads()       const { return mCommandLineParameters.getNumberOfThreads(); };
@@ -163,7 +176,7 @@ class Parameters
     size_t getCompressionLevel()      const { return mCommandLineParameters.getCompressionLevel(); };
 
     /**
-     * @brief Get progress print interval.
+     * @brief  Get progress print interval.
      * @return How often to print progress.
      */
     size_t getProgressPrintInterval() const { return mCommandLineParameters.getProgressPrintInterval(); };
@@ -182,22 +195,22 @@ class Parameters
 
     //---------------------------------------------------- Files -----------------------------------------------------//
     /**
-     * @brief Get input file handle.
+     * @brief  Get input file handle.
      * @return Handle to the input file.
      */
     Hdf5File& getInputFile()                 { return mInputFile; };
     /**
-     * @brief Get output file handle.
+     * @brief  Get output file handle.
      * @return Handle to the output file.
      */
     Hdf5File& getOutputFile()                { return mOutputFile; };
     /**
-     * @brief Get checkpoint file handle.
+     * @brief  Get checkpoint file handle.
      * @return Handle to the checkpoint file.
      */
     Hdf5File& getCheckpointFile()            { return mCheckpointFile; };
     /**
-     * @brief Get file header handle.
+     * @brief  Get file header handle.
      * @return Handle to the file header.
      */
     Hdf5FileHeader& getFileHeader()          { return mFileHeader; };
@@ -233,6 +246,25 @@ class Parameters
      * @return Dimension sizes of reduced complex 3D matrices.
      */
     DimensionSizes getReducedDimensionSizes() const { return mReducedDimensionSizes; };
+
+    /**
+     * @brief  Is the simulation executed in 2 dimensions?
+     * @return True if the simulation space is 2D.
+     */
+    bool isSimulation2D()                     const { return mFullDimensionSizes.is2D(); };
+    /**
+     * @brief  Is the simulation executed in 3 dimensions.
+     * @return True if the simulation space is 3D.
+     */
+    bool isSimulation3D()                     const { return !isSimulation2D(); }
+    /**
+     * @brief Return the number of dimensions for the current simulations
+     * @return number of dimensions
+     */
+    SimulationDimension getSimulationDimension() const
+    {
+      return (isSimulation3D()) ? SimulationDimension::k3D : SimulationDimension::k2D;
+    };
 
     /**
      * @brief  Get total number of time steps.

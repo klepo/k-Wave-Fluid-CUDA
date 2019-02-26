@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      13 July      2016, 12:35 (created) \n
- *            22 February  2019, 21:09 (revised)
+ *            26 February  2019, 16:43 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -145,8 +145,11 @@ OutputMessage kOutFmtDeviceName
 OutputMessage kOutFmtDomainSize
   = "| Domain dimensions: %42s |\n";
 ///Output message
-OutputMessage kOutFmtDomainSizeFormat
+OutputMessage kOutFmt3DDomainSizeFormat
   = "%lu x %lu x %lu";
+///Output message
+OutputMessage kOutFmt2DDomainSizeFormat
+  = "%lu x %lu";
 
 
 ///Output message
@@ -327,16 +330,16 @@ OutputMessage kOutFmtCudaRuntimeNA
   = "| CUDA runtime:     N/A                                         |\n";
 /// Print version output message
 OutputMessage kOutFmtCudaRuntime
-  = "│ CUDA runtime:     %d.%d                                         │\n";
+  = "| CUDA runtime:     %d.%d                                         |\n";
 /// Print version output message
 OutputMessage kOutFmtCudaRuntime10
-  = "│ CUDA runtime:     %d.%d                                        │\n";
+  = "| CUDA runtime:     %d.%d                                        |\n";
 /// Print version output message
 OutputMessage kOutFmtCudaDriver
-  = "│ CUDA driver:      %d.%d                                         │\n";
+  = "| CUDA driver:      %d.%d                                         |\n";
 /// Print version output message
 OutputMessage kOutFmtCudaDriver10
-  = "│ CUDA driver:      %d.%d                                        │\n";
+  = "| CUDA driver:      %d.%d                                        |\n";
 /// Print version output message
 OutputMessage kOutFmtCudaDeviceInfoNA
   = "| CUDA code arch:   N/A                                         |\n"

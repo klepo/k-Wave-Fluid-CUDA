@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 November  2015, 16:49 (created) \n
- *            22 February  2019, 22:11 (revised)
+ *            26 February  2019, 16:38 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -255,7 +255,10 @@ void CudaParameters::setUpDeviceConstants() const
   DimensionSizes fullDimSizes    = params.getFullDimensionSizes();
   DimensionSizes reducedDimSizes = params.getReducedDimensionSizes();
 
+
   // Set values for constant memory
+  constantsToTransfer.simulationDimension = params.getSimulationDimension();
+
   constantsToTransfer.nx  = static_cast<unsigned int>(fullDimSizes.nx);
   constantsToTransfer.ny  = static_cast<unsigned int>(fullDimSizes.ny);
   constantsToTransfer.nz  = static_cast<unsigned int>(fullDimSizes.nz);
