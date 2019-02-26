@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      09 August    2011, 12:34 (created) \n
- *            26 February  2019, 15:55 (revised)
+ *            26 February  2019, 16:24 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -36,25 +36,26 @@
 #include <cstdlib>
 
 
-#ifdef __AVX2__
+#if (defined(__AVX2__)) || (defined(__AVX__))
 /**
- * @var kDataAlignment
- * @brief memory alignment for AVX2 (32B)
+ * @var   kDataAlignment
+ * @brief Memory alignment for AVX and AVX2 (32B).
  */
 constexpr int kDataAlignment  = 32;
-#elif __AVX__
+#elif ((defined(__SSE4_2__)) || (defined(__SSE4_1__)) || (defined(__SSE3__))  || (defined(__SSE2__)))
 /**
- * @var kDataAlignment
- * @brief memory alignment for AVX (32B)
- */
-constexpr int kDataAlignment  = 32;
-#else
-
-/**
- * @var kDataAlignment
- * @brief memory alignment for SSE, SSE2, SSE3, SSE4 (16B)
+ * @var   kDataAlignment
+ * @brief Memory alignment for SSE2, SSE3, SSE4 (16B).
  */
 constexpr int kDataAlignment  = 16;
+#else
+  /**
+   * @var     kDataAlignment
+   * @brief   Default memory alignment.
+   * @details Default memory alignment is oriented on new, yet unknown, architectures with wider SIMD units, possible
+   *          512b.
+   */
+  constexpr int kDataAlignment  = 64;
 #endif
 
 /**
