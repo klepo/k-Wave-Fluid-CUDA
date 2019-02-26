@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            22 February  2019, 11:06 (revised)
+ *            24 February  2019, 12:07 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -208,11 +208,25 @@ class KSpaceFirstOrder3DSolver
     void addVelocitySource();
     /// Add in pressure source.
     void addPressureSource();
+    /**
+     * @brief Scale velocity or pressure source.
+     *
+     * @param [in] scaledSource - Generated scaled source
+     * @param [in] sourceInput  - Source input signal
+     * @param [in] sourceIndex  - Source geometry
+     * @param [in] manyFlag     - How many time series
+     */
+    void scaleSource(RealMatrix&        scaledSource,
+                     const RealMatrix&  sourceInput,
+                     const IndexMatrix& sourceIndex,
+                     const size_t       manyFlag);
     /// Calculate initial pressure source.
     void addInitialPressureSource();
 
     /// Generate kappa matrix for  lossless medium.
     void generateKappa();
+    /// Generate sourceKappa matrix for additive sources.
+    void generateSourceKappa();
     /// Generate kappa matrix, absorbNabla1, absorbNabla2 for absorbing medium.
     void generateKappaAndNablas();
     /// Generate absorbTau, absorbEta for heterogenous medium.
@@ -306,11 +320,19 @@ class KSpaceFirstOrder3DSolver
 
     /**
      * @brief  Get the kappa matrix from the container.
-     * @return kappa matrix
+     * @return Kappa matrix.
      */
     RealMatrix& getKappa()
     {
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kKappa);
+    };
+    /**
+     * @brief  Get the sourceKappa matrix from the container.
+     * @return Source kappa matrix.
+     */
+    RealMatrix& getSourceKappa()
+    {
+      return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kSourceKappa);
     };
 
     /**
@@ -323,8 +345,8 @@ class KSpaceFirstOrder3DSolver
     };
 
     /**
-     * @brief  Get pressure matrix
-     * @return Pressure matrix
+     * @brief  Get pressure matrix.
+     * @return Pressure matrix.
      */
     RealMatrix& getP()
     {
@@ -760,7 +782,7 @@ class KSpaceFirstOrder3DSolver
      * @brief  Get Velocity source input data in x direction.
      * @return Velocity source input data.
      */
-    RealMatrix& GetVelocityXSourceInput()
+    RealMatrix& getVelocityXSourceInput()
     {
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kVelocityXSourceInput);
     };
@@ -768,7 +790,7 @@ class KSpaceFirstOrder3DSolver
      * @brief  Get Velocity source input data in y direction.
      * @return Velocity source input data.
      */
-    RealMatrix& GetVelocityYSourceInput()
+    RealMatrix& getVelocityYSourceInput()
     {
       return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kVelocityYSourceInput);
     };

@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            22 February  2019, 11:04 (revised)
+ *            24 February  2019, 12:11 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -293,7 +293,7 @@ __global__ void cudaComputeVelocityHomogeneousUniform(float*       uxSgx,
   const float dividerY = cudaDeviceConstants.dtRho0Sgy * cudaDeviceConstants.fftDivider;
   const float dividerZ = cudaDeviceConstants.dtRho0Sgz * cudaDeviceConstants.fftDivider;
 
-  for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
     const dim3 coords = getReal3DCoords(i);
 
@@ -381,7 +381,7 @@ __global__ void cudaComputeVelocityHomogeneousNonuniform(float*       uxSgx,
   const float DividerY = cudaDeviceConstants.dtRho0Sgy * cudaDeviceConstants.fftDivider;;
   const float DividerZ = cudaDeviceConstants.dtRho0Sgz * cudaDeviceConstants.fftDivider;
 
-  for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
     const dim3 coords = getReal3DCoords(i);
 
@@ -503,10 +503,10 @@ __global__ void cudaAddVelocitySource(float*        velocity,
                                       const size_t  timeIndex)
 {
   // Set 1D or 2D step for source
-  auto index2D = (cudaDeviceConstants.velocitySourceMany == 0)
-                 ? timeIndex : timeIndex * cudaDeviceConstants.velocitySourceSize;
+  const auto index2D = (cudaDeviceConstants.velocitySourceMany == 0)
+                       ? timeIndex : timeIndex * cudaDeviceConstants.velocitySourceSize;
 
-  if (cudaDeviceConstants.velocitySourceMode == 0)
+  if (cudaDeviceConstants.velocitySourceMode == Parameters::SourceMode::kDirichlet)
   {
     for (auto i = getIndex(); i < cudaDeviceConstants.velocitySourceSize; i += getStride())
     {
@@ -515,7 +515,7 @@ __global__ void cudaAddVelocitySource(float*        velocity,
     }// for
   }// end of Dirichlet
 
-  if (cudaDeviceConstants.velocitySourceMode == 1)
+  if (cudaDeviceConstants.velocitySourceMode == Parameters::SourceMode::kAdditiveNoCorrection)
   {
     for (auto i  = getIndex(); i < cudaDeviceConstants.velocitySourceSize; i += getStride())
     {
@@ -575,52 +575,63 @@ __global__ void cudaAddPressureSource(float*        rhoX,
                                       const size_t  timeIndex)
 {
   // Set 1D or 2D step for source
-  auto index2D = (cudaDeviceConstants.presureSourceMany == 0)
-                 ? timeIndex : timeIndex * cudaDeviceConstants.presureSourceSize;
+  const auto index2D = (cudaDeviceConstants.presureSourceMany == 0)
+                       ? timeIndex : timeIndex * cudaDeviceConstants.presureSourceSize;
 
-  if (cudaDeviceConstants.presureSourceMode == 0)
+  // different pressure sources
+  switch (cudaDeviceConstants.presureSourceMode)
   {
-    if (cudaDeviceConstants.presureSourceMany == 0)
-    { // single signal
-      for (auto i = getIndex(); i < cudaDeviceConstants.presureSourceSize; i += getStride())
-      {
-        rhoX[pressureSourceIndex[i]] = pressureSourceInput[index2D];
-        rhoY[pressureSourceIndex[i]] = pressureSourceInput[index2D];
-        rhoZ[pressureSourceIndex[i]] = pressureSourceInput[index2D];
+    case Parameters::SourceMode::kDirichlet:
+    {
+      if (cudaDeviceConstants.presureSourceMany == 0)
+      { // single signal
+        for (auto i = getIndex(); i < cudaDeviceConstants.presureSourceSize; i += getStride())
+        {
+          rhoX[pressureSourceIndex[i]] = pressureSourceInput[index2D];
+          rhoY[pressureSourceIndex[i]] = pressureSourceInput[index2D];
+          rhoZ[pressureSourceIndex[i]] = pressureSourceInput[index2D];
+        }
       }
-    }
-    else
-    { // multiple signals
-      for (auto i = getIndex(); i < cudaDeviceConstants.presureSourceSize; i += getStride())
-      {
-        rhoX[pressureSourceIndex[i]] = pressureSourceInput[index2D + i];
-        rhoY[pressureSourceIndex[i]] = pressureSourceInput[index2D + i];
-        rhoZ[pressureSourceIndex[i]] = pressureSourceInput[index2D + i];
+      else
+      { // multiple signals
+        for (auto i = getIndex(); i < cudaDeviceConstants.presureSourceSize; i += getStride())
+        {
+          rhoX[pressureSourceIndex[i]] = pressureSourceInput[index2D + i];
+          rhoY[pressureSourceIndex[i]] = pressureSourceInput[index2D + i];
+          rhoZ[pressureSourceIndex[i]] = pressureSourceInput[index2D + i];
+        }
       }
-    }
-  }// end mode == 0 (Cauchy)
+      break;
+    }// Dirichlet
 
-  if (cudaDeviceConstants.presureSourceMode == 1)
-  {
-    if (cudaDeviceConstants.presureSourceMany == 0)
-    { // single signal
-      for (auto i = getIndex(); i < cudaDeviceConstants.presureSourceSize; i += getStride())
-      {
-        rhoX[pressureSourceIndex[i]] += pressureSourceInput[index2D];
-        rhoY[pressureSourceIndex[i]] += pressureSourceInput[index2D];
-        rhoZ[pressureSourceIndex[i]] += pressureSourceInput[index2D];
+    case Parameters::SourceMode::kAdditiveNoCorrection:
+    {
+      if (cudaDeviceConstants.presureSourceMany == 0)
+      { // single signal
+        for (auto i = getIndex(); i < cudaDeviceConstants.presureSourceSize; i += getStride())
+        {
+          rhoX[pressureSourceIndex[i]] += pressureSourceInput[index2D];
+          rhoY[pressureSourceIndex[i]] += pressureSourceInput[index2D];
+          rhoZ[pressureSourceIndex[i]] += pressureSourceInput[index2D];
+        }
       }
-    }
-    else
-    { // multiple signals
-      for (auto i = getIndex(); i < cudaDeviceConstants.presureSourceSize; i += getStride())
-      {
-        rhoX[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
-        rhoY[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
-        rhoZ[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
+      else
+      { // multiple signals
+        for (auto i = getIndex(); i < cudaDeviceConstants.presureSourceSize; i += getStride())
+        {
+          rhoX[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
+          rhoY[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
+          rhoZ[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
+        }
       }
+      break;
     }
-  }// end mode == 0 (Dirichlet)
+    default:
+    {
+      break;
+    }
+  }// end switch
+
 }// end of cudaAddPressureSource
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -653,6 +664,186 @@ void SolverCudaKernels::addPressureSource(RealMatrix&        rhoX,
 }// end of addPressureSource
 //----------------------------------------------------------------------------------------------------------------------
 
+
+/**
+ * Cuda kernel to add pressure source to acoustic density.
+ *
+ * @tparam       isMany       - Is the Many flag set
+ * @param  [out] scaledSource - Temporary matrix to insert source before scaling.
+ * @param  [in]  sourceInput  - Source input signal.
+ * @param  [in]  sourceIndex  - Source geometry.
+ * @param  [in]  sourceSize   - Size of the source.
+ * @param  [in]  timeIndex    - Actual time step.
+ */
+template <bool isMany>
+__global__ void cudaInsertSourceIntoScalingMatrix(float*        scaledSource,
+                                                  const float*  sourceInput,
+                                                  const size_t* sourceIndex,
+                                                  const size_t  sourceSize,
+                                                  const size_t  timeIndex)
+{
+  // Set 1D or 2D step for source
+  const auto index2D = (isMany) ? timeIndex * sourceSize : timeIndex;
+
+  // different pressure sources
+  if (isMany)
+  { // multiple signals
+    for (auto i = getIndex(); i < sourceSize; i += getStride())
+    {
+      scaledSource[sourceIndex[i]] = sourceInput[index2D + i];
+    }
+  }
+  else
+  { // single signal
+    for (auto i = getIndex(); i < sourceSize; i += getStride())
+    {
+      scaledSource[sourceIndex[i]] = sourceInput[index2D];
+    }
+  }
+}// end of cudaInsertSourceIntoScalingMatrix
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Insert source signal into scaling matrix.
+ */
+void SolverCudaKernels::insertSourceIntoScalingMatrix(RealMatrix&        scaledSource,
+                                                      const RealMatrix&  sourceInput,
+                                                      const IndexMatrix& sourceIndex,
+                                                      const size_t       manyFlag,
+                                                      const size_t       timeIndex)
+{
+  const int sourceSize = static_cast<int>(sourceIndex.size());
+  // Grid size is calculated based on the source size
+  const int gridSize  = (sourceSize < (getSolverGridSize1D() *  getSolverBlockSize1D()))
+                        ? (sourceSize + getSolverBlockSize1D() - 1) / getSolverBlockSize1D()
+                        :  getSolverGridSize1D();
+
+
+  if (manyFlag == 0)
+  {
+    cudaInsertSourceIntoScalingMatrix<false>
+                                     <<<gridSize,getSolverBlockSize1D()>>>
+                                     (scaledSource.getDeviceData(),
+                                      sourceInput.getDeviceData(),
+                                      sourceIndex.getDeviceData(),
+                                      sourceIndex.size(),
+                                      timeIndex);
+  }
+  else
+  {
+    cudaInsertSourceIntoScalingMatrix<true>
+                                     <<<gridSize,getSolverBlockSize1D()>>>
+                                     (scaledSource.getDeviceData(),
+                                      sourceInput.getDeviceData(),
+                                      sourceIndex.getDeviceData(),
+                                      sourceIndex.size(),
+                                      timeIndex);
+  }
+
+  // check for errors
+  cudaCheckErrors(cudaGetLastError());
+}// end of insertSourceIntoScalingMatrix
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Cuda kernel to calculate source gradient.
+ *
+ * @param sourceSpectrum [in, out] - Source spectrum.
+ * @param sourceKappa    [in]      - Source kappa.
+ */
+__global__ void cudaComputeSourceGradient(cuFloatComplex* sourceSpectrum,
+                                          const float*    sourceKappa)
+{
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElementsComplex; i += getStride())
+  {
+    sourceSpectrum[i] *= sourceKappa[i] * cudaDeviceConstants.fftDivider;
+  }
+}// end of cudaComputePressureGradient
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Calculate source gradient.
+ */
+void SolverCudaKernels::computeSourceGradient(CufftComplexMatrix& sourceSpectrum,
+                                              const RealMatrix&   sourceKappa)
+{
+  cudaComputeSourceGradient<<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                           (reinterpret_cast<cuFloatComplex*>(sourceSpectrum.getDeviceData()),
+                            sourceKappa.getDeviceData());
+  // check for errors
+  cudaCheckErrors(cudaGetLastError());
+}// end of computeSourceGradient
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Cuda kernel to add scaled pressure source to acoustic density.
+ * @param [in, out] velocity     - Velocity matrix to update.
+ * @param [in]      scaledSource - Scaled source.
+ */
+__global__ void cudaAddVelocityScaledSource(float*       velocity,
+                                            const float* scaledSource)
+{
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
+  {
+    velocity[i] += scaledSource[i];
+  }
+}// end of cudaComputePressureGradient
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Add scaled pressure source to acoustic density.
+ */
+void SolverCudaKernels::addVelocityScaledSource(RealMatrix&        velocity,
+                                                const RealMatrix&  scaledSource)
+{
+  cudaAddVelocityScaledSource<<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                             (velocity.getDeviceData(),
+                              scaledSource.getDeviceData());
+  // check for errors
+  cudaCheckErrors(cudaGetLastError());
+}// end of AddVelocityScaledSource
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Cuda kernel to add scaled pressure source to acoustic density.
+ *
+ * @param [in, out] rhoX         - Acoustic density.
+ * @param [in, out] rhoY         - Acoustic density.
+ * @param [in, out] rhoZ         - Acoustic density.
+ * @param [in]      scaledSource - Scaled source.
+ */
+__global__ void cudaAddPressureScaledSource(float*       rhoX,
+                                            float*       rhoY,
+                                            float*       rhoZ,
+                                            const float* scaledSource)
+{
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
+  {
+    const float eSaledSource = scaledSource[i];
+    rhoX[i] += eSaledSource;
+    rhoY[i] += eSaledSource;
+    rhoZ[i] += eSaledSource;
+  }
+}// end of cudaComputePressureGradient
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Add scaled pressure source to acoustic density.
+ */
+void SolverCudaKernels::addPressureScaledSource(RealMatrix&        rhoX,
+                                                RealMatrix&        rhoY,
+                                                RealMatrix&        rhoZ,
+                                                const RealMatrix&  scaledSource)
+{
+  cudaAddPressureScaledSource<<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                             (rhoX.getDeviceData(),
+                              rhoY.getDeviceData(),
+                              rhoZ.getDeviceData(),
+                              scaledSource.getDeviceData());
+  // check for errors
+  cudaCheckErrors(cudaGetLastError());
+}// end of AddPressureScaledSource
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Cuda kernel to add initial pressure initialPerssureSource into p, rhoX, rhoY, rhoZ.
@@ -855,7 +1046,7 @@ __global__ void cudaComputeInitialVelocityHomogeneousNonuniform(float*       uxS
   const float dividerY = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgy;
   const float dividerZ = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgz;
 
-  for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
     const dim3 coords = getReal3DCoords(i);
 
@@ -919,7 +1110,7 @@ __global__ void cudaComputePressureGradient(cuFloatComplex*       ifftX,
                                             const cuFloatComplex* ddyKShiftPos,
                                             const cuFloatComplex* ddzKShiftPos)
 {
-  for(auto i = getIndex(); i < cudaDeviceConstants.nElementsComplex; i += getStride())
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElementsComplex; i += getStride())
   {
     const dim3 coords = getComplex3DCoords(i);
 
@@ -986,7 +1177,7 @@ __global__  void cudaComputeVelocityGradient(cuFloatComplex*       fftX,
                                              const cuFloatComplex* ddyKShiftNeg,
                                              const cuFloatComplex* ddzKShiftNeg)
 {
-  for(auto i = getIndex(); i < cudaDeviceConstants.nElementsComplex; i += getStride())
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElementsComplex; i += getStride())
   {
     const dim3 coords = getComplex3DCoords(i);
 
@@ -1050,7 +1241,7 @@ __global__  void cudaComputeVelocityGradientShiftNonuniform(float*       duxdx,
                                                             const float* dyudyn,
                                                             const float* dzudzn)
 {
-  for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
     const dim3 coords = getReal3DCoords(i);
 
@@ -1464,7 +1655,7 @@ __global__ void cudaComputePressureTermsLinear(float*       densitySum,
                                                const float* duzdz,
                                                const float* rho0Data)
 {
-  for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
     const float rho0 = (isRho0Scalar) ? cudaDeviceConstants.rho0 : rho0Data[i];
 
@@ -1541,7 +1732,7 @@ __global__ void cudaComputeAbsorbtionTerm(cuFloatComplex* fftPart1,
                                           const float*    absorbNabla1,
                                           const float*    absorbNabla2)
 {
-  for(auto i = getIndex(); i < cudaDeviceConstants.nElementsComplex; i += getStride())
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElementsComplex; i += getStride())
   {
     fftPart1[i] *= absorbNabla1[i];
     fftPart2[i] *= absorbNabla2[i];
@@ -1592,7 +1783,7 @@ __global__ void cudaSumPressureTermsNonlinear(float*       p,
                                               const float* absorbTauData,
                                               const float* absorbEtaData)
 {
-  for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
     const float c2        = (isC2Scalar)         ? cudaDeviceConstants.c2  : c2Data[i];
     const float absorbTau = (areTauAndEtaScalar) ? cudaDeviceConstants.absorbTau : absorbTauData[i];
@@ -1700,7 +1891,7 @@ __global__ void cudaSumPressureTermsLinear(float*       p,
                                            const float* absorbTauData,
                                            const float* absorbEtaData)
 {
-  for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
     const float c2        = (isC2Scalar)         ? cudaDeviceConstants.c2        : c2Data[i];
     const float absorbTau = (areTauAndEtaScalar) ? cudaDeviceConstants.absorbTau : absorbTauData[i];
@@ -1810,7 +2001,7 @@ __global__ void cudaSumPressureNonlinearLossless(float*       p,
                                                  const float* bOnAData,
                                                  const float* rho0Data)
 {
-  for(auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
+  for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
     const float c2   = (isC2Scalar)   ? cudaDeviceConstants.c2   : c2Data[i];
     const float bOnA = (isBOnAScalar) ? cudaDeviceConstants.bOnA : bOnAData[i];
@@ -1976,7 +2167,7 @@ __global__ void cudaSumPressureLinearLossless(float*       p,
                                               const float* rhoZ,
                                               const float* c2Data)
 {
-  for(auto  i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
+  for (auto  i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
     const float c2 = (isC2Scalar) ? cudaDeviceConstants.c2 : c2Data[i];
     p[i] = c2 * (rhoX[i] + rhoY[i] + rhoZ[i]);

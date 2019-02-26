@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            22 February  2019, 12:31 (revised)
+ *            24 February  2019, 12:12 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -726,6 +726,17 @@ void KSpaceFirstOrder3DSolver::preProcessing()
     generateKappa();
   }
 
+  // Generate sourceKappa
+  if (((mParameters.getVelocitySourceMode() == Parameters::SourceMode::kAdditive) ||
+       (mParameters.getPressureSourceMode() == Parameters::SourceMode::kAdditive)) &&
+      (mParameters.getPressureSourceFlag()  ||
+       mParameters.getVelocityXSourceFlag() ||
+       mParameters.getVelocityYSourceFlag() ||
+       mParameters.getVelocityZSourceFlag()))
+  {
+    generateSourceKappa();
+  }
+
   // calculate c^2. It has to be after kappa gen... because of c modification
   computeC2();
 
@@ -1301,26 +1312,70 @@ void KSpaceFirstOrder3DSolver::addVelocitySource()
 {
   size_t timeIndex = mParameters.getTimeIndex();
 
-  if (mParameters.getVelocityXSourceFlag() > timeIndex)
-  {
-    SolverCudaKernels::addVelocitySource(getUxSgx(),
-                                         GetVelocityXSourceInput(),
-                                         getVelocitySourceIndex(),
-                                         timeIndex);
+  if (mParameters.getVelocitySourceMode() != Parameters::SourceMode::kAdditive)
+  { // executed Dirichlet and AdditiveNoCorrection source
+    if (mParameters.getVelocityXSourceFlag() > timeIndex)
+    {
+      SolverCudaKernels::addVelocitySource(getUxSgx(),
+                                           getVelocityXSourceInput(),
+                                           getVelocitySourceIndex(),
+                                           timeIndex);
+    }
+    if (mParameters.getVelocityYSourceFlag() > timeIndex)
+    {
+      SolverCudaKernels::addVelocitySource(getUySgy(),
+                                           getVelocityYSourceInput(),
+                                           getVelocitySourceIndex(),
+                                           timeIndex);
+    }
+    if (mParameters.getVelocityZSourceFlag() > timeIndex)
+    {
+      SolverCudaKernels::addVelocitySource(getUzSgz(),
+                                           getVelocityZSourceInput(),
+                                           getVelocitySourceIndex(),
+                                           timeIndex);
+    }
   }
-  if (mParameters.getVelocityYSourceFlag() > timeIndex)
-  {
-    SolverCudaKernels::addVelocitySource(getUySgy(),
-                                         GetVelocityYSourceInput(),
-                                         getVelocitySourceIndex(),
-                                         timeIndex);
-  }
-  if (mParameters.getVelocityZSourceFlag() > timeIndex)
-  {
-    SolverCudaKernels::addVelocitySource(getUzSgz(),
-                                         getVelocityZSourceInput(),
-                                         getVelocitySourceIndex(),
-                                         timeIndex);
+  else
+  { // execute Additive source
+    if (mParameters.getVelocityXSourceFlag() > timeIndex)
+    {
+      RealMatrix& scaledSource = getTemp1Real3D();
+
+      scaleSource(scaledSource,
+                  getVelocityXSourceInput(),
+                  getVelocitySourceIndex(),
+                  mParameters.getVelocitySourceMany());
+
+      // Insert source
+      SolverCudaKernels::addVelocityScaledSource(getUxSgx(), scaledSource);
+    }
+
+    if (mParameters.getVelocityYSourceFlag() > timeIndex)
+    {
+      RealMatrix& scaledSource = getTemp1Real3D();
+
+      scaleSource(scaledSource,
+                  getVelocityYSourceInput(),
+                  getVelocitySourceIndex(),
+                  mParameters.getVelocitySourceMany());
+
+      // Insert source
+      SolverCudaKernels::addVelocityScaledSource(getUySgy(), scaledSource);
+    }
+
+    if (mParameters.getVelocityZSourceFlag() > timeIndex)
+    {
+      RealMatrix& scaledSource = getTemp1Real3D();
+
+      scaleSource(scaledSource,
+                  getVelocityZSourceInput(),
+                  getVelocitySourceIndex(),
+                  mParameters.getVelocitySourceMany());
+
+      // Insert source
+      SolverCudaKernels::addVelocityScaledSource(getUzSgz(), scaledSource);
+    }
   }
 }// end of addVelocitySource
 //----------------------------------------------------------------------------------------------------------------------
@@ -1334,14 +1389,59 @@ void KSpaceFirstOrder3DSolver::addPressureSource()
 
   if (mParameters.getPressureSourceFlag() > timeIndex)
   {
-    SolverCudaKernels::addPressureSource(getRhoX(),
-                                         getRhoY(),
-                                         getRhoZ(),
-                                         getPressureSourceInput(),
-                                         getPressureSourceIndex(),
-                                         timeIndex);
-  }//
+    if (mParameters.getPressureSourceMode() != Parameters::SourceMode::kAdditive)
+    { // executed Dirichlet and AdditiveNoCorrection source
+      SolverCudaKernels::addPressureSource(getRhoX(),
+                                           getRhoY(),
+                                           getRhoZ(),
+                                           getPressureSourceInput(),
+                                           getPressureSourceIndex(),
+                                           timeIndex);
+    }
+    else
+    { // execute Additive source
+      RealMatrix& scaledSource = getTemp1Real3D();
+
+      scaleSource(scaledSource,
+                  getPressureSourceInput(),
+                  getPressureSourceIndex(),
+                  mParameters.getPressureSourceMany());
+
+      // Insert source
+      SolverCudaKernels::addPressureScaledSource(getRhoX(),
+                                                 getRhoY(),
+                                                 getRhoZ(),
+                                                 scaledSource);
+    } // Additive source
+  } // apply source
 }// end of AddPressureSource
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Scale source signal 
+ */
+void KSpaceFirstOrder3DSolver::scaleSource(RealMatrix&        scaledSource,
+                                           const RealMatrix&  sourceInput,
+                                           const IndexMatrix& sourceIndex,
+                                           const size_t       manyFlag)
+{
+  CufftComplexMatrix& cufftMatrix  = getTempCufftX();
+
+  // Zero source scaling matrix on GPU.
+  scaledSource.zeroDeviceMatrix();
+  // Inject source to scaling matrix
+  SolverCudaKernels::insertSourceIntoScalingMatrix(scaledSource,
+                                                   sourceInput,
+                                                   sourceIndex,
+                                                   manyFlag,
+                                                   mParameters.getTimeIndex());
+  // Compute FFT
+  cufftMatrix.computeR2CFft3D(scaledSource);
+  // Calculate gradient
+  SolverCudaKernels::computeSourceGradient(cufftMatrix, getSourceKappa());
+  // Compute iFFT
+  cufftMatrix.computeC2RFft3D(scaledSource);
+}// end of scaleSource
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -1473,12 +1573,66 @@ void KSpaceFirstOrder3DSolver::generateKappa()
                 float k = cRefDtPi * sqrt(xPart + yzPart);
 
           // kappa element
-          kappa[(z * ny + y) * nx + x ] = (k == 0.0f) ? 1.0f : sin(k) / k;
+          kappa[(z * ny + y) * nx + x] = (k == 0.0f) ? 1.0f : sin(k) / k;
         }//x
       }//y
     }// z
   }// parallel
 }// end of generateKappa
+//----------------------------------------------------------------------------------------------------------------------
+
+
+/**
+ * Generate sourceKappa matrix for additive sources.
+ * For 2D simulation, the zPart == 0.
+ */
+void KSpaceFirstOrder3DSolver::generateSourceKappa()
+{
+  const float dx2Rec = 1.0f / (mParameters.getDx() * mParameters.getDx());
+  const float dy2Rec = 1.0f / (mParameters.getDy() * mParameters.getDy());
+  const float dz2Rec = 1.0f / (mParameters.getDz() * mParameters.getDz());
+
+  const float cRefDtPi = mParameters.getCRef() * mParameters.getDt() * static_cast<float>(M_PI);
+
+  const float nxRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().nx);
+  const float nyRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().ny);
+  const float nzRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().nz);
+
+  const size_t nx = mParameters.getReducedDimensionSizes().nx;
+  const size_t ny = mParameters.getReducedDimensionSizes().ny;
+  const size_t nz = mParameters.getReducedDimensionSizes().nz;
+
+
+  float* sourceKappa = getSourceKappa().getHostData();
+
+  #pragma omp parallel for schedule(static)
+  for (size_t z = 0; z < nz; z++)
+  {
+    const float zf    = static_cast<float>(z);
+          float zPart = 0.5f - fabs(0.5f - zf * nzRec);
+                zPart = (zPart * zPart) * dz2Rec;
+
+    for (size_t y = 0; y < ny; y++)
+    {
+      const float yf    = static_cast<float>(y);
+            float yPart = 0.5f - fabs(0.5f - yf * nyRec);
+                  yPart = (yPart * yPart) * dy2Rec;
+
+      const float yzPart = zPart + yPart;
+      for (size_t x = 0; x < nx; x++)
+      {
+        const float xf = static_cast<float>(x);
+              float xPart = 0.5f - fabs(0.5f - xf * nxRec);
+                    xPart = (xPart * xPart) * dx2Rec;
+
+              float k = cRefDtPi * sqrt(xPart + yzPart);
+
+        // sourceKappa element
+        sourceKappa[(z * ny + y) * nx + x] = cos(k);
+      }//x
+    }//y
+  }// z
+}// end of generateSourceKappa
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
