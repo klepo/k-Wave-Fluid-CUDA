@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      09 August    2011, 12:34 (created) \n
- *            22 February  2019, 15:54 (revised)
+ *            26 February  2019, 15:55 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -59,9 +59,12 @@ constexpr int kDataAlignment  = 16;
 
 /**
  * @struct  DimensionSizes
- * @brief   Structure with 4D dimension sizes (3 in space and 1 in time).
- * @details Structure with 4D dimension sizes (3 in space and 1 in time).
- * The structure can be used for 3D (the time is then set to 1). \n
+ * @brief   Structure with 4D dimension sizes (up to 3 in space and 1 in time).
+ * @details Structure containing dimension sizes. \n
+ *   \li 4D objects (Nx, Ny, Nz, Nt).
+ *   \li 3D objects (Nx, Ny, Nz, 0) - Nt must be 0. If we don't sample in time we make 3D datasets, otherwise 4D.
+ *   \li 2D objects (Nx, Ny,  1, 0) - Nt must be 1 and Nz must be 1 since all datasets are stored internally as 3D.
+ *
  * The structure contains only POD, so no C++ stuff is necessary.
  */
 struct DimensionSizes
@@ -78,27 +81,39 @@ struct DimensionSizes
     : nx(x), ny(y), nz(z), nt(t)
   {};
 
+  /// Default constructor.
+  ~DimensionSizes() = default;
+
   /**
-   * @brief Get the number of elements, in 3D only spatial domain, in 4D with time.
-   * @details Get element count, in 3D only spatial domain, in 4D with time.
-   * @return the number of elements the domain holds.
+   * @brief   Get the number of elements in all used dimensions.
+   * @details Get the number of elements in used dimension sizes.
+   * @return  the number of elements the domain holds.
    */
   inline size_t nElements() const
   {
-    return (is3D()) ? nx * ny * nz : nx * ny * nz * nt;
+    return (!is4D()) ? nx * ny * nz : nx * ny * nz * nt;
   };
 
   /**
-   * @brief  Does the object include spatial dimensions only?
+   * @brief  Does the object only include 2 dimensions?
+   * @return true if the dimensions are 2D.
+   */
+  inline bool is2D() const
+  {
+    return ((nz == 1) && (nt == 0));
+  };
+
+  /**
+   * @brief  Does the object only include 3 spatial dimensions?
    * @return true if the dimensions are 3D.
    */
   inline bool is3D() const
   {
-    return (nt == 0);
+    return (nz > 1) && (nt == 0);
   };
 
   /**
-   * @brief  Does the object include spatial and temporal dimensions?
+   * @brief  Does the object include all spatial and temporal dimensions?
    * @return true if the dimensions are 4D.
    */
   inline bool is4D() const
@@ -118,7 +133,7 @@ struct DimensionSizes
 
   /**
    * @brief Operator !=
-   * @param [in] other    - the second operand to compare with.
+   * @param [in] other - the second operand to compare with.
    * @return true if !=
    */
   inline bool operator!=(const DimensionSizes& other) const
@@ -139,7 +154,7 @@ struct DimensionSizes
                                          const DimensionSizes& op2)
   {
     // +1 because of planes (10.10.1 - 60.40.1)
-    if (op1.is3D() && op2.is3D())
+    if (!op1.is4D() && !op2.is4D())
     {
       return DimensionSizes(op1.nx - op2.nx + 1, op1.ny - op2.ny + 1, op1.nz - op2.nz + 1);
     }
