@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            27 February  2019, 11:22 (revised)
+ *            27 February  2019, 15:53 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -165,12 +165,13 @@ class KSpaceFirstOrderSolver
     void initializeCufftPlans();
     /**
      * @brief Compute pre-processing phase.
-     *
+     * @tparam simulationDimension - Dimensionality of the simulation.
      * Initialize all indices, pre-compute constants such as c^2, rho0Sgx * dt  and create kappa,
      * absorbEta, absorbTau, absorbNabla1, absorbNabla2  matrices.
      *
      * @note Calculation is done on the host side.
      */
+    template<Parameters::SimulationDimension simulationDimension>
     void preProcessing();
     /// Compute the main time loop of the kspaceFirstOrder solver.
     void computeMainLoop();
@@ -231,7 +232,11 @@ class KSpaceFirstOrderSolver
     void generateKappaAndNablas();
     /// Generate absorbTau, absorbEta for heterogenous medium.
     void generateTauAndEta();
-    /// Calculate dt ./ rho0 for nonuniform grids.
+    /**
+     * @brief Calculate dt ./ rho0 for nonuniform grids.
+     * @tparam simulationDimension - Dimensionality of the simulation.
+     */
+    template<Parameters::SimulationDimension simulationDimension>
     void generateInitialDenisty();
     /// Calculate square of velocity
     void computeC2();
@@ -315,6 +320,19 @@ class KSpaceFirstOrderSolver
 
     /// Reads the header of the output file and sets the cumulative elapsed time from the first log.
     void loadElapsedTimeFromOutputFile();
+
+    /**
+     * @brief Compute 1D index using 3 spatial coordinates and the size of the matrix.
+     * @param [in] z              - z coordinate
+     * @param [in] y              - y coordinate
+     * @param [in] x              - x coordinate
+     * @param [in] dimensionSizes - Size of the matrix.
+     * @return
+     */
+    size_t get1DIndex(const size_t          z,
+                      const size_t          y,
+                      const size_t          x,
+                      const DimensionSizes& dimensionSizes);
 
     //----------------------------------------------- Get matrices ---------------------------------------------------//
 

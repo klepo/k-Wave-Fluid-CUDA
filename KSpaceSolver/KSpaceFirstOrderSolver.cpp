@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            24 February  2019, 11:22 (revised)
+ *            27 February  2019, 15:54 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -66,6 +66,8 @@
 using std::string;
 using std::ios;
 
+/// shortcut for Simulation dimensions
+using SD = Parameters::SimulationDimension;
 
 //--------------------------------------------------------------------------------------------------------------------//
 //---------------------------------------------------- Constants -----------------------------------------------------//
@@ -258,8 +260,12 @@ void KSpaceFirstOrderSolver::compute()
     Logger::log(Logger::LogLevel::kBasic,kOutFmtPreProcessing);
     Logger::flush(Logger::LogLevel::kBasic);
 
+
     // preprocessing is done on CPU and must pretend the CUDA configuration
-    preProcessing();
+    if (mParameters.isSimulation3D())
+      preProcessing<SD::k3D>();
+    else
+      preProcessing<SD::k2D>();
 
     mPreProcessingTime.stop();
     // Set kernel configurations
@@ -658,8 +664,11 @@ void KSpaceFirstOrderSolver::initializeCufftPlans()
     CufftComplexMatrix::createC2RFftPlan1DY(mParameters.getFullDimensionSizes());
 
     // Z shifts
-    CufftComplexMatrix::createR2CFftPlan1DZ(mParameters.getFullDimensionSizes());
-    CufftComplexMatrix::createC2RFftPlan1DZ(mParameters.getFullDimensionSizes());
+    if (mParameters.isSimulation3D())
+    {
+      CufftComplexMatrix::createR2CFftPlan1DZ(mParameters.getFullDimensionSizes());
+      CufftComplexMatrix::createC2RFftPlan1DZ(mParameters.getFullDimensionSizes());
+   }
   }// end u_non_staggered
 }// end of initializeCufftPlans
 //----------------------------------------------------------------------------------------------------------------------
@@ -667,6 +676,7 @@ void KSpaceFirstOrderSolver::initializeCufftPlans()
 /**
  * Compute pre-processing phase.
  */
+template<Parameters::SimulationDimension simulationDimension>
 void KSpaceFirstOrderSolver::preProcessing()
 {
   // get the correct sensor mask and recompute indices
@@ -705,13 +715,16 @@ void KSpaceFirstOrderSolver::preProcessing()
     // rho is matrix
     if (mParameters.getNonUniformGridFlag())
     {
-      generateInitialDenisty();
+      generateInitialDenisty<simulationDimension>();
     }
     else
     {
       getDtRho0Sgx().scalarDividedBy(mParameters.getDt());
       getDtRho0Sgy().scalarDividedBy(mParameters.getDt());
-      getDtRho0Sgz().scalarDividedBy(mParameters.getDt());
+      if (simulationDimension == SD::k3D)
+      {
+        getDtRho0Sgz().scalarDividedBy(mParameters.getDt());
+      }
     }
   }
 
@@ -1529,55 +1542,56 @@ void KSpaceFirstOrderSolver::addInitialPressureSource()
 
 /**
  * Generate kappa matrix for lossless medium.
+ * For 2D simulation, the zPart == 0.
  */
 void KSpaceFirstOrderSolver::generateKappa()
 {
-  #pragma omp parallel
+  const float dx2Rec = 1.0f / (mParameters.getDx() * mParameters.getDx());
+  const float dy2Rec = 1.0f / (mParameters.getDy() * mParameters.getDy());
+  // For 2D simulation set dz to 0
+  const float dz2Rec = (mParameters.isSimulation3D()) ? 1.0f / (mParameters.getDz() * mParameters.getDz()) : 0.0f;
+
+  const float cRefDtPi = mParameters.getCRef() * mParameters.getDt() * static_cast<float>(M_PI);
+
+  const float nxRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().nx);
+  const float nyRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().ny);
+  // For 2D simulation, nzRec remains 1
+  const float nzRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().nz);
+
+  const DimensionSizes& reducedDimensionSizes = mParameters.getReducedDimensionSizes();
+
+  float* kappa = getKappa().getHostData();
+
+  #pragma omp parallel for schedule(static) if (mParameters.isSimulation3D())
+  for (size_t z = 0; z < reducedDimensionSizes.nz; z++)
   {
-    const float dx2Rec = 1.0f / (mParameters.getDx() * mParameters.getDx());
-    const float dy2Rec = 1.0f / (mParameters.getDy() * mParameters.getDy());
-    const float dz2Rec = 1.0f / (mParameters.getDz() * mParameters.getDz());
+    const float zf    = static_cast<float>(z);
+          float zPart = 0.5f - fabs(0.5f - zf * nzRec);
+                zPart = (zPart * zPart) * dz2Rec;
 
-    const float cRefDtPi = mParameters.getCRef() * mParameters.getDt() * static_cast<float>(M_PI);
-
-    const float nxRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().nx);
-    const float nyRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().ny);
-    const float nzRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().nz);
-
-    const size_t nx = mParameters.getReducedDimensionSizes().nx;
-    const size_t ny = mParameters.getReducedDimensionSizes().ny;
-    const size_t nz = mParameters.getReducedDimensionSizes().nz;
-
-    float* kappa = getKappa().getHostData();
-
-    #pragma omp for schedule (static)
-    for (size_t z = 0; z < nz; z++)
+    #pragma omp parallel for schedule(static) if (mParameters.isSimulation2D())
+    for (size_t y = 0; y < reducedDimensionSizes.ny; y++)
     {
-      const float zf    = static_cast<float>(z);
-            float zPart = 0.5f - fabs(0.5f - zf * nzRec);
-                  zPart = (zPart * zPart) * dz2Rec;
+      const float yf    = static_cast<float>(y);
+            float yPart = 0.5f - fabs(0.5f - yf * nyRec);
+                  yPart = (yPart * yPart) * dy2Rec;
 
-      for (size_t y = 0; y < ny; y++)
+      const float yzPart = zPart + yPart;
+      for (size_t x = 0; x < reducedDimensionSizes.nx; x++)
       {
-        const float yf    = static_cast<float>(y);
-              float yPart = 0.5f - fabs(0.5f - yf * nyRec);
-                    yPart = (yPart * yPart) * dy2Rec;
+        const float xf = static_cast<float>(x);
+              float xPart = 0.5f - fabs(0.5f - xf * nxRec);
+                    xPart = (xPart * xPart) * dx2Rec;
 
-        const float yzPart = zPart + yPart;
-        for (size_t x = 0; x < nx; x++)
-        {
-          const float xf = static_cast<float>(x);
-                float xPart = 0.5f - fabs(0.5f - xf * nxRec);
-                      xPart = (xPart * xPart) * dx2Rec;
+              float k = cRefDtPi * sqrt(xPart + yzPart);
 
-                float k = cRefDtPi * sqrt(xPart + yzPart);
+        const size_t i = get1DIndex(z, y, x, reducedDimensionSizes);
 
-          // kappa element
-          kappa[(z * ny + y) * nx + x] = (k == 0.0f) ? 1.0f : sin(k) / k;
-        }//x
-      }//y
-    }// z
-  }// parallel
+        // kappa element
+        kappa[i] = (k == 0.0f) ? 1.0f : sin(k) / k;
+      }//x
+    }//y
+  }// z
 }// end of generateKappa
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -1590,7 +1604,7 @@ void KSpaceFirstOrderSolver::generateSourceKappa()
 {
   const float dx2Rec = 1.0f / (mParameters.getDx() * mParameters.getDx());
   const float dy2Rec = 1.0f / (mParameters.getDy() * mParameters.getDy());
-  const float dz2Rec = 1.0f / (mParameters.getDz() * mParameters.getDz());
+  const float dz2Rec = (mParameters.isSimulation3D()) ? 1.0f / (mParameters.getDz() * mParameters.getDz()) : 0.0f;
 
   const float cRefDtPi = mParameters.getCRef() * mParameters.getDt() * static_cast<float>(M_PI);
 
@@ -1598,28 +1612,26 @@ void KSpaceFirstOrderSolver::generateSourceKappa()
   const float nyRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().ny);
   const float nzRec = 1.0f / static_cast<float>(mParameters.getFullDimensionSizes().nz);
 
-  const size_t nx = mParameters.getReducedDimensionSizes().nx;
-  const size_t ny = mParameters.getReducedDimensionSizes().ny;
-  const size_t nz = mParameters.getReducedDimensionSizes().nz;
-
+  const DimensionSizes& reducedDimensionSizes = mParameters.getReducedDimensionSizes();
 
   float* sourceKappa = getSourceKappa().getHostData();
 
-  #pragma omp parallel for schedule(static)
-  for (size_t z = 0; z < nz; z++)
+  #pragma omp parallel for schedule(static) if (mParameters.isSimulation3D())
+  for (size_t z = 0; z < reducedDimensionSizes.nz; z++)
   {
     const float zf    = static_cast<float>(z);
           float zPart = 0.5f - fabs(0.5f - zf * nzRec);
                 zPart = (zPart * zPart) * dz2Rec;
 
-    for (size_t y = 0; y < ny; y++)
+    #pragma omp parallel for schedule(static) if (mParameters.isSimulation2D())
+    for (size_t y = 0; y < reducedDimensionSizes.ny; y++)
     {
       const float yf    = static_cast<float>(y);
             float yPart = 0.5f - fabs(0.5f - yf * nyRec);
                   yPart = (yPart * yPart) * dy2Rec;
 
       const float yzPart = zPart + yPart;
-      for (size_t x = 0; x < nx; x++)
+      for (size_t x = 0; x < reducedDimensionSizes.nx; x++)
       {
         const float xf = static_cast<float>(x);
               float xPart = 0.5f - fabs(0.5f - xf * nxRec);
@@ -1627,8 +1639,10 @@ void KSpaceFirstOrderSolver::generateSourceKappa()
 
               float k = cRefDtPi * sqrt(xPart + yzPart);
 
+        const size_t i = get1DIndex(z, y, x, reducedDimensionSizes);
+
         // sourceKappa element
-        sourceKappa[(z * ny + y) * nx + x] = cos(k);
+        sourceKappa[i] = cos(k);
       }//x
     }//y
   }// z
@@ -1637,74 +1651,69 @@ void KSpaceFirstOrderSolver::generateSourceKappa()
 
 /**
  * Generate kappa, absorb_nabla1, absorb_nabla2 for absorbing medium.
+ * For the 2D simulation the zPart == 0
  */
 void KSpaceFirstOrderSolver::generateKappaAndNablas()
 {
-  #pragma omp parallel
+  const float dxSqRec    = 1.0f / (mParameters.getDx() * mParameters.getDx());
+  const float dySqRec    = 1.0f / (mParameters.getDy() * mParameters.getDy());
+  const float dzSqRec    = (mParameters.isSimulation3D()) ? 1.0f / (mParameters.getDz() * mParameters.getDz()) : 0.0f;
+
+  const float cRefDt2    = mParameters.getCRef() * mParameters.getDt() * 0.5f;
+  const float pi2        = static_cast<float>(M_PI) * 2.0f;
+
+  const size_t nx        = mParameters.getFullDimensionSizes().nx;
+  const size_t ny        = mParameters.getFullDimensionSizes().ny;
+  const size_t nz        = mParameters.getFullDimensionSizes().nz;
+
+  const float nxRec      = 1.0f / static_cast<float>(nx);
+  const float nyRec      = 1.0f / static_cast<float>(ny);
+  const float nzRec      = 1.0f / static_cast<float>(nz);
+
+  const DimensionSizes& reducedDimensionSizes = mParameters.getReducedDimensionSizes();
+
+  float* kappa           = getKappa().getHostData();
+  float* absorbNabla1    = getAbsorbNabla1().getHostData();
+  float* absorbNabla2    = getAbsorbNabla2().getHostData();
+  const float alphaPower = mParameters.getAlphaPower();
+
+  #pragma omp parallel for schedule(static) if (mParameters.isSimulation3D())
+  for (size_t z = 0; z < reducedDimensionSizes.nz; z++)
   {
-    const float dxSqRec    = 1.0f / (mParameters.getDx() * mParameters.getDx());
-    const float dySqRec    = 1.0f / (mParameters.getDy() * mParameters.getDy());
-    const float dzSqRec    = 1.0f / (mParameters.getDz() * mParameters.getDz());
+    const float zf    = static_cast<float>(z);
+          float zPart = 0.5f - fabs(0.5f - zf * nzRec);
+                zPart = (zPart * zPart) * dzSqRec;
 
-    const float cRefDt2    = mParameters.getCRef() * mParameters.getDt() * 0.5f;
-    const float pi2        = static_cast<float>(M_PI) * 2.0f;
-
-    const size_t nx        = mParameters.getFullDimensionSizes().nx;
-    const size_t ny        = mParameters.getFullDimensionSizes().ny;
-    const size_t nz        = mParameters.getFullDimensionSizes().nz;
-
-    const float nxRec      = 1.0f / static_cast<float>(nx);
-    const float nyRec      = 1.0f / static_cast<float>(ny);
-    const float nzRec      = 1.0f / static_cast<float>(nz);
-
-    const size_t nxComplex = mParameters.getReducedDimensionSizes().nx;
-    const size_t nyComplex = mParameters.getReducedDimensionSizes().ny;
-    const size_t nzComplex = mParameters.getReducedDimensionSizes().nz;
-
-    float* kappa           = getKappa().getHostData();
-    float* absorbNabla1    = getAbsorbNabla1().getHostData();
-    float* absorbNabla2    = getAbsorbNabla2().getHostData();
-    const float alphaPower = mParameters.getAlphaPower();
-
-    #pragma omp for schedule (static)
-    for (size_t z = 0; z < nzComplex; z++)
+    #pragma omp parallel for schedule(static) if (mParameters.isSimulation2D())
+    for (size_t y = 0; y < reducedDimensionSizes.ny; y++)
     {
-      const float zf    = static_cast<float>(z);
-            float zPart = 0.5f - fabs(0.5f - zf * nzRec);
-                  zPart = (zPart * zPart) * dzSqRec;
+      const float yf    = static_cast<float>(y);
+            float yPart = 0.5f - fabs(0.5f - yf * nyRec);
+                  yPart = (yPart * yPart) * dySqRec;
 
-      for (size_t y = 0; y < nyComplex; y++)
+      const float yzPart = zPart + yPart;
+
+      for (size_t x = 0; x < reducedDimensionSizes.nx; x++)
       {
-        const float yf    = static_cast<float>(y);
-              float yPart = 0.5f - fabs(0.5f - yf * nyRec);
-                    yPart = (yPart * yPart) * dySqRec;
+        const float xf    = static_cast<float>(x);
+              float xPart = 0.5f - fabs(0.5f - xf * nxRec);
+                    xPart = (xPart * xPart) * dxSqRec;
 
-        const float yzPart = zPart + yPart;
+              float k     = pi2 * sqrt(xPart + yzPart);
+              float cRefK = cRefDt2 * k;
 
-        size_t i = (z * nyComplex + y) * nxComplex;
+        const size_t i  = get1DIndex(z, y, x, reducedDimensionSizes);
 
-        for (size_t x = 0; x < nxComplex; x++)
-        {
-          const float xf    = static_cast<float>(x);
-                float xPart = 0.5f - fabs(0.5f - xf * nxRec);
-                      xPart = (xPart * xPart) * dxSqRec;
+        kappa[i]        = (cRefK == 0.0f) ? 1.0f : sin(cRefK) / cRefK;
 
-                float k     = pi2 * sqrt(xPart + yzPart);
-                float cRefK = cRefDt2 * k;
+        absorbNabla1[i] = pow(k, alphaPower - 2.0f);
+        absorbNabla2[i] = pow(k, alphaPower - 1.0f);
 
-          absorbNabla1[i]   = pow(k, alphaPower - 2);
-          absorbNabla2[i]   = pow(k, alphaPower - 1);
-
-          kappa[i]          = (cRefK == 0.0f) ? 1.0f : sin(cRefK) / cRefK;
-
-          if (absorbNabla1[i] == std::numeric_limits<float>::infinity()) absorbNabla1[i] = 0.0f;
-          if (absorbNabla2[i] == std::numeric_limits<float>::infinity()) absorbNabla2[i] = 0.0f;
-
-          i++;
-        }//x
-      }//y
-    }// z
-  }// parallel
+        if (absorbNabla1[i] ==  std::numeric_limits<float>::infinity()) absorbNabla1[i] = 0.0f;
+        if (absorbNabla2[i] ==  std::numeric_limits<float>::infinity()) absorbNabla2[i] = 0.0f;
+      }//x
+    }//y
+  }// z
 }// end of generateKappaAndNablas
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -1713,7 +1722,6 @@ void KSpaceFirstOrderSolver::generateKappaAndNablas()
  */
 void KSpaceFirstOrderSolver::generateTauAndEta()
 {
-
   if ((mParameters.getAlphaCoeffScalarFlag()) && (mParameters.getC0ScalarFlag()))
   { // scalar values
     const float alphaPower       = mParameters.getAlphaPower();
@@ -1728,53 +1736,52 @@ void KSpaceFirstOrderSolver::generateTauAndEta()
   }
   else
   { // matrix
-    #pragma omp parallel
+
+    const DimensionSizes& dimensionSizes = mParameters.getFullDimensionSizes();
+
+    float* absorbTau = getAbsorbTau().getHostData();
+    float* absorbEta = getAbsorbEta().getHostData();
+
+    const bool   alphaCoeffScalarFlag = mParameters.getAlphaCoeffScalarFlag();
+    const float  alphaCoeffScalar     = (alphaCoeffScalarFlag) ? mParameters.getAlphaCoeffScalar() : 0.0f;
+    const float* alphaCoeffMatrix     = (alphaCoeffScalarFlag) ? nullptr : getTemp1RealND().getHostData();
+
+
+    const bool   c0ScalarFlag = mParameters.getC0ScalarFlag();
+    const float  c0Scalar     = (c0ScalarFlag) ? mParameters.getC0Scalar() : 0.0f;
+    // here c2 still holds just c0!
+    const float* cOMatrix     = (c0ScalarFlag) ? nullptr : getC2().getHostData();
+
+
+    const float alphaPower       = mParameters.getAlphaPower();
+    const float tanPi2AlphaPower = tan(static_cast<float>(M_PI_2) * alphaPower);
+
+    //alpha = 100*alpha.*(1e-6/(2*pi)).^y./
+    //                  (20*log10(exp(1)));
+    const float alphaNeperCoeff = (100.0f * pow(1.0e-6f / (2.0f * static_cast<float>(M_PI)), alphaPower)) /
+                                  (20.0f * static_cast<float>(M_LOG10E));
+
+
+    #pragma omp parallel for schedule(static) if (mParameters.isSimulation3D())
+    for (size_t z = 0; z < dimensionSizes.nz; z++)
     {
-      const size_t nx  = mParameters.getFullDimensionSizes().nx;
-      const size_t ny  = mParameters.getFullDimensionSizes().ny;
-      const size_t nz  = mParameters.getFullDimensionSizes().nz;
-
-      float* absorbTau = getAbsorbTau().getHostData();
-      float* absorbEta = getAbsorbEta().getHostData();
-
-      const bool   alphaCoeffScalarFlag = mParameters.getAlphaCoeffScalarFlag();
-      const float  alphaCoeffScalar     = (alphaCoeffScalarFlag) ? mParameters.getAlphaCoeffScalar() : 0;
-      const float* alphaCoeffMatrix     = (alphaCoeffScalarFlag) ? nullptr : getTemp1RealND().getHostData();
-
-     // here the c2 hold just c0!
-      const bool   c0ScalarFlag = mParameters.getC0ScalarFlag();
-      const float  c0Scalar     = (c0ScalarFlag) ? mParameters.getC0Scalar() : 0;
-      const float* cOMatrix     = (c0ScalarFlag) ? nullptr : getC2().getHostData();
-
-
-      const float alphaPower       = mParameters.getAlphaPower();
-      const float tanPi2AlphaPower = tan(static_cast<float>(M_PI_2) * alphaPower);
-
-      //alpha = 100*alpha.*(1e-6/(2*pi)).^y./
-      //                  (20*log10(exp(1)));
-      const float alphaNeperCoeff = (100.0f * pow(1.0e-6f / (2.0f * static_cast<float>(M_PI)), alphaPower)) /
-                                    (20.0f * static_cast<float>(M_LOG10E));
-
-
-      #pragma omp for schedule (static)
-      for (size_t z = 0; z < nz; z++)
+      #pragma omp parallel for schedule(static) if (mParameters.isSimulation2D())
+      for (size_t y = 0; y < dimensionSizes.ny; y++)
       {
-        for (size_t y = 0; y < ny; y++)
+        for (size_t x = 0; x < dimensionSizes.nx; x++)
         {
-          size_t i = (z * ny + y) * nx;
-          for (size_t x = 0; x < nx; x++)
-          {
-            const float alphaCoeff2 = 2.0f * alphaNeperCoeff *
-                                      ((alphaCoeffScalarFlag) ? alphaCoeffScalar : alphaCoeffMatrix[i]);
+          const size_t i = get1DIndex(z, y, x, dimensionSizes);
 
-            absorbTau[i] = (-alphaCoeff2) * pow((c0ScalarFlag) ? c0Scalar : cOMatrix[i], alphaPower - 1);
-            absorbEta[i] =   alphaCoeff2  * pow((c0ScalarFlag) ? c0Scalar : cOMatrix[i], alphaPower) * tanPi2AlphaPower;
+          const float alphaCoeff2 = 2.0f * alphaNeperCoeff *
+                                    ((alphaCoeffScalarFlag) ? alphaCoeffScalar : alphaCoeffMatrix[i]);
 
-            i++;
-          }//x
-        }//y
-      }// z
-    }// parallel
+          absorbTau[i] = (-alphaCoeff2) * pow(((c0ScalarFlag) ? c0Scalar : cOMatrix[i]), alphaPower - 1.0f);
+          absorbEta[i] =   alphaCoeff2  * pow(((c0ScalarFlag) ? c0Scalar : cOMatrix[i]),
+                                                alphaPower) * tanPi2AlphaPower;
+
+        }//x
+      }//y
+    }// z
   } // matrix
 }// end of generateTauAndEta
 //----------------------------------------------------------------------------------------------------------------------
@@ -1782,71 +1789,40 @@ void KSpaceFirstOrderSolver::generateTauAndEta()
 /**
  * Prepare dt./ rho0  for non-uniform grid.
  */
+template<Parameters::SimulationDimension simulationDimension>
 void KSpaceFirstOrderSolver::generateInitialDenisty()
 {
-  #pragma omp parallel
+  float* dtRho0Sgx   = getDtRho0Sgx().getHostData();
+  float* dtRho0Sgy   = getDtRho0Sgy().getHostData();
+  float* dtRho0Sgz   = (simulationDimension == SD::k3D) ? getDtRho0Sgz().getHostData() : nullptr;
+
+  const float dt = mParameters.getDt();
+
+  const float* duxdxnSgx = getDxudxnSgx().getHostData();
+  const float* duydynSgy = getDyudynSgy().getHostData();
+  const float* duzdznSgz = (simulationDimension == SD::k3D) ? getDzudznSgz().getHostData() : nullptr;
+
+  const DimensionSizes& dimensionSizes = mParameters.getFullDimensionSizes();
+
+  #pragma omp parallel for schedule(static) if (simulationDimension == SD::k3D)
+  for (size_t z = 0; z < dimensionSizes.nz; z++)
   {
-    float* dtRho0Sgx   = getDtRho0Sgx().getHostData();
-    float* dtRho0Sgy   = getDtRho0Sgy().getHostData();
-    float* dtRho0Sgz   = getDtRho0Sgz().getHostData();
-
-    const float dt = mParameters.getDt();
-
-    const float* duxdxnSgx = getDxudxnSgx().getHostData();
-    const float* duydynSgy = getDyudynSgy().getHostData();
-    const float* duzdznSgz = getDzudznSgz().getHostData();
-
-    const size_t nz = getDtRho0Sgx().getDimensionSizes().nz;
-    const size_t ny = getDtRho0Sgx().getDimensionSizes().ny;
-    const size_t nx = getDtRho0Sgx().getDimensionSizes().nx;
-
-    const size_t sliceSize = (nx * ny);
-
-    #pragma omp for schedule (static)
-    for (size_t z = 0; z < nz; z++)
+    #pragma omp parallel for schedule(static) if (simulationDimension == SD::k2D)
+    for (size_t y = 0; y < dimensionSizes.ny; y++)
     {
-      register size_t i = z * sliceSize;
-      for (size_t y = 0; y < ny; y++)
+      for (size_t x = 0; x < dimensionSizes.nx; x++)
       {
-        for (size_t x = 0; x < nx; x++)
-        {
-          dtRho0Sgx[i] = (dt * duxdxnSgx[x]) / dtRho0Sgx[i];
-          i++;
-        } // x
-      } // y
-    } // z
+        const size_t i = get1DIndex(z, y, x, dimensionSizes);
 
-    #pragma omp for schedule (static)
-    for (size_t z = 0; z < nz; z++)
-    {
-      register size_t i = z * sliceSize;
-      for (size_t y = 0; y < ny; y++)
-      {
-        const float duydynEl = duydynSgy[y];
-        for (size_t x = 0; x < nx; x++)
+        dtRho0Sgx[i] = (dt * duxdxnSgx[x]) / dtRho0Sgx[i];
+        dtRho0Sgy[i] = (dt * duydynSgy[y]) / dtRho0Sgy[i];
+        if (simulationDimension == SD::k3D)
         {
-          dtRho0Sgy[i] = (dt * duydynEl) / dtRho0Sgy[i];
-          i++;
-        } // x
-      } // y
-    } // z
-
-
-    #pragma omp for schedule (static)
-    for (size_t z = 0; z < nz; z++)
-    {
-      register size_t i = z * sliceSize;
-      const float duzdznEl = duzdznSgz[z];
-      for (size_t y = 0; y < ny; y++)
-      {
-        for (size_t x = 0; x < nx; x++)
-        {
-          dtRho0Sgz[i] = (dt * duzdznEl) / dtRho0Sgz[i];
-          i++;
-        } // x
-      } // y
-    } // z
-  } // parallel
+          dtRho0Sgz[i] = (dt * duzdznSgz[z]) / dtRho0Sgz[i];
+        }
+      } // x
+    } // y
+  } // z
 }// end of generateInitialDenisty
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -2229,6 +2205,16 @@ void KSpaceFirstOrderSolver::loadElapsedTimeFromOutputFile()
 
 }// end of loadElapsedTimeFromOutputFile
 //----------------------------------------------------------------------------------------------------------------------
+
+inline size_t KSpaceFirstOrderSolver::get1DIndex(const size_t          z,
+                                                 const size_t          y,
+                                                 const size_t          x,
+                                                 const DimensionSizes& dimensionSizes)
+{
+  return (z * dimensionSizes.ny + y) * dimensionSizes.nx + x;
+}// end of get1DIndex
+//----------------------------------------------------------------------------------------------------------------------
+
 
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------- Private methods --------------------------------------------------//
