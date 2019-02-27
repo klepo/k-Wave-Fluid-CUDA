@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 July      2012, 10:57 (created) \n
- *            22 February  2019, 21:11 (revised)
+ *            27 February  2019, 15:00 (revised)
  *
  *
  * @mainpage kspaceFirstOrder3D-CUDA
@@ -23,8 +23,8 @@
  * account for both linear or nonlinear wave propagation, an arbitrary distribution of weakly heterogeneous material
  * parameters, and power law acoustic  absorption, see the [k-Wave website] (http://www.k-wave.org).
  *
- * This project is a part of the k-Wave toolbox accelerating 3D simulations using an optimized CUDA/C++ implementation to
- * run small to moderate grid sizes (64x64x64 to 512x512x512). This code uses a single NVIDIA GPU to accelerate the
+ * This project is a part of the k-Wave toolbox accelerating 3D simulations using an optimized CUDA/C++ implementation
+ * to run small to moderate grid sizes (64x64x64 to 512x512x512). This code uses a single NVIDIA GPU to accelerate the
  * simulations (AMD GPUs are not supported).
  *
  * Compiled binaries of the CUDA/C++ code are available from (http://www.k-wave.org/download). Both 64-bit Linux
@@ -700,7 +700,7 @@
   #include <omp.h>
 #endif
 
-#include <KSpaceSolver/KSpaceFirstOrder3DSolver.h>
+#include <KSpaceSolver/KSpaceFirstOrderSolver.h>
 #include <Logger/Logger.h>
 
 
@@ -716,7 +716,7 @@ using std::string;
 int main(int argc, char** argv)
 {
   // Create k-Space solver
-  KSpaceFirstOrder3DSolver kSpaceSolver;
+  KSpaceFirstOrderSolver kSpaceSolver;
 
   // print header
   Logger::log(Logger::LogLevel::kBasic, kOutFmtFirstSeparator);

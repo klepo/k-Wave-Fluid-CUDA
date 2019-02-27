@@ -1,5 +1,5 @@
 /**
- * @file      KSpaceFirstOrder3DSolver.h
+ * @file      KSpaceFirstOrderSolver.h
  *
  * @author    Jiri Jaros \n
  *            Faculty of Information Technology \n
@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            27 February  2019, 10:34 (revised)
+ *            27 February  2019, 11:22 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -30,8 +30,8 @@
  * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
-#ifndef KSPACE_FIRST_ORDER_3D_SOLVER_H
-#define	KSPACE_FIRST_ORDER_3D_SOLVER_H
+#ifndef KSPACE_FIRST_ORDER_SOLVER_H
+#define	KSPACE_FIRST_ORDER_SOLVER_H
 
 
 #include <Parameters/Parameters.h>
@@ -48,24 +48,24 @@
 
 
 /**
- * @class   KSpaceFirstOrder3DSolver
- * @brief   Class responsible for running the k-space first order 3D method.
- * @details Class responsible for running the k-space first order 3D method. This class maintain
+ * @class   KSpaceFirstOrderSolver
+ * @brief   Class responsible for running the k-space first order method in 2D and 3D media.
+ * @details Class responsible for running the k-space first order method in 2D and 3D media. This class maintain
  *          the whole k-wave (implements the time loop).
  *
  */
-class KSpaceFirstOrder3DSolver
+class KSpaceFirstOrderSolver
 {
   public:
     /// Constructor.
-    KSpaceFirstOrder3DSolver();
+    KSpaceFirstOrderSolver();
     /// Copy constructor not allowed.
-    KSpaceFirstOrder3DSolver(const KSpaceFirstOrder3DSolver&) = delete;
+    KSpaceFirstOrderSolver(const KSpaceFirstOrderSolver&) = delete;
     /// Destructor.
-    virtual ~KSpaceFirstOrder3DSolver();
+    virtual ~KSpaceFirstOrderSolver();
 
     /// operator= not allowed.
-    KSpaceFirstOrder3DSolver& operator=(const KSpaceFirstOrder3DSolver&) = delete;
+    KSpaceFirstOrderSolver& operator=(const KSpaceFirstOrderSolver&) = delete;
 
     /// Memory allocation.
     virtual void allocateMemory();
@@ -80,9 +80,9 @@ class KSpaceFirstOrder3DSolver
     virtual void loadInputData();
 
     /**
-     * @brief This method computes k-space First Order 3D simulation.
+     * @brief This method computes k-space First Order 2D/3D simulation.
      *
-     * This method computes k-space First Order 3D simulation. It launches calculation on a given
+     * This method computes k-space First Order 2D/3D simulation. It launches calculation on a given
      * dataset going through FFT initialization, pre-processing, main loop and post-processing phases.
      */
     virtual void compute();
@@ -172,7 +172,7 @@ class KSpaceFirstOrder3DSolver
      * @note Calculation is done on the host side.
      */
     void preProcessing();
-    /// Compute the main time loop of the kspaceFirstOrder3D.
+    /// Compute the main time loop of the kspaceFirstOrder solver.
     void computeMainLoop();
     /// Post processing, and closing the output streams.
     void postProcessing();
@@ -894,7 +894,7 @@ private:
     /// Iteration time of the simulation.
     TimeMeasure mIterationTime;
 
-};// end of KSpaceFirstOrder3DSolver
+};// end of KSpaceFirstOrderSolver
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif /* KSPACE_FIRST_ORDER_3D_SOLVER_H */
+#endif /* KSPACE_FIRST_ORDER_SOLVER_H */

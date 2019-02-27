@@ -8,7 +8,7 @@
 # * 
 # * @tool        kspaceFirstOrder3D 3.6
 # * @created     02 December  2014, 12:32 
-# * @kastModif   22 February  2019, 17:23
+# * @kastModif   27 February  2019, 14:48
 # *
 # * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
 # *
@@ -102,7 +102,6 @@ CXX = $(CUDA_DIR)/bin/nvcc
 # Set compiler flags and header files directories
 CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math" \
            -O3 -std=c++11  -I$(HDF5_DIR)/include  -I.  --restrict         \
-           -ccbin=gcc-5.4                                                 \
 	   -D__KWAVE_GIT_HASH__=\"$(KWAVE_GIT_HASH)\"                     \
    	   --device-c
 	   
@@ -115,6 +114,10 @@ CUDA_ARCH = --generate-code arch=compute_30,code=sm_30	\
 	    --generate-code arch=compute_53,code=sm_53	\
 	    --generate-code arch=compute_60,code=sm_60	\
 	    --generate-code arch=compute_61,code=sm_61	\
+	    --generate-code arch=compute_62,code=sm_62	\
+	    --generate-code arch=compute_70,code=sm_70	\
+	    --generate-code arch=compute_72,code=sm_72	\
+	    --generate-code arch=compute_75,code=sm_75	\
 
 
   
@@ -158,7 +161,7 @@ $(TARGET):	Containers/MatrixContainer.o             \
 		Containers/OutputStreamContainer.o       \
 		Hdf5/Hdf5File.o                          \
 		Hdf5/Hdf5FileHeader.o                    \
-		KSpaceSolver/KSpaceFirstOrder3DSolver.o  \
+		KSpaceSolver/KSpaceFirstOrderSolver.o	 \
 		KSpaceSolver/SolverCudaKernels.o         \
 		Logger/Logger.o	                         \
 		MatrixClasses/BaseFloatMatrix.o          \
@@ -185,7 +188,7 @@ $(TARGET):	Containers/MatrixContainer.o             \
 		Containers/OutputStreamContainer.o       \
 		Hdf5/Hdf5File.o                          \
 		Hdf5/Hdf5FileHeader.o                    \
-		KSpaceSolver/KSpaceFirstOrder3DSolver.o  \
+		KSpaceSolver/KSpaceFirstOrderSolver.o    \
 		KSpaceSolver/SolverCudaKernels.o         \
 		Logger/Logger.o	                         \
 		MatrixClasses/BaseFloatMatrix.o          \
