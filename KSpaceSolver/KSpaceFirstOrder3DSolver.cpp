@@ -1045,9 +1045,9 @@ void KSpaceFirstOrder3DSolver::computeVelocity()
                                              getDdzKShiftPos());
 
   // ifftn(pre_result)
-  getTempCufftX().computeC2RFft3D(getTemp1Real3D());
-  getTempCufftY().computeC2RFft3D(getTemp2Real3D());
-  getTempCufftZ().computeC2RFft3D(getTemp3Real3D());
+  getTempCufftX().computeC2RFft3D(getTemp1RealND());
+  getTempCufftY().computeC2RFft3D(getTemp2RealND());
+  getTempCufftZ().computeC2RFft3D(getTemp3RealND());
 
   // bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* (pre_result))
   if (mParameters.getRho0ScalarFlag())
@@ -1057,9 +1057,9 @@ void KSpaceFirstOrder3DSolver::computeVelocity()
       SolverCudaKernels::computeVelocityHomogeneousNonuniform(getUxSgx(),
                                                               getUySgy(),
                                                               getUzSgz(),
-                                                              getTemp1Real3D(),
-                                                              getTemp2Real3D(),
-                                                              getTemp3Real3D(),
+                                                              getTemp1RealND(),
+                                                              getTemp2RealND(),
+                                                              getTemp3RealND(),
                                                               getDxudxnSgx(),
                                                               getDyudynSgy(),
                                                               getDzudznSgz(),
@@ -1072,9 +1072,9 @@ void KSpaceFirstOrder3DSolver::computeVelocity()
       SolverCudaKernels::computeVelocityHomogeneousUniform(getUxSgx(),
                                                            getUySgy(),
                                                            getUzSgz(),
-                                                           getTemp1Real3D(),
-                                                           getTemp2Real3D(),
-                                                           getTemp3Real3D(),
+                                                           getTemp1RealND(),
+                                                           getTemp2RealND(),
+                                                           getTemp3RealND(),
                                                            getPmlXSgx(),
                                                            getPmlYSgy(),
                                                            getPmlZSgz());
@@ -1085,9 +1085,9 @@ void KSpaceFirstOrder3DSolver::computeVelocity()
     SolverCudaKernels::computeVelocity(getUxSgx(),
                                        getUySgy(),
                                        getUzSgz(),
-                                       getTemp1Real3D(),
-                                       getTemp2Real3D(),
-                                       getTemp3Real3D(),
+                                       getTemp1RealND(),
+                                       getTemp2RealND(),
+                                       getTemp3RealND(),
                                        getDtRho0Sgx(),
                                        getDtRho0Sgy(),
                                        getDtRho0Sgz(),
@@ -1226,9 +1226,9 @@ void KSpaceFirstOrder3DSolver::computePressureNonlinear()
 {
   if (mParameters.getAbsorbingFlag())
   { // absorbing case
-    RealMatrix& densitySum         = getTemp1Real3D();
-    RealMatrix& nonlinearTerm      = getTemp2Real3D();
-    RealMatrix& velocitGradientSum = getTemp3Real3D();
+    RealMatrix& densitySum         = getTemp1RealND();
+    RealMatrix& nonlinearTerm      = getTemp2RealND();
+    RealMatrix& velocitGradientSum = getTemp3RealND();
 
     // reusing of the temp variables
     RealMatrix& absorbTauTerm = velocitGradientSum;
@@ -1278,11 +1278,11 @@ void KSpaceFirstOrder3DSolver::computePressureLinear()
 {
   if (mParameters.getAbsorbingFlag())
   { // absorbing case
-    RealMatrix& densitySum           = getTemp1Real3D();
-    RealMatrix& velocityGradientTerm = getTemp2Real3D();
+    RealMatrix& densitySum           = getTemp1RealND();
+    RealMatrix& velocityGradientTerm = getTemp2RealND();
 
-    RealMatrix& absorbTauTerm        = getTemp2Real3D();
-    RealMatrix& absorbEtaTerm        = getTemp3Real3D();
+    RealMatrix& absorbTauTerm        = getTemp2RealND();
+    RealMatrix& absorbEtaTerm        = getTemp3RealND();
 
     computePressureTermsLinear(densitySum, velocityGradientTerm);
 
@@ -1340,7 +1340,7 @@ void KSpaceFirstOrder3DSolver::addVelocitySource()
   { // execute Additive source
     if (mParameters.getVelocityXSourceFlag() > timeIndex)
     {
-      RealMatrix& scaledSource = getTemp1Real3D();
+      RealMatrix& scaledSource = getTemp1RealND();
 
       scaleSource(scaledSource,
                   getVelocityXSourceInput(),
@@ -1353,7 +1353,7 @@ void KSpaceFirstOrder3DSolver::addVelocitySource()
 
     if (mParameters.getVelocityYSourceFlag() > timeIndex)
     {
-      RealMatrix& scaledSource = getTemp1Real3D();
+      RealMatrix& scaledSource = getTemp1RealND();
 
       scaleSource(scaledSource,
                   getVelocityYSourceInput(),
@@ -1366,7 +1366,7 @@ void KSpaceFirstOrder3DSolver::addVelocitySource()
 
     if (mParameters.getVelocityZSourceFlag() > timeIndex)
     {
-      RealMatrix& scaledSource = getTemp1Real3D();
+      RealMatrix& scaledSource = getTemp1RealND();
 
       scaleSource(scaledSource,
                   getVelocityZSourceInput(),
@@ -1400,7 +1400,7 @@ void KSpaceFirstOrder3DSolver::addPressureSource()
     }
     else
     { // execute Additive source
-      RealMatrix& scaledSource = getTemp1Real3D();
+      RealMatrix& scaledSource = getTemp1RealND();
 
       scaleSource(scaledSource,
                   getPressureSourceInput(),
@@ -1739,7 +1739,7 @@ void KSpaceFirstOrder3DSolver::generateTauAndEta()
 
       const bool   alphaCoeffScalarFlag = mParameters.getAlphaCoeffScalarFlag();
       const float  alphaCoeffScalar     = (alphaCoeffScalarFlag) ? mParameters.getAlphaCoeffScalar() : 0;
-      const float* alphaCoeffMatrix     = (alphaCoeffScalarFlag) ? nullptr : getTemp1Real3D().getHostData();
+      const float* alphaCoeffMatrix     = (alphaCoeffScalarFlag) ? nullptr : getTemp1RealND().getHostData();
 
      // here the c2 hold just c0!
       const bool   c0ScalarFlag = mParameters.getC0ScalarFlag();

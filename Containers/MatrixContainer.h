@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      02 December  2014, 16:17 (created) \n
- *            23 February  2019, 11:39 (revised)
+ *            27 February  2019, 10:34 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -59,7 +59,7 @@ class MatrixContainer
 
     /**
      * @enum  MatrixIdx
-     * @brief Matrix identifers of all matrices in the k-space code.
+     * @brief Matrix identifers of all matrices in the 2D and 3D fluid k-space code.
      */
     enum class MatrixIdx
     {
@@ -192,12 +192,12 @@ class MatrixContainer
       /// Negative shift for non-staggered velocity in z.
       kZShiftNegR,
 
-      /// 3D temporary matrix.
-      kTemp1Real3D,
-      /// 3D temporary matrix.
-      kTemp2Real3D,
-      /// 3D temporary matrix.
-      kTemp3Real3D,
+      /// 2D or 3D temporary matrix.
+      kTemp1RealND,
+      /// 2D or 3D temporary matrix.
+      kTemp2RealND,
+      /// 2D or 3D temporary matrix.
+      kTemp3RealND,
       /// Temporary matrix for 1D fft in x.
       kTempCufftX,
       /// Temporary matrix for 1D fft in y.

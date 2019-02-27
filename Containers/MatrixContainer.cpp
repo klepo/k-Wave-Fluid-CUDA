@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      02 December  2014, 16:17 (created) \n
- *            23 February  2019, 11:39 (revised)
+ *            27 February  2019, 10:37 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -68,7 +68,7 @@ MatrixContainer::~MatrixContainer()
 
 /**
  * This function creates the list of matrices being used in the simulation. It is done based on the
- * simulation parameters. All matrices records are created here.
+ * simulation parameters and the dimensionality. All matrices records are created here.
  */
 void MatrixContainer::init()
 {
@@ -79,6 +79,8 @@ void MatrixContainer::init()
 
   DimensionSizes fullDims    = params.getFullDimensionSizes();
   DimensionSizes reducedDims = params.getReducedDimensionSizes();
+
+  const bool is3DSimulation = params.isSimulation3D();
 
   constexpr bool kLoad         = true;
   constexpr bool kNoLoad       = false;
@@ -91,52 +93,77 @@ void MatrixContainer::init()
 
   if (!params.getC0ScalarFlag())
   {
-    mContainer[MI::kC2] .set(MT::kReal, fullDims,   kLoad, kNoCheckpoint, kC0Name);
+    mContainer[MI::kC2]   .set(MT::kReal, fullDims,   kLoad, kNoCheckpoint, kC0Name);
   }
 
-  mContainer[MI::kP]    .set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kPName);
+  mContainer[MI::kP]      .set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kPName);
 
-  mContainer[MI::kRhoX] .set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kRhoXName);
-  mContainer[MI::kRhoY] .set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kRhoYName);
-  mContainer[MI::kRhoZ] .set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kRhoZName);
+  mContainer[MI::kRhoX]   .set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kRhoXName);
+  mContainer[MI::kRhoY]   .set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kRhoYName);
+  if (is3DSimulation)
+  {
+    mContainer[MI::kRhoZ] .set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kRhoZName);
+  }
 
-  mContainer[MI::kUxSgx].set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kUxSgxName);
-  mContainer[MI::kUySgy].set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kUySgyName);
-  mContainer[MI::kUzSgz].set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kUzSgzName);
+  mContainer[MI::kUxSgx]  .set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kUxSgxName);
+  mContainer[MI::kUySgy]  .set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kUySgyName);
+  if (is3DSimulation)
+  {
+    mContainer[MI::kUzSgz].set(MT::kReal, fullDims, kNoLoad,   kCheckpoint, kUzSgzName);
+  }
 
-  mContainer[MI::kDuxdx].set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kDuxdxName);
-  mContainer[MI::kDuydy].set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kDuydyName);
-  mContainer[MI::kDuzdz].set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kDuzdzName);
+  mContainer[MI::kDuxdx]  .set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kDuxdxName);
+  mContainer[MI::kDuydy]  .set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kDuydyName);
+  if (is3DSimulation)
+  {
+    mContainer[MI::kDuzdz].set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kDuzdzName);
+  }
 
   if (!params.getRho0ScalarFlag())
   {
-    mContainer[MI::kRho0]     .set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kRho0Name);
-    mContainer[MI::kDtRho0Sgx].set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kRho0SgxName);
-    mContainer[MI::kDtRho0Sgy].set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kRho0SgyName);
-    mContainer[MI::kDtRho0Sgz].set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kRho0SgzName);
+    mContainer[MI::kRho0]       .set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kRho0Name);
+    mContainer[MI::kDtRho0Sgx]  .set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kRho0SgxName);
+    mContainer[MI::kDtRho0Sgy]  .set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kRho0SgyName);
+    if (is3DSimulation)
+    {
+      mContainer[MI::kDtRho0Sgz].set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kRho0SgzName);
+    }
   }
 
-  mContainer[MI::kDdxKShiftPosR].set(MT::kComplex, DimensionSizes(reducedDims.nx, 1, 1),
+  mContainer[MI::kDdxKShiftPosR] .set(MT::kComplex, DimensionSizes(reducedDims.nx, 1, 1),
                                      kLoad, kNoCheckpoint, kDdxKShiftPosRName);
-  mContainer[MI::kDdyKShiftPos] .set(MT::kComplex, DimensionSizes(1, reducedDims.ny, 1),
+  mContainer[MI::kDdyKShiftPos]  .set(MT::kComplex, DimensionSizes(1, reducedDims.ny, 1),
                                      kLoad, kNoCheckpoint, kDdyKShiftPosName);
-  mContainer[MI::kDdzKShiftPos] .set(MT::kComplex, DimensionSizes(1, 1, reducedDims.nz),
-                                     kLoad, kNoCheckpoint, kDdzKShiftPosName);
+  if (is3DSimulation)
+  {
+    mContainer[MI::kDdzKShiftPos].set(MT::kComplex, DimensionSizes(1, 1, reducedDims.nz),
+                                      kLoad, kNoCheckpoint, kDdzKShiftPosName);
+  }
 
-  mContainer[MI::kDdxKShiftNegR].set(MT::kComplex, DimensionSizes(reducedDims.nx ,1, 1),
+
+  mContainer[MI::kDdxKShiftNegR] .set(MT::kComplex, DimensionSizes(reducedDims.nx ,1, 1),
                                      kLoad, kNoCheckpoint, kDdxKShiftNegRName);
-  mContainer[MI::kDdyKShiftNeg] .set(MT::kComplex, DimensionSizes(1, reducedDims.ny, 1),
+  mContainer[MI::kDdyKShiftNeg]  .set(MT::kComplex, DimensionSizes(1, reducedDims.ny, 1),
                                      kLoad, kNoCheckpoint, kDdyKShiftNegName);
-  mContainer[MI::kDdzKShiftNeg] .set(MT::kComplex, DimensionSizes(1, 1, reducedDims.nz),
-                                     kLoad, kNoCheckpoint, kDdzKShiftNegName);
+  if (is3DSimulation)
+  {
+    mContainer[MI::kDdzKShiftNeg].set(MT::kComplex, DimensionSizes(1, 1, reducedDims.nz),
+                                      kLoad, kNoCheckpoint, kDdzKShiftNegName);
+  }
 
   mContainer[MI::kPmlXSgx].set(MT::kReal, DimensionSizes(fullDims.nx, 1, 1), kLoad, kNoCheckpoint, kPmlXSgxName);
   mContainer[MI::kPmlYSgy].set(MT::kReal, DimensionSizes(1, fullDims.ny, 1), kLoad, kNoCheckpoint, kPmlYSgyName);
-  mContainer[MI::kPmlZSgz].set(MT::kReal, DimensionSizes(1, 1, fullDims.nz), kLoad, kNoCheckpoint, kPmlZSgzName);
+  if (is3DSimulation)
+  {
+    mContainer[MI::kPmlZSgz].set(MT::kReal, DimensionSizes(1, 1, fullDims.nz), kLoad, kNoCheckpoint, kPmlZSgzName);
+  }
 
-  mContainer[MI::kPmlX].set(MT::kReal, DimensionSizes(fullDims.nx, 1, 1), kLoad, kNoCheckpoint, kPmlXName);
-  mContainer[MI::kPmlY].set(MT::kReal, DimensionSizes(1, fullDims.ny, 1), kLoad, kNoCheckpoint, kPmlYName);
-  mContainer[MI::kPmlZ].set(MT::kReal, DimensionSizes(1, 1, fullDims.nz), kLoad, kNoCheckpoint, kPmlZName);
+  mContainer[MI::kPmlX]  .set(MT::kReal, DimensionSizes(fullDims.nx, 1, 1), kLoad, kNoCheckpoint, kPmlXName);
+  mContainer[MI::kPmlY]  .set(MT::kReal, DimensionSizes(1, fullDims.ny, 1), kLoad, kNoCheckpoint, kPmlYName);
+  if (is3DSimulation)
+  {
+    mContainer[MI::kPmlZ].set(MT::kReal, DimensionSizes(1, 1, fullDims.nz), kLoad, kNoCheckpoint, kPmlZName);
+  }
 
   if (params.getNonLinearFlag())
   {
@@ -186,9 +213,9 @@ void MatrixContainer::init()
 
   // Velocity source index
   if ((params.getTransducerSourceFlag() != 0) ||
-      (params.getVelocityXSourceFlag() != 0)  ||
-      (params.getVelocityYSourceFlag() != 0)  ||
-      (params.getVelocityZSourceFlag() != 0))
+      (params.getVelocityXSourceFlag()  != 0) ||
+      (params.getVelocityYSourceFlag()  != 0) ||
+      (params.getVelocityZSourceFlag()  != 0))
   {
     mContainer[MI::kVelocitySourceIndex].set(MT::kIndex,
                                              DimensionSizes(1, 1, params.getVelocitySourceIndexSize()),
@@ -264,22 +291,25 @@ void MatrixContainer::init()
     }
   }// uy_source_input
 
-  if (params.getVelocityZSourceFlag() != 0)
+  if (is3DSimulation)
   {
-    if (params.getVelocitySourceMany() == 0)
-    { // 1D
-      mContainer[MI::kVelocityZSourceInput].set(MT::kReal,
-                                                DimensionSizes(1, 1, params.getVelocityZSourceFlag()),
-                                                kLoad, kNoCheckpoint, kVelocityZSourceInputName);
-    }
-    else
-    { // 2D
-      mContainer[MI::kVelocityZSourceInput].set(MT::kReal,
-                                                DimensionSizes(1, params.getVelocitySourceIndexSize(),
-                                                params.getVelocityZSourceFlag()),
-                                                kLoad, kNoCheckpoint, kVelocityZSourceInputName);
-    }
-  }// uz_source_input
+    if (params.getVelocityZSourceFlag() != 0)
+    {
+      if (params.getVelocitySourceMany() == 0)
+      { // 1D
+        mContainer[MI::kVelocityZSourceInput].set(MT::kReal,
+                                                  DimensionSizes(1, 1, params.getVelocityZSourceFlag()),
+                                                  kLoad, kNoCheckpoint, kVelocityZSourceInputName);
+      }
+      else
+      { // 2D
+        mContainer[MI::kVelocityZSourceInput].set(MT::kReal,
+                                                  DimensionSizes(1, params.getVelocitySourceIndexSize(),
+                                                  params.getVelocityZSourceFlag()),
+                                                  kLoad, kNoCheckpoint, kVelocityZSourceInputName);
+      }
+    }// uz_source_input
+  }
 
   // Add sourceKappa
   if (((params.getVelocitySourceMode() == Parameters::SourceMode::kAdditive) ||
@@ -293,13 +323,20 @@ void MatrixContainer::init()
   //------------------------------------------------ Nonlinear grid --------------------------------------------------//
   if (params.getNonUniformGridFlag()!= 0)
   {
-    mContainer[MI::kDxudxn].set(MT::kReal, DimensionSizes(fullDims.nx, 1, 1), kLoad, kNoCheckpoint, kDxudxnName);
-    mContainer[MI::kDyudyn].set(MT::kReal, DimensionSizes(1, fullDims.ny, 1), kLoad, kNoCheckpoint, kDyudynName);
-    mContainer[MI::kDzudzn].set(MT::kReal, DimensionSizes(1 ,1, fullDims.nz), kLoad, kNoCheckpoint, kDzudznName);
+    mContainer[MI::kDxudxn]   .set(MT::kReal, DimensionSizes(fullDims.nx, 1, 1), kLoad, kNoCheckpoint, kDxudxnName);
+    mContainer[MI::kDyudyn]   .set(MT::kReal, DimensionSizes(1, fullDims.ny, 1), kLoad, kNoCheckpoint, kDyudynName);
+    if (is3DSimulation)
+    {
+      mContainer[MI::kDzudzn] .set(MT::kReal, DimensionSizes(1 ,1, fullDims.nz), kLoad, kNoCheckpoint, kDzudznName);
+    }
 
     mContainer[MI::kDxudxnSgx].set(MT::kReal, DimensionSizes(fullDims.nx, 1, 1), kLoad, kNoCheckpoint, kDxudxnSgxName);
     mContainer[MI::kDyudynSgy].set(MT::kReal, DimensionSizes(1, fullDims.ny, 1), kLoad, kNoCheckpoint, kDyudynSgyName);
-    mContainer[MI::kDzudznSgz].set(MT::kReal, DimensionSizes(1 ,1, fullDims.nz), kLoad, kNoCheckpoint, kDzudznSgzName);
+    if (is3DSimulation)
+    {
+      mContainer[MI::kDzudznSgz].set(MT::kReal, DimensionSizes(1 ,1, fullDims.nz),
+                                     kLoad, kNoCheckpoint, kDzudznSgzName);
+    }
   }
 
   //-------------------------------------------- Non staggered velocity ----------------------------------------------//
@@ -309,11 +346,11 @@ void MatrixContainer::init()
 
     const size_t nxR = fullDims.nx / 2 + 1;
     const size_t nyR = fullDims.ny / 2 + 1;
-    const size_t nzR = fullDims.nz / 2 + 1;
+    const size_t nzR = (is3DSimulation) ? fullDims.nz / 2 + 1 : 1;
 
-    size_t xCutSize = nxR         * fullDims.ny * fullDims.nz;
-    size_t yCutSize = fullDims.nx * nyR         * fullDims.nz;
-    size_t zCutSize = fullDims.nx * fullDims.ny * nzR;
+    const size_t xCutSize = nxR         * fullDims.ny * fullDims.nz;
+    const size_t yCutSize = fullDims.nx * nyR         * fullDims.nz;
+    const size_t zCutSize = (is3DSimulation) ? fullDims.nx * fullDims.ny * nzR : 1;
 
     if ((xCutSize >= yCutSize) && (xCutSize >= zCutSize))
     {
@@ -340,14 +377,20 @@ void MatrixContainer::init()
 
 
     // these three are necessary only for u_non_staggered calculation now
-    mContainer[MI::kUxShifted].set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kUxShiftedName);
-    mContainer[MI::kUyShifted].set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kUyShiftedName);
-    mContainer[MI::kUzShifted].set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kUzShiftedName);
+    mContainer[MI::kUxShifted]   .set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kUxShiftedName);
+    mContainer[MI::kUyShifted]   .set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kUyShiftedName);
+    if (is3DSimulation)
+    {
+      mContainer[MI::kUzShifted] .set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kUzShiftedName);
+    }
 
     // shifts from the input file
-    mContainer[MI::kXShiftNegR].set(MT::kComplex, DimensionSizes(nxR, 1, 1), kLoad,kNoCheckpoint, kXShiftNegRName);
-    mContainer[MI::kYShiftNegR].set(MT::kComplex, DimensionSizes(1, nyR, 1), kLoad,kNoCheckpoint, kYShiftNegRName);
-    mContainer[MI::kZShiftNegR].set(MT::kComplex, DimensionSizes(1, 1, nzR), kLoad,kNoCheckpoint, kZShiftNegRName);
+    mContainer[MI::kXShiftNegR]  .set(MT::kComplex, DimensionSizes(nxR, 1, 1), kLoad,kNoCheckpoint, kXShiftNegRName);
+    mContainer[MI::kYShiftNegR]  .set(MT::kComplex, DimensionSizes(1, nyR, 1), kLoad,kNoCheckpoint, kYShiftNegRName);
+    if (is3DSimulation)
+    {
+      mContainer[MI::kZShiftNegR].set(MT::kComplex, DimensionSizes(1, 1, nzR), kLoad,kNoCheckpoint, kZShiftNegRName);
+    }
   }// u_non_staggered
 
 
@@ -356,19 +399,23 @@ void MatrixContainer::init()
 
   if ((params.getAbsorbingFlag() != 0) && (!params.getAlphaCoeffScalarFlag()))
   {
-    mContainer[MI::kTemp1Real3D].set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kAlphaCoeffName);
+    mContainer[MI::kTemp1RealND].set(MT::kReal, fullDims, kLoad, kNoCheckpoint, kAlphaCoeffName);
   }
   else
   {
-    mContainer[MI::kTemp1Real3D].set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kTemp1Real3DName);
+    mContainer[MI::kTemp1RealND].set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kTemp1RealNDName);
   }
 
-  mContainer[MI::kTemp2Real3D].set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kTemp2Real3DName);
-  mContainer[MI::kTemp3Real3D].set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kTemp3Real3DName);
+  mContainer[MI::kTemp2RealND]  .set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kTemp2RealNDName);
+  // This one is necessary for absorption
+  mContainer[MI::kTemp3RealND]  .set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kTemp3RealNDName);
 
-  mContainer[MI::kTempCufftX].set(MT::kCufft, reducedDims, kNoLoad, kNoCheckpoint, kCufftXTempName);
-  mContainer[MI::kTempCufftY].set(MT::kCufft, reducedDims, kNoLoad, kNoCheckpoint, kCufftYTempName);
-  mContainer[MI::kTempCufftZ].set(MT::kCufft, reducedDims, kNoLoad, kNoCheckpoint, kCufftZTempName);
+  mContainer[MI::kTempCufftX]   .set(MT::kCufft, reducedDims, kNoLoad, kNoCheckpoint, kCufftXTempName);
+  mContainer[MI::kTempCufftY]   .set(MT::kCufft, reducedDims, kNoLoad, kNoCheckpoint, kCufftYTempName);
+  if (is3DSimulation)
+  {
+    mContainer[MI::kTempCufftZ] .set(MT::kCufft, reducedDims, kNoLoad, kNoCheckpoint, kCufftZTempName);
+  }
 }// end of init
 //----------------------------------------------------------------------------------------------------------------------
 

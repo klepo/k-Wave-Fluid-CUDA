@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            24 February  2019, 12:07 (revised)
+ *            27 February  2019, 10:34 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -806,34 +806,34 @@ class KSpaceFirstOrder3DSolver
 
     //--------------------------------------------- Temporary matrices -----------------------------------------------//
     /**
-     * @brief  Get first real 3D temporary matrix.
-     * @return Temporary real 3D matrix.
+     * @brief  Get first real 2D/3D temporary matrix.
+     * @return Temporary real 2D/3D matrix.
      */
-    RealMatrix& getTemp1Real3D()
+    RealMatrix& getTemp1RealND()
     {
-      return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kTemp1Real3D);
+      return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kTemp1RealND);
     };
     /**
-     * @brief  Get second real 3D temporary matrix.
-     * @return Temporary real 3D matrix.
+     * @brief  Get second real 2D/3D temporary matrix.
+     * @return Temporary real 2D/3D matrix.
      */
-    RealMatrix& getTemp2Real3D()
+    RealMatrix& getTemp2RealND()
     {
-      return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kTemp2Real3D);
+      return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kTemp2RealND);
     };
     /**
-     * @brief  Get third real 3D temporary matrix.
-     * @return Temporary real 3D matrix.
+     * @brief  Get third real 2D/3D temporary matrix.
+     * @return Temporary real 2D/3D matrix.
      */
-    RealMatrix& getTemp3Real3D()
+    RealMatrix& getTemp3RealND()
     {
-      return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kTemp3Real3D);
+      return mMatrixContainer.getMatrix<RealMatrix>(MatrixContainer::MatrixIdx::kTemp3RealND);
     };
 
 
     /**
      * @brief  Get temporary matrix for 1D fft in x.
-     * @return Temporary complex 3D matrix.
+     * @return Temporary complex 2D/3D matrix.
      */
     CufftComplexMatrix& getTempCufftX()
     {
@@ -841,7 +841,7 @@ class KSpaceFirstOrder3DSolver
     };
     /**
      * @brief  Get temporary matrix for 1D fft in y.
-     * @return Temporary complex 3D matrix.
+     * @return Temporary complex 2D/3D matrix.
      */
     CufftComplexMatrix& getTempCufftY()
     {
