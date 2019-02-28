@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            27 February  2019, 15:54 (revised)
+ *            28 February  2019, 11:22 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -646,10 +646,10 @@ double KSpaceFirstOrderSolver::getCumulatedPostProcessingTime() const
 void KSpaceFirstOrderSolver::initializeCufftPlans()
 {
   // create real to complex plans
-  CufftComplexMatrix::createR2CFftPlan3D(mParameters.getFullDimensionSizes());
+  CufftComplexMatrix::createR2CFftPlanND(mParameters.getFullDimensionSizes());
 
  // create complex to real plans
-  CufftComplexMatrix::createC2RFftPlan3D(mParameters.getFullDimensionSizes());
+  CufftComplexMatrix::createC2RFftPlanND(mParameters.getFullDimensionSizes());
 
   // if necessary, create 1D shift plans.
   // in this case, the matrix has a bit bigger dimensions to be able to store shifted matrices.
@@ -1047,7 +1047,7 @@ void KSpaceFirstOrderSolver::saveCheckpointData()
 void KSpaceFirstOrderSolver::computeVelocity()
 {
   // fftn(p);
-  getTempCufftX().computeR2CFft3D(getP());
+  getTempCufftX().computeR2CFftND(getP());
   // bsxfun(@times, ddx_k_shift_pos, kappa .* pre_result) , for all 3 dims
   SolverCudaKernels::computePressureGradient(getTempCufftX(),
                                              getTempCufftY(),
@@ -1058,9 +1058,9 @@ void KSpaceFirstOrderSolver::computeVelocity()
                                              getDdzKShiftPos());
 
   // ifftn(pre_result)
-  getTempCufftX().computeC2RFft3D(getTemp1RealND());
-  getTempCufftY().computeC2RFft3D(getTemp2RealND());
-  getTempCufftZ().computeC2RFft3D(getTemp3RealND());
+  getTempCufftX().computeC2RFftND(getTemp1RealND());
+  getTempCufftY().computeC2RFftND(getTemp2RealND());
+  getTempCufftZ().computeC2RFftND(getTemp3RealND());
 
   // bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* (pre_result))
   if (mParameters.getRho0ScalarFlag())
@@ -1125,9 +1125,9 @@ void KSpaceFirstOrderSolver::computeVelocity()
  */
 void KSpaceFirstOrderSolver::computeVelocityGradient()
 {
-  getTempCufftX().computeR2CFft3D(getUxSgx());
-  getTempCufftY().computeR2CFft3D(getUySgy());
-  getTempCufftZ().computeR2CFft3D(getUzSgz());
+  getTempCufftX().computeR2CFftND(getUxSgx());
+  getTempCufftY().computeR2CFftND(getUySgy());
+  getTempCufftZ().computeR2CFftND(getUzSgz());
 
   // calculate Duxyz on uniform grid
   SolverCudaKernels::computeVelocityGradient(getTempCufftX(),
@@ -1138,9 +1138,9 @@ void KSpaceFirstOrderSolver::computeVelocityGradient()
                                              getDdyKShiftNeg(),
                                              getDdzKShiftNeg());
 
-  getTempCufftX().computeC2RFft3D(getDuxdx());
-  getTempCufftY().computeC2RFft3D(getDuydy());
-  getTempCufftZ().computeC2RFft3D(getDuzdz());
+  getTempCufftX().computeC2RFftND(getDuxdx());
+  getTempCufftY().computeC2RFftND(getDuydy());
+  getTempCufftZ().computeC2RFftND(getDuzdz());
 
   // Non-uniform grid
   if (mParameters.getNonUniformGridFlag() != 0)
@@ -1249,13 +1249,13 @@ void KSpaceFirstOrderSolver::computePressureNonlinear()
 
     computePressureTermsNonlinear(densitySum, nonlinearTerm, velocitGradientSum);
 
-    getTempCufftX().computeR2CFft3D(velocitGradientSum);
-    getTempCufftY().computeR2CFft3D(densitySum);
+    getTempCufftX().computeR2CFftND(velocitGradientSum);
+    getTempCufftY().computeR2CFftND(densitySum);
 
     SolverCudaKernels::computeAbsorbtionTerm(getTempCufftX(), getTempCufftY(), getAbsorbNabla1(), getAbsorbNabla2());
 
-    getTempCufftX().computeC2RFft3D(absorbTauTerm);
-    getTempCufftY().computeC2RFft3D(absorbEtaTerm);
+    getTempCufftX().computeC2RFftND(absorbTauTerm);
+    getTempCufftY().computeC2RFftND(absorbEtaTerm);
 
     sumPressureTermsNonlinear(absorbTauTerm, absorbEtaTerm, nonlinearTerm);
   }
@@ -1300,13 +1300,13 @@ void KSpaceFirstOrderSolver::computePressureLinear()
     computePressureTermsLinear(densitySum, velocityGradientTerm);
 
     // ifftn ( absorbNabla1 * fftn (rho0 * (duxdx + duydy + duzdz))
-    getTempCufftX().computeR2CFft3D(velocityGradientTerm);
-    getTempCufftY().computeR2CFft3D(densitySum);
+    getTempCufftX().computeR2CFftND(velocityGradientTerm);
+    getTempCufftY().computeR2CFftND(densitySum);
 
     SolverCudaKernels::computeAbsorbtionTerm(getTempCufftX(), getTempCufftY(), getAbsorbNabla1(), getAbsorbNabla2());
 
-    getTempCufftX().computeC2RFft3D(absorbTauTerm);
-    getTempCufftY().computeC2RFft3D(absorbEtaTerm);
+    getTempCufftX().computeC2RFftND(absorbTauTerm);
+    getTempCufftY().computeC2RFftND(absorbEtaTerm);
 
     sumPressureTermsLinear(absorbTauTerm, absorbEtaTerm, densitySum);
   }
@@ -1449,11 +1449,11 @@ void KSpaceFirstOrderSolver::scaleSource(RealMatrix&        scaledSource,
                                                    manyFlag,
                                                    mParameters.getTimeIndex());
   // Compute FFT
-  cufftMatrix.computeR2CFft3D(scaledSource);
+  cufftMatrix.computeR2CFftND(scaledSource);
   // Calculate gradient
   SolverCudaKernels::computeSourceGradient(cufftMatrix, getSourceKappa());
   // Compute iFFT
-  cufftMatrix.computeC2RFft3D(scaledSource);
+  cufftMatrix.computeC2RFftND(scaledSource);
 }// end of scaleSource
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -1495,7 +1495,7 @@ void KSpaceFirstOrderSolver::addInitialPressureSource()
   //--compute u(t = t1 + dt/2) based on the assumption u(dt/2) = -u(-dt/2)-//
   //--    which forces u(t = t1) = 0                                      -//
   //-----------------------------------------------------------------------//
-  getTempCufftX().computeR2CFft3D(getP());
+  getTempCufftX().computeR2CFftND(getP());
 
   SolverCudaKernels::computePressureGradient(getTempCufftX(),
                                              getTempCufftY(),
@@ -1505,9 +1505,9 @@ void KSpaceFirstOrderSolver::addInitialPressureSource()
                                              getDdyKShiftPos(),
                                              getDdzKShiftPos());
 
-  getTempCufftX().computeC2RFft3D(getUxSgx());
-  getTempCufftY().computeC2RFft3D(getUySgy());
-  getTempCufftZ().computeC2RFft3D(getUzSgz());
+  getTempCufftX().computeC2RFftND(getUxSgx());
+  getTempCufftY().computeC2RFftND(getUySgy());
+  getTempCufftZ().computeC2RFftND(getUzSgz());
 
   if (mParameters.getRho0ScalarFlag())
   {

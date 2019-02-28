@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            24 February  2019, 12:11 (revised)
+ *            28 February  2019, 11:15 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -2373,6 +2373,7 @@ __global__ void cudaTrasnposeReal3DMatrixXY(float*       outputMatrix,
 
 /**
  * Transpose a real 3D matrix in the X-Y direction. It is done out-of-place.
+ * As long as the blockSize.z == 1, the transposition works also for 2D case.
  */
 template<SolverCudaKernels::TransposePadding padding>
 void SolverCudaKernels::trasposeReal3DMatrixXY(float*       outputMatrix,

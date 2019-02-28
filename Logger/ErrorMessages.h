@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.6
 
  * @date      09 August    2011, 12:34 (created) \n
- *            22 February  2019, 22:01 (revised)
+ *            28 February  2019, 09:17 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -214,21 +214,21 @@ ErrorMessage kErrFmtBadVelocitySourceMode
 ErrorMessage kErrFmtBadPressureSourceMode
   = "Error: The pressure source mode specified in the input file is not supported.";
 
-//-------------------------------------------- KSpaceFirstOrder3DSolver ----------------------------------------------//
-/// KSpaceFirstOrder3DSolver error message
+//--------------------------------------------- KSpaceFirstOrderSolver -----------------------------------------------//
+/// KSpaceFirstOrderSolver error message
 ErrorMessage kErrFmtBadCheckpointFileFormat
   = "Error: Incorrect checkpoint file \"%s\" format.";
 
-/// KSpaceFirstOrder3DSolver error message
+/// KSpaceFirstOrderSolver error message
 ErrorMessage kErrFmtBadOutputFileFormat
   = "Error: Incorrect output file \"%s\" format.";
 
-/// KSpaceFirstOrder3DSolver error message
+/// KSpaceFirstOrderSolver error message
 ErrorMessage kErrFmtCheckpointDimensionsMismatch
   = "Error: The dimensions [%ld, %ld, %ld] of the checkpoint file don't match the simulation "
     "dimensions [%ld, %ld, %ld].";
 
-/// KSpaceFirstOrder3DSolver error message
+/// KSpaceFirstOrderSolver error message
 ErrorMessage kErrFmtOutputDimensionsMismatch
   = "Error: The dimensions [%ld, %ld, %ld] of the output file don't match the simulation "
     "dimensions [%ld, %ld, %ld].";
@@ -290,11 +290,11 @@ ErrorMessage kErrFmtCufftUnknownError
   = "Error: cuFFT failed with unknown error while %s.";
 
 /// CUDA FFT error message.
-ErrorMessage kErrFmtCreateR2CFftPlan3D
-  = "creating plan for 3D real-to-complex fft";
+ErrorMessage kErrFmtCreateR2CFftPlanND
+  = "creating plan for ND real-to-complex fft";
 /// CUDA FFT error message.
-ErrorMessage kErrFmtCreateC2RFftPlan3D
- = "creating plan for 3D complex-to-real fft";
+ErrorMessage kErrFmtCreateC2RFftPlanND
+ = "creating plan for ND complex-to-real fft";
 /// CUDA FFT error message.
 ErrorMessage kErrFmtCreateR2CFftPlan1DX
  = "creating for 1D real-to-complex fft plan in X direction";
@@ -313,22 +313,28 @@ ErrorMessage kErrFmtCreateC2RFftPlan1DY
 /// CUDA FFT error message.
 ErrorMessage kErrFmtCreateC2RFftPlan1DZ
   = "creating 1D complex-to-real fft plan in Z direction";
+/// FFTW error message
+ErrorMessage kErrFmtCannotCreateR2CFftPlan1DZfor2D
+  = "createR2CFftPlan1DZ cannot be called in 2D simulations";
+/// FFTW error message
+ErrorMessage kErrFmtCannotCreateC2RFftPlan1DZfor2D
+  = "createC2RFftPlan1DZ cannot be called in 2D simulations";
 
 /// CUDA FFT error message.
-ErrorMessage kErrFmtDestroyR2CFftPlan3D
-  = "destroying plan for 3D real-to-complex fft";
+ErrorMessage kErrFmtDestroyR2CFftPlanND
+  = "destroying plan for ND real-to-complex fft";
 /// CUDA FFT error message.
-ErrorMessage kErrFmtDestroyC2RFftPlan3D
- = "destroying plan for 3D complex-to-real fft";
+ErrorMessage kErrFmtDestroyC2RFftPlanND
+  = "destroying plan for ND complex-to-real fft";
 /// CUDA FFT error message.
 ErrorMessage kErrFmtDestroyR2CFftPlan1DX
- = "destroying for 1D real-to-complex fft plan in X direction";
+  = "destroying for 1D real-to-complex fft plan in X direction";
 /// CUDA FFT error message.
 ErrorMessage kErrFmtDestroyR2CFftPlan1DY
- = "destroying for 1D real-to-complex fft plan in Y direction";
+  = "destroying for 1D real-to-complex fft plan in Y direction";
 /// CUDA FFT error message.
 ErrorMessage kErrFmtDestroyR2CFftPlan1DZ
- = "destroying for 1D real-to-complex fft plan in Z direction";
+  = "destroying for 1D real-to-complex fft plan in Z direction";
 /// CUDA FFT error message.
 ErrorMessage kErrFmtDestroyC2RFftPlan1DX
   = "destroying for 1D complex-to-real fft plan in X direction";
@@ -340,11 +346,11 @@ ErrorMessage kErrFmtDestroyC2RFftPlan1DZ
   = "destroying 1D complex-to-real fft plan in Z direction";
 
 /// CUDA FFT error message.
-ErrorMessage kErrFmtExecuteR2CFftPlan3D
-  = "executing plan for 3D real-to-complex fft";
+ErrorMessage kErrFmtExecuteR2CFftPlanND
+  = "executing plan for ND real-to-complex fft";
 /// CUDA FFT error message.
-ErrorMessage kErrFmtExecuteC2RFftPlan3D
- = "executing plan for 3D complex-to-real fft";
+ErrorMessage kErrFmtExecuteC2RFftPlanND
+ = "executing plan for ND complex-to-real fft";
 /// CUDA FFT error message.
 ErrorMessage kErrFmtExecuteR2CFftPlan1DX
  = "executing for 1D real-to-complex fft plan in X direction";
