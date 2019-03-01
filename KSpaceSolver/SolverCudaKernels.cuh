@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            28 February  2019, 22:32 (revised)
+ *            01 March     2019, 15:26 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -214,69 +214,59 @@ namespace SolverCudaKernels
                                RealMatrix&        rhoZ,
                                const RealMatrix&  scalingSource);
 
-   /**
-    * @brief Add initial pressure source to the pressure matrix and update density matrices.
-    *
-    * @param [out] p                     - New pressure field.
-    * @param [out] rhoX                  - Density in x direction.
-    * @param [out] rhoY                  - Density in y direction.
-    * @param [out] rhoZ                  - Density in z direction.
-    * @param [in]  initialPerssureSource - Initial pressure source.
-    * @param [in]  isC2Scalar            - is sound speed homogenous?
-    * @param [in]  c2                    - Sound speed for heterogeneous case.
-    */
-  void addInitialPressureSource(RealMatrix&       p,
-                                RealMatrix&       rhoX,
-                                RealMatrix&       rhoY,
-                                RealMatrix&       rhoZ,
-                                const RealMatrix& initialPerssureSource,
-                                const bool        isC2Scalar,
-                                const float*      c2);
+  /**
+   * @brief Add initial pressure source to the pressure matrix and update density matrices.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   *
+   * <b>Matlab code:</b> \code
+   *  % add the initial pressure to rho as a mass source (3D code)
+   *  p = source.p0;
+   *  rhox = source.p0 ./ (3 .* c.^2);
+   *  rhoy = source.p0 ./ (3 .* c.^2);
+   *  rhoz = source.p0 ./ (3 .* c.^2);
+   */
+  template<Parameters::SimulationDimension simulationDimension>
+  void addInitialPressureSource(const MatrixContainer& container);
 
   /**
    * @brief Compute velocity for the initial pressure problem, heterogeneous medium, uniform grid.
    *
-   * @param [in, out] uxSgx     - Velocity matrix in x direction.
-   * @param [in, out] uySgy     - Velocity matrix in y direction.
-   * @param [in, out] uzSgz     - Velocity matrix in y direction.
-   * @param [in]      dtRho0Sgx - Density matrix in x direction.
-   * @param [in]      dtRho0Sgy - Density matrix in y direction.
-   * @param [in]      dtRho0Sgz - Density matrix in z direction.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   *
+   * <b> Matlab code: </b> \code
+   *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx).
+   *  uy_sgy = dt ./ rho0_sgy .* ifft(uy_sgy).
+   *  uz_sgz = dt ./ rho0_sgz .* ifft(uz_sgz).
+     * \endcode
    */
-  void computeInitialVelocity(RealMatrix&       uxSgx,
-                              RealMatrix&       uySgy,
-                              RealMatrix&       uzSgz,
-                              const RealMatrix& dtRho0Sgx,
-                              const RealMatrix& dtRho0Sgy,
-                              const RealMatrix& dtRho0Sgz);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeInitialVelocityHeterogeneous(const MatrixContainer& container);
 
   /**
    * @brief Compute acoustic velocity for initial pressure problem, homogeneous medium, uniform grid.
+   * @tparam simulationDimension - Dimensionality of the simulation.
    *
-   * @param [in, out] uxSgx - Velocity matrix in x direction.
-   * @param [in, out] uySgy - Velocity matrix in y direction.
-   * @param [in, out] uzSgz - Velocity matrix in y direction.
+   * <b> Matlab code: </b> \code
+   *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx).
+   *  uy_sgy = dt ./ rho0_sgy .* ifft(uy_sgy).
+   *  uz_sgz = dt ./ rho0_sgz .* ifft(uz_sgz).
+   * \endcode
    */
-  void computeInitialVelocityHomogeneousUniform(RealMatrix& uxSgx,
-                                                RealMatrix& uySgy,
-                                                RealMatrix& uzSgz);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeInitialVelocityHomogeneousUniform(const MatrixContainer& container);
 
   /**
    * @brief Compute acoustic velocity for initial pressure problem, homogenous medium, non-uniform grid.
+   * @tparam simulationDimension - Dimensionality of the simulation.
    *
-   * @param [in, out] uxSgx - Velocity matrix in x direction.
-   * @param [in, out] uySgy - Velocity matrix in y direction.
-   * @param [in, out] uzSgz - Velocity matrix in y direction
-   * @param [in] dxudxnSgx  - Non uniform grid shift in x direction.
-   * @param [in] dyudynSgy  - Non uniform grid shift in y direction.
-   * @param [in] dzudznSgz  - Non uniform grid shift in z direction.
+   * <b> Matlab code: </b> \code
+   *  ux_sgx = dt ./ rho0_sgx .* dxudxn_sgx .* ifft(ux_sgx)
+   *  uy_sgy = dt ./ rho0_sgy .* dyudxn_sgy .* ifft(uy_sgy)
+   *  uz_sgz = dt ./ rho0_sgz .* dzudzn_sgz .* ifft(uz_sgz)
+   * \endcode
    */
-  void computeInitialVelocityHomogeneousNonuniform(RealMatrix&       uxSgx,
-                                                   RealMatrix&       uySgy,
-                                                   RealMatrix&       uzSgz,
-                                                   const RealMatrix& dxudxnSgx,
-                                                   const RealMatrix& dyudynSgy,
-                                                   const RealMatrix& dzudznSgz);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeInitialVelocityHomogeneousNonuniform(const MatrixContainer& container);
 
 
   //----------------------------------------------- pressure kernels -------------------------------------------------//

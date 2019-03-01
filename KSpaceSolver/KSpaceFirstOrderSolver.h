@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            28 February  2019, 22:23 (revised)
+ *            01 March     2019, 15:26 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -245,7 +245,25 @@ class KSpaceFirstOrderSolver
                      const RealMatrix&  sourceInput,
                      const IndexMatrix& sourceIndex,
                      const size_t       manyFlag);
-    /// Calculate initial pressure source.
+    /**
+     * @brief Calculate initial pressure source.
+     * @tparam simulationDimension - Dimensionality of the simulation.
+     *
+     * <b>Matlab code:</b> \code
+     *  % add the initial pressure to rho as a mass source
+     *  p = source.p0;
+     *  rhox = source.p0 ./ (3 .* c.^2);
+     *  rhoy = source.p0 ./ (3 .* c.^2);
+     *  rhoz = source.p0 ./ (3 .* c.^2);
+     *
+     *  % compute u(t = t1 + dt/2) based on the assumption u(dt/2) = -u(-dt/2)
+     *  % which forces u(t = t1) = 0
+     *  ux_sgx = dt .* rho0_sgx_inv .* real(ifftn( bsxfun(@times, ddx_k_shift_pos, kappa .* fftn(p)) )) / 2;
+     *  uy_sgy = dt .* rho0_sgy_inv .* real(ifftn( bsxfun(@times, ddy_k_shift_pos, kappa .* fftn(p)) )) / 2;
+     *  uz_sgz = dt .* rho0_sgz_inv .* real(ifftn( bsxfun(@times, ddz_k_shift_pos, kappa .* fftn(p)) )) / 2;
+     * \endcode
+     */
+    template<Parameters::SimulationDimension simulationDimension>
     void addInitialPressureSource();
 
     /// Generate kappa matrix for  lossless medium.

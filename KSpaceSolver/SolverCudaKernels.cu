@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            28 February  2019, 22:32 (revised)
+ *            01 March     2019, 15:26 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -894,6 +894,7 @@ void SolverCudaKernels::addPressureScaledSource(RealMatrix&        rhoX,
 /**
  * Cuda kernel to add initial pressure initialPerssureSource into p, rhoX, rhoY, rhoZ.
  * c is a matrix. Heterogeneity is treated by a template
+ * @tparam      simulationDimension   - Dimensionality of the simulation.
  * @tparam      isC2Scalar            - Is sound speed homogenous?
  * @param [out] p                     - New pressure field.
  * @param [out] rhoX                  - Density in x direction.
@@ -901,8 +902,16 @@ void SolverCudaKernels::addPressureScaledSource(RealMatrix&        rhoX,
  * @param [out] rhoZ                  - Density in z direction.
  * @param [in]  initialPerssureSource - Initial pressure source.
  * @param [in]  c2                    - Sound speed for heterogeneous case.
+ *
+ * <b>Matlab code:</b> \code
+ *  % add the initial pressure to rho as a mass source (3D code)
+ *  p = source.p0;
+ *  rhox = source.p0 ./ (3 .* c.^2);
+ *  rhoy = source.p0 ./ (3 .* c.^2);
+ *  rhoz = source.p0 ./ (3 .* c.^2);
  */
-template<bool isC2Scalar>
+template<Parameters::SimulationDimension simulationDimension,
+         bool isC2Scalar>
 __global__ void cudaAddInitialPressureSource(float*       p,
                                              float*       rhoX,
                                              float*       rhoY,
@@ -914,11 +923,17 @@ __global__ void cudaAddInitialPressureSource(float*       p,
   {
     float tmp = p[i] = initialPerssureSource[i];
 
-    tmp = (isC2Scalar) ? tmp / (3.0f * cudaDeviceConstants.c2): tmp / (3.0f * c2[i]);
+    const float  dimScalingFactor = (simulationDimension == SD::k3D) ? 3.0f : 2.0f;
+
+    tmp = (isC2Scalar) ? tmp / (dimScalingFactor * cudaDeviceConstants.c2)
+                       : tmp / (dimScalingFactor * c2[i]);
 
     rhoX[i] = tmp;
     rhoY[i] = tmp;
-    rhoZ[i] = tmp;
+    if (simulationDimension == SD::k3D)
+    {
+      rhoZ[i] = tmp;
+    }
   }
 }// end of cudaAddInitialPressureSource
 //----------------------------------------------------------------------------------------------------------------------
@@ -927,52 +942,54 @@ __global__ void cudaAddInitialPressureSource(float*       p,
 /**
  * Interface for kernel to add initial pressure initialPerssureSource into p, rhoX, rhoY, rhoZ.
  */
-void SolverCudaKernels::addInitialPressureSource(RealMatrix&       p,
-                                                 RealMatrix&       rhoX,
-                                                 RealMatrix&       rhoY,
-                                                 RealMatrix&       rhoZ,
-                                                 const RealMatrix& initialPerssureSource,
-                                                 const bool        isC2Scalar,
-                                                 const float*      c2)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::addInitialPressureSource(const MatrixContainer& container)
 {
-  if (isC2Scalar)
+  const bool homogeneous = Parameters::getInstance().getC0ScalarFlag();
+
+  if (homogeneous)
   {
-    cudaAddInitialPressureSource<true>
+    cudaAddInitialPressureSource<simulationDimension, true>
                                 <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                (p.getDeviceData(),
-                                 rhoX.getDeviceData(),
-                                 rhoY.getDeviceData(),
-                                 rhoZ.getDeviceData(),
-                                 initialPerssureSource.getDeviceData());
+                                (container.getP().getDeviceData(),
+                                 container.getRhoX().getDeviceData(),
+                                 container.getRhoY().getDeviceData(),
+                                 (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                  : nullptr,
+                                 container.getInitialPressureSourceInput().getDeviceData());
   }
   else
   {
-      cudaAddInitialPressureSource<false>
-                                  <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                  (p.getDeviceData(),
-                                   rhoX.getDeviceData(),
-                                   rhoY.getDeviceData(),
-                                   rhoZ.getDeviceData(),
-                                   initialPerssureSource.getDeviceData(),
-                                   c2);
+    cudaAddInitialPressureSource<simulationDimension, false>
+                                <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                (container.getP().getDeviceData(),
+                                 container.getRhoX().getDeviceData(),
+                                 container.getRhoY().getDeviceData(),
+                                 (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                  : nullptr,
+                                 container.getInitialPressureSourceInput().getDeviceData(),
+                                 container.getC2().getDeviceData());
   }
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of addInitialPressureSource
 //----------------------------------------------------------------------------------------------------------------------
 
-
+/**
+ * Interface for kernel to add initial pressure initialPerssureSource into p, rhoX, rhoY, rhoZ, 3D case.
+ */
+template
+void SolverCudaKernels::addInitialPressureSource<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Interface for kernel to add initial pressure initialPerssureSource into p, rhoX, rhoY, rhoZ, 2D case.
+ */
+template
+void SolverCudaKernels::addInitialPressureSource<SD::k2D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Cuda kernel Compute  acoustic velocity for initial pressure problem.
- *
- * <b> Matlab code: </b>
- *
- * \verbatim
-    ux_sgx = dt ./ rho0_sgx .* ux_sgx.
-    uy_sgy = dt ./ rho0_sgy .* uy_sgy.
-    uz_sgz = dt ./ rho0_sgz .* uz_sgz.
-\endverbatim
  *
  * @tparam          isRho0Scalar - Homogenous or heterogenous medium.
  * @param [in, out] uxSgx     - Velocity matrix in x direction.
@@ -982,8 +999,16 @@ void SolverCudaKernels::addInitialPressureSource(RealMatrix&       p,
  * @param [in]      dtRho0Sgy - Density matrix in y direction.
  * @param [in]      dtRho0Sgz - Density matrix in z direction.
  *
+ * @tparam simulationDimension - Dimensionality of the simulation.
+ *
+ * <b> Matlab code: </b> \code
+ *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx).
+ *  uy_sgy = dt ./ rho0_sgy .* ifft(uy_sgy).
+ *  uz_sgz = dt ./ rho0_sgz .* ifft(uz_sgz).
+ * \endcode
  */
-template <bool isRho0Scalar>
+template <Parameters::SimulationDimension simulationDimension,
+          bool isRho0Scalar>
 __global__  void cudaComputeInitialVelocity(float*       uxSgx,
                                             float*       uySgy,
                                             float*       uzSgz,
@@ -996,13 +1021,17 @@ __global__  void cudaComputeInitialVelocity(float*       uxSgx,
   {
     const float dividerX = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgx;
     const float dividerY = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgy;
-    const float dividerZ = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgz;
+    const float dividerZ = (simulationDimension == SD::k3D)
+                               ? cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgz : 1.0f;
 
     for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
     {
       uxSgx[i] *= dividerX;
       uySgy[i] *= dividerY;
-      uzSgz[i] *= dividerZ;
+      if (simulationDimension == SD::k3D)
+      {
+        uzSgz[i] *= dividerZ;
+      }
     }
   }
   else
@@ -1013,7 +1042,10 @@ __global__  void cudaComputeInitialVelocity(float*       uxSgx,
     {
       uxSgx[i] *= dtRho0Sgx[i] * divider;
       uySgy[i] *= dtRho0Sgy[i] * divider;
-      uzSgz[i] *= dtRho0Sgz[i] * divider;
+      if (simulationDimension == SD::k3D)
+      {
+        uzSgz[i] *= dtRho0Sgz[i] * divider;
+      }
     }
   }
 }// end of cudaComputeInitialVelocity
@@ -1021,66 +1053,88 @@ __global__  void cudaComputeInitialVelocity(float*       uxSgx,
 
 /**
  * Interface to compute acoustic velocity for initial pressure problem, heterogeneous medium, uniform grid.
- *
  */
-void SolverCudaKernels::computeInitialVelocity(RealMatrix&       uxSgx,
-                                               RealMatrix&       uySgy,
-                                               RealMatrix&       uzSgz,
-                                               const RealMatrix& dtRho0Sgx,
-                                               const RealMatrix& dtRho0Sgy,
-                                               const RealMatrix& dtRho0Sgz)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::computeInitialVelocityHeterogeneous(const MatrixContainer& container)
 {
-  cudaComputeInitialVelocity<false>
-                         <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                         (uxSgx.getDeviceData(),
-                          uySgy.getDeviceData(),
-                          uzSgz.getDeviceData(),
-                          dtRho0Sgx.getDeviceData(),
-                          dtRho0Sgy.getDeviceData(),
-                          dtRho0Sgz.getDeviceData());
+  cudaComputeInitialVelocity<simulationDimension, false>
+                            <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                            (container.getUxSgx().getDeviceData(),
+                             container.getUySgy().getDeviceData(),
+                             (simulationDimension == SD::k3D) ? container.getUzSgz().getDeviceData()
+                                                              : nullptr,
+                             container.getDtRho0Sgx().getDeviceData(),
+                             container.getDtRho0Sgy().getDeviceData(),
+                             (simulationDimension == SD::k3D) ? container.getDtRho0Sgz().getDeviceData()
+                                                              : nullptr);
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
-}// end of computeInitialVelocity
+}// end of computeInitialVelocityHeterogeneous
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Interface to compute acoustic velocity for initial pressure problem, heterogeneous medium, uniform grid, 3D case.
+ */
+template
+void SolverCudaKernels::computeInitialVelocityHeterogeneous<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Interface to compute acoustic velocity for initial pressure problem, heterogeneous medium, uniform grid, 2D case.
+ */
+template
+void SolverCudaKernels::computeInitialVelocityHeterogeneous<SD::k2D>(const MatrixContainer& container);
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Interface Compute acoustic velocity for initial pressure problem, homogeneous medium, uniform grid.
  */
-void SolverCudaKernels::computeInitialVelocityHomogeneousUniform(RealMatrix& uxSgx,
-                                                                 RealMatrix& uySgy,
-                                                                 RealMatrix& uzSgz)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::computeInitialVelocityHomogeneousUniform(const MatrixContainer& container)
 {
-  cudaComputeInitialVelocity<true>
+  // homogeneous == true
+  cudaComputeInitialVelocity<simulationDimension, true>
                             <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                            (uxSgx.getDeviceData(),
-                             uySgy.getDeviceData(),
-                             uzSgz.getDeviceData());
+                            (container.getUxSgx().getDeviceData(),
+                             container.getUySgy().getDeviceData(),
+                             (simulationDimension == SD::k3D) ? container.getUzSgz().getDeviceData()
+                                                              : nullptr);
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of computeInitialVelocity
 //----------------------------------------------------------------------------------------------------------------------
 
-
+/**
+ * Interface Compute acoustic velocity for initial pressure problem, homogeneous medium, uniform grid, 3D case.
+ */
+template
+void SolverCudaKernels::computeInitialVelocityHomogeneousUniform<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Interface Compute acoustic velocity for initial pressure problem, homogeneous medium, uniform grid, 2D case.
+ */
+template
+void SolverCudaKernels::computeInitialVelocityHomogeneousUniform<SD::k2D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Compute acoustic velocity for initial pressure problem, homogenous medium, non-uniform grid.
- * <b> Matlab code: </b>
+ * @tparam simulationDimension - Dimensionality of the simulation.
+ * @param [in, out] uxSgx      - Velocity matrix in x direction.
+ * @param [in, out] uySgy      - Velocity matrix in y direction.
+ * @param [in, out] uzSgz      - Velocity matrix in y direction
+ * @param [in] dxudxnSgx       - Non uniform grid shift in x direction.
+ * @param [in] dyudynSgy       - Non uniform grid shift in y direction.
+ * @param [in] dzudznSgz       - Non uniform grid shift in z direction.
  *
- * \verbatim
-    ux_sgx = dt ./ rho0_sgx .* ux_sgx .* dxudxn_sgx.
-    uy_sgy = dt ./ rho0_sgy .* uy_sgy .* dyudyn_sgy.
-    uz_sgz = dt ./ rho0_sgz .* uz_sgz .* dzudzn_sgz.
-\endverbatim
- *
- * @param [in, out] uxSgx - Velocity matrix in x direction.
- * @param [in, out] uySgy - Velocity matrix in y direction.
- * @param [in, out] uzSgz - Velocity matrix in y direction
- * @param [in] dxudxnSgx  - Non uniform grid shift in x direction.
- * @param [in] dyudynSgy  - Non uniform grid shift in y direction.
- * @param [in] dzudznSgz  - Non uniform grid shift in z direction.
+ * <b> Matlab code: </b> \code
+ *  ux_sgx = dt ./ rho0_sgx .* dxudxn_sgx .* ifft(ux_sgx)
+ *  uy_sgy = dt ./ rho0_sgy .* dyudxn_sgy .* ifft(uy_sgy)
+ *  uz_sgz = dt ./ rho0_sgz .* dzudzn_sgz .* ifft(uz_sgz)
+ * \endcode
  */
+template<Parameters::SimulationDimension simulationDimension>
 __global__ void cudaComputeInitialVelocityHomogeneousNonuniform(float*       uxSgx,
                                                                 float*       uySgy,
                                                                 float*       uzSgz,
@@ -1090,15 +1144,21 @@ __global__ void cudaComputeInitialVelocityHomogeneousNonuniform(float*       uxS
 {
   const float dividerX = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgx;
   const float dividerY = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgy;
-  const float dividerZ = cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgz;
+  const float dividerZ = (simulationDimension == SD::k3D)
+                             ? cudaDeviceConstants.fftDivider * 0.5f * cudaDeviceConstants.dtRho0Sgz
+                             : 1.0f;
 
   for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const dim3 coords = getReal3DCoords(i);
+    const dim3 coords = (simulationDimension == SD::k3D) ? getReal3DCoords(i) : getReal2DCoords(i);
 
     uxSgx[i] *= dividerX * dxudxnSgx[coords.x];
     uySgy[i] *= dividerY * dyudynSgy[coords.y];
-    uzSgz[i] *= dividerZ * dzudznSgz[coords.z];
+
+    if (simulationDimension == SD::k3D)
+    {
+      uzSgz[i] *= dividerZ * dzudznSgz[coords.z];
+    }
   }
 }// end of cudaComputeInitialVelocityHomogeneousNonuniform
 //----------------------------------------------------------------------------------------------------------------------
@@ -1107,25 +1167,37 @@ __global__ void cudaComputeInitialVelocityHomogeneousNonuniform(float*       uxS
 /**
  * Compute  acoustic velocity for initial pressure problem, homogenous medium, non-uniform grid.
  */
-  void SolverCudaKernels::computeInitialVelocityHomogeneousNonuniform(RealMatrix&       uxSgx,
-                                                                      RealMatrix&       uySgy,
-                                                                      RealMatrix&       uzSgz,
-                                                                      const RealMatrix& dxudxnSgx,
-                                                                      const RealMatrix& dyudynSgy,
-                                                                      const RealMatrix& dzudznSgz)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::computeInitialVelocityHomogeneousNonuniform(const MatrixContainer& container)
 {
-  cudaComputeInitialVelocityHomogeneousNonuniform<<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                         (uxSgx.getDeviceData(),
-                                          uySgy.getDeviceData(),
-                                          uzSgz.getDeviceData(),
-                                          dxudxnSgx.getDeviceData(),
-                                          dxudxnSgx.getDeviceData(),
-                                          dxudxnSgx.getDeviceData());
+  cudaComputeInitialVelocityHomogeneousNonuniform<simulationDimension>
+                                                 <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                                 (container.getUxSgx().getDeviceData(),
+                                                  container.getUySgy().getDeviceData(),
+                                                  (simulationDimension == SD::k3D)
+                                                      ? container.getUzSgz().getDeviceData() : nullptr,
+                                                  container.getDxudxnSgx().getDeviceData(),
+                                                  container.getDyudynSgy().getDeviceData(),
+                                                  (simulationDimension == SD::k3D)
+                                                      ? container.getDzudznSgz().getDeviceData() : nullptr);
+
 // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of computeInitialVelocityHomogeneousNonuniform
 //----------------------------------------------------------------------------------------------------------------------
 
+/**
+ * Compute  acoustic velocity for initial pressure problem, homogenous medium, non-uniform grid, 3D case.
+ */
+template
+void SolverCudaKernels::computeInitialVelocityHomogeneousNonuniform<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Compute  acoustic velocity for initial pressure problem, homogenous medium, non-uniform grid, 2D case.
+ */
+template
+void SolverCudaKernels::computeInitialVelocityHomogeneousNonuniform<SD::k2D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  *  Cuda kernel which compute part of the new velocity term between FFTs.

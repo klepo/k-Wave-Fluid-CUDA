@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            28 February  2019, 22:23 (revised)
+ *            01 March     2019, 15:26 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -831,7 +831,10 @@ void KSpaceFirstOrderSolver::computeMainLoop()
     }
 
     //-- calculate initial pressure
-    if ((timeIndex == 0) && (mParameters.getInitialPressureSourceFlag() == 1))  addInitialPressureSource();
+    if ((timeIndex == 0) && (mParameters.getInitialPressureSourceFlag() == 1))
+    {
+      addInitialPressureSource<simulationDimension>();
+    }
 
     storeSensorData();
     printStatistics();
@@ -1413,38 +1416,13 @@ void KSpaceFirstOrderSolver::scaleSource(RealMatrix&        scaledSource,
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Calculate p0 source when necessary.
- *
- * <b>Matlab code:</b> \n
- *
- *\verbatim
-    % add the initial pressure to rho as a mass source
-    p = source.p0;
-    rhox = source.p0 ./ (3 .* c.^2);
-    rhoy = source.p0 ./ (3 .* c.^2);
-    rhoz = source.p0 ./ (3 .* c.^2);
-
-    % compute u(t = t1 + dt/2) based on the assumption u(dt/2) = -u(-dt/2)
-    % which forces u(t = t1) = 0
-    ux_sgx = dt .* rho0_sgx_inv .* real(ifftn( bsxfun(@times, ddx_k_shift_pos, kappa .* fftn(p)) )) / 2;
-    uy_sgy = dt .* rho0_sgy_inv .* real(ifftn( bsxfun(@times, ddy_k_shift_pos, kappa .* fftn(p)) )) / 2;
-    uz_sgz = dt .* rho0_sgz_inv .* real(ifftn( bsxfun(@times, ddz_k_shift_pos, kappa .* fftn(p)) )) / 2;
- \endverbatim
+ * Calculate p0 source.
  */
+template<Parameters::SimulationDimension simulationDimension>
 void KSpaceFirstOrderSolver::addInitialPressureSource()
 {
-  // get over the scalar problem
-  bool isSoundScalar = mParameters.getC0ScalarFlag();
-  const float* c2 = (isSoundScalar) ? nullptr : getC2().getDeviceData();
-
-  //-- add the initial pressure to rho as a mass source --//
-  SolverCudaKernels::addInitialPressureSource(getP(),
-                                              getRhoX(),
-                                              getRhoY(),
-                                              getRhoZ(),
-                                              getInitialPressureSourceInput(),
-                                              isSoundScalar,
-                                              c2);
+  // add the initial pressure to rho as a mass source
+  SolverCudaKernels::addInitialPressureSource<simulationDimension>(mMatrixContainer);
 
   //-----------------------------------------------------------------------//
   //--compute u(t = t1 + dt/2) based on the assumption u(dt/2) = -u(-dt/2)-//
@@ -1452,38 +1430,31 @@ void KSpaceFirstOrderSolver::addInitialPressureSource()
   //-----------------------------------------------------------------------//
   getTempCufftX().computeR2CFftND(getP());
 
-  SolverCudaKernels::computePressureGradient<SD::k3D>(mMatrixContainer);
+  SolverCudaKernels::computePressureGradient<simulationDimension>(mMatrixContainer);
 
   getTempCufftX().computeC2RFftND(getUxSgx());
   getTempCufftY().computeC2RFftND(getUySgy());
-  getTempCufftZ().computeC2RFftND(getUzSgz());
+  if (simulationDimension == SD::k3D)
+  {
+    getTempCufftZ().computeC2RFftND(getUzSgz());
+  }
 
   if (mParameters.getRho0ScalarFlag())
   {
     if (mParameters.getNonUniformGridFlag())
     { // non uniform grid, homogeneous
-      SolverCudaKernels::computeInitialVelocityHomogeneousNonuniform(getUxSgx(),
-                                                                     getUySgy(),
-                                                                     getUzSgz(),
-                                                                     getDxudxnSgx(),
-                                                                     getDyudynSgy(),
-                                                                     getDzudznSgz());
+      SolverCudaKernels::computeInitialVelocityHomogeneousNonuniform<simulationDimension>(mMatrixContainer);
     }
     else
     { //uniform grid, homogeneous
-      SolverCudaKernels::computeInitialVelocityHomogeneousUniform(getUxSgx(), getUySgy(), getUzSgz());
+      SolverCudaKernels::computeInitialVelocityHomogeneousUniform<simulationDimension>(mMatrixContainer);
     }
   }
   else
   {
     // heterogeneous, uniform grid
     // divide the matrix by 2 and multiply with st./rho0_sg
-    SolverCudaKernels::computeInitialVelocity(getUxSgx(),
-                                              getUySgy(),
-                                              getUzSgz(),
-                                              getDtRho0Sgx(),
-                                              getDtRho0Sgy(),
-                                              getDtRho0Sgz());
+    SolverCudaKernels::computeInitialVelocityHeterogeneous<simulationDimension>(mMatrixContainer);
   }
 }// end of addInitialPressureSource
 //----------------------------------------------------------------------------------------------------------------------
