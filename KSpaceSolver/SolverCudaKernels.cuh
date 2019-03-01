@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            23 February  2019, 21:58 (revised)
+ *            28 February  2019, 22:32 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -37,6 +37,7 @@
 #include <MatrixClasses/IndexMatrix.h>
 #include <MatrixClasses/CufftComplexMatrix.h>
 
+#include <Containers/MatrixContainer.h>
 #include <Utils/DimensionSizes.h>
 
 #include <Parameters/Parameters.h>
@@ -78,85 +79,49 @@ namespace SolverCudaKernels
   //--------------------------------------------- velocity operations ------------------------------------------------//
   /**
    * @brief Compute acoustic velocity for heterogeneous medium and a uniform grid.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in, out] uxSgx     - Acoustic velocity on staggered grid in x direction.
-   * @param [in, out] uySgy     - Acoustic velocity on staggered grid in y direction.
-   * @param [in, out] uzSgz     - Acoustic velocity on staggered grid in z direction.
-   * @param [in]      ifftX     - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
-   * @param [in]      ifftY     - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
-   * @param [in]      ifftZ     - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
-   * @param [in]      dtRho0Sgx - Acoustic density on staggered grid in x direction.
-   * @param [in]      dtRho0Sgy - Acoustic density on staggered grid in y direction.
-   * @param [in]      dtRho0Sgz - Acoustic density on staggered grid in z direction.
-   * @param [in]      pmlX      - Perfectly matched layer in x direction.
-   * @param [in]      pmlY      - Perfectly matched layer in y direction.
-   * @param [in]      pmlZ      - Perfectly matched layer in z direction.
+   * <b> Matlab code: </b> \code
+   *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* real(ifftX)
+   *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) - dt .* rho0_sgy_inv .* real(ifftY)
+   *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz) - dt .* rho0_sgz_inv .* real(ifftZ)
+   * \endcode
    */
-  void computeVelocity(RealMatrix&       uxSgx,
-                       RealMatrix&       uySgy,
-                       RealMatrix&       uzSgz,
-                       const RealMatrix& ifftX,
-                       const RealMatrix& ifftY,
-                       const RealMatrix& ifftZ,
-                       const RealMatrix& dtRho0Sgx,
-                       const RealMatrix& dtRho0Sgy,
-                       const RealMatrix& dtRho0Sgz,
-                       const RealMatrix& pmlX,
-                       const RealMatrix& pmlY,
-                       const RealMatrix& pmlZ);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeVelocityHeterogeneous(const MatrixContainer& container);
 
 
   /**
    * @brief Compute acoustic velocity for homogeneous medium and a uniform grid.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in, out] uxSgx - Acoustic velocity on staggered grid in x direction.
-   * @param [in, out] uySgy - Acoustic velocity on staggered grid in y direction.
-   * @param [in, out] uzSgz - Acoustic velocity on staggered grid in z direction.
-   * @param [in]      ifftX - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
-   * @param [in]      ifftY - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
-   * @param [in]      ifftZ - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
-   * @param [in]      pmlX  - Perfectly matched layer in x direction.
-   * @param [in]      pmlY  - Perfectly matched layer in y direction.
-   * @param [in]      pmlZ  - Perfectly matched layer in z direction.
+   * <b> Matlab code: </b> \code
+   *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* real(ifftX)
+   *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) - dt .* rho0_sgy_inv .* real(ifftY)
+   *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz) - dt .* rho0_sgz_inv .* real(ifftZ)
+   *\endcode
    */
-  void computeVelocityHomogeneousUniform(RealMatrix&       uxSgx,
-                                         RealMatrix&       uySgy,
-                                         RealMatrix&       uzSgz,
-                                         const RealMatrix& ifftX,
-                                         const RealMatrix& ifftY,
-                                         const RealMatrix& ifftZ,
-                                         const RealMatrix& pmlX,
-                                         const RealMatrix& pmlY,
-                                         const RealMatrix& pmlZ);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeVelocityHomogeneousUniform(const MatrixContainer& container);
 
-  /**
-   * @brief Compute acoustic velocity for homogenous medium and non-uniform grid.
-   *
-   * @param [in,out] uxSgx     - Acoustic velocity on staggered grid in x direction.
-   * @param [in,out] uySgy     - Acoustic velocity on staggered grid in y direction.
-   * @param [in,out] uzSgz     - Acoustic velocity on staggered grid in z direction.
-   * @param [in]      ifftX    - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
-   * @param [in]      ifftY    - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
-   * @param [in]      ifftZ    - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
-   * @param [in]     dxudxnSgx - Non uniform grid shift in x direction.
-   * @param [in]     dyudynSgy - Non uniform grid shift in y direction.
-   * @param [in]     dzudznSgz - Non uniform grid shift in z direction.
-   * @param [in]     pmlX      - Perfectly matched layer in x direction.
-   * @param [in]     pmlY      - Perfectly matched layer in y direction.
-   * @param [in]     pmlZ      - Perfectly matched layer in z direction.
-   */
-  void computeVelocityHomogeneousNonuniform(RealMatrix&       uxSgx,
-                                            RealMatrix&       uySgy,
-                                            RealMatrix&       uzSgz,
-                                            const RealMatrix& ifftX,
-                                            const RealMatrix& ifftY,
-                                            const RealMatrix& ifftZ,
-                                            const RealMatrix& dxudxnSgx,
-                                            const RealMatrix& dyudynSgy,
-                                            const RealMatrix& dzudznSgz,
-                                            const RealMatrix& pmlX,
-                                            const RealMatrix& pmlY,
-                                            const RealMatrix& pmlZ);
+    /**
+     * @brief  Compute acoustic velocity for homogenous medium and nonuniform grid.
+     * @tparam simulationDimension - Dimensionality of the simulation.
+     * @param [in] container       - Container with all matrices.
+     *
+     * <b> Matlab code: </b> \code
+     *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx)  ...
+     *                  - dt .* rho0_sgx_inv .* dxudxnSgx.* real(ifftX))
+     *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) ...
+     *                  - dt .* rho0_sgy_inv .* dyudynSgy.* real(ifftY)
+     *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz)
+     *                  - dt .* rho0_sgz_inv .* dzudznSgz.* real(ifftZ)
+     *\endcode
+     */
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeVelocityHomogeneousNonuniform(const MatrixContainer& container);
 
   //--------------------------------------------------- Sources ------------------------------------------------------//
 
@@ -317,23 +282,18 @@ namespace SolverCudaKernels
   //----------------------------------------------- pressure kernels -------------------------------------------------//
   /**
    * @brief Compute spectral part of pressure gradient in between FFTs.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in, out] ifftX        - It takes the FFT of pressure (common for all three components) and returns
-   *                                 the spectral part in x direction (the input for inverse FFT that follows).
-   * @param [out]     ifftY        - spectral part in y dimension (the input for inverse FFT that follows).
-   * @param [out]     ifftZ        - spectral part in z dimension (the input for inverse FFT that follows).
-   * @param [in]      kappa        - Kappa matrix.
-   * @param [in]      ddxKShiftPos - Positive spectral shift in x direction.
-   * @param [in]      ddyKShiftPos - Positive spectral shift in y direction.
-   * @param [in]      ddzKShiftPos - Positive spectral shift in z direction.
+   * <b> Matlab code: </b> \code
+   *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
+   *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
+   *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
+   * \endcode
+   *
    */
-   void computePressureGradient(CufftComplexMatrix& ifftX,
-                                CufftComplexMatrix& ifftY,
-                                CufftComplexMatrix& ifftZ,
-                                const RealMatrix&    kappa,
-                                const ComplexMatrix& ddxKShiftPos,
-                                const ComplexMatrix& ddyKShiftPos,
-                                const ComplexMatrix& ddzKShiftPos);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computePressureGradient(const MatrixContainer& container);
 
    /**
     * @brief Compute spatial part of the velocity gradient in between FFTs on uniform grid.

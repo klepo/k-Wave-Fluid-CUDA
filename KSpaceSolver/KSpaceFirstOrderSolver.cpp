@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            28 February  2019, 11:22 (revised)
+ *            28 February  2019, 22:23 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -309,7 +309,10 @@ void KSpaceFirstOrderSolver::compute()
   {
     mSimulationTime.start();
 
-    computeMainLoop();
+    if (mParameters.isSimulation3D())
+      computeMainLoop<SD::k3D>();
+    else
+      computeMainLoop<SD::k2D>();
 
     mSimulationTime.stop();
 
@@ -759,6 +762,7 @@ void KSpaceFirstOrderSolver::preProcessing()
 /**
  * Compute the main time loop of KSpaceFirstOrder solver.
  */
+template<Parameters::SimulationDimension simulationDimension>
 void KSpaceFirstOrderSolver::computeMainLoop()
 {
   mActPercent = 0;
@@ -786,7 +790,7 @@ void KSpaceFirstOrderSolver::computeMainLoop()
     const size_t timeIndex = mParameters.getTimeIndex();
 
     // compute velocity
-    computeVelocity();
+    computeVelocity<simulationDimension>();
 
     // add in the velocity source term
     addVelocitySource();
@@ -1024,89 +1028,40 @@ void KSpaceFirstOrderSolver::saveCheckpointData()
 
 
 /**
- * Compute new values of acoustic velocity in all three dimensions (UxSgx, UySgy, UzSgz).
- *
- * <b>Matlab code:</b> \n
- *
- * \verbatim
-   p_l = fftn(p);
-   ux_sgx = bsxfun(@times, pml_x_sgx, ...
-       bsxfun(@times, pml_x_sgx, ux_sgx) ...
-       - dt .* rho0_sgx_inv .* real(ifftn( bsxfun(@times, ddx_k_shift_pos, kappa .* p_k) )) ...
-       );
-   uy_sgy = bsxfun(@times, pml_y_sgy, ...
-       bsxfun(@times, pml_y_sgy, uy_sgy) ...
-       - dt .* rho0_sgy_inv .* real(ifftn( bsxfun(@times, ddy_k_shift_pos, kappa .* p_k) )) ...
-       );
-   uz_sgz = bsxfun(@times, pml_z_sgz, ...
-       bsxfun(@times, pml_z_sgz, uz_sgz) ...
-       - dt .* rho0_sgz_inv .* real(ifftn( bsxfun(@times, ddz_k_shift_pos, kappa .* p_k) )) ...
-       );
- \endverbatim
+ * Compute new values of acoustic velocity in all used dimensions (UxSgx, UySgy, UzSgz).
  */
+template<Parameters::SimulationDimension simulationDimension>
 void KSpaceFirstOrderSolver::computeVelocity()
 {
   // fftn(p);
   getTempCufftX().computeR2CFftND(getP());
+
   // bsxfun(@times, ddx_k_shift_pos, kappa .* pre_result) , for all 3 dims
-  SolverCudaKernels::computePressureGradient(getTempCufftX(),
-                                             getTempCufftY(),
-                                             getTempCufftZ(),
-                                             getKappa(),
-                                             getDdxKShiftPos(),
-                                             getDdyKShiftPos(),
-                                             getDdzKShiftPos());
+  SolverCudaKernels::computePressureGradient<simulationDimension>(mMatrixContainer);
 
   // ifftn(pre_result)
   getTempCufftX().computeC2RFftND(getTemp1RealND());
   getTempCufftY().computeC2RFftND(getTemp2RealND());
-  getTempCufftZ().computeC2RFftND(getTemp3RealND());
+  if (simulationDimension == SD::k3D)
+  {
+    getTempCufftZ().computeC2RFftND(getTemp3RealND());
+  }
 
   // bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* (pre_result))
   if (mParameters.getRho0ScalarFlag())
   { // scalars
     if (mParameters.getNonUniformGridFlag())
     {
-      SolverCudaKernels::computeVelocityHomogeneousNonuniform(getUxSgx(),
-                                                              getUySgy(),
-                                                              getUzSgz(),
-                                                              getTemp1RealND(),
-                                                              getTemp2RealND(),
-                                                              getTemp3RealND(),
-                                                              getDxudxnSgx(),
-                                                              getDyudynSgy(),
-                                                              getDzudznSgz(),
-                                                              getPmlXSgx(),
-                                                              getPmlYSgy(),
-                                                              getPmlZSgz());
+      SolverCudaKernels::computeVelocityHomogeneousNonuniform<simulationDimension>(mMatrixContainer);
     }
     else
     {
-      SolverCudaKernels::computeVelocityHomogeneousUniform(getUxSgx(),
-                                                           getUySgy(),
-                                                           getUzSgz(),
-                                                           getTemp1RealND(),
-                                                           getTemp2RealND(),
-                                                           getTemp3RealND(),
-                                                           getPmlXSgx(),
-                                                           getPmlYSgy(),
-                                                           getPmlZSgz());
+      SolverCudaKernels::computeVelocityHomogeneousUniform<simulationDimension>(mMatrixContainer);
     }
   }
   else
   {// matrices
-    SolverCudaKernels::computeVelocity(getUxSgx(),
-                                       getUySgy(),
-                                       getUzSgz(),
-                                       getTemp1RealND(),
-                                       getTemp2RealND(),
-                                       getTemp3RealND(),
-                                       getDtRho0Sgx(),
-                                       getDtRho0Sgy(),
-                                       getDtRho0Sgz(),
-                                       getPmlXSgx(),
-                                       getPmlYSgy(),
-                                       getPmlZSgz());
+    SolverCudaKernels::computeVelocityHeterogeneous<simulationDimension>(mMatrixContainer);
   }
 }// end of computeVelocity
 //----------------------------------------------------------------------------------------------------------------------
@@ -1497,13 +1452,7 @@ void KSpaceFirstOrderSolver::addInitialPressureSource()
   //-----------------------------------------------------------------------//
   getTempCufftX().computeR2CFftND(getP());
 
-  SolverCudaKernels::computePressureGradient(getTempCufftX(),
-                                             getTempCufftY(),
-                                             getTempCufftZ(),
-                                             getKappa(),
-                                             getDdxKShiftPos(),
-                                             getDdyKShiftPos(),
-                                             getDdzKShiftPos());
+  SolverCudaKernels::computePressureGradient<SD::k3D>(mMatrixContainer);
 
   getTempCufftX().computeC2RFftND(getUxSgx());
   getTempCufftY().computeC2RFftND(getUySgy());

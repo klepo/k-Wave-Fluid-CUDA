@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            27 February  2019, 15:53 (revised)
+ *            28 February  2019, 22:23 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -173,7 +173,11 @@ class KSpaceFirstOrderSolver
      */
     template<Parameters::SimulationDimension simulationDimension>
     void preProcessing();
-    /// Compute the main time loop of the kspaceFirstOrder solver.
+    /**
+     * @brief  Compute the main time loop of the kspaceFirstOrder solver.
+     * @tparam simulationDimension - Dimensionality of the simulation.
+     */
+    template<Parameters::SimulationDimension simulationDimension>
     void computeMainLoop();
     /// Post processing, and closing the output streams.
     void postProcessing();
@@ -190,7 +194,27 @@ class KSpaceFirstOrderSolver
     /// Save checkpoint data and flush aggregated outputs into the output file.
     void saveCheckpointData();
 
-    /// Compute new values of acoustic velocity.
+    /**
+     * @brief  Compute new values of acoustic velocity in all used dimensions (UxSgx, UySgy, UzSgz).
+     * @tparam simulationDimension - Dimensionality of the simulation.
+     *
+     * <b>Matlab code:</b> \code
+     *  p_k = fftn(p);
+     *  ux_sgx = bsxfun(@times, pml_x_sgx, ...
+     *       bsxfun(@times, pml_x_sgx, ux_sgx) ...
+     *       - dt .* rho0_sgx_inv .* real(ifftn( bsxfun(@times, ddx_k_shift_pos, kappa .* fftn(p)) )) ...
+     *       );
+     *  uy_sgy = bsxfun(@times, pml_y_sgy, ...
+     *       bsxfun(@times, pml_y_sgy, uy_sgy) ...
+     *       - dt .* rho0_sgy_inv .* real(ifftn( bsxfun(@times, ddy_k_shift_pos, kappa .* fftn(p)) )) ...
+     *       );
+     *  uz_sgz = bsxfun(@times, pml_z_sgz, ...
+     *       bsxfun(@times, pml_z_sgz, uz_sgz) ...
+     *       - dt .* rho0_sgz_inv .* real(ifftn( bsxfun(@times, ddz_k_shift_pos, kappa .* fftn(p)) )) ...
+     *       );
+     \endcode
+     */
+    template<Parameters::SimulationDimension simulationDimension>
     void computeVelocity();
     /// Compute new values of acoustic velocity gradients.
     void computeVelocityGradient();

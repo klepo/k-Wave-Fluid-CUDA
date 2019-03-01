@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            28 February  2019, 11:15 (revised)
+ *            28 February  2019, 22:32 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -34,8 +34,14 @@
 #include <KSpaceSolver/SolverCudaKernels.cuh>
 #include <Parameters/CudaDeviceConstants.cuh>
 
+//#include <Containers/MatrixRecord.h>
+
 #include <Logger/Logger.h>
 #include <Utils/CudaUtils.cuh>
+
+
+using MI = MatrixContainer::MatrixIdx;
+using SD = Parameters::SimulationDimension;
 
 //--------------------------------------------------------------------------------------------------------------------//
 //---------------------------------------------------- Constants -----------------------------------------------------//
@@ -168,55 +174,60 @@ int SolverCudaKernels::getCudaCodeVersion()
 /**
  * Cuda kernel to calculate new particle velocity. Heterogeneous case, uniform gird.
  *
- * <b> Matlab code: </b>
+ * @tparam simulationDimension - Dimensionality of the simulation.
+ * @param [in, out] uxSgx      - Acoustic velocity on staggered grid in x direction.
+ * @param [in, out] uySgy      - Acoustic velocity on staggered grid in y direction.
+ * @param [in, out] uzSgz      - Acoustic velocity on staggered grid in z direction.
+ * @param [in]      ifftX      - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
+ * @param [in]      ifftY      - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
+ * @param [in]      ifftZ      - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
+ * @param [in]      dtRho0Sgx  - Acoustic density on staggered grid in x direction.
+ * @param [in]      dtRho0Sgy  - Acoustic density on staggered grid in y direction.
+ * @param [in]      dtRho0Sgz  - Acoustic density on staggered grid in z direction.
+ * @param [in]      pmlX       - Perfectly matched layer in x direction.
+ * @param [in]      pmlY       - Perfectly matched layer in y direction.
+ * @param [in]      pmlZ       - Perfectly matched layer in z direction.
  *
- * \verbatim
-    ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* real(ifftX));
-    uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) - dt .* rho0_sgy_inv .* real(ifftY));
-    uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz) - dt .* rho0_sgz_inv .* real(ifftZ));
-\endverbatim
- *
- * @param [in, out] uxSgx     - Acoustic velocity on staggered grid in x direction.
- * @param [in, out] uySgy     - Acoustic velocity on staggered grid in y direction.
- * @param [in, out] uzSgz     - Acoustic velocity on staggered grid in z direction.
- * @param [in]      ifftX     - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
- * @param [in]      ifftY     - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
- * @param [in]      ifftZ     - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
- * @param [in]      dtRho0Sgx - Acoustic density on staggered grid in x direction.
- * @param [in]      dtRho0Sgy - Acoustic density on staggered grid in y direction.
- * @param [in]      dtRho0Sgz - Acoustic density on staggered grid in z direction.
- * @param [in]      pmlX      - Perfectly matched layer in x direction.
- * @param [in]      pmlY      - Perfectly matched layer in y direction.
- * @param [in]      pmlZ      - Perfectly matched layer in z direction.
+ *<b> Matlab code: </b> \code
+ *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* real(ifftX)
+ *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) - dt .* rho0_sgy_inv .* real(ifftY)
+ *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz) - dt .* rho0_sgz_inv .* real(ifftZ)
+ * \endcode
  */
-__global__ void cudaComputeVelocity(float*       uxSgx,
-                                    float*       uySgy,
-                                    float*       uzSgz,
-                                    const float* ifftX,
-                                    const float* ifftY,
-                                    const float* ifftZ,
-                                    const float* dtRho0Sgx,
-                                    const float* dtRho0Sgy,
-                                    const float* dtRho0Sgz,
-                                    const float* pmlX,
-                                    const float* pmlY,
-                                    const float* pmlZ)
+template<Parameters::SimulationDimension simulationDimension>
+__global__ void cudaComputeVelocityHeterogeneous(float*       uxSgx,
+                                                 float*       uySgy,
+                                                 float*       uzSgz,
+                                                 const float* ifftX,
+                                                 const float* ifftY,
+                                                 const float* ifftZ,
+                                                 const float* dtRho0Sgx,
+                                                 const float* dtRho0Sgy,
+                                                 const float* dtRho0Sgz,
+                                                 const float* pmlX,
+                                                 const float* pmlY,
+                                                 const float* pmlZ)
 {
   for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const dim3 coords = getReal3DCoords(i);
+    const dim3 coords = (simulationDimension == SD::k3D) ? getReal3DCoords(i) : getReal2DCoords(i);
 
     const float eIfftX = cudaDeviceConstants.fftDivider * ifftX[i] * dtRho0Sgx[i];
     const float eIfftY = cudaDeviceConstants.fftDivider * ifftY[i] * dtRho0Sgy[i];
-    const float eIfftZ = cudaDeviceConstants.fftDivider * ifftZ[i] * dtRho0Sgz[i];
 
     const float ePmlX = pmlX[coords.x];
     const float ePmlY = pmlY[coords.y];
-    const float ePmlZ = pmlZ[coords.z];
 
     uxSgx[i] = (uxSgx[i] * ePmlX - eIfftX) * ePmlX;
     uySgy[i] = (uySgy[i] * ePmlY - eIfftY) * ePmlY;
-    uzSgz[i] = (uzSgz[i] * ePmlZ - eIfftZ) * ePmlZ;
+
+    if (simulationDimension == SD::k3D)
+    {
+      const float eIfftZ = cudaDeviceConstants.fftDivider * ifftZ[i] * dtRho0Sgz[i];
+      const float ePmlZ  = pmlZ[coords.z];
+
+      uzSgz[i] = (uzSgz[i] * ePmlZ - eIfftZ) * ePmlZ;
+    }
   }
 }// end of cudaComputeVelocity
 //----------------------------------------------------------------------------------------------------------------------
@@ -224,61 +235,67 @@ __global__ void cudaComputeVelocity(float*       uxSgx,
 /**
  * Interface to the cuda kernel computing new values for particle velocity.  Default (heterogeneous case).
  */
-void SolverCudaKernels::computeVelocity(RealMatrix&       uxSgx,
-                                        RealMatrix&       uySgy,
-                                        RealMatrix&       uzSgz,
-                                        const RealMatrix& ifftX,
-                                        const RealMatrix& ifftY,
-                                        const RealMatrix& ifftZ,
-                                        const RealMatrix& dtRho0Sgx,
-                                        const RealMatrix& dtRho0Sgy,
-                                        const RealMatrix& dtRho0Sgz,
-                                        const RealMatrix& pmlX,
-                                        const RealMatrix& pmlY,
-                                        const RealMatrix& pmlZ)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::computeVelocityHeterogeneous(const MatrixContainer& container)
   {
-    cudaComputeVelocity<<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                       (uxSgx.getDeviceData(),
-                        uySgy.getDeviceData(),
-                        uzSgz.getDeviceData(),
-                        ifftX.getDeviceData(),
-                        ifftY.getDeviceData(),
-                        ifftZ.getDeviceData(),
-                        dtRho0Sgx.getDeviceData(),
-                        dtRho0Sgy.getDeviceData(),
-                        dtRho0Sgz.getDeviceData(),
-                        pmlX.getDeviceData(),
-                        pmlY.getDeviceData(),
-                        pmlZ.getDeviceData());
+    cudaComputeVelocityHeterogeneous<simulationDimension>
+                                    <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                    (container.getUxSgx().getDeviceData(),
+                                     container.getUySgy().getDeviceData(),
+                                     (simulationDimension == SD::k3D) ? container.getUzSgz().getDeviceData()
+                                                                      : nullptr,
+                                     container.getTemp1RealND().getDeviceData(),
+                                     container.getTemp2RealND().getDeviceData(),
+                                     (simulationDimension == SD::k3D) ? container.getTemp3RealND().getDeviceData()
+                                                                      : nullptr,
+                                     container.getDtRho0Sgx().getDeviceData(),
+                                     container.getDtRho0Sgy().getDeviceData(),
+                                     (simulationDimension == SD::k3D) ? container.getDtRho0Sgz().getDeviceData()
+                                                                      : nullptr,
+                                     container.getPmlXSgx().getDeviceData(),
+                                     container.getPmlYSgy().getDeviceData(),
+                                     (simulationDimension == SD::k3D) ? container.getPmlZSgz().getDeviceData()
+                                                                      : nullptr);
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
-}// end of ComputeVelocity
+}// end of computeVelocityHeterogeneous
 //----------------------------------------------------------------------------------------------------------------------
 
-
+/**
+ * Interface to the cuda kernel computing new values for particle velocity.  Default (heterogeneous case), 3D case.
+ */
+template
+void SolverCudaKernels::computeVelocityHeterogeneous<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Interface to the cuda kernel computing new values for particle velocity.  Default (heterogeneous case), 2D case.
+ */
+template
+void SolverCudaKernels::computeVelocityHeterogeneous<SD::k2D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Cuda kernel to calculate new particle velocity. Homogeneous case, uniform gird.
  *
- * <b> Matlab code: </b>
+ * @tparam simulationDimension - Dimensionality of the simulation.
+ * @param [in, out] uxSgx      - Acoustic velocity on staggered grid in x direction.
+ * @param [in, out] uySgy      - Acoustic velocity on staggered grid in y direction.
+ * @param [in, out] uzSgz      - Acoustic velocity on staggered grid in z direction.
+ * @param [in]      ifftX      - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
+ * @param [in]      ifftY      - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
+ * @param [in]      ifftZ      - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
+ * @param [in]      pmlX       - Perfectly matched layer in x direction.
+ * @param [in]      pmlY       - Perfectly matched layer in y direction.
+ * @param [in]      pmlZ       - Perfectly matched layer in z direction.
  *
- * \verbatim
-    ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* real(ifftX));
-    uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) - dt .* rho0_sgy_inv .* real(ifftY));
-    uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz) - dt .* rho0_sgz_inv .* real(ifftZ));
-\endverbatim
- *
- * @param [in, out] uxSgx - Acoustic velocity on staggered grid in x direction.
- * @param [in, out] uySgy - Acoustic velocity on staggered grid in y direction.
- * @param [in, out] uzSgz - Acoustic velocity on staggered grid in z direction.
- * @param [in]      ifftX - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
- * @param [in]      ifftY - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
- * @param [in]      ifftZ - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
- * @param [in]      pmlX  - Perfectly matched layer in x direction.
- * @param [in]      pmlY  - Perfectly matched layer in y direction.
- * @param [in]      pmlZ  - Perfectly matched layer in z direction.
+ * <b> Matlab code: </b> \code
+ *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* real(ifftX)
+ *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) - dt .* rho0_sgy_inv .* real(ifftY)
+ *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz) - dt .* rho0_sgz_inv .* real(ifftZ)
+ *\endcode
  */
+template<Parameters::SimulationDimension simulationDimension>
 __global__ void cudaComputeVelocityHomogeneousUniform(float*       uxSgx,
                                                       float*       uySgy,
                                                       float*       uzSgz,
@@ -291,19 +308,25 @@ __global__ void cudaComputeVelocityHomogeneousUniform(float*       uxSgx,
 {
   const float dividerX = cudaDeviceConstants.dtRho0Sgx * cudaDeviceConstants.fftDivider;
   const float dividerY = cudaDeviceConstants.dtRho0Sgy * cudaDeviceConstants.fftDivider;
-  const float dividerZ = cudaDeviceConstants.dtRho0Sgz * cudaDeviceConstants.fftDivider;
+  const float dividerZ = (simulationDimension == SD::k3D)
+                             ? cudaDeviceConstants.dtRho0Sgz * cudaDeviceConstants.fftDivider : 1.0f;
 
   for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const dim3 coords = getReal3DCoords(i);
+    const dim3 coords = (simulationDimension == SD::k3D) ? getReal3DCoords(i) : getReal2DCoords(i);
 
     const float ePmlX = pmlX[coords.x];
     const float ePmlY = pmlY[coords.y];
-    const float ePmlZ = pmlZ[coords.z];
 
     uxSgx[i] = (uxSgx[i] * ePmlX - dividerX * ifftX[i]) * ePmlX;
     uySgy[i] = (uySgy[i] * ePmlY - dividerY * ifftY[i]) * ePmlY;
-    uzSgz[i] = (uzSgz[i] * ePmlZ - dividerZ * ifftZ[i]) * ePmlZ;
+
+    if (simulationDimension == SD::k3D)
+    {
+      const float ePmlZ = pmlZ[coords.z];
+
+      uzSgz[i] = (uzSgz[i] * ePmlZ - dividerZ * ifftZ[i]) * ePmlZ;
+    }
   }// for
 }// end of cudaComputeVelocityHomogeneousUniform
 //----------------------------------------------------------------------------------------------------------------------
@@ -311,59 +334,69 @@ __global__ void cudaComputeVelocityHomogeneousUniform(float*       uxSgx,
 /**
  * Compute acoustic velocity for homogeneous medium and a uniform grid.
  */
-void SolverCudaKernels::computeVelocityHomogeneousUniform(RealMatrix&       uxSgx,
-                                                          RealMatrix&       uySgy,
-                                                          RealMatrix&       uzSgz,
-                                                          const RealMatrix& ifftX,
-                                                          const RealMatrix& ifftY,
-                                                          const RealMatrix& ifftZ,
-                                                          const RealMatrix& pmlX,
-                                                          const RealMatrix& pmlY,
-                                                          const RealMatrix& pmlZ)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::computeVelocityHomogeneousUniform(const MatrixContainer& container)
 {
-  cudaComputeVelocityHomogeneousUniform<<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                       (uxSgx.getDeviceData(),
-                                        uySgy.getDeviceData(),
-                                        uzSgz.getDeviceData(),
-                                        ifftX.getDeviceData(),
-                                        ifftY.getDeviceData(),
-                                        ifftZ.getDeviceData(),
-                                        pmlX.getDeviceData(),
-                                        pmlY.getDeviceData(),
-                                        pmlZ.getDeviceData());
+  cudaComputeVelocityHomogeneousUniform<simulationDimension>
+                                       <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                       (container.getUxSgx().getDeviceData(),
+                                        container.getUySgy().getDeviceData(),
+                                        (simulationDimension == SD::k3D) ? container.getUzSgz().getDeviceData()
+                                                                         : nullptr,
+                                        container.getTemp1RealND().getDeviceData(),
+                                        container.getTemp2RealND().getDeviceData(),
+                                        (simulationDimension == SD::k3D) ? container.getTemp3RealND().getDeviceData()
+                                                                         : nullptr,
+                                        container.getPmlXSgx().getDeviceData(),
+                                        container.getPmlYSgy().getDeviceData(),
+                                        (simulationDimension == SD::k3D) ? container.getPmlZSgz().getDeviceData()
+                                                                         : nullptr);
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of computeVelocityHomogeneousUniform
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Compute acoustic velocity for homogeneous medium and a uniform grid, 3D case.
+ */
+template
+void SolverCudaKernels::computeVelocityHomogeneousUniform<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Compute acoustic velocity for homogeneous medium and a uniform grid, 2D case.
+ */
+template
+void SolverCudaKernels::computeVelocityHomogeneousUniform<SD::k2D>(const MatrixContainer& container);
 //----------------------------------------------------------------------------------------------------------------------
 
 
 /**
  * Cuda kernel to calculate uxSgx, uySgy and uzSgz. This is the homogeneous medium and a non-uniform grid.
  *
- * * <b> Matlab code: </b>
+ * @tparam simulationDimension - Dimensionality of the simulation.
+ * @param [in,out] uxSgx       - Acoustic velocity on staggered grid in x direction.
+ * @param [in,out] uySgy       - Acoustic velocity on staggered grid in y direction.
+ * @param [in,out] uzSgz       - Acoustic velocity on staggered grid in z direction.
+ * @param [in]     ifftX       - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
+ * @param [in]     ifftY       - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
+ * @param [in]     ifftZ       - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
+ * @param [in]     dxudxnSgx   - Non uniform grid shift in x direction.
+ * @param [in]     dyudynSgy   - Non uniform grid shift in y direction.
+ * @param [in]     dzudznSgz   - Non uniform grid shift in z direction.
+ * @param [in]     pmlX        - Perfectly matched layer in x direction.
+ * @param [in]     pmlY        - Perfectly matched layer in y direction.
+ * @param [in]     pmlZ        - Perfectly matched layer in z direction.
  *
- * \verbatim
-    ux_sgx = bsxfun(@times, pml_x_sgx, ...
-               bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* real(ifftX) .* dxudxn_sgx);
-    uy_sgy = bsxfun(@times, pml_y_sgy, ...
-               bsxfun(@times, pml_y_sgy, uy_sgy) - dt .* rho0_sgy_inv .* real(ifftY) .* dyudyn_sgy);
-    uz_sgz = bsxfun(@times, pml_z_sgz, ...
-               bsxfun(@times, pml_z_sgz, uz_sgz) - dt .* rho0_sgz_inv .* real(ifftZ) .* dzudzn_sgz);
-\endverbatim
- *
- * @param [in,out] uxSgx     - Acoustic velocity on staggered grid in x direction.
- * @param [in,out] uySgy     - Acoustic velocity on staggered grid in y direction.
- * @param [in,out] uzSgz     - Acoustic velocity on staggered grid in z direction.
- * @param [in]      ifftX    - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
- * @param [in]      ifftY    - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
- * @param [in]      ifftZ    - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
- * @param [in]     dxudxnSgx - Non uniform grid shift in x direction.
- * @param [in]     dyudynSgy - Non uniform grid shift in y direction.
- * @param [in]     dzudznSgz - Non uniform grid shift in z direction.
- * @param [in]     pmlX      - Perfectly matched layer in x direction.
- * @param [in]     pmlY      - Perfectly matched layer in y direction.
- * @param [in]     pmlZ      - Perfectly matched layer in z direction.
+ * <b> Matlab code: </b> \code
+ *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx)  ...
+ *                  - dt .* rho0_sgx_inv .* dxudxnSgx.* real(ifftX))
+ *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) ...
+ *                  - dt .* rho0_sgy_inv .* dyudynSgy.* real(ifftY)
+ *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz)
+ *                  - dt .* rho0_sgz_inv .* dzudznSgz.* real(ifftZ)
+ *\endcode
  */
+template<Parameters::SimulationDimension simulationDimension>
 __global__ void cudaComputeVelocityHomogeneousNonuniform(float*       uxSgx,
                                                          float*       uySgy,
                                                          float*       uzSgz,
@@ -379,23 +412,29 @@ __global__ void cudaComputeVelocityHomogeneousNonuniform(float*       uxSgx,
 {
   const float DividerX = cudaDeviceConstants.dtRho0Sgx * cudaDeviceConstants.fftDivider;
   const float DividerY = cudaDeviceConstants.dtRho0Sgy * cudaDeviceConstants.fftDivider;;
-  const float DividerZ = cudaDeviceConstants.dtRho0Sgz * cudaDeviceConstants.fftDivider;
+  const float DividerZ = (simulationDimension == SD::k3D)
+                             ? cudaDeviceConstants.dtRho0Sgz * cudaDeviceConstants.fftDivider : 1.0f;
 
   for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const dim3 coords = getReal3DCoords(i);
+    const dim3 coords = (simulationDimension == SD::k3D) ? getReal3DCoords(i) : getReal2DCoords(i);
 
-    const float ePmlX = pmlX[coords.x];
-    const float ePmlY = pmlY[coords.y];
-    const float ePmlZ = pmlZ[coords.z];
+    const float ePmlX  = pmlX[coords.x];
+    const float ePmlY  = pmlY[coords.y];
 
     const float eIfftX = DividerX * dxudxnSgx[coords.x] * ifftX[i];
     const float eIfftY = DividerY * dyudynSgy[coords.y] * ifftY[i];
-    const float eIfftZ = DividerZ * dzudznSgz[coords.z] * ifftZ[i];
 
     uxSgx[i] = (uxSgx[i] * ePmlX - eIfftX) * ePmlX;
     uySgy[i] = (uySgy[i] * ePmlY - eIfftY) * ePmlY;
-    uzSgz[i] = (uzSgz[i] * ePmlZ - eIfftZ) * ePmlZ;
+
+    if (simulationDimension == SD::k3D)
+    {
+      const float ePmlZ  = pmlZ[coords.z];
+      const float eIfftZ = DividerZ * dzudznSgz[coords.z] * ifftZ[i];
+
+      uzSgz[i] = (uzSgz[i] * ePmlZ - eIfftZ) * ePmlZ;
+    }
   }// for
 }// end of cudaComputeVelocityHomogeneouosNonuniform
 //----------------------------------------------------------------------------------------------------------------------
@@ -404,38 +443,45 @@ __global__ void cudaComputeVelocityHomogeneousNonuniform(float*       uxSgx,
  * Interface to  calculate uxSgx, uySgy and uzSgz.
  * This is the homogeneous medium and a non-uniform grid.
  */
-void SolverCudaKernels::computeVelocityHomogeneousNonuniform(RealMatrix&       uxSgx,
-                                                             RealMatrix&       uySgy,
-                                                             RealMatrix&       uzSgz,
-                                                             const RealMatrix& ifftX,
-                                                             const RealMatrix& ifftY,
-                                                             const RealMatrix& ifftZ,
-                                                             const RealMatrix& dxudxnSgx,
-                                                             const RealMatrix& dyudynSgy,
-                                                             const RealMatrix& dzudznSgz,
-                                                             const RealMatrix& pmlX,
-                                                             const RealMatrix& pmlY,
-                                                             const RealMatrix& pmlZ)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::computeVelocityHomogeneousNonuniform(const MatrixContainer& container)
 {
-  cudaComputeVelocityHomogeneousNonuniform<<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                     (uxSgx.getDeviceData(),
-                                      uySgy.getDeviceData(),
-                                      uzSgz.getDeviceData(),
-                                      ifftX.getDeviceData(),
-                                      ifftY.getDeviceData(),
-                                      ifftZ.getDeviceData(),
-                                      dxudxnSgx.getDeviceData(),
-                                      dyudynSgy.getDeviceData(),
-                                      dzudznSgz.getDeviceData(),
-                                      pmlX.getDeviceData(),
-                                      pmlY.getDeviceData(),
-                                      pmlZ.getDeviceData());
+  cudaComputeVelocityHomogeneousNonuniform<simulationDimension>
+                                          <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                          (container.getUxSgx().getDeviceData(),
+                                           container.getUySgy().getDeviceData(),
+                                           (simulationDimension == SD::k3D) ? container.getUzSgz().getDeviceData()
+                                                                            : nullptr,
+                                           container.getTemp1RealND().getDeviceData(),
+                                           container.getTemp2RealND().getDeviceData(),
+                                           (simulationDimension == SD::k3D) ? container.getTemp3RealND().getDeviceData()
+                                                                            : nullptr,
+                                           container.getDxudxnSgx().getDeviceData(),
+                                           container.getDyudynSgy().getDeviceData(),
+                                           (simulationDimension == SD::k3D) ? container.getDzudznSgz().getDeviceData()
+                                                                            : nullptr,
+                                           container.getPmlXSgx().getDeviceData(),
+                                           container.getPmlYSgy().getDeviceData(),
+                                           (simulationDimension == SD::k3D) ? container.getPmlZSgz().getDeviceData()
+                                                                            : nullptr);
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of computeVelocityHomogeneousNonuniform
 //----------------------------------------------------------------------------------------------------------------------
 
+/**
+ * Interface to  calculate uxSgx, uySgy and uzSgz, 3D case.
+ */
+template
+void SolverCudaKernels::computeVelocityHomogeneousNonuniform<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Interface to  calculate uxSgx, uySgy and uzSgz, 2D case.
+ */
+template
+void SolverCudaKernels::computeVelocityHomogeneousNonuniform<SD::k2D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Cuda kernel adding transducer data to uxSgx.
@@ -1084,15 +1130,7 @@ __global__ void cudaComputeInitialVelocityHomogeneousNonuniform(float*       uxS
 /**
  *  Cuda kernel which compute part of the new velocity term between FFTs.
  *
- *<b> Matlab code: </b>
- *
- * \verbatim
-    bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
-    bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
-    bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
-\endverbatim
- *
- *
+ * @tparam simulationDimension - Dimensionality of the simulation.
  * @param [in, out] ifftX        - It takes the FFT of pressure (common for all three components) and returns
  *                                 the spectral part in x direction (the input for inverse FFT that follows).
  * @param [out]     ifftY        - spectral part in y dimension (the input for inverse FFT that follows).
@@ -1101,7 +1139,14 @@ __global__ void cudaComputeInitialVelocityHomogeneousNonuniform(float*       uxS
  * @param [in]      ddxKShiftPos - Positive spectral shift in x direction.
  * @param [in]      ddyKShiftPos - Positive spectral shift in y direction.
  * @param [in]      ddzKShiftPos - Positive spectral shift in z direction.
+ *
+ * <b> Matlab code: </b> \code
+ *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
+ *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
+ *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
+ * \endcode
  */
+  template<Parameters::SimulationDimension simulationDimension>
 __global__ void cudaComputePressureGradient(cuFloatComplex*       ifftX,
                                             cuFloatComplex*       ifftY,
                                             cuFloatComplex*       ifftZ,
@@ -1112,13 +1157,16 @@ __global__ void cudaComputePressureGradient(cuFloatComplex*       ifftX,
 {
   for (auto i = getIndex(); i < cudaDeviceConstants.nElementsComplex; i += getStride())
   {
-    const dim3 coords = getComplex3DCoords(i);
+    const dim3 coords = (simulationDimension == SD::k3D) ? getComplex3DCoords(i) : getComplex2DCoords(i);
 
     const cuFloatComplex eKappa = ifftX[i] * kappa[i];
 
     ifftX[i] = cuCmulf(eKappa, ddxKShiftPos[coords.x]);
     ifftY[i] = cuCmulf(eKappa, ddyKShiftPos[coords.y]);
-    ifftZ[i] = cuCmulf(eKappa, ddzKShiftPos[coords.z]);
+    if (simulationDimension == SD::k3D)
+    {
+      ifftZ[i] = cuCmulf(eKappa, ddzKShiftPos[coords.z]);
+    }
   }
 }// end of cudaComputePressureGradient
 //----------------------------------------------------------------------------------------------------------------------
@@ -1126,29 +1174,38 @@ __global__ void cudaComputePressureGradient(cuFloatComplex*       ifftX,
 /**
  *  Interface to kernel which computes the spectral part of pressure gradient calculation.
  */
-void SolverCudaKernels::computePressureGradient(CufftComplexMatrix& ifftX,
-                                                CufftComplexMatrix& ifftY,
-                                                CufftComplexMatrix& ifftZ,
-                                                const RealMatrix&    kappa,
-                                                const ComplexMatrix& ddxKShiftPos,
-                                                const ComplexMatrix& ddyKShiftPos,
-                                                const ComplexMatrix& ddzKShiftPos)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::computePressureGradient(const MatrixContainer& container)
 {
-  cudaComputePressureGradient<<<getSolverGridSize1D(),getSolverBlockSize1D()>>>
-                              (reinterpret_cast<cuFloatComplex*>(ifftX.getDeviceData()),
-                               reinterpret_cast<cuFloatComplex*>(ifftY.getDeviceData()),
-                               reinterpret_cast<cuFloatComplex*>(ifftZ.getDeviceData()),
-                               kappa.getDeviceData(),
-                               reinterpret_cast<const cuFloatComplex*>(ddxKShiftPos.getDeviceData()),
-                               reinterpret_cast<const cuFloatComplex*>(ddyKShiftPos.getDeviceData()),
-                               reinterpret_cast<const cuFloatComplex*>(ddzKShiftPos.getDeviceData()));
+  cudaComputePressureGradient<simulationDimension>
+                             <<<getSolverGridSize1D(),getSolverBlockSize1D()>>>
+                             (container.getTempCufftX().getComplexDeviceData(),
+                              container.getTempCufftY().getComplexDeviceData(),
+                              (simulationDimension == SD::k3D) ? container.getTempCufftZ().getComplexDeviceData()
+                                                               : nullptr,
+                              container.getKappa().getDeviceData(),
+                              container.getDdxKShiftPos().getComplexDeviceData(),
+                              container.getDdyKShiftPos().getComplexDeviceData(),
+                              (simulationDimension == SD::k3D) ? container.getDdzKShiftPos().getComplexDeviceData()
+                                                               : nullptr);
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of computePressureGradient
 //----------------------------------------------------------------------------------------------------------------------
 
-
+/**
+ *  Interface to kernel which computes the spectral part of pressure gradient calculation, 3D version.
+ */
+template
+void SolverCudaKernels::computePressureGradient<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ *  Interface to kernel which computes the spectral part of pressure gradient calculation, 2D version.
+ */
+template
+void SolverCudaKernels::computePressureGradient<SD::k2D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
 /**
  * Kernel to compute spatial part of the velocity gradient in between FFTs on uniform grid.
  * Complex numbers are passed as float2 structures.

@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 July      2011, 14:02 (created) \n
- *            22 February  2019, 12:36 (revised)
+ *            28 February  2019, 14:31 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -33,6 +33,7 @@
 #define COMPLEX_MATRIX_H
 
 #include <complex>
+#include <cuComplex.h>
 
 #include <MatrixClasses/BaseFloatMatrix.h>
 #include <MatrixClasses/RealMatrix.h>
@@ -69,6 +70,61 @@ class ComplexMatrix : public BaseFloatMatrix
     ComplexMatrix& operator= (const ComplexMatrix&);
 
     /**
+     * @brief  Operator [].
+     * @param [in] index - 1D index into the matrix.
+     * @return An element of the matrix.
+     */
+    inline FloatComplex& operator[](const size_t& index)
+    {
+      return reinterpret_cast<FloatComplex*>(mHostData)[index];
+    };
+    /**
+     * @brief   Operator [], constant version.
+     * @param [in] index - 1D index into the matrix.
+     * @return An element of the matrix.
+     */
+    inline const FloatComplex& operator[](const size_t& index) const
+    {
+      return reinterpret_cast<FloatComplex*> (mHostData)[index];
+    };
+
+    /**
+     * @brief Get raw complex data out of the class (for direct kernel access).
+     * @return Mutable matrix data
+     */
+    virtual FloatComplex* getComplexHostData()
+    {
+      return reinterpret_cast<FloatComplex*> (mHostData);
+    };
+
+    /**
+     * @brief  Get raw complex data out of the class (for direct kernel access).
+     * @return Imutable matrix data
+     */
+    virtual const FloatComplex* getComplexHostData() const
+    {
+      return reinterpret_cast<FloatComplex*> (mHostData);
+    };
+
+    /*
+     * @brief Get cuda device raw complex data out of the class (for direct kernel access) .
+     * @return Mutable matrix data
+     */
+    virtual cuFloatComplex* getComplexDeviceData()
+    {
+      return reinterpret_cast<cuFloatComplex*> (mDeviceData);
+    };
+
+    /**
+     * @brief  Get cuda device raw complex data out of the class (for direct kernel access).
+     * @return Imutable matrix data
+     */
+    virtual const cuFloatComplex* getComplexDeviceData() const
+    {
+      return reinterpret_cast<cuFloatComplex*> (mDeviceData);
+    };
+
+    /**
      * @brief   Read matrix from HDF5 file.
      * @details Read matrix from HDF5 file.
      * @param [in] file       - Handle to the HDF5 file.
@@ -89,25 +145,6 @@ class ComplexMatrix : public BaseFloatMatrix
     virtual void writeData(Hdf5File&    file,
                            MatrixName&  matrixName,
                            const size_t compressionLevel);
-
-    /**
-     * @brief  Operator [].
-     * @param [in] index - 1D index into the matrix.
-     * @return An element of the matrix.
-     */
-    inline FloatComplex& operator[](const size_t& index)
-    {
-      return reinterpret_cast<FloatComplex*>(mHostData)[index];
-    };
-    /**
-     * @brief   Operator [], constant version.
-     * @param [in] index - 1D index into the matrix.
-     * @return An element of the matrix.
-     */
-    inline const FloatComplex& operator[](const size_t& index) const
-    {
-      return reinterpret_cast<FloatComplex*> (mHostData)[index];
-    };
 
 private:
 

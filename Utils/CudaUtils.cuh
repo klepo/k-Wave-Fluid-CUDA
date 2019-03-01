@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      22 March     2016, 15:25 (created) \n
- *            22 February  2019, 15:54 (revised)
+ *            28 February  2019, 15:54 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -100,6 +100,32 @@ inline __device__ dim3 getComplex3DCoords(const unsigned int i)
               (i / cudaDeviceConstants.nxComplex) % cudaDeviceConstants.nyComplex,
                i / (cudaDeviceConstants.nxComplex * cudaDeviceConstants.nyComplex));
 }// end of getComplex3DCoords
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * @brief   Get 2D coordinates for a real matrix form a 1D index.
+ * @details Get 2D coordinates for a real matrix form a 1D index.
+ *
+ * @param [in] i - index.
+ * @return 2D coordinates, z == 1.
+ */
+inline __device__ dim3 getReal2DCoords(const unsigned int i)
+{
+  return dim3(i % cudaDeviceConstants.nx, i / cudaDeviceConstants.nx, 1);
+}// end of getReal2DCoords
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * @brief   Get 2D coordinates for a complex matrix form a 1D index.
+ * @details Get 2D coordinates for a complex matrix form a 1D index.
+ *
+ * @param [in] i - index.
+ * @return 2D coordinates, z == 1.
+ */
+inline __device__ dim3 getComplex2DCoords(const unsigned int i)
+{
+  return dim3(i % cudaDeviceConstants.nxComplex, i / cudaDeviceConstants.nxComplex, 1);
+}// end of getComplex2DCoords
 //----------------------------------------------------------------------------------------------------------------------
 
 
