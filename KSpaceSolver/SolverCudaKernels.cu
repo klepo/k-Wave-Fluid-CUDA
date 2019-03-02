@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            01 March     2019, 15:26 (revised)
+ *            02 March     2019, 17:37 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -1281,15 +1281,7 @@ void SolverCudaKernels::computePressureGradient<SD::k2D>(const MatrixContainer& 
 /**
  * Kernel to compute spatial part of the velocity gradient in between FFTs on uniform grid.
  * Complex numbers are passed as float2 structures.
- *
- *<b> Matlab code: </b>
- *
- * \verbatim
-    bsxfun(@times, ddx_k_shift_neg, kappa .* fftn(ux_sgx));
-    bsxfun(@times, ddy_k_shift_neg, kappa .* fftn(uy_sgy));
-    bsxfun(@times, ddz_k_shift_neg, kappa .* fftn(uz_sgz));
- \endverbatim
- *
+ * @tparam simulationDimension - Dimensionality of the simulation.
  * @param [in, out] fftX    - input is the FFT of velocity, output is the spectral part in x.
  * @param [in, out] fftY    - input is the FFT of velocity, output is the spectral part in y.
  * @param [in, out] fftZ    - input is the FFT of velocity, output is the spectral part in z.
@@ -1297,7 +1289,14 @@ void SolverCudaKernels::computePressureGradient<SD::k2D>(const MatrixContainer& 
  * @param [in] ddxKShiftNeg - Negative spectral shift in x direction.
  * @param [in] ddyKShiftNeg - Negative spectral shift in x direction.
  * @param [in] ddzKShiftNeg - Negative spectral shift in x direction.
+ *
+ * <b> Matlab code: </b> \code
+ *  bsxfun(@times, ddx_k_shift_neg, kappa .* fftn(ux_sgx));
+ *  bsxfun(@times, ddy_k_shift_neg, kappa .* fftn(uy_sgy));
+ *  bsxfun(@times, ddz_k_shift_neg, kappa .* fftn(uz_sgz));
+ * \endcode
  */
+template<Parameters::SimulationDimension simulationDimension>
 __global__  void cudaComputeVelocityGradient(cuFloatComplex*       fftX,
                                              cuFloatComplex*       fftY,
                                              cuFloatComplex*       fftZ,
@@ -1308,21 +1307,27 @@ __global__  void cudaComputeVelocityGradient(cuFloatComplex*       fftX,
 {
   for (auto i = getIndex(); i < cudaDeviceConstants.nElementsComplex; i += getStride())
   {
-    const dim3 coords = getComplex3DCoords(i);
+    const dim3 coords = (simulationDimension == SD::k3D) ? getComplex3DCoords(i) : getComplex2DCoords(i);
 
     const cuFloatComplex eDdx = ddxKShiftNeg[coords.x];
     const cuFloatComplex eDdy = ddyKShiftNeg[coords.y];
-    const cuFloatComplex eDdz = ddzKShiftNeg[coords.z];
 
     const float eKappa = kappa[i] * cudaDeviceConstants.fftDivider;
 
     const cuFloatComplex fftKappaX = fftX[i] * eKappa;
     const cuFloatComplex fftKappaY = fftY[i] * eKappa;
-    const cuFloatComplex fftKappaZ = fftZ[i] * eKappa;
 
     fftX[i] = cuCmulf(fftKappaX, eDdx);
     fftY[i] = cuCmulf(fftKappaY, eDdy);
-    fftZ[i] = cuCmulf(fftKappaZ, eDdz);
+
+    if (simulationDimension == SD::k3D)
+    {
+      const cuFloatComplex eDdz = ddzKShiftNeg[coords.z];
+
+      const cuFloatComplex fftKappaZ = fftZ[i] * eKappa;
+
+      fftZ[i] = cuCmulf(fftKappaZ, eDdz);
+    }
   } // for
 }// end of cudaComputeVelocityGradient
 //----------------------------------------------------------------------------------------------------------------------
@@ -1330,28 +1335,38 @@ __global__  void cudaComputeVelocityGradient(cuFloatComplex*       fftX,
 /**
  * Compute spatial part of the velocity gradient in between FFTs on uniform grid.
  */
-void SolverCudaKernels::computeVelocityGradient(CufftComplexMatrix&  fftX,
-                                                CufftComplexMatrix&  fftY,
-                                                CufftComplexMatrix&  fftZ,
-                                                const RealMatrix&    kappa,
-                                                const ComplexMatrix& ddxKShiftNeg,
-                                                const ComplexMatrix& ddyKShiftNeg,
-                                                const ComplexMatrix& ddzKShiftNeg)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::computeVelocityGradient(const MatrixContainer& container)
 {
-  cudaComputeVelocityGradient<<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                             (reinterpret_cast<cuFloatComplex *>(fftX.getDeviceData()),
-                              reinterpret_cast<cuFloatComplex *>(fftY.getDeviceData()),
-                              reinterpret_cast<cuFloatComplex *>(fftZ.getDeviceData()),
-                              kappa.getDeviceData(),
-                              reinterpret_cast<const cuFloatComplex *>(ddxKShiftNeg.getDeviceData()),
-                              reinterpret_cast<const cuFloatComplex *>(ddyKShiftNeg.getDeviceData()),
-                              reinterpret_cast<const cuFloatComplex *>(ddzKShiftNeg.getDeviceData()));
+  cudaComputeVelocityGradient<simulationDimension>
+                             <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                             (container.getTempCufftX().getComplexDeviceData(),
+                              container.getTempCufftY().getComplexDeviceData(),
+                              (simulationDimension == SD::k3D) ? container.getTempCufftZ().getComplexDeviceData()
+                                                               : nullptr,
+                              container.getKappa().getDeviceData(),
+                              container.getDdxKShiftNeg().getComplexDeviceData(),
+                              container.getDdyKShiftNeg().getComplexDeviceData(),
+                              (simulationDimension == SD::k3D) ? container.getDdzKShiftNeg().getComplexDeviceData()
+                                                               : nullptr);
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of computeVelocityGradient
 //----------------------------------------------------------------------------------------------------------------------
 
+/**
+ * Compute spatial part of the velocity gradient in between FFTs on uniform grid, 3D case.
+ */
+template
+void SolverCudaKernels::computeVelocityGradient<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Compute spatial part of the velocity gradient in between FFTs on uniform grid, 2D case.
+ */
+template
+void SolverCudaKernels::computeVelocityGradient<SD::k2D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Cuda kernel to shifts gradient of acoustic velocity on non-uniform grid.
@@ -1363,6 +1378,7 @@ void SolverCudaKernels::computeVelocityGradient(CufftComplexMatrix&  fftX,
  * @param [in]     dyudyn - Non uniform grid shift in y direction.
  * @param [in]     dzudzn - Non uniform grid shift in z direction.
  */
+template<Parameters::SimulationDimension simulationDimension>
 __global__  void cudaComputeVelocityGradientShiftNonuniform(float*       duxdx,
                                                             float*       duydy,
                                                             float*       duzdz,
@@ -1372,11 +1388,15 @@ __global__  void cudaComputeVelocityGradientShiftNonuniform(float*       duxdx,
 {
   for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const dim3 coords = getReal3DCoords(i);
+    const dim3 coords = (simulationDimension == SD::k3D) ? getReal3DCoords(i) : getReal2DCoords(i);
 
     duxdx[i] *= dxudxn[coords.x];
     duydy[i] *= dyudyn[coords.y];
-    duzdz[i] *= dzudzn[coords.z];
+
+    if (simulationDimension == SD::k3D)
+    {
+      duzdz[i] *= dzudzn[coords.z];
+    }
   }
 }// end of cudaComputeVelocityGradientShiftNonuniform
 //----------------------------------------------------------------------------------------------------------------------
@@ -1384,26 +1404,36 @@ __global__  void cudaComputeVelocityGradientShiftNonuniform(float*       duxdx,
 /**
  * Interface to cuda kernel which shifts gradient of acoustic velocity on non-uniform grid.
  */
-void SolverCudaKernels::computeVelocityGradientShiftNonuniform(RealMatrix&       duxdx,
-                                                               RealMatrix&       duydy,
-                                                               RealMatrix&       duzdz,
-                                                               const RealMatrix& dxudxn,
-                                                               const RealMatrix& dyudyn,
-                                                               const RealMatrix& dzudzn)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::computeVelocityGradientShiftNonuniform(const MatrixContainer& container)
 {
-  cudaComputeVelocityGradientShiftNonuniform<<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                       (duxdx.getDeviceData(),
-                                        duydy.getDeviceData(),
-                                        duzdz.getDeviceData(),
-                                        dxudxn.getDeviceData(),
-                                        dyudyn.getDeviceData(),
-                                        dzudzn.getDeviceData());
-
+  cudaComputeVelocityGradientShiftNonuniform<simulationDimension>
+                                            <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                            (container.getDuxdx().getDeviceData(),
+                                             container.getDuydy().getDeviceData(),
+                                             (simulationDimension == SD::k3D) ? container.getDuzdz().getDeviceData()
+                                                                              : nullptr,
+                                             container.getDxudxn().getDeviceData(),
+                                             container.getDyudyn().getDeviceData(),
+                                             (simulationDimension == SD::k3D) ? container.getDzudzn().getDeviceData()
+                                                                              : nullptr);
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of computeVelocityGradientShiftNonuniform
 //----------------------------------------------------------------------------------------------------------------------
 
+/**
+ * Interface to cuda kernel which shifts gradient of acoustic velocity on non-uniform grid, 3D case.
+ */
+template
+void SolverCudaKernels::computeVelocityGradientShiftNonuniform<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Interface to cuda kernel which shifts gradient of acoustic velocity on non-uniform grid, 2D case.
+ */
+template
+void SolverCudaKernels::computeVelocityGradientShiftNonuniform<SD::k2D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Cuda kernel which calculate new values of acoustic density, nonlinear case.

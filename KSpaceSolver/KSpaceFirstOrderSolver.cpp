@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            01 March     2019, 15:26 (revised)
+ *            02 March     2019, 17:34 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -806,7 +806,7 @@ void KSpaceFirstOrderSolver::computeMainLoop()
     }
 
     // compute gradient of velocity
-    computeVelocityGradient();
+    computeVelocityGradient<simulationDimension>();
 
     // compute density
     if (mParameters.getNonLinearFlag())
@@ -1071,44 +1071,33 @@ void KSpaceFirstOrderSolver::computeVelocity()
 
 
 /**
- * Compute new gradient of velocity (Duxdx, Duydy, Duzdz).
+ * Compute new gradient of velocity (duxdx, duydy, duzdz).
  *
- * <b>Matlab code:</b> \n
- *
- * \verbatim
-   duxdx = real(ifftn( bsxfun(@times, ddx_k_shift_neg, kappa .* fftn(ux_sgx)) ));
-   duydy = real(ifftn( bsxfun(@times, ddy_k_shift_neg, kappa .* fftn(uy_sgy)) ));
-   duzdz = real(ifftn( bsxfun(@times, ddz_k_shift_neg, kappa .* fftn(uz_sgz)) ));
- \endverbatim
  */
+template<Parameters::SimulationDimension simulationDimension>
 void KSpaceFirstOrderSolver::computeVelocityGradient()
 {
   getTempCufftX().computeR2CFftND(getUxSgx());
   getTempCufftY().computeR2CFftND(getUySgy());
-  getTempCufftZ().computeR2CFftND(getUzSgz());
+  if (simulationDimension == SD::k3D)
+  {
+    getTempCufftZ().computeR2CFftND(getUzSgz());
+  }
 
   // calculate Duxyz on uniform grid
-  SolverCudaKernels::computeVelocityGradient(getTempCufftX(),
-                                             getTempCufftY(),
-                                             getTempCufftZ(),
-                                             getKappa(),
-                                             getDdxKShiftNeg(),
-                                             getDdyKShiftNeg(),
-                                             getDdzKShiftNeg());
+  SolverCudaKernels::computeVelocityGradient<simulationDimension>(mMatrixContainer);
 
   getTempCufftX().computeC2RFftND(getDuxdx());
   getTempCufftY().computeC2RFftND(getDuydy());
-  getTempCufftZ().computeC2RFftND(getDuzdz());
+  if (simulationDimension == SD::k3D)
+  {
+    getTempCufftZ().computeC2RFftND(getDuzdz());
+  }
 
   // Non-uniform grid
   if (mParameters.getNonUniformGridFlag() != 0)
   {
-    SolverCudaKernels::computeVelocityGradientShiftNonuniform(getDuxdx(),
-                                                              getDuydy(),
-                                                              getDuzdz(),
-                                                              getDxudxn(),
-                                                              getDyudyn(),
-                                                              getDzudzn());
+    SolverCudaKernels::computeVelocityGradientShiftNonuniform<simulationDimension>(mMatrixContainer);
   }// non-uniform grid
 }// end of computeVelocityGradient
 //----------------------------------------------------------------------------------------------------------------------
@@ -1299,7 +1288,8 @@ void KSpaceFirstOrderSolver::addVelocitySource()
                                            getVelocitySourceIndex(),
                                            timeIndex);
     }
-    if (mParameters.getVelocityZSourceFlag() > timeIndex)
+
+    if ((mParameters.isSimulation3D()) && (mParameters.getVelocityZSourceFlag() > timeIndex))
     {
       SolverCudaKernels::addVelocitySource(getUzSgz(),
                                            getVelocityZSourceInput(),
@@ -1335,7 +1325,7 @@ void KSpaceFirstOrderSolver::addVelocitySource()
       SolverCudaKernels::addVelocityScaledSource(getUySgy(), scaledSource);
     }
 
-    if (mParameters.getVelocityZSourceFlag() > timeIndex)
+    if ((mParameters.isSimulation3D()) && (mParameters.getVelocityZSourceFlag() > timeIndex))
     {
       RealMatrix& scaledSource = getTemp1RealND();
 

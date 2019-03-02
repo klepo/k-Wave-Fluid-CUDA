@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            01 March     2019, 15:26 (revised)
+ *            02 March     2019, 17:34 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -285,41 +285,27 @@ namespace SolverCudaKernels
   template<Parameters::SimulationDimension simulationDimension>
   void computePressureGradient(const MatrixContainer& container);
 
-   /**
-    * @brief Compute spatial part of the velocity gradient in between FFTs on uniform grid.
-    *
-    * @param [in, out] fftX    - input is the FFT of velocity, output is the spectral part in x.
-    * @param [in, out] fftY    - input is the FFT of velocity, output is the spectral part in y.
-    * @param [in, out] fftZ    - input is the FFT of velocity, output is the spectral part in z.
-    * @param [in] kappa        - Kappa matrix
-    * @param [in] ddxKShiftNeg - Negative spectral shift in x direction.
-    * @param [in] ddyKShiftNeg - Negative spectral shift in x direction.
-    * @param [in] ddzKShiftNeg - Negative spectral shift in x direction.
-    */
-  void computeVelocityGradient(CufftComplexMatrix&  fftX,
-                               CufftComplexMatrix&  fftY,
-                               CufftComplexMatrix&  fftZ,
-                               const RealMatrix&    kappa,
-                               const ComplexMatrix& ddxKShiftNeg,
-                               const ComplexMatrix& ddyKShiftNeg,
-                               const ComplexMatrix& ddzKShiftNeg);
+  /**
+   * @brief Compute spatial part of the velocity gradient in between FFTs on uniform grid.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
+   *
+   * <b> Matlab code: </b> \code
+   *  bsxfun(@times, ddx_k_shift_neg, kappa .* fftn(ux_sgx));
+   *  bsxfun(@times, ddy_k_shift_neg, kappa .* fftn(uy_sgy));
+   *  bsxfun(@times, ddz_k_shift_neg, kappa .* fftn(uz_sgz));
+   * \endcode
+   */
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeVelocityGradient(const MatrixContainer& container);
 
   /**
    * @brief Shift gradient of acoustic velocity on non-uniform grid.
-   *
-   * @param [in,out] duxdx  - Gradient of particle velocity in x direction.
-   * @param [in,out] duydy  - Gradient of particle velocity in y direction.
-   * @param [in,out] duzdz  - Gradient of particle velocity in z direction.
-   * @param [in]     dxudxn - Non uniform grid shift in x direction.
-   * @param [in]     dyudyn - Non uniform grid shift in y direction.
-   * @param [in]     dzudzn - Non uniform grid shift in z direction.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    */
-  void computeVelocityGradientShiftNonuniform(RealMatrix&       duxdx,
-                                              RealMatrix&       duydy,
-                                              RealMatrix&       duzdz,
-                                              const RealMatrix& dxudxn,
-                                              const RealMatrix& dyudyn,
-                                              const RealMatrix& dzudzn);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeVelocityGradientShiftNonuniform(const MatrixContainer& container);
 
   //---------------------------------------------- density kernels ---------------------------------------------------//
 

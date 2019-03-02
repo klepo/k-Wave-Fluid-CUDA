@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            01 March     2019, 15:26 (revised)
+ *            02 March     2019, 17:34 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -216,7 +216,18 @@ class KSpaceFirstOrderSolver
      */
     template<Parameters::SimulationDimension simulationDimension>
     void computeVelocity();
-    /// Compute new values of acoustic velocity gradients.
+
+    /**
+     * @brief  Compute new values of acoustic velocity gradients.
+     * @tparam simulationDimension - Dimensionality of the simulation.
+     *
+     * <b>Matlab code:</b> \code
+     *  duxdx = real(ifftn( bsxfun(@times, ddx_k_shift_neg, kappa .* fftn(ux_sgx)) ));
+     *  duydy = real(ifftn( bsxfun(@times, ddy_k_shift_neg, kappa .* fftn(uy_sgy)) ));
+     *  duzdz = real(ifftn( bsxfun(@times, ddz_k_shift_neg, kappa .* fftn(uz_sgz)) ));
+     \endcode
+     */
+    template<Parameters::SimulationDimension simulationDimension>
     void computeVelocityGradient();
 
     /// Compute new values of acoustic density for nonlinear case.
