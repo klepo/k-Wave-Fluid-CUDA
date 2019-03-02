@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            02 March     2019, 17:37 (revised)
+ *            02 March     2019, 18:26 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -1437,15 +1437,7 @@ void SolverCudaKernels::computeVelocityGradientShiftNonuniform<SD::k2D>(const Ma
 
 /**
  * Cuda kernel which calculate new values of acoustic density, nonlinear case.
- * <b> Matlab code: </b>
- *
- * \verbatim
-    rho0_plus_rho = 2 .* (rhox + rhoy + rhoz) + rho0;
-    rhox = bsxfun(@times, pml_x, bsxfun(@times, pml_x, rhox) - dt .* rho0_plus_rho .* duxdx);
-    rhoy = bsxfun(@times, pml_y, bsxfun(@times, pml_y, rhoy) - dt .* rho0_plus_rho .* duydy);
-    rhoz = bsxfun(@times, pml_z, bsxfun(@times, pml_z, rhoz) - dt .* rho0_plus_rho .* duzdz);
- \endverbatim
- *
+ * @tparam simulationDimension   - Dimensionality of the simulation.
  * @tparam          isRho0Scalar - Is density homogeneous?
  * @param [in, out] rhoX         - Acoustic density in x direction.
  * @param [in, out] rhoY         - Acoustic density in y direction.
@@ -1457,8 +1449,16 @@ void SolverCudaKernels::computeVelocityGradientShiftNonuniform<SD::k2D>(const Ma
  * @param [in]      duydy        - Gradient of velocity y direction.
  * @param [in]      duzdz        - Gradient of velocity z direction.
  * @param [in]      rho0Data     - If density is heterogeneous, here is the matrix with data.
+ *
+ * <b>Matlab code:</b> \code
+ *  rho0_plus_rho = 2 .* (rhox + rhoy + rhoz) + rho0;
+ *  rhox = bsxfun(@times, pml_x, bsxfun(@times, pml_x, rhox) - dt .* rho0_plus_rho .* duxdx);
+ *  rhoy = bsxfun(@times, pml_y, bsxfun(@times, pml_y, rhoy) - dt .* rho0_plus_rho .* duydy);
+ *  rhoz = bsxfun(@times, pml_z, bsxfun(@times, pml_z, rhoz) - dt .* rho0_plus_rho .* duzdz);
+ * \endcode
  */
-template <bool isRho0Scalar>
+template <Parameters::SimulationDimension simulationDimension,
+          bool isRho0Scalar>
 __global__ void cudaComputeDensityNonlinear(float*       rhoX,
                                             float*       rhoY,
                                             float*       rhoZ,
@@ -1472,15 +1472,18 @@ __global__ void cudaComputeDensityNonlinear(float*       rhoX,
 {
   for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const dim3 coords = getReal3DCoords(i);
+    const dim3 coords = (simulationDimension == SD::k3D) ? getReal3DCoords(i) : getReal2DCoords(i);
 
     const float ePmlX = pmlX[coords.x];
     const float ePmlY = pmlY[coords.y];
-    const float ePmlZ = pmlZ[coords.z];
+
+    // for 2D, ePmlX is not used
+    const float ePmlZ = (simulationDimension == SD::k3D) ? pmlZ[coords.z] : 1.0f;
 
     const float eRhoX = rhoX[i];
     const float eRhoY = rhoY[i];
-    const float eRhoZ = rhoZ[i];
+    // for 2D rhoZ == 0 and does not influence the output
+    const float eRhoZ = (simulationDimension == SD::k3D) ? rhoZ[i] : 0.0f;
 
     const float eRho0 = (isRho0Scalar) ? cudaDeviceConstants.rho0 : rho0Data[i];
 
@@ -1488,7 +1491,11 @@ __global__ void cudaComputeDensityNonlinear(float*       rhoX,
 
     rhoX[i] = ePmlX * ((ePmlX * eRhoX) - sumRhosDt * duxdx[i]);
     rhoY[i] = ePmlY * ((ePmlY * eRhoY) - sumRhosDt * duydy[i]);
-    rhoZ[i] = ePmlZ * ((ePmlZ * eRhoZ) - sumRhosDt * duzdz[i]);
+
+    if (simulationDimension == SD::k3D)
+    {
+      rhoZ[i] = ePmlZ * ((ePmlZ * eRhoZ) - sumRhosDt * duzdz[i]);
+    }
   }
 }//end of cudaComputeDensityNonlinear
 //----------------------------------------------------------------------------------------------------------------------
@@ -1496,77 +1503,85 @@ __global__ void cudaComputeDensityNonlinear(float*       rhoX,
 /**
  * Interface to kernel which calculate new values of acoustic density, nonlinear case.
  */
-void SolverCudaKernels::computeDensityNonlinear(RealMatrix&       rhoX,
-                                                RealMatrix&       rhoY,
-                                                RealMatrix&       rhoZ,
-                                                const RealMatrix& pmlX,
-                                                const RealMatrix& pmlY,
-                                                const RealMatrix& pmlZ,
-                                                const RealMatrix& duxdx,
-                                                const RealMatrix& duydy,
-                                                const RealMatrix& duzdz,
-                                                const bool        isRho0Scalar,
-                                                const float*      rho0Data)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::computeDensityNonlinear(const MatrixContainer& container)
 {
-  if (isRho0Scalar)
-  {
-    cudaComputeDensityNonlinear<true>
+  if (Parameters::getInstance().getRho0ScalarFlag())
+  { // homogeneous
+    cudaComputeDensityNonlinear<simulationDimension, true>
                                <<<getSolverGridSize1D(), getSolverBlockSize1D() >>>
-                               (rhoX.getDeviceData(),
-                                rhoY.getDeviceData(),
-                                rhoZ.getDeviceData(),
-                                pmlX.getDeviceData(),
-                                pmlY.getDeviceData(),
-                                pmlZ.getDeviceData(),
-                                duxdx.getDeviceData(),
-                                duydy.getDeviceData(),
-                                duzdz.getDeviceData());
+                               (container.getRhoX().getDeviceData(),
+                                container.getRhoY().getDeviceData(),
+                                (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                 : nullptr,
+                                container.getPmlX().getDeviceData(),
+                                container.getPmlY().getDeviceData(),
+                                (simulationDimension == SD::k3D) ? container.getPmlZ().getDeviceData()
+                                                                 : nullptr,
+                                container.getDuxdx().getDeviceData(),
+                                container.getDuydy().getDeviceData(),
+                                (simulationDimension == SD::k3D) ? container.getDuzdz().getDeviceData()
+                                                                 : nullptr);
   }
   else
-  {
-   cudaComputeDensityNonlinear<false>
+  { // heterogeneous
+   cudaComputeDensityNonlinear<simulationDimension, false>
                                <<<getSolverGridSize1D(), getSolverBlockSize1D() >>>
-                               (rhoX.getDeviceData(),
-                                rhoY.getDeviceData(),
-                                rhoZ.getDeviceData(),
-                                pmlX.getDeviceData(),
-                                pmlY.getDeviceData(),
-                                pmlZ.getDeviceData(),
-                                duxdx.getDeviceData(),
-                                duydy.getDeviceData(),
-                                duzdz.getDeviceData(),
-                                rho0Data);
+                               (container.getRhoX().getDeviceData(),
+                                container.getRhoY().getDeviceData(),
+                                (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                 : nullptr,
+                                container.getPmlX().getDeviceData(),
+                                container.getPmlY().getDeviceData(),
+                                (simulationDimension == SD::k3D) ? container.getPmlZ().getDeviceData()
+                                                                 : nullptr,
+                                container.getDuxdx().getDeviceData(),
+                                container.getDuydy().getDeviceData(),
+                                (simulationDimension == SD::k3D) ? container.getDuzdz().getDeviceData()
+                                                                 : nullptr,
+                                container.getRho0().getDeviceData());
   }
-
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of computeDensityNonlinear
 //-----------------------------------------------------------------------------------------------------------------------
 
 /**
+ * Interface to kernel which calculate new values of acoustic density, nonlinear case, 3D case.
+ */
+template
+void SolverCudaKernels::computeDensityNonlinear<SD::k3D>(const MatrixContainer& container);
+//-----------------------------------------------------------------------------------------------------------------------
+/**
+ * Interface to kernel which calculate new values of acoustic density, nonlinear case, 2D case.
+ */
+template
+void SolverCudaKernels::computeDensityNonlinear<SD::k2D>(const MatrixContainer& container);
+//-----------------------------------------------------------------------------------------------------------------------
+/**
  * Cuda kernel which calculate new values of acoustic density, linear case.
  *
- * <b> Matlab code: </b>
+ * @tparam simulationDimension - Dimensionality of the simulation.
+ * @tparam      isRhoScalar    - is density homogeneous?
+ * @param [out] rhoX           - density x
+ * @param [out] rhoY           - density y
+ * @param [out] rhoZ           - density y
+ * @param [in]  pmlX           - pml x
+ * @param [in]  pmlY           - pml y
+ * @param [in]  pmlZ           - pml z
+ * @param [in]  duxdx          - gradient of velocity x
+ * @param [in]  duydy          - gradient of velocity x
+ * @param [in]  duzdz          - gradient of velocity z
+ * @param [in]  rho0           - initial density (matrix here)
  *
- * \verbatim
-    rhox = bsxfun(@times, pml_x, bsxfun(@times, pml_x, rhox) - dt .* rho0 .* duxdx);
-    rhoy = bsxfun(@times, pml_y, bsxfun(@times, pml_y, rhoy) - dt .* rho0 .* duydy);
-    rhoz = bsxfun(@times, pml_z, bsxfun(@times, pml_z, rhoz) - dt .* rho0 .* duzdz);
- \endverbatim
- *
- * @tparam      isRhoScalar - is density homogeneous?
- * @param [out] rhoX        - density x
- * @param [out] rhoY        - density y
- * @param [out] rhoZ        - density y
- * @param [in]  pmlX        - pml x
- * @param [in]  pmlY        - pml y
- * @param [in]  pmlZ        - pml z
- * @param [in]  duxdx       - gradient of velocity x
- * @param [in]  duydy       - gradient of velocity x
- * @param [in]  duzdz       - gradient of velocity z
- * @param [in]  rho0        - initial density (matrix here)
+ * <b>Matlab code:</b> \code
+ *  rhox = bsxfun(@times, pml_x, bsxfun(@times, pml_x, rhox) - dt .* rho0 .* duxdx);
+ *  rhoy = bsxfun(@times, pml_y, bsxfun(@times, pml_y, rhoy) - dt .* rho0 .* duydy);
+ *  rhoz = bsxfun(@times, pml_z, bsxfun(@times, pml_z, rhoz) - dt .* rho0 .* duzdz);
+ * \endcode
  */
-template <bool isRho0Scalar>
+template <Parameters::SimulationDimension simulationDimension,
+          bool isRho0Scalar>
 __global__ void cudaComputeDensityLinear(float*       rhoX,
                                          float*       rhoY,
                                          float*       rhoZ,
@@ -1580,17 +1595,22 @@ __global__ void cudaComputeDensityLinear(float*       rhoX,
 {
   for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const dim3 coords = getReal3DCoords(i);
+    const dim3 coords = (simulationDimension == SD::k3D) ? getReal3DCoords(i) : getReal2DCoords(i);
 
     const float ePmlX = pmlX[coords.x];
     const float ePmlY = pmlY[coords.y];
-    const float ePmlZ = pmlZ[coords.z];
 
     const float dtRho0  = (isRho0Scalar) ? cudaDeviceConstants.dtRho0 : cudaDeviceConstants.dt * rho0[i];
 
     rhoX[i] = ePmlX * (ePmlX * rhoX[i] - dtRho0 * duxdx[i]);
     rhoY[i] = ePmlY * (ePmlY * rhoY[i] - dtRho0 * duydy[i]);
-    rhoZ[i] = ePmlZ * (ePmlZ * rhoZ[i] - dtRho0 * duzdz[i]);
+
+    if (simulationDimension == SD::k3D)
+    {
+      const float ePmlZ = pmlZ[coords.z];
+
+      rhoZ[i] = ePmlZ * (ePmlZ * rhoZ[i] - dtRho0 * duzdz[i]);
+    }
   }
 }// end of cudaComputeDensityLinear
 //----------------------------------------------------------------------------------------------------------------------
@@ -1598,52 +1618,61 @@ __global__ void cudaComputeDensityLinear(float*       rhoX,
 /**
  * Calculate acoustic density for linear case, homogeneous case is default.
  */
-void SolverCudaKernels::computeDensityLinear(RealMatrix&       rhoX,
-                                             RealMatrix&       rhoY,
-                                             RealMatrix&       rhoZ,
-                                             const RealMatrix& pmlX,
-                                             const RealMatrix& pmlY,
-                                             const RealMatrix& pmlZ,
-                                             const RealMatrix& duxdx,
-                                             const RealMatrix& duydy,
-                                             const RealMatrix& duzdz,
-                                             const bool        isRho0Scalar,
-                                             const float*      rho0Data)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::computeDensityLinear(const MatrixContainer& container)
 {
-  if (isRho0Scalar)
-  {
-    cudaComputeDensityLinear<true>
+  if (Parameters::getInstance().getRho0ScalarFlag())
+  { // homogeneous
+    cudaComputeDensityLinear<simulationDimension, true>
                             <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                            (rhoX.getDeviceData(),
-                             rhoY.getDeviceData(),
-                             rhoZ.getDeviceData(),
-                             pmlX.getDeviceData(),
-                             pmlY.getDeviceData(),
-                             pmlZ.getDeviceData(),
-                             duxdx.getDeviceData(),
-                             duydy.getDeviceData(),
-                             duzdz.getDeviceData());
+                            (container.getRhoX().getDeviceData(),
+                             container.getRhoY().getDeviceData(),
+                             (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                              : nullptr,
+                              container.getPmlX().getDeviceData(),
+                              container.getPmlY().getDeviceData(),
+                              (simulationDimension == SD::k3D) ? container.getPmlZ().getDeviceData()
+                                                               : nullptr,
+                              container.getDuxdx().getDeviceData(),
+                              container.getDuydy().getDeviceData(),
+                              (simulationDimension == SD::k3D) ? container.getDuzdz().getDeviceData()
+                                                               : nullptr);
   }
   else
-  {
-    cudaComputeDensityLinear<false>
+  { // heterogeneous
+    cudaComputeDensityLinear<simulationDimension, false>
                             <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                            (rhoX.getDeviceData(),
-                             rhoY.getDeviceData(),
-                             rhoZ.getDeviceData(),
-                             pmlX.getDeviceData(),
-                             pmlY.getDeviceData(),
-                             pmlZ.getDeviceData(),
-                             duxdx.getDeviceData(),
-                             duydy.getDeviceData(),
-                             duzdz.getDeviceData(),
-                             rho0Data);
+                            (container.getRhoX().getDeviceData(),
+                             container.getRhoY().getDeviceData(),
+                             (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                              : nullptr,
+                             container.getPmlX().getDeviceData(),
+                             container.getPmlY().getDeviceData(),
+                             (simulationDimension == SD::k3D) ? container.getPmlZ().getDeviceData()
+                                                              : nullptr,
+                             container.getDuxdx().getDeviceData(),
+                             container.getDuydy().getDeviceData(),
+                             (simulationDimension == SD::k3D) ? container.getDuzdz().getDeviceData()
+                                                              : nullptr,
+                             container.getRho0().getDeviceData());
   }
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of computeDensityLinear
 //----------------------------------------------------------------------------------------------------------------------
 
+/**
+ * Calculate acoustic density for linear case, homogeneous case is default, 3D case.
+ */
+template
+void SolverCudaKernels::computeDensityLinear<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Calculate acoustic density for linear case, homogeneous case is default, 2D case.
+ */
+template
+void SolverCudaKernels::computeDensityLinear<SD::k2D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Cuda kernel which calculates three temporary sums in the new pressure formula \n

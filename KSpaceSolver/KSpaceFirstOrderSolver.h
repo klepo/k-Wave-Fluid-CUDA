@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            02 March     2019, 17:34 (revised)
+ *            02 March     2019, 18:26 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -230,9 +230,31 @@ class KSpaceFirstOrderSolver
     template<Parameters::SimulationDimension simulationDimension>
     void computeVelocityGradient();
 
-    /// Compute new values of acoustic density for nonlinear case.
+    /**
+     * @brief  Compute new values of acoustic density for nonlinear case.
+     * @tparam simulationDimension - Dimensionality of the simulation.
+     *
+     * <b>Matlab code:</b> \code
+     *  rho0_plus_rho = 2 .* (rhox + rhoy + rhoz) + rho0;
+     *  rhox = bsxfun(@times, pml_x, bsxfun(@times, pml_x, rhox) - dt .* rho0_plus_rho .* duxdx);
+     *  rhoy = bsxfun(@times, pml_y, bsxfun(@times, pml_y, rhoy) - dt .* rho0_plus_rho .* duydy);
+     *  rhoz = bsxfun(@times, pml_z, bsxfun(@times, pml_z, rhoz) - dt .* rho0_plus_rho .* duzdz);
+     * \endcode
+     */
+    template<Parameters::SimulationDimension simulationDimension>
     void computeDensityNonliner();
-    /// Compute new values of acoustic density for linear case.
+
+    /**
+     * @brief  Compute new values of acoustic density for linear case.
+     * @tparam simulationDimension - Dimensionality of the simulation.
+     *
+     * <b>Matlab code:</b> \code
+     *  rhox = bsxfun(@times, pml_x, bsxfun(@times, pml_x, rhox) - dt .* rho0 .* duxdx);
+     *  rhoy = bsxfun(@times, pml_y, bsxfun(@times, pml_y, rhoy) - dt .* rho0 .* duydy);
+     *  rhoz = bsxfun(@times, pml_z, bsxfun(@times, pml_z, rhoz) - dt .* rho0 .* duzdz);
+     * \endcode
+     */
+    template<Parameters::SimulationDimension simulationDimension>
     void computeDensityLinear();
 
     /// Compute acoustic pressure for nonlinear case.

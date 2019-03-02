@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            02 March     2019, 17:34 (revised)
+ *            02 March     2019, 18:26 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -311,57 +311,32 @@ namespace SolverCudaKernels
 
   /**
    * @brief Calculate acoustic density for non-linear case, homogeneous case is default.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in, out] rhoX         - Acoustic density in x direction.
-   * @param [in, out] rhoY         - Acoustic density in y direction.
-   * @param [in, out] rhoZ         - Acoustic density in z direction.
-   * @param [in]      pmlX         - PML layer in x direction.
-   * @param [in]      pmlY         - PML layer in x direction.
-   * @param [in]      pmlZ         - PML layer in x direction.
-   * @param [in]      duxdx        - Gradient of velocity x direction.
-   * @param [in]      duydy        - Gradient of velocity y direction.
-   * @param [in]      duzdz        - Gradient of velocity z direction.
-   * @param [in]      isRho0Scalar - Is the density homogeneous?
-   * @param [in]      rho0Data     - If density is heterogeneous, here is the matrix with data.
+   * <b>Matlab code:</b> \code
+   *  rho0_plus_rho = 2 .* (rhox + rhoy + rhoz) + rho0;
+   *  rhox = bsxfun(@times, pml_x, bsxfun(@times, pml_x, rhox) - dt .* rho0_plus_rho .* duxdx);
+   *  rhoy = bsxfun(@times, pml_y, bsxfun(@times, pml_y, rhoy) - dt .* rho0_plus_rho .* duydy);
+   *  rhoz = bsxfun(@times, pml_z, bsxfun(@times, pml_z, rhoz) - dt .* rho0_plus_rho .* duzdz);
+   * \endcode
    */
-  void computeDensityNonlinear(RealMatrix&       rhoX,
-                               RealMatrix&       rhoY,
-                               RealMatrix&       rhoZ,
-                               const RealMatrix& pmlX,
-                               const RealMatrix& pmlY,
-                               const RealMatrix& pmlZ,
-                               const RealMatrix& duxdx,
-                               const RealMatrix& duydy,
-                               const RealMatrix& duzdz,
-                               const bool        isRho0Scalar = true,
-                               const float*      rho0Data     = nullptr);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeDensityNonlinear(const MatrixContainer& container);
 
   /**
    * @brief Calculate acoustic density for linear case, homogeneous case is default.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in, out] rhoX         - Acoustic density in x direction.
-   * @param [in, out] rhoY         - Acoustic density in y direction.
-   * @param [in, out] rhoZ         - Acoustic density in z direction.
-   * @param [in]      pmlX         - PML layer in x direction.
-   * @param [in]      pmlY         - PML layer in x direction.
-   * @param [in]      pmlZ         - PML layer in x direction.
-   * @param [in]      duxdx        - Gradient of velocity x direction.
-   * @param [in]      duydy        - Gradient of velocity y direction.
-   * @param [in]      duzdz        - Gradient of velocity z direction.
-   * @param [in]      isRho0Scalar - Is the density homogeneous?
-   * @param [in]      rho0Data     - If density is heterogeneous, here is the matrix with data.
+   * <b>Matlab code:</b> \code
+   *  rhox = bsxfun(@times, pml_x, bsxfun(@times, pml_x, rhox) - dt .* rho0 .* duxdx);
+   *  rhoy = bsxfun(@times, pml_y, bsxfun(@times, pml_y, rhoy) - dt .* rho0 .* duydy);
+   *  rhoz = bsxfun(@times, pml_z, bsxfun(@times, pml_z, rhoz) - dt .* rho0 .* duzdz);
+   * \endcode
    */
-  void computeDensityLinear(RealMatrix&       rhoX,
-                            RealMatrix&       rhoY,
-                            RealMatrix&       rhoZ,
-                            const RealMatrix& pmlX,
-                            const RealMatrix& pmlY,
-                            const RealMatrix& pmlZ,
-                            const RealMatrix& duxdx,
-                            const RealMatrix& duydy,
-                            const RealMatrix& duzdz,
-                            const bool        isRho0Scalar = true,
-                            const float*      rho0Data     = nullptr);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeDensityLinear(const MatrixContainer& container);
 
 
   //-------------------------------------------- new value of pressure -----------------------------------------------//
