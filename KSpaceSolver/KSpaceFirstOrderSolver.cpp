@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            02 March     2019, 18:26 (revised)
+ *            04 March     2019, 12:55 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -819,7 +819,7 @@ void KSpaceFirstOrderSolver::computeMainLoop()
     }
 
     // add in the source pressure term
-    addPressureSource();
+    addPressureSource<simulationDimension>();
 
     if (mParameters.getNonLinearFlag())
     {
@@ -1305,9 +1305,10 @@ void KSpaceFirstOrderSolver::addVelocitySource()
 }// end of addVelocitySource
 //----------------------------------------------------------------------------------------------------------------------
 
-/*
+/**
  * Add in pressure source.
  */
+template<Parameters::SimulationDimension simulationDimension>
 void KSpaceFirstOrderSolver::addPressureSource()
 {
   size_t timeIndex = mParameters.getTimeIndex();
@@ -1316,12 +1317,7 @@ void KSpaceFirstOrderSolver::addPressureSource()
   {
     if (mParameters.getPressureSourceMode() != Parameters::SourceMode::kAdditive)
     { // executed Dirichlet and AdditiveNoCorrection source
-      SolverCudaKernels::addPressureSource(getRhoX(),
-                                           getRhoY(),
-                                           getRhoZ(),
-                                           getPressureSourceInput(),
-                                           getPressureSourceIndex(),
-                                           timeIndex);
+      SolverCudaKernels::addPressureSource<simulationDimension>(mMatrixContainer);
     }
     else
     { // execute Additive source
@@ -1333,10 +1329,14 @@ void KSpaceFirstOrderSolver::addPressureSource()
                   mParameters.getPressureSourceMany());
 
       // Insert source
-      SolverCudaKernels::addPressureScaledSource(getRhoX(),
-                                                 getRhoY(),
-                                                 getRhoZ(),
-                                                 scaledSource);
+      if (simulationDimension == SD::k3D)
+      {
+        SolverCudaKernels::addPressureScaledSource(getRhoX(), getRhoY(), getRhoZ(), scaledSource);
+      }
+      else
+      {
+          SolverCudaKernels::addPressureScaledSource(getRhoX(), getRhoY(), scaledSource);
+      }
     } // Additive source
   } // apply source
 }// end of AddPressureSource

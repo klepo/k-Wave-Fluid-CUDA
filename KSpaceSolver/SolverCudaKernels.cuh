@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            02 March     2019, 18:26 (revised)
+ *            04 March     2019, 12:56 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -156,19 +156,11 @@ namespace SolverCudaKernels
   /**
    * @brief Add in pressure source term.
    *
-   * @param [out] rhoX                - Acoustic density.
-   * @param [out] rhoY                - Acoustic density.
-   * @param [out] rhoZ                - Acoustic density.
-   * @param [in]  pressureSourceInput - Source input to add.
-   * @param [in]  pressureSourceIndex - Index matrix with source.
-   * @param [in]  timeIndex           - Actual times step.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    */
-  void addPressureSource(RealMatrix&        rhoX,
-                         RealMatrix&        rhoY,
-                         RealMatrix&        rhoZ,
-                         const RealMatrix&  pressureSourceInput,
-                         const IndexMatrix& pressureSourceIndex,
-                         const size_t       timeIndex);
+  template<Parameters::SimulationDimension simulationDimension>
+  void addPressureSource(const MatrixContainer& container);
 
 
   /**
@@ -203,7 +195,7 @@ namespace SolverCudaKernels
                                const RealMatrix&  scalingSource);
 
   /**
-   * @brief Add scaled pressure source to acoustic density.
+   * @brief Add scaled pressure source to acoustic density, 3D case.
    * @param [in, out] rhoX         - Acoustic density.
    * @param [in, out] rhoY         - Acoustic density.
    * @param [in, out] rhoZ         - Acoustic density.
@@ -212,6 +204,15 @@ namespace SolverCudaKernels
   void addPressureScaledSource(RealMatrix&        rhoX,
                                RealMatrix&        rhoY,
                                RealMatrix&        rhoZ,
+                               const RealMatrix&  scalingSource);
+  /**
+   * @brief Add scaled pressure source to acoustic density, 2D case.
+   * @param [in, out] rhoX         - Acoustic density.
+   * @param [in, out] rhoY         - Acoustic density.
+   * @param [in]      scaledSource - Scaled source.
+   */
+  void addPressureScaledSource(RealMatrix&        rhoX,
+                               RealMatrix&        rhoY,
                                const RealMatrix&  scalingSource);
 
   /**

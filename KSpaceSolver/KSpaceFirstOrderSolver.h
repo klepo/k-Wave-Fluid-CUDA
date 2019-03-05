@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            02 March     2019, 18:26 (revised)
+ *            04 March     2019, 12:40 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -264,7 +264,11 @@ class KSpaceFirstOrderSolver
 
     /// Add in velocity source.
     void addVelocitySource();
-    /// Add in pressure source.
+    /**
+     * @brief  Add in pressure source.
+     * @tparam simulationDimension - Dimensionality of the simulation.
+     */
+    template<Parameters::SimulationDimension simulationDimension>
     void addPressureSource();
     /**
      * @brief Scale velocity or pressure source.

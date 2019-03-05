@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            02 March     2019, 18:26 (revised)
+ *            04 March     2019, 12:56 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -33,8 +33,6 @@
 
 #include <KSpaceSolver/SolverCudaKernels.cuh>
 #include <Parameters/CudaDeviceConstants.cuh>
-
-//#include <Containers/MatrixRecord.h>
 
 #include <Logger/Logger.h>
 #include <Utils/CudaUtils.cuh>
@@ -605,6 +603,7 @@ void SolverCudaKernels::addVelocitySource(RealMatrix&        velocity,
 /**
  * Cuda kernel to add pressure source to acoustic density.
  *
+ * @tparam simulationDimension      - Dimensionality of the simulation.
  * @param [out] rhoX                - Acoustic density.
  * @param [out] rhoY                - Acoustic density.
  * @param [out] rhoZ                - Acoustic density.
@@ -613,6 +612,7 @@ void SolverCudaKernels::addVelocitySource(RealMatrix&        velocity,
  * @param [in]  timeIndex           - Actual time step.
 
  */
+template<Parameters::SimulationDimension simulationDimension>
 __global__ void cudaAddPressureSource(float*        rhoX,
                                       float*        rhoY,
                                       float*        rhoZ,
@@ -635,7 +635,10 @@ __global__ void cudaAddPressureSource(float*        rhoX,
         {
           rhoX[pressureSourceIndex[i]] = pressureSourceInput[index2D];
           rhoY[pressureSourceIndex[i]] = pressureSourceInput[index2D];
-          rhoZ[pressureSourceIndex[i]] = pressureSourceInput[index2D];
+          if (simulationDimension == SD::k3D)
+          {
+            rhoZ[pressureSourceIndex[i]] = pressureSourceInput[index2D];
+          }
         }
       }
       else
@@ -644,7 +647,10 @@ __global__ void cudaAddPressureSource(float*        rhoX,
         {
           rhoX[pressureSourceIndex[i]] = pressureSourceInput[index2D + i];
           rhoY[pressureSourceIndex[i]] = pressureSourceInput[index2D + i];
-          rhoZ[pressureSourceIndex[i]] = pressureSourceInput[index2D + i];
+          if (simulationDimension == SD::k3D)
+          {
+            rhoZ[pressureSourceIndex[i]] = pressureSourceInput[index2D + i];
+          }
         }
       }
       break;
@@ -658,7 +664,10 @@ __global__ void cudaAddPressureSource(float*        rhoX,
         {
           rhoX[pressureSourceIndex[i]] += pressureSourceInput[index2D];
           rhoY[pressureSourceIndex[i]] += pressureSourceInput[index2D];
-          rhoZ[pressureSourceIndex[i]] += pressureSourceInput[index2D];
+          if (simulationDimension == SD::k3D)
+          {
+            rhoZ[pressureSourceIndex[i]] += pressureSourceInput[index2D];
+          }
         }
       }
       else
@@ -667,7 +676,9 @@ __global__ void cudaAddPressureSource(float*        rhoX,
         {
           rhoX[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
           rhoY[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
-          rhoZ[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
+          {
+            rhoZ[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
+          }
         }
       }
       break;
@@ -684,32 +695,42 @@ __global__ void cudaAddPressureSource(float*        rhoX,
 /**
  * Interface to kernel which adds in pressure source (to acoustic density).
  */
-void SolverCudaKernels::addPressureSource(RealMatrix&        rhoX,
-                                          RealMatrix&        rhoY,
-                                          RealMatrix&        rhoZ,
-                                          const RealMatrix&  pressureSourceInput,
-                                          const IndexMatrix& pressureSourceIndex,
-                                          const size_t       timeIndex)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::addPressureSource(const MatrixContainer& container)
 {
-  const int sourceIndex = static_cast<int>(pressureSourceIndex.size());
+  const int sourceIndex = static_cast<int>(container.getPressureSourceIndex().size());
   // Grid size is calculated based on the source size
   const int gridSize  = (sourceIndex < (getSolverGridSize1D() *  getSolverBlockSize1D()))
                         ? (sourceIndex  + getSolverBlockSize1D() - 1 ) / getSolverBlockSize1D()
                         :  getSolverGridSize1D();
 
-  cudaAddPressureSource<<<gridSize,getSolverBlockSize1D()>>>
-                       (rhoX.getDeviceData(),
-                        rhoY.getDeviceData(),
-                        rhoZ.getDeviceData(),
-                        pressureSourceInput.getDeviceData(),
-                        pressureSourceIndex.getDeviceData(),
-                        timeIndex);
+  cudaAddPressureSource<simulationDimension>
+                       <<<gridSize,getSolverBlockSize1D()>>>
+                       (container.getRhoX().getDeviceData(),
+                        container.getRhoY().getDeviceData(),
+                        (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                         : nullptr,
+                        container.getPressureSourceInput().getDeviceData(),
+                        container.getPressureSourceIndex().getDeviceData(),
+                        Parameters::getInstance().getTimeIndex());
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of addPressureSource
 //----------------------------------------------------------------------------------------------------------------------
 
+/**
+ * Interface to kernel which adds in pressure source (to acoustic density), 3D case.
+ */
+template
+void SolverCudaKernels::addPressureSource<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Interface to kernel which adds in pressure source (to acoustic density), 2D case.
+ */
+template
+void SolverCudaKernels::addPressureSource<SD::k2D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Cuda kernel to add pressure source to acoustic density.
@@ -853,11 +874,13 @@ void SolverCudaKernels::addVelocityScaledSource(RealMatrix&        velocity,
 /**
  * Cuda kernel to add scaled pressure source to acoustic density.
  *
+ * @tparam simulationDimension   - Dimensionality of the simulation.
  * @param [in, out] rhoX         - Acoustic density.
  * @param [in, out] rhoY         - Acoustic density.
  * @param [in, out] rhoZ         - Acoustic density.
  * @param [in]      scaledSource - Scaled source.
  */
+template<Parameters::SimulationDimension simulationDimension>
 __global__ void cudaAddPressureScaledSource(float*       rhoX,
                                             float*       rhoY,
                                             float*       rhoZ,
@@ -868,23 +891,45 @@ __global__ void cudaAddPressureScaledSource(float*       rhoX,
     const float eSaledSource = scaledSource[i];
     rhoX[i] += eSaledSource;
     rhoY[i] += eSaledSource;
-    rhoZ[i] += eSaledSource;
+    if (simulationDimension == SD::k3D)
+    {
+      rhoZ[i] += eSaledSource;
+    }
   }
 }// end of cudaComputePressureGradient
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Add scaled pressure source to acoustic density.
+ * Add scaled pressure source to acoustic density, 3D case
  */
 void SolverCudaKernels::addPressureScaledSource(RealMatrix&        rhoX,
                                                 RealMatrix&        rhoY,
                                                 RealMatrix&        rhoZ,
                                                 const RealMatrix&  scaledSource)
 {
-  cudaAddPressureScaledSource<<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+  cudaAddPressureScaledSource<SD::k3D>
+                             <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
                              (rhoX.getDeviceData(),
                               rhoY.getDeviceData(),
                               rhoZ.getDeviceData(),
+                              scaledSource.getDeviceData());
+  // check for errors
+  cudaCheckErrors(cudaGetLastError());
+}// end of AddPressureScaledSource
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Add scaled pressure source to acoustic density, 2D case.
+ */
+void SolverCudaKernels::addPressureScaledSource(RealMatrix&        rhoX,
+                                                RealMatrix&        rhoY,
+                                                const RealMatrix&  scaledSource)
+{
+  cudaAddPressureScaledSource<SD::k2D>
+                             <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                             (rhoX.getDeviceData(),
+                              rhoY.getDeviceData(),
+                              nullptr,
                               scaledSource.getDeviceData());
   // check for errors
   cudaCheckErrors(cudaGetLastError());
