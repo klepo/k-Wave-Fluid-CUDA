@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            06 March     2019, 08:46 (revised)
+ *            06 March     2019, 09:30 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -869,7 +869,10 @@ void KSpaceFirstOrderSolver::postProcessing()
   {
     getUxSgx().copyFromDevice();
     getUySgy().copyFromDevice();
-    getUzSgz().copyFromDevice();
+    if (mParameters.isSimulation3D())
+    {
+      getUzSgz().copyFromDevice();
+    }
 
     getUxSgx().writeData(mParameters.getOutputFile(),
                          kUxFinalName,
@@ -877,9 +880,12 @@ void KSpaceFirstOrderSolver::postProcessing()
     getUySgy().writeData(mParameters.getOutputFile(),
                          kUyFinalName,
                          mParameters.getCompressionLevel());
-    getUzSgz().writeData(mParameters.getOutputFile(),
-                         kUzFinalName,
-                         mParameters.getCompressionLevel());
+    if (mParameters.isSimulation3D())
+    {
+      getUzSgz().writeData(mParameters.getOutputFile(),
+                           kUzFinalName,
+                           mParameters.getCompressionLevel());
+    }
   }// u_final
 
   // Apply post-processing, flush data on disk/
@@ -1698,7 +1704,6 @@ void KSpaceFirstOrderSolver::computeC2()
  * uy_shifted = real(ifft(bsxfun(\@times, y_shift_neg, fft(uy_sgy, [], 2)), [], 2)); \n
  * uz_shifted = real(ifft(bsxfun(\@times, z_shift_neg, fft(uz_sgz, [], 3)), [], 3)); \n
  */
-
 void KSpaceFirstOrderSolver::computeShiftedVelocity()
 {
   // uxShifted
@@ -1711,11 +1716,13 @@ void KSpaceFirstOrderSolver::computeShiftedVelocity()
   SolverCudaKernels::computeVelocityShiftInY(getTempCufftShift(), getYShiftNegR());
   getTempCufftShift().computeC2RFft1DY(getUyShifted());
 
-  // uzShifted
-  getTempCufftShift().computeR2CFft1DZ(getUzSgz());
-  SolverCudaKernels::computeVelocityShiftInZ(getTempCufftShift(), getZShiftNegR());
-  getTempCufftShift().computeC2RFft1DZ(getUzShifted());
-
+  if (mParameters.isSimulation3D())
+  {
+    // uzShifted
+    getTempCufftShift().computeR2CFft1DZ(getUzSgz());
+    SolverCudaKernels::computeVelocityShiftInZ(getTempCufftShift(), getZShiftNegR());
+    getTempCufftShift().computeC2RFft1DZ(getUzShifted());
+  }
 }// end of computeShiftedVelocity
 //----------------------------------------------------------------------------------------------------------------------
 

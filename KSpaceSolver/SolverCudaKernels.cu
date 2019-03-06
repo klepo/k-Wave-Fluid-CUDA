@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            06 March     2019, 08:44 (revised)
+ *            06 March     2019, 09:30 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -676,6 +676,7 @@ __global__ void cudaAddPressureSource(float*        rhoX,
         {
           rhoX[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
           rhoY[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
+          if (simulationDimension == SD::k3D)
           {
             rhoZ[pressureSourceIndex[i]] += pressureSourceInput[index2D + i];
           }

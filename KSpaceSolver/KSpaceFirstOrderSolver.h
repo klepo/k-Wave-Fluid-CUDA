@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            06 March     2019, 08:47 (revised)
+ *            06 March     2019, 08:58 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -358,7 +358,7 @@ class KSpaceFirstOrderSolver
     /// Calculate square of velocity
     void computeC2();
 
-    /// compute shifted velocity for --u_non_staggered flag.
+    /// Compute shifted velocity for --u_non_staggered flag.
     void computeShiftedVelocity();
 
     /// Print progress statistics.
