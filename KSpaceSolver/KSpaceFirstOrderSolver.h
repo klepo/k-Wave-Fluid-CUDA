@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            04 March     2019, 12:40 (revised)
+ *            06 March     2019, 08:47 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -257,9 +257,47 @@ class KSpaceFirstOrderSolver
     template<Parameters::SimulationDimension simulationDimension>
     void computeDensityLinear();
 
-    /// Compute acoustic pressure for nonlinear case.
+    /**
+     * Compute acoustic pressure for nonlinear case.
+     * @tparam simulationDimension - Dimensionality of the simulation.
+     *
+     * <b>Matlab code:</b> \code
+     *  case 'lossless'
+     *    % calculate p using a nonlinear adiabatic equation of state
+     *    p = c.^2 .* (rhox + rhoy + rhoz + medium.BonA .* (rhox + rhoy + rhoz).^2 ./ (2 .* rho0));
+     *
+     *  case 'absorbing'
+     *    % calculate p using a nonlinear absorbing equation of state
+     *    p = c.^2 .* (...
+     *        (rhox + rhoy + rhoz) ...
+     *        + absorb_tau .* real(ifftn( absorb_nabla1 .* fftn(rho0 .* (duxdx + duydy + duzdz)) ))...
+     *        - absorb_eta .* real(ifftn( absorb_nabla2 .* fftn(rhox + rhoy + rhoz) ))...
+     *        + medium.BonA .*(rhox + rhoy + rhoz).^2 ./ (2 .* rho0) ...
+     *       );
+     * \endcode
+     */
+    template<Parameters::SimulationDimension simulationDimension>
     void computePressureNonlinear();
-    /// Compute acoustic pressure for linear case.
+
+    /**
+     * @brief Compute acoustic pressure for linear case.
+     * <b>Matlab code:</b> \code
+     *  case 'lossless'
+     *
+     *    % calculate p using a linear adiabatic equation of state
+     *    p = c.^2 .* (rhox + rhoy + rhoz);
+     *
+     *  case 'absorbing'
+     *
+     *    % calculate p using a linear absorbing equation of state
+     *    p = c.^2 .* ( ...
+     *        (rhox + rhoy + rhoz) ...
+     *        + absorb_tau .* real(ifftn( absorb_nabla1 .* fftn(rho0 .* (duxdx + duydy + duzdz)) )) ...
+     *        - absorb_eta .* real(ifftn( absorb_nabla2 .* fftn(rhox + rhoy + rhoz) )) ...
+     *       );
+     * \endcode
+     */
+    template<Parameters::SimulationDimension simulationDimension>
     void computePressureLinear();
 
     /// Add in velocity source.
@@ -319,53 +357,6 @@ class KSpaceFirstOrderSolver
     void generateInitialDenisty();
     /// Calculate square of velocity
     void computeC2();
-
-    /**
-     * @brief Calculate three temporary sums in the new pressure formula before taking the FFT,
-     *        nonlinear absorbing case.
-     * @param [out] densitySum          - rhoX + rhoY + rhoZ
-     * @param [out] nonlinearTerm       - BOnA + densitySum ^2 / 2 * rho0
-     * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz)
-     */
-    void computePressureTermsNonlinear(RealMatrix& densitySum,
-                                       RealMatrix& nonlinearTerm,
-                                       RealMatrix& velocityGradientSum);
-    /**
-     * @brief Calculate two temporary sums in the new pressure formula before taking the FFT,
-     *        linear absorbing case.
-     * @param [out] densitySum          - rhoxSgx + rhoySgy + rhozSgz
-     * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz)
-     */
-    void computePressureTermsLinear(RealMatrix& densitySum,
-                                    RealMatrix& velocityGradientSum);
-
-
-    /**
-     * @brief Sum sub-terms to calculate new pressure, after FFTs, nonlinear case.
-     * @param [in] absorbTauTerm - tau component
-     * @param [in] absorbEtaTerm - eta component  of the pressure term
-     * @param [in] nonlinearTerm - rho0 * (duxdx + duydy + duzdz)
-     */
-    void sumPressureTermsNonlinear(const RealMatrix& absorbTauTerm,
-                                   const RealMatrix& absorbEtaTerm,
-                                   const RealMatrix& nonlinearTerm);
-
-
-    /**
-     * @brief Sum sub-terms to calculate new pressure, after FFTs, linear case.
-     * @param [in] absorbTauTerm - tau component
-     * @param [in] absorbEtaTerm - eta component  of the pressure term
-     * @param [in] densitySum    - Sum of three components of density (rhoXSgx + rhoYSgy + rhoZSgx)
-     */
-    void sumPressureTermsLinear(const RealMatrix& absorbTauTerm,
-                                const RealMatrix& absorbEtaTerm,
-                                const RealMatrix& densitySum);
-
-    /// Sum sub-terms for new pressure, linear lossless case.
-    void sumPressureTermsNonlinearLossless();
-
-    /// Sum sub-terms for new pressure, linear lossless case.
-    void sumPressureTermsLinearLossless();
 
     /// compute shifted velocity for --u_non_staggered flag.
     void computeShiftedVelocity();

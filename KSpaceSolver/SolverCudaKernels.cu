@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            04 March     2019, 12:56 (revised)
+ *            06 March     2019, 08:44 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -1724,6 +1724,7 @@ void SolverCudaKernels::computeDensityLinear<SD::k2D>(const MatrixContainer& con
  * non-linear absorbing case. Homogeneous and heterogenous variants are treated using templates.
  * Homogeneous variables are in constant memory.
  *
+ * @tparam simulationDimension      - Dimensionality of the simulation.
  * @tparam [in]  isBonAScalar       - Is B on A homogeneous?
  * @tparam [in]  isRho0Scalar       - Is rho0 a scalar value (homogeneous)?
  *
@@ -1741,7 +1742,9 @@ void SolverCudaKernels::computeDensityLinear<SD::k2D>(const MatrixContainer& con
  *
  *
  */
-template <bool isBonAScalar, bool isRho0Scalar>
+template<Parameters::SimulationDimension simulationDimension,
+         bool                            isBonAScalar,
+         bool                            isRho0Scalar>
 __global__ void cudaComputePressureTermsNonlinear(float*       densitySum,
                                                   float*       nonlinearTerm,
                                                   float*       velocityGradientSum,
@@ -1759,12 +1762,16 @@ __global__ void cudaComputePressureTermsNonlinear(float*       densitySum,
     const float eBonA = (isBonAScalar) ? cudaDeviceConstants.bOnA : bOnAData[i];
     const float eRho0 = (isRho0Scalar) ? cudaDeviceConstants.rho0 : rho0Data[i];
 
-    const float eRhoSum = rhoX[i] + rhoY[i] + rhoZ[i];
+    const float eRhoSum = (simulationDimension == SD::k3D) ? (rhoX[i] + rhoY[i] + rhoZ[i])
+                                                           : (rhoX[i] + rhoY[i]);
+
+    const float eDuSum  = (simulationDimension == SD::k3D) ? (duxdx[i] + duydy[i] + duzdz[i])
+                                                           : (duxdx[i] + duydy[i]);
 
     densitySum[i]          = eRhoSum;
     nonlinearTerm[i]       = ((eBonA * eRhoSum * eRhoSum) / (2.0f * eRho0)) + eRhoSum;
-    velocityGradientSum[i] = eRho0 * (duxdx[i] + duydy[i] + duzdz[i]);
-    }
+    velocityGradientSum[i] = eRho0 * eDuSum;
+  }
 }// end of cudaComputePressureTermsNonlinear
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -1772,89 +1779,91 @@ __global__ void cudaComputePressureTermsNonlinear(float*       densitySum,
  * Interface to kernel which calculates three temporary sums in the new pressure formula \n
  * non-linear absorbing case.
  */
-void SolverCudaKernels::computePressureTermsNonlinear(RealMatrix&       densitySum,
-                                                      RealMatrix&       nonlinearTerm,
-                                                      RealMatrix&       velocityGradientSum,
-                                                      const RealMatrix& rhoX,
-                                                      const RealMatrix& rhoY,
-                                                      const RealMatrix& rhoZ,
-                                                      const RealMatrix& duxdx,
-                                                      const RealMatrix& duydy,
-                                                      const RealMatrix& duzdz,
-                                                      const bool         isBonAScalar,
-                                                      const float*       bOnAData,
-                                                      const bool         isRho0Scalar,
-                                                      const float*       rho0Data)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::computePressureTermsNonlinear(RealMatrix&            densitySum,
+                                                      RealMatrix&            nonlinearTerm,
+                                                      RealMatrix&            velocityGradientSum,
+                                                      const MatrixContainer& container)
 {
+  const Parameters& params = Parameters::getInstance();
+
   // all variants are treated by templates, here you can see all 4 variants.
-  if (isBonAScalar)
+  if (params.getBOnAScalarFlag())
   {
-    if (isRho0Scalar)
+    if (params.getRho0ScalarFlag())
     {
-      cudaComputePressureTermsNonlinear<true, true>
-                                     <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                     (densitySum.getDeviceData(),
-                                      nonlinearTerm.getDeviceData(),
-                                      velocityGradientSum.getDeviceData(),
-                                      rhoX.getDeviceData(),
-                                      rhoY.getDeviceData(),
-                                      rhoZ.getDeviceData(),
-                                      duxdx.getDeviceData(),
-                                      duydy.getDeviceData(),
-                                      duzdz.getDeviceData(),
-                                      bOnAData,
-                                      rho0Data);
-    }
-    else
-    {
-      cudaComputePressureTermsNonlinear<true, false>
+      cudaComputePressureTermsNonlinear<simulationDimension, true, true>
                                        <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
                                        (densitySum.getDeviceData(),
                                         nonlinearTerm.getDeviceData(),
                                         velocityGradientSum.getDeviceData(),
-                                        rhoX.getDeviceData(),
-                                        rhoY.getDeviceData(),
-                                        rhoZ.getDeviceData(),
-                                        duxdx.getDeviceData(),
-                                        duydy.getDeviceData(),
-                                        duzdz.getDeviceData(),
-                                        bOnAData,
-                                        rho0Data);
+                                        container.getRhoX().getDeviceData(),
+                                        container.getRhoY().getDeviceData(),
+                                        (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                         : nullptr,
+                                        container.getDuxdx().getDeviceData(),
+                                        container.getDuydy().getDeviceData(),
+                                        (simulationDimension == SD::k3D) ? container.getDuzdz().getDeviceData()
+                                                                         : nullptr,
+                                        nullptr,
+                                        nullptr);
+    }
+    else
+    {
+      cudaComputePressureTermsNonlinear<simulationDimension, true, false>
+                                       <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                       (densitySum.getDeviceData(),
+                                        nonlinearTerm.getDeviceData(),
+                                        velocityGradientSum.getDeviceData(),
+                                        container.getRhoX().getDeviceData(),
+                                        container.getRhoY().getDeviceData(),
+                                        (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                         : nullptr,
+                                        container.getDuxdx().getDeviceData(),
+                                        container.getDuydy().getDeviceData(),
+                                        (simulationDimension == SD::k3D) ? container.getDuzdz().getDeviceData()
+                                                                       : nullptr,
+                                        nullptr,
+                                        container.getRho0().getDeviceData());
     }
   }
   else // BonA is false
   {
-   if (isRho0Scalar)
+   if (params.getRho0ScalarFlag())
     {
-    cudaComputePressureTermsNonlinear<false, true>
-                                     <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                     (densitySum.getDeviceData(),
-                                      nonlinearTerm.getDeviceData(),
-                                      velocityGradientSum.getDeviceData(),
-                                      rhoX.getDeviceData(),
-                                      rhoY.getDeviceData(),
-                                      rhoZ.getDeviceData(),
-                                      duxdx.getDeviceData(),
-                                      duydy.getDeviceData(),
-                                      duzdz.getDeviceData(),
-                                      bOnAData,
-                                      rho0Data);
+      cudaComputePressureTermsNonlinear<simulationDimension, false, true>
+                                       <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                       (densitySum.getDeviceData(),
+                                        nonlinearTerm.getDeviceData(),
+                                        velocityGradientSum.getDeviceData(),
+                                        container.getRhoX().getDeviceData(),
+                                        container.getRhoY().getDeviceData(),
+                                        (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                         : nullptr,
+                                        container.getDuxdx().getDeviceData(),
+                                        container.getDuydy().getDeviceData(),
+                                        (simulationDimension == SD::k3D) ? container.getDuzdz().getDeviceData()
+                                                                       : nullptr,
+                                        container.getBOnA().getDeviceData(),
+                                        nullptr);
     }
     else
     {
-    cudaComputePressureTermsNonlinear<false, false>
-                                     <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                     (densitySum.getDeviceData(),
-                                      nonlinearTerm.getDeviceData(),
-                                      velocityGradientSum.getDeviceData(),
-                                      rhoX.getDeviceData(),
-                                      rhoY.getDeviceData(),
-                                      rhoZ.getDeviceData(),
-                                      duxdx.getDeviceData(),
-                                      duydy.getDeviceData(),
-                                      duzdz.getDeviceData(),
-                                      bOnAData,
-                                      rho0Data);
+      cudaComputePressureTermsNonlinear<simulationDimension, false, false>
+                                       <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                       (densitySum.getDeviceData(),
+                                        nonlinearTerm.getDeviceData(),
+                                        velocityGradientSum.getDeviceData(),
+                                        container.getRhoX().getDeviceData(),
+                                        container.getRhoY().getDeviceData(),
+                                        (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                         : nullptr,
+                                        container.getDuxdx().getDeviceData(),
+                                        container.getDuydy().getDeviceData(),
+                                        (simulationDimension == SD::k3D) ? container.getDuzdz().getDeviceData()
+                                                                       : nullptr,
+                                        container.getBOnA().getDeviceData(),
+                                        container.getRho0().getDeviceData());
     }
   }
   // check for errors
@@ -1863,8 +1872,29 @@ void SolverCudaKernels::computePressureTermsNonlinear(RealMatrix&       densityS
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
+ * Interface to kernel which calculates three temporary sums in the new pressure formula \n
+ * non-linear absorbing case, 3D case.
+ */
+template
+void SolverCudaKernels::computePressureTermsNonlinear<SD::k3D>(RealMatrix&       densitySum,
+                                                               RealMatrix&       nonlinearTerm,
+                                                               RealMatrix&       velocityGradientSum,
+                                                               const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Interface to kernel which calculates three temporary sums in the new pressure formula \n
+ * non-linear absorbing case, 2D case.
+ */
+template
+void SolverCudaKernels::computePressureTermsNonlinear<SD::k2D>(RealMatrix&       densitySum,
+                                                               RealMatrix&       nonlinearTerm,
+                                                               RealMatrix&       velocityGradientSum,
+                                                               const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
  * Cuda kernel that calculates two temporary sums in the new pressure formula, linear absorbing case.
  *
+ * @tparam simulationDimension      - Dimensionality of the simulation.
  * @tparam      isRho0Scalar        - Is density  homogeneous?
  *
  * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz
@@ -1877,7 +1907,8 @@ void SolverCudaKernels::computePressureTermsNonlinear(RealMatrix&       densityS
  * @param [in]  duzdz               - Velocity gradient in x direction.
  * @param [in]  rho0Data            - Acoustic density data in heterogeneous case.
  */
-template<bool isRho0Scalar>
+template<Parameters::SimulationDimension simulationDimension,
+         bool isRho0Scalar>
 __global__ void cudaComputePressureTermsLinear(float*       densitySum,
                                                float*       velocityGradientSum,
                                                const float* rhoX,
@@ -1892,73 +1923,90 @@ __global__ void cudaComputePressureTermsLinear(float*       densitySum,
   {
     const float rho0 = (isRho0Scalar) ? cudaDeviceConstants.rho0 : rho0Data[i];
 
-    densitySum[i]          = rhoX[i] + rhoY[i] + rhoZ[i];
-    velocityGradientSum[i] = rho0 * (duxdx[i] + duydy[i] + duzdz[i]);
+    densitySum[i]          = (simulationDimension == SD::k3D) ? rhoX[i] + rhoY[i] + rhoZ[i]
+                                                              : rhoX[i] + rhoY[i];
+    const float duSum      = (simulationDimension == SD::k3D) ? duxdx[i] + duydy[i] + duzdz[i]
+                                                              : duxdx[i] + duydy[i];
+    velocityGradientSum[i] = rho0 * duSum;
   }
 }// end of cudaComputePressureTermsLinear
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Interface to kernel that Calculates two temporary sums in the new pressure
- * formula, linear absorbing case.
-
+ * Interface to kernel that Calculates two temporary sums in the new pressure formula, linear absorbing case.
  */
-void SolverCudaKernels::computePressureTermsLinear(RealMatrix&       densitySum,
-                                                   RealMatrix&       velocityGradientSum,
-                                                   const RealMatrix& rhoX,
-                                                   const RealMatrix& rhoY,
-                                                   const RealMatrix& rhoZ,
-                                                   const RealMatrix& duxdx,
-                                                   const RealMatrix& duydy,
-                                                   const RealMatrix& duzdz,
-                                                   const bool        isRho0Scalar,
-                                                   const float*      rho0Data)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::computePressureTermsLinear(RealMatrix&            densitySum,
+                                                   RealMatrix&            velocityGradientSum,
+                                                   const MatrixContainer& container)
 {
-  if (isRho0Scalar)
+  if (Parameters::getInstance().getRho0ScalarFlag())
   {
-   cudaComputePressureTermsLinear<true>
-                                <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                (densitySum.getDeviceData(),
-                                 velocityGradientSum.getDeviceData(),
-                                 rhoX.getDeviceData(),
-                                 rhoY.getDeviceData(),
-                                 rhoZ.getDeviceData(),
-                                 duxdx.getDeviceData(),
-                                 duydy.getDeviceData(),
-                                 duzdz.getDeviceData(),
-                                 rho0Data);
+    cudaComputePressureTermsLinear<simulationDimension, true>
+                                 <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                 (densitySum.getDeviceData(),
+                                  velocityGradientSum.getDeviceData(),
+                                  container.getRhoX().getDeviceData(),
+                                  container.getRhoY().getDeviceData(),
+                                  (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                   : nullptr,
+                                  container.getDuxdx().getDeviceData(),
+                                  container.getDuydy().getDeviceData(),
+                                  (simulationDimension == SD::k3D) ? container.getDuzdz().getDeviceData()
+                                                                   : nullptr,
+                                   nullptr);
   }
   else
   {
-   cudaComputePressureTermsLinear<false>
-                                <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                (densitySum.getDeviceData(),
-                                 velocityGradientSum.getDeviceData(),
-                                 rhoX.getDeviceData(),
-                                 rhoY.getDeviceData(),
-                                 rhoZ.getDeviceData(),
-                                 duxdx.getDeviceData(),
-                                 duydy.getDeviceData(),
-                                 duzdz.getDeviceData(),
-                                 rho0Data);
+    cudaComputePressureTermsLinear<simulationDimension, false>
+                                 <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                 (densitySum.getDeviceData(),
+                                  velocityGradientSum.getDeviceData(),
+                                  container.getRhoX().getDeviceData(),
+                                  container.getRhoY().getDeviceData(),
+                                  (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                   : nullptr,
+                                  container.getDuxdx().getDeviceData(),
+                                  container.getDuydy().getDeviceData(),
+                                  (simulationDimension == SD::k3D) ? container.getDuzdz().getDeviceData()
+                                                                   : nullptr,
+                                   container.getRho0().getDeviceData());
   }
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of computePressureTermsLinear
 //----------------------------------------------------------------------------------------------------------------------
 
+/**
+ * Interface to kernel that Calculates two temporary sums in the new pressure formula, linear absorbing 3D case.
+ */
+template
+void SolverCudaKernels::computePressureTermsLinear<SD::k3D>(RealMatrix&            densitySum,
+                                                            RealMatrix&            velocityGradientSum,
+                                                            const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Interface to kernel that Calculates two temporary sums in the new pressure formula, linear absorbing 2D case.
+ */
+template
+void SolverCudaKernels::computePressureTermsLinear<SD::k2D>(RealMatrix&            densitySum,
+                                                            RealMatrix&            velocityGradientSum,
+                                                            const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+
 
 /**
  * Cuda kernel which computes absorbing term with abosrbNabla1 and  absorbNabla2.
- * \verbatim
-   fftPart1 = absorbNabla1 .* fftPart1 \n
-   fftPart2 = absorbNabla2 .* fftPart2 \n
- \endverbatim
  *
  * @param [in,out] fftPart1     - Nabla1 part:
  * @param [in,out] fftPart2     - Nabla2 part:
  * @param [in]     absorbNabla1 - Absorption coefficient 1
  * @param [in]     absorbNabla2 - Absorption coefficient 2
+ *
+ * <b>Matlab code:</b> \code
+ *  fftPart1 = absorbNabla1 .* fftPart1 \n
+ *  fftPart2 = absorbNabla2 .* fftPart2 \n
+ * \endcode
  */
 __global__ void cudaComputeAbsorbtionTerm(cuFloatComplex* fftPart1,
                                           cuFloatComplex* fftPart2,
@@ -1982,8 +2030,8 @@ void SolverCudaKernels::computeAbsorbtionTerm(CufftComplexMatrix& fftPart1,
                                               const RealMatrix&   absorbNabla2)
 {
   cudaComputeAbsorbtionTerm<<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                           (reinterpret_cast<cuFloatComplex*> (fftPart1.getDeviceData()),
-                            reinterpret_cast<cuFloatComplex*> (fftPart2.getDeviceData()),
+                           (fftPart1.getComplexDeviceData(),
+                            fftPart2.getComplexDeviceData(),
                             absorbNabla1.getDeviceData(),
                             absorbNabla2.getDeviceData());
 
@@ -2007,7 +2055,8 @@ void SolverCudaKernels::computeAbsorbtionTerm(CufftComplexMatrix& fftPart1,
  * @param [in]     absorbTauData       - Absorb tau data in heterogenous case.
  * @param [in]     absorbEtaData       - Absorb eta data in heterogenous case.
  */
-template <bool isC2Scalar, bool areTauAndEtaScalar>
+template<bool isC2Scalar,
+         bool areTauAndEtaScalar>
 __global__ void cudaSumPressureTermsNonlinear(float*       p,
                                               const float* nonlinearTerm,
                                               const float* absorbTauTerm,
@@ -2018,7 +2067,7 @@ __global__ void cudaSumPressureTermsNonlinear(float*       p,
 {
   for (auto i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const float c2        = (isC2Scalar)         ? cudaDeviceConstants.c2  : c2Data[i];
+    const float c2        = (isC2Scalar)         ? cudaDeviceConstants.c2        : c2Data[i];
     const float absorbTau = (areTauAndEtaScalar) ? cudaDeviceConstants.absorbTau : absorbTauData[i];
     const float absorbEta = (areTauAndEtaScalar) ? cudaDeviceConstants.absorbEta : absorbEtaData[i];
 
@@ -2031,41 +2080,42 @@ __global__ void cudaSumPressureTermsNonlinear(float*       p,
 /**
  * Interface to cuda sum sub-terms to calculate new pressure, non-linear case.
  */
-void SolverCudaKernels::sumPressureTermsNonlinear(RealMatrix&       p,
-                                                  const RealMatrix& nonlinearTerm,
-                                                  const RealMatrix& absorbTauTerm,
-                                                  const RealMatrix& absorbEtaTerm,
-                                                  const bool        isC2Scalar,
-                                                  const float*      c2Data,
-                                                  const bool        areTauAndEtaScalars,
-                                                  const float*      absorbTauData,
-                                                  const float*      absorbEtaData)
+void SolverCudaKernels::sumPressureTermsNonlinear(const RealMatrix&      nonlinearTerm,
+                                                  const RealMatrix&      absorbTauTerm,
+                                                  const RealMatrix&      absorbEtaTerm,
+                                                  const MatrixContainer& container)
 {
+  const Parameters& params      = Parameters::getInstance();
+
+  const bool isC2Scalar         = params.getC0ScalarFlag();
+  // in sound speed and alpha coeff are sclars, then both AbsorbTau and absorbEta must be scalar.
+  const bool areTauAndEtaScalars = params.getC0ScalarFlag() && params.getAlphaCoeffScalarFlag();
+
   if (isC2Scalar)
   {
     if (areTauAndEtaScalars)
     {
       cudaSumPressureTermsNonlinear<true, true>
                                    <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                   (p.getDeviceData(),
+                                   (container.getP().getDeviceData(),
                                     nonlinearTerm.getDeviceData(),
                                     absorbTauTerm.getDeviceData(),
                                     absorbEtaTerm.getDeviceData(),
-                                    c2Data,
-                                    absorbTauData,
-                                    absorbEtaData);
+                                    nullptr,
+                                    nullptr,
+                                    nullptr);
     }
     else
     {
       cudaSumPressureTermsNonlinear<true, false>
                                    <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                   (p.getDeviceData(),
+                                   (container.getP().getDeviceData(),
                                     nonlinearTerm.getDeviceData(),
                                     absorbTauTerm.getDeviceData(),
                                     absorbEtaTerm.getDeviceData(),
-                                    c2Data,
-                                    absorbTauData,
-                                    absorbEtaData);
+                                    nullptr,
+                                    container.getAbsorbTau().getDeviceData(),
+                                    container.getAbsorbEta().getDeviceData());
     }
   }
   else
@@ -2074,25 +2124,25 @@ void SolverCudaKernels::sumPressureTermsNonlinear(RealMatrix&       p,
     {
       cudaSumPressureTermsNonlinear<false, true>
                                    <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                   (p.getDeviceData(),
+                                   (container.getP().getDeviceData(),
                                     nonlinearTerm.getDeviceData(),
                                     absorbTauTerm.getDeviceData(),
                                     absorbEtaTerm.getDeviceData(),
-                                    c2Data,
-                                    absorbTauData,
-                                    absorbEtaData);
+                                    container.getC2().getDeviceData(),
+                                    nullptr,
+                                    nullptr);
     }
     else
     {
       cudaSumPressureTermsNonlinear<false, false>
                                    <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                   (p.getDeviceData(),
+                                   (container.getP().getDeviceData(),
                                     nonlinearTerm.getDeviceData(),
                                     absorbTauTerm.getDeviceData(),
                                     absorbEtaTerm.getDeviceData(),
-                                    c2Data,
-                                    absorbTauData,
-                                    absorbEtaData);
+                                    container.getC2().getDeviceData(),
+                                    container.getAbsorbTau().getDeviceData(),
+                                    container.getAbsorbEta().getDeviceData());
     }
   }
   // check for errors
@@ -2104,7 +2154,7 @@ void SolverCudaKernels::sumPressureTermsNonlinear(RealMatrix&       p,
 /**
  * Cuda kernel that sums sub-terms to calculate new pressure, linear case.
  *
- * @tparam      isC2Scalar          - is sound speed homogeneous?
+ * @tparam simulationDimension - Dimensionality of the simulation.
  * @tparam      areTauAndEtaScalars - is absorption homogeneous?
  *
  * @param [out] p                   - New value of pressure.
@@ -2115,7 +2165,8 @@ void SolverCudaKernels::sumPressureTermsNonlinear(RealMatrix&       p,
  * @param [in]  absorbTauData       - Absorb tau data in heterogenous case.
  * @param [in]  absorbEtaData       - Absorb eta data in heterogenous case.
  */
-template <bool isC2Scalar, bool areTauAndEtaScalar>
+template<bool isC2Scalar,
+         bool areTauAndEtaScalar>
 __global__ void cudaSumPressureTermsLinear(float*       p,
                                            const float* absorbTauTerm,
                                            const float* absorbEtaTerm,
@@ -2140,68 +2191,69 @@ __global__ void cudaSumPressureTermsLinear(float*       p,
 /**
  * Interface to kernel that sums sub-terms to calculate new pressure, linear case.
  */
-void SolverCudaKernels::sumPressureTermsLinear(RealMatrix&       p,
-                                               const RealMatrix& absorbTauTerm,
+void SolverCudaKernels::sumPressureTermsLinear(const RealMatrix& absorbTauTerm,
                                                const RealMatrix& absorbEtaTerm,
                                                const RealMatrix& densitySum,
-                                               const bool        isC2Scalar,
-                                               const float*      c2Data,
-                                               const bool        areTauAndEtaScalars,
-                                               const float*      absorbTauData,
-                                               const float*      absorbEtaData)
+                                               const MatrixContainer& container)
 {
+  const Parameters& params      = Parameters::getInstance();
+
+  const bool isC2Scalar         = params.getC0ScalarFlag();
+  // in sound speed and alpha coeff are sclars, then both AbsorbTau and absorbEta must be scalar.
+  const bool areTauAndEtaScalars = params.getC0ScalarFlag() && params.getAlphaCoeffScalarFlag();
+
   if (isC2Scalar)
   {
     if (areTauAndEtaScalars)
     {
-      cudaSumPressureTermsLinear<true,true>
-                                <<<getSolverGridSize1D(), getSolverBlockSize1D() >>>
-                                (p.getDeviceData(),
+      cudaSumPressureTermsLinear<true, true>
+                                <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                (container.getP().getDeviceData(),
                                  absorbTauTerm.getDeviceData(),
                                  absorbEtaTerm.getDeviceData(),
                                  densitySum.getDeviceData(),
-                                 c2Data,
-                                 absorbTauData,
-                                 absorbEtaData);
+                                 nullptr,
+                                 nullptr,
+                                 nullptr);
     }
     else
     {
-      cudaSumPressureTermsLinear<true,false>
-                                <<<getSolverGridSize1D(), getSolverBlockSize1D() >>>
-                                (p.getDeviceData(),
+      cudaSumPressureTermsLinear<true, false>
+                                <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                (container.getP().getDeviceData(),
                                  absorbTauTerm.getDeviceData(),
                                  absorbEtaTerm.getDeviceData(),
                                  densitySum.getDeviceData(),
-                                 c2Data,
-                                 absorbTauData,
-                                 absorbEtaData);
+                                 nullptr,
+                                 container.getAbsorbTau().getDeviceData(),
+                                 container.getAbsorbEta().getDeviceData());
     }
-   }
+  }
   else
   {
     if (areTauAndEtaScalars)
     {
-      cudaSumPressureTermsLinear<false,true>
-                                <<<getSolverGridSize1D(), getSolverBlockSize1D() >>>
-                                (p.getDeviceData(),
+      cudaSumPressureTermsLinear<false, true>
+                                <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                (container.getP().getDeviceData(),
                                  absorbTauTerm.getDeviceData(),
                                  absorbEtaTerm.getDeviceData(),
                                  densitySum.getDeviceData(),
-                                 c2Data,
-                                 absorbTauData,
-                                 absorbEtaData);
+                                 container.getC2().getDeviceData(),
+                                 nullptr,
+                                 nullptr);
     }
     else
     {
-      cudaSumPressureTermsLinear<false,false>
-                                <<<getSolverGridSize1D(), getSolverBlockSize1D() >>>
-                                (p.getDeviceData(),
+      cudaSumPressureTermsLinear<false, false>
+                                <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
+                                (container.getP().getDeviceData(),
                                  absorbTauTerm.getDeviceData(),
                                  absorbEtaTerm.getDeviceData(),
                                  densitySum.getDeviceData(),
-                                 c2Data,
-                                 absorbTauData,
-                                 absorbEtaData);
+                                 container.getC2().getDeviceData(),
+                                 container.getAbsorbTau().getDeviceData(),
+                                 container.getAbsorbEta().getDeviceData());
     }
   }
   // check for errors
@@ -2213,6 +2265,7 @@ void SolverCudaKernels::sumPressureTermsLinear(RealMatrix&       p,
 /**
  * Cuda kernel that sums sub-terms for new pressure, non-linear lossless case.
  *
+ * @tparam simulationDimension - Dimensionality of the simulation.
  * @tparam      isC2Scalar   - Is sound speed homogenous?
  * @tparam      isBOnAScalar - Is nonlinearity homogeneous?
  * @tparam      isRho0Scalar - Is density homogeneous?
@@ -2225,7 +2278,10 @@ void SolverCudaKernels::sumPressureTermsLinear(RealMatrix&       p,
  * @param [in]  bOnAData     - B on A data in heterogeneous case.
  * @param [in]  rho0Data     - Acoustic density data in heterogeneous case.
  */
-template<bool isC2Scalar, bool isBOnAScalar, bool isRho0Scalar>
+template<Parameters::SimulationDimension simulationDimension,
+         bool isC2Scalar,
+         bool isBOnAScalar,
+         bool isRho0Scalar>
 __global__ void cudaSumPressureNonlinearLossless(float*       p,
                                                  const float* rhoX,
                                                  const float* rhoY,
@@ -2240,7 +2296,8 @@ __global__ void cudaSumPressureNonlinearLossless(float*       p,
     const float bOnA = (isBOnAScalar) ? cudaDeviceConstants.bOnA : bOnAData[i];
     const float rho0 = (isRho0Scalar) ? cudaDeviceConstants.rho0 : rho0Data[i];
 
-    const float rhoSum = rhoX[i] + rhoY[i] + rhoZ[i];
+    const float rhoSum = (simulationDimension == SD::k3D) ? rhoX[i] + rhoY[i] + rhoZ[i]
+                                                          : rhoX[i] + rhoY[i];
 
     p[i] = c2 * (rhoSum + (bOnA * (rhoSum * rhoSum) / (2.0f * rho0)));
   }
@@ -2250,128 +2307,130 @@ __global__ void cudaSumPressureNonlinearLossless(float*       p,
 /**
  * Interface to kernel that sums sub-terms for new pressure, non-linear lossless case.
  */
-void SolverCudaKernels::sumPressureNonlinearLossless(RealMatrix&       p,
-                                                     const RealMatrix& rhoX,
-                                                     const RealMatrix& rhoY,
-                                                     const RealMatrix& rhoZ,
-                                                     const bool        isC2Scalar,
-                                                     const float*      c2Data,
-                                                     const bool        isBOnAScalar,
-                                                     const float*      bOnAData,
-                                                     const bool        isRho0Scalar,
-                                                     const float*      rho0Data)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::sumPressureNonlinearLossless(const MatrixContainer& container)
 {
-  if (isC2Scalar)
+  const Parameters& params = Parameters::getInstance();
+
+  if (params.getC0ScalarFlag())
   {
-    if (isBOnAScalar)
+    if (params.getBOnAScalarFlag())
     {
-      if (isRho0Scalar)
+      if (params.getRho0ScalarFlag())
       {
-        cudaSumPressureNonlinearLossless<true, true, true>
+        cudaSumPressureNonlinearLossless<simulationDimension, true, true, true>
                                         <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                        (p.getDeviceData(),
-                                         rhoX.getDeviceData(),
-                                         rhoY.getDeviceData(),
-                                         rhoZ.getDeviceData(),
-                                         c2Data,
-                                         bOnAData,
-                                         rho0Data);
+                                        (container.getP().getDeviceData(),
+                                         container.getRhoX().getDeviceData(),
+                                         container.getRhoY().getDeviceData(),
+                                         (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                          : nullptr,
+                                         nullptr,
+                                         nullptr,
+                                         nullptr);
       }
       else
       {
-        cudaSumPressureNonlinearLossless<true, true, false>
+        cudaSumPressureNonlinearLossless<simulationDimension, true, true, false>
                                         <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                        (p.getDeviceData(),
-                                         rhoX.getDeviceData(),
-                                         rhoY.getDeviceData(),
-                                         rhoZ.getDeviceData(),
-                                         c2Data,
-                                         bOnAData,
-                                         rho0Data);
+                                        (container.getP().getDeviceData(),
+                                         container.getRhoX().getDeviceData(),
+                                         container.getRhoY().getDeviceData(),
+                                         (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                          : nullptr,
+                                         nullptr,
+                                         nullptr,
+                                         container.getRho0().getDeviceData());
       }
     }// isBOnAScalar= true
     else
     {
-      if (isRho0Scalar)
+      if (params.getRho0ScalarFlag())
       {
-        cudaSumPressureNonlinearLossless<true, false, true>
+        cudaSumPressureNonlinearLossless<simulationDimension, true, false, true>
                                         <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                        (p.getDeviceData(),
-                                         rhoX.getDeviceData(),
-                                         rhoY.getDeviceData(),
-                                         rhoZ.getDeviceData(),
-                                         c2Data,
-                                         bOnAData,
-                                         rho0Data);
+                                        (container.getP().getDeviceData(),
+                                         container.getRhoX().getDeviceData(),
+                                         container.getRhoY().getDeviceData(),
+                                         (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                          : nullptr,
+                                         nullptr,
+                                         container.getBOnA().getDeviceData(),
+                                         nullptr);
       }
       else
       {
-        cudaSumPressureNonlinearLossless<true, false, false>
+        cudaSumPressureNonlinearLossless<simulationDimension, true, false, false>
                                         <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                        (p.getDeviceData(),
-                                         rhoX.getDeviceData(),
-                                         rhoY.getDeviceData(),
-                                         rhoZ.getDeviceData(),
-                                         c2Data,
-                                         bOnAData,
-                                         rho0Data);
+                                        (container.getP().getDeviceData(),
+                                         container.getRhoX().getDeviceData(),
+                                         container.getRhoY().getDeviceData(),
+                                         (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                          : nullptr,
+                                         nullptr,
+                                         container.getBOnA().getDeviceData(),
+                                         container.getRho0().getDeviceData());
       }
     }
   }
   else
   { // isC2Scalar == false
-   if (isBOnAScalar)
+   if (params.getBOnAScalarFlag())
     {
-      if (isRho0Scalar)
+      if (params.getRho0ScalarFlag())
       {
-        cudaSumPressureNonlinearLossless<false, true, true>
+        cudaSumPressureNonlinearLossless<simulationDimension, false, true, true>
                                         <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                        (p.getDeviceData(),
-                                         rhoX.getDeviceData(),
-                                         rhoY.getDeviceData(),
-                                         rhoZ.getDeviceData(),
-                                         c2Data,
-                                         bOnAData,
-                                         rho0Data);
+                                        (container.getP().getDeviceData(),
+                                         container.getRhoX().getDeviceData(),
+                                         container.getRhoY().getDeviceData(),
+                                         (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                          : nullptr,
+                                         container.getC2().getDeviceData(),
+                                         nullptr,
+                                         nullptr);
       }
       else
       {
-        cudaSumPressureNonlinearLossless<false, true, false>
+        cudaSumPressureNonlinearLossless<simulationDimension, false, true, false>
                                         <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                        (p.getDeviceData(),
-                                         rhoX.getDeviceData(),
-                                         rhoY.getDeviceData(),
-                                         rhoZ.getDeviceData(),
-                                         c2Data,
-                                         bOnAData,
-                                         rho0Data);
+                                        (container.getP().getDeviceData(),
+                                         container.getRhoX().getDeviceData(),
+                                         container.getRhoY().getDeviceData(),
+                                         (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                          : nullptr,
+                                         container.getC2().getDeviceData(),
+                                         nullptr,
+                                         container.getRho0().getDeviceData());
       }
     }// isBOnAScalar= true
     else
     {
-      if (isRho0Scalar)
+      if (params.getRho0ScalarFlag())
       {
-        cudaSumPressureNonlinearLossless<false, false, true>
+        cudaSumPressureNonlinearLossless<simulationDimension, false, false, true>
                                         <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                        (p.getDeviceData(),
-                                         rhoX.getDeviceData(),
-                                         rhoY.getDeviceData(),
-                                         rhoZ.getDeviceData(),
-                                         c2Data,
-                                         bOnAData,
-                                         rho0Data);
+                                        (container.getP().getDeviceData(),
+                                         container.getRhoX().getDeviceData(),
+                                         container.getRhoY().getDeviceData(),
+                                         (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                          : nullptr,
+                                         container.getC2().getDeviceData(),
+                                         container.getBOnA().getDeviceData(),
+                                         nullptr);
       }
       else
       {
-        cudaSumPressureNonlinearLossless<false, false, false>
+        cudaSumPressureNonlinearLossless<simulationDimension, false, false, false>
                                         <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                        (p.getDeviceData(),
-                                         rhoX.getDeviceData(),
-                                         rhoY.getDeviceData(),
-                                         rhoZ.getDeviceData(),
-                                         c2Data,
-                                         bOnAData,
-                                         rho0Data);
+                                        (container.getP().getDeviceData(),
+                                         container.getRhoX().getDeviceData(),
+                                         container.getRhoY().getDeviceData(),
+                                         (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                          : nullptr,
+                                         container.getC2().getDeviceData(),
+                                         container.getBOnA().getDeviceData(),
+                                         container.getRho0().getDeviceData());
       }
     }
   }
@@ -2381,6 +2440,18 @@ void SolverCudaKernels::sumPressureNonlinearLossless(RealMatrix&       p,
 }// end of sumPressureNonlinearLossless
 //----------------------------------------------------------------------------------------------------------------------
 
+/**
+ * Interface to kernel that sums sub-terms for new pressure, non-linear lossless case, 3D case.
+ */
+template
+void SolverCudaKernels::sumPressureNonlinearLossless<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Interface to kernel that sums sub-terms for new pressure, non-linear lossless case, 2D case.
+ */
+template
+void SolverCudaKernels::sumPressureNonlinearLossless<SD::k2D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
 
 /**
  * @brief Cuda kernel that sums sub-terms for new pressure, linear lossless case.
@@ -2393,7 +2464,8 @@ void SolverCudaKernels::sumPressureNonlinearLossless(RealMatrix&       p,
  * @param [in]  rhoZ       - Acoustic density in x direction.
  * @param [in]  c2Data     - Sound speed data in heterogeneous case.
  */
-template <bool isC2Scalar>
+template <Parameters::SimulationDimension simulationDimension,
+          bool isC2Scalar>
 __global__ void cudaSumPressureLinearLossless(float*       p,
                                               const float* rhoX,
                                               const float* rhoY,
@@ -2402,8 +2474,11 @@ __global__ void cudaSumPressureLinearLossless(float*       p,
 {
   for (auto  i = getIndex(); i < cudaDeviceConstants.nElements; i += getStride())
   {
-    const float c2 = (isC2Scalar) ? cudaDeviceConstants.c2 : c2Data[i];
-    p[i] = c2 * (rhoX[i] + rhoY[i] + rhoZ[i]);
+    const float c2         = (isC2Scalar) ? cudaDeviceConstants.c2
+                                          : c2Data[i];
+    const float sumDensity = (simulationDimension == SD::k3D) ? rhoX[i] + rhoY[i] + rhoZ[i]
+                                                              : rhoX[i] + rhoY[i];
+    p[i] = c2 * sumDensity;
   }
 }// end of cudaSumPressureLinearLossless
 //----------------------------------------------------------------------------------------------------------------------
@@ -2411,36 +2486,47 @@ __global__ void cudaSumPressureLinearLossless(float*       p,
 /**
  * Interface to kernel that sums sub-terms for new pressure, linear lossless case.
  */
-void SolverCudaKernels::sumPressureLinearLossless(RealMatrix&       p,
-                                                  const RealMatrix& rhoX,
-                                                  const RealMatrix& rhoY,
-                                                  const RealMatrix& rhoZ,
-                                                  const bool        isC2Scalar,
-                                                  const float*      c2Data)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::sumPressureLinearLossless(const MatrixContainer& container)
 {
-  if (isC2Scalar)
+  if (Parameters::getInstance().getC0ScalarFlag())
   {
-    cudaSumPressureLinearLossless<true>
+    cudaSumPressureLinearLossless<simulationDimension, true>
                                  <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                 (p.getDeviceData(),
-                                  rhoX.getDeviceData(),
-                                  rhoY.getDeviceData(),
-                                  rhoZ.getDeviceData(),
-                                  c2Data);
+                                 (container.getP().getDeviceData(),
+                                  container.getRhoX().getDeviceData(),
+                                  container.getRhoY().getDeviceData(),
+                                  (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                   : nullptr,
+                                  nullptr);
   }
   else
   {
-    cudaSumPressureLinearLossless<false>
+    cudaSumPressureLinearLossless<simulationDimension, false>
                                  <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                                 (p.getDeviceData(),
-                                  rhoX.getDeviceData(),
-                                  rhoY.getDeviceData(),
-                                  rhoZ.getDeviceData(),
-                                  c2Data);
+                                 (container.getP().getDeviceData(),
+                                  container.getRhoX().getDeviceData(),
+                                  container.getRhoY().getDeviceData(),
+                                  (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                                   : nullptr,
+                                  container.getC2().getDeviceData());
   }
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of sumPressureLinearLossless
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Interface to kernel that sums sub-terms for new pressure, linear lossless 3D case.
+ */
+template
+void SolverCudaKernels::sumPressureLinearLossless<SD::k3D>(const MatrixContainer& container);
+//----------------------------------------------------------------------------------------------------------------------
+/**
+ * Interface to kernel that sums sub-terms for new pressure, linear lossless 2D case.
+ */
+template
+void SolverCudaKernels::sumPressureLinearLossless<SD::k2D>(const MatrixContainer& container);
 //----------------------------------------------------------------------------------------------------------------------
 
 

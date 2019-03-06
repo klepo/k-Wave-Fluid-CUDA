@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            04 March     2019, 12:56 (revised)
+ *            06 March     2019, 08:45 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -345,60 +345,29 @@ namespace SolverCudaKernels
   /**
    * @brief Calculate three temporary sums in the new pressure formula, non-linear absorbing case.
    *
+   * @tparam simulationDimension      - Dimensionality of the simulation.
    * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz
    * @param [out] nonlinearTerm       - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
    * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz)
-   * @param [in]  rhoX                - Acoustic density x direction
-   * @param [in]  rhoY                - Acoustic density y direction
-   * @param [in]  rhoZ                - Acoustic density z direction
-   * @param [in]  duxdx               - Gradient of velocity in x direction
-   * @param [in]  duydy               - Gradient of velocity in y direction
-   * @param [in]  duzdz               - Gradient of velocity in z direction
-   * @param [in]  isBonAScalar        - Is nonlinear coefficient B/A homogeneous?
-   * @param [in]  bOnAData            - Heterogeneous value for BonA
-   * @param [in]  isRho0Scalar        - Is density homogeneous?
-   * @param [in]  rho0Data            - Heterogeneous value for rho0
+   * @param [in]  container           - Container with all matrices.
    */
-  void computePressureTermsNonlinear(RealMatrix&       densitySum,
-                                     RealMatrix&       nonlinearTerm,
-                                     RealMatrix&       velocityGradientSum,
-                                     const RealMatrix& rhoX,
-                                     const RealMatrix& rhoY,
-                                     const RealMatrix& rhoZ,
-                                     const RealMatrix& duxdx,
-                                     const RealMatrix& duydy,
-                                     const RealMatrix& duzdz,
-                                     const bool        is_BonA_scalar,
-                                     const float*      bOnAData,
-                                     const bool        is_rho0_scalar,
-                                     const float*      rho0Data);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computePressureTermsNonlinear(RealMatrix&            densitySum,
+                                     RealMatrix&            nonlinearTerm,
+                                     RealMatrix&            velocityGradientSum,
+                                     const MatrixContainer& container);
 
   /**
    * @brief Calculate two temporary sums in the new pressure formula, linear absorbing case.
-   *
+   * @tparam simulationDimension      - Dimensionality of the simulation.
    * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz
    * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz);
-   * @param [in]  rhoX                - Acoustic density in x direction.
-   * @param [in]  rhoY                - Acoustic density in y direction.
-   * @param [in]  rhoZ                - Acoustic density in z direction.
-   * @param [in]  duxdx               - Velocity gradient in x direction.
-   * @param [in]  duydy               - Velocity gradient in x direction.
-   * @param [in]  duzdz               - Velocity gradient in x direction.
-   * @param [in]  isRho0Scalar        - Is density  homogeneous?
-   * @param [in]  rho0Data            - Acoustic density data in heterogeneous case.
+   * @param [in]  container           - Container with all matrices.
    */
-  void computePressureTermsLinear(RealMatrix&       densitySum,
-                                  RealMatrix&       velocityGradientSum,
-                                  const RealMatrix& rhoX,
-                                  const RealMatrix& rhoY,
-                                  const RealMatrix& rhoZ,
-                                  const RealMatrix& duxdx,
-                                  const RealMatrix& duydy,
-                                  const RealMatrix& duzdz,
-                                  const bool         isRho0Scalar,
-                                  const float*       rho0Data);
-
-
+  template<Parameters::SimulationDimension simulationDimension>
+  void computePressureTermsLinear(RealMatrix&            densitySum,
+                                  RealMatrix&            velocityGradientSum,
+                                  const MatrixContainer& container);
 
   /**
    * @brief Compute absorbing term with abosrbNabla1 and absorbNabla2.
@@ -407,6 +376,11 @@ namespace SolverCudaKernels
    * @param [in,out] fftPart2     - fftPart1 = absorbNabla1 .* fftPart2
    * @param [in]     absorbNabla1 - Absorption coefficient 1.
    * @param [in]     absorbNabla2 - Absorption coefficient 2.
+   *
+   * <b>Matlab code:</b> \code
+   *  fftPart1 = absorbNabla1 .* fftPart1 \n
+   *  fftPart2 = absorbNabla2 .* fftPart2 \n
+   * \endcode
    */
   void computeAbsorbtionTerm(CufftComplexMatrix& fftPart1,
                              CufftComplexMatrix& fftPart2,
@@ -415,89 +389,50 @@ namespace SolverCudaKernels
 
   /**
    * @brief Sum sub-terms to calculate new pressure in non-linear case.
+   *        The output is stored into the pressure matrix.
    *
-   * @param [in,out] p                   - New value of pressure
-   * @param [in]     nonlinearTerm       - Nonlinear term
-   * @param [in]     absorbTauTerm       - Absorb tau term from the pressure eq.
-   * @param [in]     absorbEtaTerm       - Absorb eta term from the pressure eq.
-   * @param [in]     isC2Scalar          - is sound speed homogeneous?
-   * @param [in]     c2Data              - sound speed data in heterogeneous case.
-   * @param [in]     areTauAndEtaScalars - is absorption homogeneous?
-   * @param [in]     absorbTauData       - Absorb tau data in heterogenous case.
-   * @param [in]     absorbEtaData       - Absorb eta data in heterogenous case.
+   * @param [in] nonlinearTerm - Nonlinear term
+   * @param [in] absorbTauTerm - Absorb tau term from the pressure eq.
+   * @param [in] absorbEtaTerm - Absorb eta term from the pressure eq.
+   * @param [in] container         - Container with all matrices.
    */
-  void sumPressureTermsNonlinear(RealMatrix&       p,
-                                 const RealMatrix& nonlinearTerm,
-                                 const RealMatrix& absorbTauTerm,
-                                 const RealMatrix& absorbEtaTerm,
-                                 const bool        isC2Scalar,
-                                 const float*      c2Data,
-                                 const bool        areTauAndEtaScalars,
-                                 const float*      absorbTauData,
-                                 const float*      absorbEtaData);
+  void sumPressureTermsNonlinear(const RealMatrix&      nonlinearTerm,
+                                 const RealMatrix&      absorbTauTerm,
+                                 const RealMatrix&      absorbEtaTerm,
+                                 const MatrixContainer& container);
 
   /**
    * @brief Sum sub-terms to calculate new pressure, linear case.
-   * @param [out] p                   - New value of pressure.
-   * @param [in]  absorbTauTerm       - Absorb tau term from the pressure eq.
-   * @param [in]  absorbEtaTerm       - Absorb tau term from the pressure eq.
-   * @param [in]  densitySum          - Sum of acoustic density.
-   * @param [in]  isC2Scalar          - is sound speed homogeneous?
-   * @param [in]  c2Data              - sound speed data in heterogeneous case.
-   * @param [in]  areTauAndEtaScalars - is absorption homogeneous?
-   * @param [in]  absorbTauData       - Absorb tau data in heterogenous case.
-   * @param [in]  absorbEtaData       - Absorb eta data in heterogenous case.
+   *        The output is stored into the pressure matrix.
+   *
+   * @param [in]  absorbTauTerm - Absorb tau term from the pressure eq.
+   * @param [in]  absorbEtaTerm - Absorb tau term from the pressure eq.
+   * @param [in]  densitySum    - Sum of acoustic density.
+   * @param [in] container      - Container with all matrices.
    */
-  void sumPressureTermsLinear(RealMatrix&       p,
-                              const RealMatrix& absorbTauTerm,
-                              const RealMatrix& absorbEtaTerm,
-                              const RealMatrix& densitySum,
-                              const bool        isC2Scalar,
-                              const float*      c2Data,
-                              const bool        areTauAndEtaScalars,
-                              const float*      absorbTauData,
-                              const float*      absorbEtaData);
-
-  /**
-   * @brief Sum sub-terms for new pressure, linear lossless case.
-   * @param [out] p            - New value of pressure
-   * @param [in]  rhoX         - Acoustic density in x direction.
-   * @param [in]  rhoY         - Acoustic density in y direction.
-   * @param [in]  rhoZ         - Acoustic density in z direction.
-   * @param [in]  isC2Scalar   - Is sound speed homogenous?
-   * @param [in]  c2Data       - Sound speed data in heterogeneous case.
-   * @param [in]  isBOnAScalar - Is nonlinearity homogeneous?
-   * @param [in]  bOnAData     - B on A data in heterogeneous case.
-   * @param [in]  isRho0Scalar - Is density homogeneous?
-   * @param [in]  rho0Data     - Acoustic density data in heterogeneous case.
-   */
-  void sumPressureNonlinearLossless(RealMatrix&       p,
-                                    const RealMatrix& rhoX,
-                                    const RealMatrix& rhoY,
-                                    const RealMatrix& rhoZ,
-                                    const bool        isC2Scalar,
-                                    const float*      c2Data,
-                                    const bool        isBOnAScalar,
-                                    const float*      bOnAData,
-                                    const bool        isRho0Scalar,
-                                    const float*      rho0Data);
+  void sumPressureTermsLinear(const RealMatrix&      absorbTauTerm,
+                              const RealMatrix&      absorbEtaTerm,
+                              const RealMatrix&      densitySum,
+                              const MatrixContainer& container);
 
   /**
    * @brief Sum sub-terms for new pressure, linear lossless case.
    *
-   * @param [out] p          - New value of pressure
-   * @param [in]  rhoX       - Acoustic density in x direction.
-   * @param [in]  rhoY       - Acoustic density in x direction.
-   * @param [in]  rhoZ       - Acoustic density in x direction.
-   * @param [in]  isC2Scalar - Is sound speed homogenous?
-   * @param [in]  c2Data     - Sound speed data in heterogeneous case.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
+   *
    */
-  void sumPressureLinearLossless(RealMatrix&       p,
-                                 const RealMatrix& rhoX,
-                                 const RealMatrix& rhoY,
-                                 const RealMatrix& rhoZ,
-                                 const bool        isC2Scalar,
-                                 const float*      c2Data);
+  template<Parameters::SimulationDimension simulationDimension>
+  void sumPressureNonlinearLossless(const MatrixContainer& container);
+
+  /**
+   * @brief Sum sub-terms for new pressure, linear lossless case.
+   *
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
+   */
+  template<Parameters::SimulationDimension simulationDimension>
+  void sumPressureLinearLossless(const MatrixContainer& container);
 
   //--------------------------------------------- unstaggered velocity -----------------------------------------------//
 

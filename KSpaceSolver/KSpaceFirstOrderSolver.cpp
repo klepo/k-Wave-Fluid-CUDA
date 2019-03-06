@@ -13,7 +13,7 @@
  * @version   kspaceFirstOrder3D 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            04 March     2019, 12:55 (revised)
+ *            06 March     2019, 08:46 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -823,11 +823,11 @@ void KSpaceFirstOrderSolver::computeMainLoop()
 
     if (mParameters.getNonLinearFlag())
     {
-      computePressureNonlinear();
+      computePressureNonlinear<simulationDimension>();
     }
     else
     {
-      computePressureLinear();
+      computePressureLinear<simulationDimension>();
     }
 
     //-- calculate initial pressure
@@ -1127,40 +1127,28 @@ void KSpaceFirstOrderSolver::computeDensityLinear()
 
 /**
  * Compute acoustic pressure for non-linear case.
- *
- * <b>Matlab code:</b> \n
- *
- *\verbatim
-    case 'lossless'
-        % calculate p using a nonlinear adiabatic equation of state
-        p = c.^2 .* (rhox + rhoy + rhoz + medium.BonA .* (rhox + rhoy + rhoz).^2 ./ (2 .* rho0));
-
-    case 'absorbing'
-        % calculate p using a nonlinear absorbing equation of state
-        p = c.^2 .* (...
-            (rhox + rhoy + rhoz) ...
-            + absorb_tau .* real(ifftn( absorb_nabla1 .* fftn(rho0 .* (duxdx + duydy + duzdz)) ))...
-            - absorb_eta .* real(ifftn( absorb_nabla2 .* fftn(rhox + rhoy + rhoz) ))...
-            + medium.BonA .*(rhox + rhoy + rhoz).^2 ./ (2 .* rho0) ...
-            );
-
- \endverbatim
  */
+template<Parameters::SimulationDimension simulationDimension>
 void KSpaceFirstOrderSolver::computePressureNonlinear()
 {
   if (mParameters.getAbsorbingFlag())
   { // absorbing case
-    RealMatrix& densitySum         = getTemp1RealND();
-    RealMatrix& nonlinearTerm      = getTemp2RealND();
-    RealMatrix& velocitGradientSum = getTemp3RealND();
+    RealMatrix& densitySum          = getTemp1RealND();
+    RealMatrix& nonlinearTerm       = getTemp2RealND();
+    RealMatrix& velocityGradientSum = getTemp3RealND();
 
     // reusing of the temp variables
-    RealMatrix& absorbTauTerm = velocitGradientSum;
+    RealMatrix& absorbTauTerm = velocityGradientSum;
     RealMatrix& absorbEtaTerm = densitySum;
 
-    computePressureTermsNonlinear(densitySum, nonlinearTerm, velocitGradientSum);
+    //Compute three temporary sums in the new pressure formula, non-linear absorbing case.
+    SolverCudaKernels::computePressureTermsNonlinear<simulationDimension>
+                                                    (densitySum,
+                                                     nonlinearTerm,
+                                                     velocityGradientSum,
+                                                     mMatrixContainer);
 
-    getTempCufftX().computeR2CFftND(velocitGradientSum);
+    getTempCufftX().computeR2CFftND(velocityGradientSum);
     getTempCufftY().computeR2CFftND(densitySum);
 
     SolverCudaKernels::computeAbsorbtionTerm(getTempCufftX(), getTempCufftY(), getAbsorbNabla1(), getAbsorbNabla2());
@@ -1168,36 +1156,19 @@ void KSpaceFirstOrderSolver::computePressureNonlinear()
     getTempCufftX().computeC2RFftND(absorbTauTerm);
     getTempCufftY().computeC2RFftND(absorbEtaTerm);
 
-    sumPressureTermsNonlinear(absorbTauTerm, absorbEtaTerm, nonlinearTerm);
+    SolverCudaKernels::sumPressureTermsNonlinear(nonlinearTerm, absorbTauTerm, absorbEtaTerm, mMatrixContainer);
   }
   else
   {
-    sumPressureTermsNonlinearLossless();
+    SolverCudaKernels::sumPressureNonlinearLossless<simulationDimension>(mMatrixContainer);
   }
 }// end of computePressureNonlinear
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Compute new p for linear case.
- *
- * <b>Matlab code:</b> \n
- *
- *\verbatim
-    case 'lossless'
-
-        % calculate p using a linear adiabatic equation of state
-        p = c.^2 .* (rhox + rhoy + rhoz);
-
-    case 'absorbing'
-
-        % calculate p using a linear absorbing equation of state
-        p = c.^2 .* ( ...
-            (rhox + rhoy + rhoz) ...
-            + absorb_tau .* real(ifftn( absorb_nabla1 .* fftn(rho0 .* (duxdx + duydy + duzdz)) )) ...
-            - absorb_eta .* real(ifftn( absorb_nabla2 .* fftn(rhox + rhoy + rhoz) )) ...
-            );
- \endverbatim
  */
+template<Parameters::SimulationDimension simulationDimension>
 void KSpaceFirstOrderSolver::computePressureLinear()
 {
   if (mParameters.getAbsorbingFlag())
@@ -1208,7 +1179,9 @@ void KSpaceFirstOrderSolver::computePressureLinear()
     RealMatrix& absorbTauTerm        = getTemp2RealND();
     RealMatrix& absorbEtaTerm        = getTemp3RealND();
 
-    computePressureTermsLinear(densitySum, velocityGradientTerm);
+    SolverCudaKernels::computePressureTermsLinear<simulationDimension>(densitySum,
+                                                                       velocityGradientTerm,
+                                                                       mMatrixContainer);
 
     // ifftn ( absorbNabla1 * fftn (rho0 * (duxdx + duydy + duzdz))
     getTempCufftX().computeR2CFftND(velocityGradientTerm);
@@ -1219,12 +1192,11 @@ void KSpaceFirstOrderSolver::computePressureLinear()
     getTempCufftX().computeC2RFftND(absorbTauTerm);
     getTempCufftY().computeC2RFftND(absorbEtaTerm);
 
-    sumPressureTermsLinear(absorbTauTerm, absorbEtaTerm, densitySum);
+    SolverCudaKernels::sumPressureTermsLinear(absorbTauTerm, absorbEtaTerm, densitySum, mMatrixContainer);
   }
   else
   {
-    // lossless case
-    sumPressureTermsLinearLossless();
+    SolverCudaKernels::sumPressureLinearLossless<simulationDimension>(mMatrixContainer);
   }
 }// end of computePressureLinear()
 //----------------------------------------------------------------------------------------------------------------------
@@ -1718,153 +1690,6 @@ void KSpaceFirstOrderSolver::computeC2()
   }// matrix
 }// computeC2
 //----------------------------------------------------------------------------------------------------------------------
-
-/**
- * Compute three temporary sums in the new pressure formula, non-linear absorbing case.
- */
-void KSpaceFirstOrderSolver::computePressureTermsNonlinear(RealMatrix& densitySum,
-                                                             RealMatrix& nonlinearTerm,
-                                                             RealMatrix& velocityGradientSum)
-{
-  const float* bOnA = (mParameters.getBOnAScalarFlag()) ? nullptr : getBOnA().getDeviceData();
-  const float* rho0 = (mParameters.getRho0ScalarFlag()) ? nullptr : getRho0().getDeviceData();
-
-  SolverCudaKernels::computePressureTermsNonlinear(densitySum,
-                                                   nonlinearTerm,
-                                                   velocityGradientSum,
-                                                   getRhoX(),
-                                                   getRhoY(),
-                                                   getRhoZ(),
-                                                   getDuxdx(),
-                                                   getDuydy(),
-                                                   getDuzdz(),
-                                                   mParameters.getBOnAScalarFlag(),
-                                                   bOnA,
-                                                   mParameters.getRho0ScalarFlag(),
-                                                   rho0);
-
-}// end of computePressureTermsNonlinear
-//----------------------------------------------------------------------------------------------------------------------
-
-
-/**
- * Calculate two temporary sums in the new pressure formula, linear absorbing case.
- */
-void KSpaceFirstOrderSolver::computePressureTermsLinear(RealMatrix& densitySum,
-                                                          RealMatrix& velocityGradientSum)
-{
-  const float* rho0 = (mParameters.getRho0ScalarFlag()) ? nullptr : getRho0().getDeviceData();
-
-  SolverCudaKernels::computePressureTermsLinear(densitySum,
-                                                velocityGradientSum,
-                                                getRhoX(),
-                                                getRhoY(),
-                                                getRhoZ(),
-                                                getDuxdx(),
-                                                getDuydy(),
-                                                getDuzdz(),
-                                                mParameters.getRho0ScalarFlag(),
-                                                rho0);
-}// end of computePressurePartsLinear
-//----------------------------------------------------------------------------------------------------------------------
-
-/**
- * Sum sub-terms to calculate new pressure, non-linear case.
- */
-void KSpaceFirstOrderSolver::sumPressureTermsNonlinear(const RealMatrix& absorbTauTerm,
-                                                         const RealMatrix& absorbEtaTerm,
-                                                         const RealMatrix& nonlinearTerm)
-{
-  const bool isC2Scalar         = mParameters.getC0ScalarFlag();
-  // in sound speed and alpha coeff are sclars, then both AbsorbTau and absorbEta must be scalar.
-  const bool areTauAndEtaScalars = mParameters.getC0ScalarFlag() && mParameters.getAlphaCoeffScalarFlag();
-
-  const float* c2        = (isC2Scalar)          ? nullptr : getC2().getDeviceData();
-  const float* absorbTau = (areTauAndEtaScalars) ? nullptr : getAbsorbTau().getDeviceData();
-  const float* absorbEta = (areTauAndEtaScalars) ? nullptr : getAbsorbEta().getDeviceData();
-
-  SolverCudaKernels::sumPressureTermsNonlinear(getP(),
-                                               nonlinearTerm,
-                                               absorbTauTerm,
-                                               absorbEtaTerm,
-                                               isC2Scalar,
-                                               c2,
-                                               areTauAndEtaScalars,
-                                               absorbTau,
-                                               absorbEta);
-}// end of sumPressureTermsNonlinear
-//----------------------------------------------------------------------------------------------------------------------
-
-/**
- * Sum sub-terms to calculate new pressure, linear case.
- */
-void KSpaceFirstOrderSolver::sumPressureTermsLinear(const RealMatrix& absorbTauTerm,
-                                                      const RealMatrix& absorbEtaTerm,
-                                                      const RealMatrix& densitySum)
-{
-  const bool isC2Scalar          = mParameters.getC0ScalarFlag();
-  const bool areTauAndEtaScalars = mParameters.getC0ScalarFlag() && mParameters.getAlphaCoeffScalarFlag();
-
-  const float* c2        = (isC2Scalar)          ? nullptr : getC2().getDeviceData();
-  const float* absorbTau = (areTauAndEtaScalars) ? nullptr : getAbsorbTau().getDeviceData();
-  const float* absorbEta = (areTauAndEtaScalars) ? nullptr : getAbsorbEta().getDeviceData();
-
-  SolverCudaKernels::sumPressureTermsLinear(getP(),
-                                            absorbTauTerm,
-                                            absorbEtaTerm,
-                                            densitySum,
-                                            isC2Scalar,
-                                            c2,
-                                            areTauAndEtaScalars,
-                                            absorbTau,
-                                            absorbEta);
-}// end of sumPressureTermsLinear
-//----------------------------------------------------------------------------------------------------------------------
-
-/**
- * Sum sub-terms for new pressure, non-linear lossless case.
- */
-void KSpaceFirstOrderSolver::sumPressureTermsNonlinearLossless()
-{
-  const bool   isC2Scalar   = mParameters.getC0ScalarFlag();
-  const bool   isBOnAScalar = mParameters.getBOnAScalarFlag();
-  const bool   isRho0Scalar = mParameters.getRho0ScalarFlag();
-
-  const float* c2   = (isC2Scalar)   ? nullptr : getC2().getDeviceData();
-  const float* bOnA = (isBOnAScalar) ? nullptr : getBOnA().getDeviceData();
-  const float* rho0 = (isRho0Scalar) ? nullptr : getRho0().getDeviceData();
-
-  SolverCudaKernels::sumPressureNonlinearLossless(getP(),
-                                                  getRhoX(),
-                                                  getRhoY(),
-                                                  getRhoZ(),
-                                                  isC2Scalar,
-                                                  c2,
-                                                  isBOnAScalar,
-                                                  bOnA,
-                                                  isRho0Scalar,
-                                                  rho0);
-
-}// end of sumPressureTermsNonlinearLossless
-//----------------------------------------------------------------------------------------------------------------------
-
-/**
- * Sum sub-terms for new pressure, linear lossless case.
- */
-void KSpaceFirstOrderSolver::sumPressureTermsLinearLossless()
-{
-  const float* c2  = (mParameters.getC0ScalarFlag()) ? nullptr : getC2().getDeviceData();
-
-  SolverCudaKernels::sumPressureLinearLossless(getP(),
-                                               getRhoX(),
-                                               getRhoY(),
-                                               getRhoZ(),
-                                               mParameters.getC0ScalarFlag(),
-                                               c2);
-
-}// end of sumPressureTermsLinearLossless
-//----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Calculated shifted velocities.
