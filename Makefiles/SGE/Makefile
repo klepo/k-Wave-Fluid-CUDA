@@ -6,9 +6,9 @@
 # * @email       jarosjir@fit.vutbr.cz
 # * @comments    Linux makefile for BUT SGE cluster
 # * 
-# * @tool        kspaceFirstOrder3D 3.6
+# * @tool        kspaceFirstOrder 3.6
 # * @created     02 December  2014, 12:32 
-# * @kastModif   27 February  2019, 14:48
+# * @kastModif   06 March     2019, 13:56
 # *
 # * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
 # *
@@ -151,7 +151,7 @@ endif
 
 ################################# Compile #####################################
 
-TARGET		= kspaceFirstOrder3D-CUDA
+TARGET		= kspaceFirstOrder-CUDA
 
 all:		$(TARGET)	
 

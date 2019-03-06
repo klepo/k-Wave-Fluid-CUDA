@@ -9,10 +9,10 @@
  * @brief     The implementation file of the class saving data based on index senor mask into
  *            the output HDF5 file.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      29 August    2014, 10:10 (created) \n
- *            22 February  2019, 15:46 (revised)
+ *            06 March     2019, 13:19 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *

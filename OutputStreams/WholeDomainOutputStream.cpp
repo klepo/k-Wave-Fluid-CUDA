@@ -9,10 +9,10 @@
  * @brief     The implementation file of the class saving RealMatrix data into the output
  *            HDF5 file, e.g. p_max_all.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      28 August    2014, 11:15 (created) \n
- *            22 February  2019, 15:46 (revised)
+ *            06 March     2019, 13:19 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -101,7 +101,6 @@ void WholeDomainOutputStream::create()
 }//end of create
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Reopen the output stream after restart and reload data
  */
@@ -140,7 +139,6 @@ void WholeDomainOutputStream::reopen()
   }
 }// end of reopen
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Sample all grid points, line them up in the buffer an flush to the disk unless a reduce operator
@@ -204,7 +202,6 @@ void WholeDomainOutputStream::sample()
   }// switch
 }// end of sample
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Apply post-processing on the buffer and flush it to the file.

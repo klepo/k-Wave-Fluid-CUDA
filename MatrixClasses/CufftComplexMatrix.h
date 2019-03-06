@@ -8,10 +8,10 @@
  *
  * @brief     The header file containing the class that implements various FFTs using the cuFFT interface.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      09 August    2011, 13:10 (created) \n
- *            28 February  2019, 09:18 (revised)
+ *            06 March     2019, 13:19 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -261,10 +261,10 @@ class CufftComplexMatrix : public ComplexMatrix
   private:
 
     /**
-    * @brief Throw cuda FFT exception
-    * @param [in] cufftError        - CUDA FFT error code
-    * @param [in] transformTypeName - CUDA transform type name
-    * @throw std::runtime_error with message corresponding to the cufft error code
+    * @brief Throw cuda FFT exception.
+    * @param [in] cufftError        - CUDA FFT error code.
+    * @param [in] transformTypeName - CUDA transform type name.
+    * @throw std::runtime_error with message corresponding to the cufft error code.
     */
     static void throwCufftException(const cufftResult  cufftError,
                                     const std::string& transformTypeName);

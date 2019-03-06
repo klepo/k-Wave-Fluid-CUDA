@@ -8,10 +8,10 @@
  *
  * @brief     The header file with CUDA utility functions. These routines are to be inlined.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      22 March     2016, 15:25 (created) \n
- *            28 February  2019, 15:54 (revised)
+ *            06 March     2019, 13:28 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *

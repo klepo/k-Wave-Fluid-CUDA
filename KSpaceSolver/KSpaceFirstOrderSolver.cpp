@@ -8,12 +8,11 @@
  *
  * @brief     The implementation file containing k-space first order solver in 3D fluid medium. This is the main class
  *            controlling the simulation.
-
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            06 March     2019, 09:30 (revised)
+ *            06 March     2019, 13:11 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -108,7 +107,6 @@ KSpaceFirstOrderSolver::~KSpaceFirstOrderSolver()
   cudaDeviceReset();
 }// end of ~KSpaceFirstOrderSolver
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * The method allocates the matrix container and create all matrices and creates all output streams.
@@ -651,7 +649,7 @@ void KSpaceFirstOrderSolver::initializeCufftPlans()
   // create real to complex plans
   CufftComplexMatrix::createR2CFftPlanND(mParameters.getFullDimensionSizes());
 
- // create complex to real plans
+  // create complex to real plans
   CufftComplexMatrix::createC2RFftPlanND(mParameters.getFullDimensionSizes());
 
   // if necessary, create 1D shift plans.
@@ -1035,7 +1033,6 @@ void KSpaceFirstOrderSolver::saveCheckpointData()
 }// end of saveCheckpointData()
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Compute new values of acoustic velocity in all used dimensions (UxSgx, UySgy, UzSgz).
  */
@@ -1075,10 +1072,8 @@ void KSpaceFirstOrderSolver::computeVelocity()
 }// end of computeVelocity
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Compute new gradient of velocity (duxdx, duydy, duzdz).
- *
  */
 template<Parameters::SimulationDimension simulationDimension>
 void KSpaceFirstOrderSolver::computeVelocityGradient()
@@ -1129,7 +1124,6 @@ void KSpaceFirstOrderSolver::computeDensityLinear()
 
 }// end of computeDensityLinear
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Compute acoustic pressure for non-linear case.
@@ -1390,7 +1384,6 @@ void KSpaceFirstOrderSolver::addInitialPressureSource()
   }
 }// end of addInitialPressureSource
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Generate kappa matrix for lossless medium.
@@ -1678,7 +1671,6 @@ void KSpaceFirstOrderSolver::generateInitialDenisty()
 }// end of generateInitialDenisty
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Compute c^2 on the CPU side.
  */
@@ -1834,7 +1826,6 @@ void KSpaceFirstOrderSolver::checkOutputFile()
  }
 }// end of checkOutputFile
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Check the file type and the version of the checkpoint file.

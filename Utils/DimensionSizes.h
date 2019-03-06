@@ -6,12 +6,12 @@
  *            Brno University of Technology \n
  *            jarosjir@fit.vutbr.cz
  *
- * @brief     The header file containing the structure with 3D dimension sizes.
+ * @brief     The header file containing the structure with 2D - 4D dimension sizes.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      09 August    2011, 12:34 (created) \n
- *            26 February  2019, 16:24 (revised)
+ *            06 March     2019, 13:28 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *

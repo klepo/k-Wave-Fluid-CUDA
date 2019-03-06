@@ -8,10 +8,10 @@
  *
  * @brief     The header file containing all linux specific messages going to the standard output.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      13 July      2016, 12:33 (created) \n
- *            26 February  2019, 16:42 (revised)
+ *            06 March     2019, 13:15 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -68,7 +68,7 @@ OutputMessage kOutFmtVerticalLine
 
 /// Output message
 OutputMessage kOutFmtCodeName
-  = "│                 %s                  │\n";
+  = "│                  %s                   │\n";
 /// Output message
 OutputMessage kOutFmtNumberOfThreads
   = "│ Number of CPU threads:                              %9lu │\n";
@@ -170,7 +170,7 @@ OutputMessage kOutFmtGitHashLeft
 
 ///Output message
 OutputMessage kOutFmtKWaveVersion
-  = "kspaceFirstOrder3D-CUDA v1.3";
+  = "kspaceFirstOrder-CUDA v1.3";
 
 ///Output message
 OutputMessage kOutFmtFftPlans
@@ -280,7 +280,7 @@ OutputMessage kOutFmtBuildNoDataTime
   = "├───────────────────────────────────────────────────────────────┤\n"
     "│                       Build information                       │\n"
     "├───────────────────────────────────────────────────────────────┤\n"
-    "│ Build number:     kspaceFirstOrder3D v3.6                     │\n"
+    "│ Build number:     kspaceFirstOrder v3.6                       │\n"
     "│ Build date:       %*.*s                                 │\n"
     "│ Build time:       %*.*s                                    │\n";
 

@@ -8,10 +8,10 @@
  *
  * @brief     The header file containing metadata about matrices stored in the matrix container.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      02 December  2014, 15:44 (created) \n
- *            21 February  2019, 20:43 (revised)
+ *            06 March     2019, 12:57 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -67,7 +67,7 @@ struct MatrixRecord
   /// Default constructor.
   MatrixRecord();
   /// Destructor.
-  ~MatrixRecord() {};
+  ~MatrixRecord() = default;
 
   /**
    * @brief Copy constructor of MatrixRecord.

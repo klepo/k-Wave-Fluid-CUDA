@@ -8,10 +8,10 @@
  *
  * @brief     The header file containing the parameters of the simulation.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      08 December  2011, 16:34 (created) \n
- *            26 February  2019, 12:26 (revised)
+ *            06 March     2019, 13:28 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *

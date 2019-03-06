@@ -8,10 +8,10 @@
  *
  * @brief     The implementation file containing the matrix container.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      02 December  2014, 16:17 (created) \n
- *            27 February  2019, 10:37 (revised)
+ *            06 March     2019, 12:57 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -374,7 +374,6 @@ void MatrixContainer::init()
     }
 
     mContainer[MI::kTempCufftShift].set(MT::kCufft, shiftDims, kNoLoad, kNoCheckpoint, kCufftShiftTempName);
-
 
     // these three are necessary only for u_non_staggered calculation now
     mContainer[MI::kUxShifted]   .set(MT::kReal, fullDims, kNoLoad, kNoCheckpoint, kUxShiftedName);

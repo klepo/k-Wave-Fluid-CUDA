@@ -8,10 +8,10 @@
  *
  * @brief     The header file containing windows specific error messages.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      13 July      2016, 12:27 (created) \n
- *            22 February  2019, 11:22 (revised)
+ *            06 March     2019, 13:15 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *

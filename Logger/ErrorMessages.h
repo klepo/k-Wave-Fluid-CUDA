@@ -10,10 +10,10 @@
  *            windows version. The specific error messages are in separate files ErrorMessagesLinux.h
  *            and ErrorMessagesWindows.h
  *
- * @version   kspaceFirstOrder3D 3.6
-
+ * @version   kspaceFirstOrder 3.6
+ *
  * @date      09 August    2011, 12:34 (created) \n
- *            28 February  2019, 09:17 (revised)
+ *            06 March     2019, 13:15 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -232,7 +232,6 @@ ErrorMessage kErrFmtCheckpointDimensionsMismatch
 ErrorMessage kErrFmtOutputDimensionsMismatch
   = "Error: The dimensions [%ld, %ld, %ld] of the output file don't match the simulation "
     "dimensions [%ld, %ld, %ld].";
-
 
 
 //------------------------------------------------ Cuda fft errors ---------------------------------------------------//

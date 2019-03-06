@@ -9,10 +9,10 @@
  * @brief     The implementation file containing a class responsible for printing out
  *            info and error messages (stdout, and stderr).
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      19 April     2016, 12:52 (created) \n
- *            22 February  2019, 11:22 (revised)
+ *            06 March     2019, 13:15 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -53,7 +53,6 @@ void Logger::setLevel(const LogLevel actualLogLevel)
   slogLevel = actualLogLevel;
 }// end of setLevel
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Log desired activity.
@@ -103,7 +102,6 @@ void Logger::flush(const LogLevel queryLevel)
   }
 }// end of flush
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Wrap the line based on delimiters and align it with the rest of the logger output.

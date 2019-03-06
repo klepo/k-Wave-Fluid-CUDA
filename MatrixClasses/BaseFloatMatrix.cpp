@@ -9,10 +9,10 @@
  * @brief     The implementation file containing the base class for single precisions floating
  *            point numbers (floats).
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      11 July      2011, 12:13 (created) \n
- *            23 February  2019, 20:40 (revised)
+ *            06 March     2019, 13:19 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *

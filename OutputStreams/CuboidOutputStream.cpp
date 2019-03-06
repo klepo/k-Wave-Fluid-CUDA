@@ -9,10 +9,10 @@
  * @brief     The implementation file of classes responsible for storing output quantities based
  *            on the cuboid sensor mask into the output HDF5 file.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      13 February  2015, 12:51 (created) \n
- *            22 February  2019, 15:46 (revised)
+ *            06 March     2019, 13:19 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -118,8 +118,6 @@ void CuboidOutputStream::create()
 }// end of create
 //----------------------------------------------------------------------------------------------------------------------
 
-
-
 /**
  * Reopen the output stream after restart and reload data.
  */
@@ -190,7 +188,6 @@ void CuboidOutputStream::reopen()
   }
 }// end of reopen
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Sample grid points, line them up in the buffer, if necessary a reduce operator is applied.
@@ -316,7 +313,6 @@ void CuboidOutputStream::postProcess()
 }// end of postProcess
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Checkpoint the stream and close.
  */
@@ -332,7 +328,6 @@ void CuboidOutputStream::checkpoint()
   }
 }// end of checkpoint
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Close stream (apply post-processing if necessary, flush data, close datasets and the group).

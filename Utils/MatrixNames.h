@@ -8,10 +8,10 @@
  *
  * @brief     The header file storing names of all variables/matrices/output streams used in the simulation
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      14 September 2012, 17:28 (created) \n
- *            27 February  2019, 10:29 (revised)
+ *            06 March     2019, 13:28 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *

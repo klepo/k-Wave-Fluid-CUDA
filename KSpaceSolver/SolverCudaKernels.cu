@@ -8,10 +8,10 @@
  *
  * @brief     The implementation file containing the all cuda kernels for the GPU implementation.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            06 March     2019, 09:30 (revised)
+ *            06 March     2019, 13:11 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -1208,7 +1208,6 @@ __global__ void cudaComputeInitialVelocityHomogeneousNonuniform(float*       uxS
   }
 }// end of cudaComputeInitialVelocityHomogeneousNonuniform
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Compute  acoustic velocity for initial pressure problem, homogenous medium, non-uniform grid.
@@ -2993,7 +2992,6 @@ __global__ void cudaComputeVelocityShiftInX(cuFloatComplex*       cufftShiftTemp
   }
 }// end of cudaComputeVelocityShiftInX
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Compute the velocity shift in Fourier space over the X axis.

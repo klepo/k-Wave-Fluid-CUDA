@@ -8,10 +8,10 @@
  *
  * @brief     The header file for all cuda kernels of the GPU implementation used in the 3D solver.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            06 March     2019, 08:45 (revised)
+ *            06 March     2019, 13:11 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -45,8 +45,8 @@
 
 /**
  * @namespace   SolverCudaKernels
- * @brief       List of cuda kernels used k-space first order 3D solver.
- * @details     List of cuda kernels used k-space first order 3D solver.
+ * @brief       List of cuda kernels used k-space first order 2D/3D solver.
+ * @details     List of cuda kernels used k-space first order 2D/3D solver.
  *
  */
 namespace SolverCudaKernels
@@ -106,20 +106,20 @@ namespace SolverCudaKernels
   template<Parameters::SimulationDimension simulationDimension>
   void computeVelocityHomogeneousUniform(const MatrixContainer& container);
 
-    /**
-     * @brief  Compute acoustic velocity for homogenous medium and nonuniform grid.
-     * @tparam simulationDimension - Dimensionality of the simulation.
-     * @param [in] container       - Container with all matrices.
-     *
-     * <b> Matlab code: </b> \code
-     *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx)  ...
-     *                  - dt .* rho0_sgx_inv .* dxudxnSgx.* real(ifftX))
-     *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) ...
-     *                  - dt .* rho0_sgy_inv .* dyudynSgy.* real(ifftY)
-     *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz)
-     *                  - dt .* rho0_sgz_inv .* dzudznSgz.* real(ifftZ)
-     *\endcode
-     */
+  /**
+   * @brief  Compute acoustic velocity for homogenous medium and nonuniform grid.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
+   *
+   * <b> Matlab code: </b> \code
+   *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx)  ...
+   *                  - dt .* rho0_sgx_inv .* dxudxnSgx.* real(ifftX))
+   *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) ...
+   *                  - dt .* rho0_sgy_inv .* dyudynSgy.* real(ifftY)
+   *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz)
+   *                  - dt .* rho0_sgz_inv .* dzudznSgz.* real(ifftZ)
+   *\endcode
+   */
   template<Parameters::SimulationDimension simulationDimension>
   void computeVelocityHomogeneousNonuniform(const MatrixContainer& container);
 
