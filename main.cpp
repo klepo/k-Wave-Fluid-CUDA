@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      11 July      2012, 10:57 (created) \n
- *            06 March     2019, 13:28 (revised)
+ *            07 March     2019, 21:00 (revised)
  *
  *
  * @mainpage kspaceFirstOrder-CUDA
@@ -202,7 +202,7 @@
 │                      Optional parameters                      │
 ├───────────────────────────────┬───────────────────────────────┤
 │ -t <num_threads>              │ Number of CPU threads         │
-│                               │  (default =  4)               │
+│                               │  (default =  1)               │
 │ -g <device_number>            │ GPU device to run on          │
 │                               │   (default = the first free)  │
 │ -r <interval_in_%>            │ Progress print interval       │

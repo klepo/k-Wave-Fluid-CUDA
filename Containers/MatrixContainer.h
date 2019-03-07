@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      02 December  2014, 16:17 (created) \n
- *            06 March     2019, 12:57 (revised)
+ *            07 March     2019, 21:00 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -180,11 +180,11 @@ class MatrixContainer
       kDzudznSgz,
 
 
-      /// velocity shift for non-staggered velocity in x.
+      /// Velocity shift for non-staggered velocity in x.
       kUxShifted,
-      /// velocity shift for non-staggered velocity in y.
+      /// Velocity shift for non-staggered velocity in y.
       kUyShifted,
-      /// velocity shift for non-staggered velocity in z.
+      /// Velocity shift for non-staggered velocity in z.
       kUzShifted,
 
       /// Negative shift for non-staggered velocity in x.
@@ -516,7 +516,7 @@ class MatrixContainer
     };
     /**
      * @brief  Get negative Fourier shift in z.
-     * @return shift matrix.
+     * @return Shift matrix.
      */
     ComplexMatrix& getDdzKShiftNeg() const
     {

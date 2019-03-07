@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      11 July      2011, 14:02 (created) \n
- *            06 March     2019, 13:19 (revised)
+ *            07 March     2019, 21:29 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -106,7 +106,7 @@ class ComplexMatrix : public BaseFloatMatrix
       return reinterpret_cast<FloatComplex*> (mHostData);
     };
 
-    /*
+    /**
      * @brief Get cuda device raw complex data out of the class (for direct kernel access) .
      * @return Mutable matrix data
      */

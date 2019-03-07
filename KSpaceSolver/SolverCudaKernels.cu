@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            07 March     2019, 09:06 (revised)
+ *            07 March     2019, 21:04 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -37,8 +37,9 @@
 #include <Logger/Logger.h>
 #include <Utils/CudaUtils.cuh>
 
-
+/// Shortcut for matrix id datatype.
 using MI = MatrixContainer::MatrixIdx;
+/// Shortcut for Simulation dimension datatype.
 using SD = Parameters::SimulationDimension;
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -176,9 +177,9 @@ int SolverCudaKernels::getCudaCodeVersion()
  * @param [in, out] uxSgx      - Acoustic velocity on staggered grid in x direction.
  * @param [in, out] uySgy      - Acoustic velocity on staggered grid in y direction.
  * @param [in, out] uzSgz      - Acoustic velocity on staggered grid in z direction.
- * @param [in]      ifftX      - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
- * @param [in]      ifftY      - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
- * @param [in]      ifftZ      - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
+ * @param [in]      ifftX      - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k));
+ * @param [in]      ifftY      - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k));
+ * @param [in]      ifftZ      - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k));
  * @param [in]      dtRho0Sgx  - Acoustic density on staggered grid in x direction.
  * @param [in]      dtRho0Sgy  - Acoustic density on staggered grid in y direction.
  * @param [in]      dtRho0Sgz  - Acoustic density on staggered grid in z direction.
@@ -187,9 +188,9 @@ int SolverCudaKernels::getCudaCodeVersion()
  * @param [in]      pmlZ       - Perfectly matched layer in z direction.
  *
  *<b> Matlab code: </b> \code
- *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* real(ifftX)
- *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) - dt .* rho0_sgy_inv .* real(ifftY)
- *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz) - dt .* rho0_sgz_inv .* real(ifftZ)
+ *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* real(ifftX);
+ *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) - dt .* rho0_sgy_inv .* real(ifftY);
+ *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz) - dt .* rho0_sgz_inv .* real(ifftZ);
  * \endcode
  */
 template<Parameters::SimulationDimension simulationDimension>
@@ -280,17 +281,17 @@ void SolverCudaKernels::computeVelocityHeterogeneous<SD::k2D>(const MatrixContai
  * @param [in, out] uxSgx      - Acoustic velocity on staggered grid in x direction.
  * @param [in, out] uySgy      - Acoustic velocity on staggered grid in y direction.
  * @param [in, out] uzSgz      - Acoustic velocity on staggered grid in z direction.
- * @param [in]      ifftX      - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
- * @param [in]      ifftY      - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
- * @param [in]      ifftZ      - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
+ * @param [in]      ifftX      - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k));
+ * @param [in]      ifftY      - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k));
+ * @param [in]      ifftZ      - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k));
  * @param [in]      pmlX       - Perfectly matched layer in x direction.
  * @param [in]      pmlY       - Perfectly matched layer in y direction.
  * @param [in]      pmlZ       - Perfectly matched layer in z direction.
  *
  * <b> Matlab code: </b> \code
- *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* real(ifftX)
- *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) - dt .* rho0_sgy_inv .* real(ifftY)
- *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz) - dt .* rho0_sgz_inv .* real(ifftZ)
+ *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* real(ifftX);
+ *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) - dt .* rho0_sgy_inv .* real(ifftY);
+ *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz) - dt .* rho0_sgz_inv .* real(ifftZ);
  *\endcode
  */
 template<Parameters::SimulationDimension simulationDimension>
@@ -375,9 +376,9 @@ void SolverCudaKernels::computeVelocityHomogeneousUniform<SD::k2D>(const MatrixC
  * @param [in,out] uxSgx       - Acoustic velocity on staggered grid in x direction.
  * @param [in,out] uySgy       - Acoustic velocity on staggered grid in y direction.
  * @param [in,out] uzSgz       - Acoustic velocity on staggered grid in z direction.
- * @param [in]     ifftX       - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
- * @param [in]     ifftY       - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
- * @param [in]     ifftZ       - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
+ * @param [in]     ifftX       - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k));
+ * @param [in]     ifftY       - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k));
+ * @param [in]     ifftZ       - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k));
  * @param [in]     dxudxnSgx   - Non uniform grid shift in x direction.
  * @param [in]     dyudynSgy   - Non uniform grid shift in y direction.
  * @param [in]     dzudznSgz   - Non uniform grid shift in z direction.
@@ -387,11 +388,11 @@ void SolverCudaKernels::computeVelocityHomogeneousUniform<SD::k2D>(const MatrixC
  *
  * <b> Matlab code: </b> \code
  *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx)  ...
- *                  - dt .* rho0_sgx_inv .* dxudxnSgx.* real(ifftX))
+ *                  - dt .* rho0_sgx_inv .* dxudxnSgx.* real(ifftX));
  *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) ...
- *                  - dt .* rho0_sgy_inv .* dyudynSgy.* real(ifftY)
+ *                  - dt .* rho0_sgy_inv .* dyudynSgy.* real(ifftY);
  *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz)
- *                  - dt .* rho0_sgz_inv .* dzudznSgz.* real(ifftZ)
+ *                  - dt .* rho0_sgz_inv .* dzudznSgz.* real(ifftZ);
  *\endcode
  */
 template<Parameters::SimulationDimension simulationDimension>
@@ -932,6 +933,7 @@ void SolverCudaKernels::addPressureScaledSource<SD::k2D>(const MatrixContainer& 
 /**
  * Cuda kernel to add initial pressure initialPerssureSource into p, rhoX, rhoY, rhoZ.
  * c is a matrix. Heterogeneity is treated by a template
+ *
  * @tparam      simulationDimension   - Dimensionality of the simulation.
  * @tparam      isC2Scalar            - Is sound speed homogenous?
  * @param [out] p                     - New pressure field.
@@ -947,6 +949,7 @@ void SolverCudaKernels::addPressureScaledSource<SD::k2D>(const MatrixContainer& 
  *  rhox = source.p0 ./ (3 .* c.^2);
  *  rhoy = source.p0 ./ (3 .* c.^2);
  *  rhoz = source.p0 ./ (3 .* c.^2);
+ * \endcode
  */
 template<Parameters::SimulationDimension simulationDimension,
          bool isC2Scalar>
@@ -1040,9 +1043,9 @@ void SolverCudaKernels::addInitialPressureSource<SD::k2D>(const MatrixContainer&
  * @tparam simulationDimension - Dimensionality of the simulation.
  *
  * <b> Matlab code: </b> \code
- *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx).
- *  uy_sgy = dt ./ rho0_sgy .* ifft(uy_sgy).
- *  uz_sgz = dt ./ rho0_sgz .* ifft(uz_sgz).
+ *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx);
+ *  uy_sgy = dt ./ rho0_sgy .* ifft(uy_sgy);
+ *  uz_sgz = dt ./ rho0_sgz .* ifft(uz_sgz);
  * \endcode
  */
 template <Parameters::SimulationDimension simulationDimension,
@@ -1167,9 +1170,9 @@ void SolverCudaKernels::computeInitialVelocityHomogeneousUniform<SD::k2D>(const 
  * @param [in] dzudznSgz       - Non uniform grid shift in z direction.
  *
  * <b> Matlab code: </b> \code
- *  ux_sgx = dt ./ rho0_sgx .* dxudxn_sgx .* ifft(ux_sgx)
- *  uy_sgy = dt ./ rho0_sgy .* dyudxn_sgy .* ifft(uy_sgy)
- *  uz_sgz = dt ./ rho0_sgz .* dzudzn_sgz .* ifft(uz_sgz)
+ *  ux_sgx = dt ./ rho0_sgx .* dxudxn_sgx .* ifft(ux_sgx);
+ *  uy_sgy = dt ./ rho0_sgy .* dyudxn_sgy .* ifft(uy_sgy);
+ *  uz_sgz = dt ./ rho0_sgz .* dzudzn_sgz .* ifft(uz_sgz);
  * \endcode
  */
 template<Parameters::SimulationDimension simulationDimension>
@@ -1250,9 +1253,9 @@ void SolverCudaKernels::computeInitialVelocityHomogeneousNonuniform<SD::k2D>(con
  * @param [in]      ddzKShiftPos - Positive spectral shift in z direction.
  *
  * <b> Matlab code: </b> \code
- *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
- *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
- *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
+ *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k);
+ *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k);
+ *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k);
  * \endcode
  */
   template<Parameters::SimulationDimension simulationDimension>
@@ -1720,9 +1723,9 @@ void SolverCudaKernels::computeDensityLinear<SD::k2D>(const MatrixContainer& con
  * @tparam [in]  isBonAScalar       - Is B on A homogeneous?
  * @tparam [in]  isRho0Scalar       - Is rho0 a scalar value (homogeneous)?
  *
- * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz
- * @param [out] nonlinearTerm       - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
- * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz)
+ * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz;
+ * @param [out] nonlinearTerm       - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz);
+ * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz);
  * @param [in]  rhoX                - Acoustic density x direction
  * @param [in]  rhoY                - Acoustic density y direction
  * @param [in]  rhoZ                - Acoustic density z direction
@@ -1889,7 +1892,7 @@ void SolverCudaKernels::computePressureTermsNonlinear<SD::k2D>(RealMatrix&      
  * @tparam simulationDimension      - Dimensionality of the simulation.
  * @tparam      isRho0Scalar        - Is density  homogeneous?
  *
- * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz
+ * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz;
  * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz);
  * @param [in]  rhoX                - Acoustic density in x direction.
  * @param [in]  rhoY                - Acoustic density in y direction.
@@ -1990,14 +1993,14 @@ void SolverCudaKernels::computePressureTermsLinear<SD::k2D>(RealMatrix&         
 /**
  * Cuda kernel which computes absorbing term with abosrbNabla1 and  absorbNabla2.
  *
- * @param [in,out] fftPart1     - Nabla1 part:
- * @param [in,out] fftPart2     - Nabla2 part:
- * @param [in]     absorbNabla1 - Absorption coefficient 1
- * @param [in]     absorbNabla2 - Absorption coefficient 2
+ * @param [in,out] fftPart1     - Nabla1 part.
+ * @param [in,out] fftPart2     - Nabla2 part.
+ * @param [in]     absorbNabla1 - Absorption coefficient 1.
+ * @param [in]     absorbNabla2 - Absorption coefficient 2.
  *
  * <b>Matlab code:</b> \code
- *  fftPart1 = absorbNabla1 .* fftPart1 \n
- *  fftPart2 = absorbNabla2 .* fftPart2 \n
+ *  fftPart1 = absorbNabla1 .* fftPart1;
+ *  fftPart2 = absorbNabla2 .* fftPart2;
  * \endcode
  */
 __global__ void cudaComputeAbsorbtionTerm(cuFloatComplex* fftPart1,
@@ -2042,10 +2045,19 @@ void SolverCudaKernels::computeAbsorbtionTerm(CufftComplexMatrix& fftPart1,
  * @param [in,out] p                   - New value of pressure
  * @param [in]     nonlinearTerm       - Nonlinear term
  * @param [in]     absorbTauTerm       - Absorb tau term from the pressure eq.
- * @param [in]     absorbEtaTerm       - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
+ * @param [in]     absorbEtaTerm       - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz);
  * @param [in]     c2Data              - sound speed data in heterogeneous case.
  * @param [in]     absorbTauData       - Absorb tau data in heterogenous case.
  * @param [in]     absorbEtaData       - Absorb eta data in heterogenous case.
+ *
+ * <b>Matlab code:</b> \code
+ *  % calculate p using a nonlinear absorbing equation of state
+ *  p = c0.^2 .* (...
+ *                nonlinearTerm ...
+ *                + absorb_tau .* absorbTauTerm...
+ *                - absorb_eta .* absorbEtaTerm...
+ *                );
+ * \endcode
  */
 template<bool isC2Scalar,
          bool areTauAndEtaScalar>
@@ -2146,7 +2158,7 @@ void SolverCudaKernels::sumPressureTermsNonlinear(const RealMatrix&      nonline
 /**
  * Cuda kernel that sums sub-terms to calculate new pressure, linear case.
  *
- * @tparam simulationDimension - Dimensionality of the simulation.
+ * @tparam      simulationDimension - Dimensionality of the simulation.
  * @tparam      areTauAndEtaScalars - is absorption homogeneous?
  *
  * @param [out] p                   - New value of pressure.
@@ -2156,6 +2168,15 @@ void SolverCudaKernels::sumPressureTermsNonlinear(const RealMatrix&      nonline
  * @param [in]  c2Data              - sound speed data in heterogeneous case.
  * @param [in]  absorbTauData       - Absorb tau data in heterogenous case.
  * @param [in]  absorbEtaData       - Absorb eta data in heterogenous case.
+ *
+ * <b>Matlab code:</b> \code
+ *  % calculate p using a nonlinear absorbing equation of state
+ *  p = c0.^2 .* (...
+ *                densitySum
+ *                + absorb_tau .* absorbTauTerm...
+ *                - absorb_eta .* absorbEtaTerm...
+ *                );
+ * \endcode
  */
 template<bool isC2Scalar,
          bool areTauAndEtaScalar>
@@ -2258,17 +2279,22 @@ void SolverCudaKernels::sumPressureTermsLinear(const RealMatrix& absorbTauTerm,
  * Cuda kernel that sums sub-terms for new pressure, non-linear lossless case.
  *
  * @tparam simulationDimension - Dimensionality of the simulation.
- * @tparam      isC2Scalar   - Is sound speed homogenous?
- * @tparam      isBOnAScalar - Is nonlinearity homogeneous?
- * @tparam      isRho0Scalar - Is density homogeneous?
+ * @tparam      isC2Scalar     - Is sound speed homogenous?
+ * @tparam      isBOnAScalar   - Is nonlinearity homogeneous?
+ * @tparam      isRho0Scalar   - Is density homogeneous?
  *
- * @param [out] p            - New value of pressure
- * @param [in]  rhoX         - Acoustic density in x direction.
- * @param [in]  rhoY         - Acoustic density in y direction.
- * @param [in]  rhoZ         - Acoustic density in z direction.
- * @param [in]  c2Data       - Sound speed data in heterogeneous case.
- * @param [in]  bOnAData     - B on A data in heterogeneous case.
- * @param [in]  rho0Data     - Acoustic density data in heterogeneous case.
+ * @param [out] p              - New value of pressure
+ * @param [in]  rhoX           - Acoustic density in x direction.
+ * @param [in]  rhoY           - Acoustic density in y direction.
+ * @param [in]  rhoZ           - Acoustic density in z direction.
+ * @param [in]  c2Data         - Sound speed data in heterogeneous case.
+ * @param [in]  bOnAData       - B on A data in heterogeneous case.
+ * @param [in]  rho0Data       - Acoustic density data in heterogeneous case.
+ *
+ * <b>Matlab code:</b> \code
+ *  % calculate p using a nonlinear adiabatic equation of state
+ *  p = c0.^2 .* (rhox + rhoy + rhoz + medium.BonA .* (rhox + rhoy + rhoz).^2 ./ (2 .* rho0));
+ * \endcode
  */
 template<Parameters::SimulationDimension simulationDimension,
          bool isC2Scalar,
@@ -2455,6 +2481,11 @@ void SolverCudaKernels::sumPressureNonlinearLossless<SD::k2D>(const MatrixContai
  * @param [in]  rhoY       - Acoustic density in x direction.
  * @param [in]  rhoZ       - Acoustic density in x direction.
  * @param [in]  c2Data     - Sound speed data in heterogeneous case.
+ *
+ * <b>Matlab code:</b> \code
+ *  % calculate p using a linear adiabatic equation of state
+ *  p = c0.^2 .* (rhox + rhoy + rhoz);
+ * \endcode
  */
 template <Parameters::SimulationDimension simulationDimension,
           bool isC2Scalar>
@@ -2907,8 +2938,6 @@ __global__ void cudaTrasnposeReal3DMatrixXZ(float*       outputMatrix,
 }// end of cudaTrasnposeReal3DMatrixXZ
 //----------------------------------------------------------------------------------------------------------------------
 
-
-
 /**
  * Transpose a real 3D matrix in the X-Z direction. It is done out-of-place.
  */
@@ -2999,8 +3028,6 @@ void SolverCudaKernels::computeVelocityShiftInX(CufftComplexMatrix&  cufftShiftT
  }// end of computeVelocityShiftInX
 //----------------------------------------------------------------------------------------------------------------------
 
-
-
 /**
  * Cuda kernel to compute velocity shift in Y. The matrix is XY transposed.
  *
@@ -3036,7 +3063,6 @@ void SolverCudaKernels::computeVelocityShiftInY(CufftComplexMatrix&  cufftShiftT
   cudaCheckErrors(cudaGetLastError());
 }// end of ComputeVelocityShiftInY
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Cuda kernel to compute velocity shift in Z. The matrix is XZ transposed.

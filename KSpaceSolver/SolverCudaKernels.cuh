@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            07 March     2019, 09:05 (revised)
+ *            07 March     2019, 21:00 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -113,11 +113,11 @@ namespace SolverCudaKernels
    *
    * <b> Matlab code: </b> \code
    *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx)  ...
-   *                  - dt .* rho0_sgx_inv .* dxudxnSgx.* real(ifftX))
+   *                  - dt .* rho0_sgx_inv .* dxudxnSgx.* real(ifftX));
    *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) ...
-   *                  - dt .* rho0_sgy_inv .* dyudynSgy.* real(ifftY)
+   *                  - dt .* rho0_sgy_inv .* dyudynSgy.* real(ifftY);
    *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz)
-   *                  - dt .* rho0_sgz_inv .* dzudznSgz.* real(ifftZ)
+   *                  - dt .* rho0_sgz_inv .* dzudznSgz.* real(ifftZ);
    *\endcode
    */
   template<Parameters::SimulationDimension simulationDimension>
@@ -137,7 +137,6 @@ namespace SolverCudaKernels
    * @param [in, out] velocity       - Velocity matrix to update.
    * @param [in] velocitySourceInput - Source input to add.
    * @param [in] velocitySourceIndex - Source geometry index matrix.
-   * @param [in] timeIndex           - Actual time step.
    */
   void addVelocitySource(RealMatrix&        velocity,
                          const RealMatrix&  velocitySourceInput,
@@ -203,6 +202,7 @@ namespace SolverCudaKernels
    *  rhox = source.p0 ./ (3 .* c.^2);
    *  rhoy = source.p0 ./ (3 .* c.^2);
    *  rhoz = source.p0 ./ (3 .* c.^2);
+   * \endcode
    */
   template<Parameters::SimulationDimension simulationDimension>
   void addInitialPressureSource(const MatrixContainer& container);
@@ -213,9 +213,9 @@ namespace SolverCudaKernels
    * @param [in] container       - Container with all matrices.
    *
    * <b> Matlab code: </b> \code
-   *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx).
-   *  uy_sgy = dt ./ rho0_sgy .* ifft(uy_sgy).
-   *  uz_sgz = dt ./ rho0_sgz .* ifft(uz_sgz).
+   *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx);
+   *  uy_sgy = dt ./ rho0_sgy .* ifft(uy_sgy);
+   *  uz_sgz = dt ./ rho0_sgz .* ifft(uz_sgz);
      * \endcode
    */
   template<Parameters::SimulationDimension simulationDimension>
@@ -227,9 +227,9 @@ namespace SolverCudaKernels
    * @param [in] container       - Container with all matrices.
    *
    * <b> Matlab code: </b> \code
-   *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx).
-   *  uy_sgy = dt ./ rho0_sgy .* ifft(uy_sgy).
-   *  uz_sgz = dt ./ rho0_sgz .* ifft(uz_sgz).
+   *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx);
+   *  uy_sgy = dt ./ rho0_sgy .* ifft(uy_sgy);
+   *  uz_sgz = dt ./ rho0_sgz .* ifft(uz_sgz);
    * \endcode
    */
   template<Parameters::SimulationDimension simulationDimension>
@@ -241,9 +241,9 @@ namespace SolverCudaKernels
    * @param [in] container       - Container with all matrices.
    *
    * <b> Matlab code: </b> \code
-   *  ux_sgx = dt ./ rho0_sgx .* dxudxn_sgx .* ifft(ux_sgx)
-   *  uy_sgy = dt ./ rho0_sgy .* dyudxn_sgy .* ifft(uy_sgy)
-   *  uz_sgz = dt ./ rho0_sgz .* dzudzn_sgz .* ifft(uz_sgz)
+   *  ux_sgx = dt ./ rho0_sgx .* dxudxn_sgx .* ifft(ux_sgx);
+   *  uy_sgy = dt ./ rho0_sgy .* dyudxn_sgy .* ifft(uy_sgy);
+   *  uz_sgz = dt ./ rho0_sgz .* dzudzn_sgz .* ifft(uz_sgz);
    * \endcode
    */
   template<Parameters::SimulationDimension simulationDimension>
@@ -257,9 +257,9 @@ namespace SolverCudaKernels
    * @param [in] container       - Container with all matrices.
    *
    * <b> Matlab code: </b> \code
-   *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
-   *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
-   *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k).
+   *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k);
+   *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k);
+   *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k);
    * \endcode
    *
    */
@@ -326,9 +326,9 @@ namespace SolverCudaKernels
    * @brief Calculate three temporary sums in the new pressure formula, non-linear absorbing case.
    *
    * @tparam simulationDimension      - Dimensionality of the simulation.
-   * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz
-   * @param [out] nonlinearTerm       - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
-   * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz)
+   * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz;
+   * @param [out] nonlinearTerm       - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz);
+   * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz);
    * @param [in]  container           - Container with all matrices.
    */
   template<Parameters::SimulationDimension simulationDimension>
@@ -340,7 +340,7 @@ namespace SolverCudaKernels
   /**
    * @brief Calculate two temporary sums in the new pressure formula, linear absorbing case.
    * @tparam simulationDimension      - Dimensionality of the simulation.
-   * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz
+   * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz;
    * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz);
    * @param [in]  container           - Container with all matrices.
    */
@@ -352,14 +352,14 @@ namespace SolverCudaKernels
   /**
    * @brief Compute absorbing term with abosrbNabla1 and absorbNabla2.
    *
-   * @param [in,out] fftPart1     - fftPart1 = absorbNabla1 .* fftPart1
-   * @param [in,out] fftPart2     - fftPart1 = absorbNabla1 .* fftPart2
+   * @param [in,out] fftPart1     - fftPart1 = absorbNabla1 .* fftPart1;
+   * @param [in,out] fftPart2     - fftPart1 = absorbNabla1 .* fftPart2;
    * @param [in]     absorbNabla1 - Absorption coefficient 1.
    * @param [in]     absorbNabla2 - Absorption coefficient 2.
    *
    * <b>Matlab code:</b> \code
-   *  fftPart1 = absorbNabla1 .* fftPart1 \n
-   *  fftPart2 = absorbNabla2 .* fftPart2 \n
+   *  fftPart1 = absorbNabla1 .* fftPart1;
+   *  fftPart2 = absorbNabla2 .* fftPart2;
    * \endcode
    */
   void computeAbsorbtionTerm(CufftComplexMatrix& fftPart1,
@@ -374,7 +374,16 @@ namespace SolverCudaKernels
    * @param [in] nonlinearTerm - Nonlinear term
    * @param [in] absorbTauTerm - Absorb tau term from the pressure eq.
    * @param [in] absorbEtaTerm - Absorb eta term from the pressure eq.
-   * @param [in] container         - Container with all matrices.
+   * @param [in] container     - Container with all matrices.
+   *
+   * <b>Matlab code:</b> \code
+   *  % calculate p using a nonlinear absorbing equation of state
+   *  p = c0.^2 .* (...
+   *                nonlinearTerm ...
+   *                + absorb_tau .* absorbTauTerm...
+   *                - absorb_eta .* absorbEtaTerm...
+   *                );
+   * \endcode
    */
   void sumPressureTermsNonlinear(const RealMatrix&      nonlinearTerm,
                                  const RealMatrix&      absorbTauTerm,
@@ -389,6 +398,15 @@ namespace SolverCudaKernels
    * @param [in]  absorbEtaTerm - Absorb tau term from the pressure eq.
    * @param [in]  densitySum    - Sum of acoustic density.
    * @param [in] container      - Container with all matrices.
+   *
+   * <b>Matlab code:</b> \code
+   *  % calculate p using a nonlinear absorbing equation of state
+   *  p = c0.^2 .* (...
+   *                densitySum
+   *                + absorb_tau .* absorbTauTerm...
+   *                - absorb_eta .* absorbEtaTerm...
+   *                );
+   * \endcode
    */
   void sumPressureTermsLinear(const RealMatrix&      absorbTauTerm,
                               const RealMatrix&      absorbEtaTerm,
@@ -401,6 +419,11 @@ namespace SolverCudaKernels
    * @tparam simulationDimension - Dimensionality of the simulation.
    * @param [in] container       - Container with all matrices.
    *
+   * <b>Matlab code:</b> \code
+   *  % calculate p using a nonlinear adiabatic equation of state
+   *  p = c0.^2 .* (rhox + rhoy + rhoz + medium.BonA .* (rhox + rhoy + rhoz).^2 ./ (2 .* rho0));
+   * \endcode
+   *
    */
   template<Parameters::SimulationDimension simulationDimension>
   void sumPressureNonlinearLossless(const MatrixContainer& container);
@@ -410,6 +433,12 @@ namespace SolverCudaKernels
    *
    * @tparam simulationDimension - Dimensionality of the simulation.
    * @param [in] container       - Container with all matrices.
+   *
+   * <b>Matlab code:</b> \code
+   *  % calculate p using a linear adiabatic equation of state
+   *  p = c0.^2 .* (rhox + rhoy + rhoz);
+   * \endcode
+   *
    */
   template<Parameters::SimulationDimension simulationDimension>
   void sumPressureLinearLossless(const MatrixContainer& container);
