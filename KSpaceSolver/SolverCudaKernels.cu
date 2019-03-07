@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            06 March     2019, 13:11 (revised)
+ *            07 March     2019, 09:06 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -507,14 +507,10 @@ __global__ void cudaAddTransducerSource(float*        uxSgx,
 /**
  * Interface to kernel adding transducer data to uxSgx.
  */
-void SolverCudaKernels::addTransducerSource(RealMatrix&        uxSgx,
-                                            const IndexMatrix& velocitySourceIndex,
-                                            const RealMatrix&  transducerSourceInput,
-                                            const IndexMatrix& delayMask,
-                                            const size_t       timeIndex)
+void SolverCudaKernels::addTransducerSource(const MatrixContainer& container)
 {
   // cuda only supports 32bits anyway
-  const int sourceSize = static_cast<int>(velocitySourceIndex.size());
+  const int sourceSize = static_cast<int>(container.getVelocitySourceIndex().size());
 
   // Grid size is calculated based on the source size
   const int gridSize  = (sourceSize < (getSolverGridSize1D() *  getSolverBlockSize1D()))
@@ -522,11 +518,11 @@ void SolverCudaKernels::addTransducerSource(RealMatrix&        uxSgx,
                         : getSolverGridSize1D();
 
   cudaAddTransducerSource<<<gridSize, getSolverBlockSize1D()>>>
-                         (uxSgx.getDeviceData(),
-                          velocitySourceIndex.getDeviceData(),
-                          transducerSourceInput.getDeviceData(),
-                          delayMask.getDeviceData(),
-                          timeIndex);
+                         (container.getUxSgx().getDeviceData(),
+                          container.getVelocitySourceIndex().getDeviceData(),
+                          container.getTransducerSourceInput().getDeviceData(),
+                          container.getDelayMask().getDeviceData(),
+                          Parameters::getInstance().getTimeIndex());
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of AddTransducerSource
@@ -576,8 +572,7 @@ __global__ void cudaAddVelocitySource(float*        velocity,
  */
 void SolverCudaKernels::addVelocitySource(RealMatrix&        velocity,
                                           const RealMatrix&  velocitySourceInput,
-                                          const IndexMatrix& velocitySourceIndex,
-                                          const size_t       timeIndex)
+                                          const IndexMatrix& velocitySourceIndex)
 {
   const int sourceSize = static_cast<int>(velocitySourceIndex.size());
 
@@ -593,7 +588,7 @@ void SolverCudaKernels::addVelocitySource(RealMatrix&        velocity,
                        (velocity.getDeviceData(),
                         velocitySourceInput.getDeviceData(),
                         velocitySourceIndex.getDeviceData(),
-                        timeIndex);
+                        Parameters::getInstance().getTimeIndex());
 
   // check for errors
   cudaCheckErrors(cudaGetLastError());
@@ -777,8 +772,7 @@ __global__ void cudaInsertSourceIntoScalingMatrix(float*        scaledSource,
 void SolverCudaKernels::insertSourceIntoScalingMatrix(RealMatrix&        scaledSource,
                                                       const RealMatrix&  sourceInput,
                                                       const IndexMatrix& sourceIndex,
-                                                      const size_t       manyFlag,
-                                                      const size_t       timeIndex)
+                                                      const size_t       manyFlag)
 {
   const int sourceSize = static_cast<int>(sourceIndex.size());
   // Grid size is calculated based on the source size
@@ -795,7 +789,7 @@ void SolverCudaKernels::insertSourceIntoScalingMatrix(RealMatrix&        scaledS
                                       sourceInput.getDeviceData(),
                                       sourceIndex.getDeviceData(),
                                       sourceIndex.size(),
-                                      timeIndex);
+                                      Parameters::getInstance().getTimeIndex());
   }
   else
   {
@@ -805,7 +799,7 @@ void SolverCudaKernels::insertSourceIntoScalingMatrix(RealMatrix&        scaledS
                                       sourceInput.getDeviceData(),
                                       sourceIndex.getDeviceData(),
                                       sourceIndex.size(),
-                                      timeIndex);
+                                      Parameters::getInstance().getTimeIndex());
   }
 
   // check for errors
@@ -901,40 +895,38 @@ __global__ void cudaAddPressureScaledSource(float*       rhoX,
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Add scaled pressure source to acoustic density, 3D case
+ * Add scaled pressure source to acoustic density.
  */
-void SolverCudaKernels::addPressureScaledSource(RealMatrix&        rhoX,
-                                                RealMatrix&        rhoY,
-                                                RealMatrix&        rhoZ,
-                                                const RealMatrix&  scaledSource)
+template<Parameters::SimulationDimension simulationDimension>
+void SolverCudaKernels::addPressureScaledSource(const MatrixContainer& container,
+                                                const RealMatrix&      scaledSource)
 {
-  cudaAddPressureScaledSource<SD::k3D>
+  cudaAddPressureScaledSource<simulationDimension>
                              <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                             (rhoX.getDeviceData(),
-                              rhoY.getDeviceData(),
-                              rhoZ.getDeviceData(),
+                             (container.getRhoX().getDeviceData(),
+                              container.getRhoY().getDeviceData(),
+                              (simulationDimension == SD::k3D) ? container.getRhoZ().getDeviceData()
+                                                               : nullptr,
                               scaledSource.getDeviceData());
+
   // check for errors
   cudaCheckErrors(cudaGetLastError());
 }// end of AddPressureScaledSource
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
+ * Add scaled pressure source to acoustic density, 3D case.
+ */
+template
+void SolverCudaKernels::addPressureScaledSource<SD::k3D>(const MatrixContainer& container,
+                                                         const RealMatrix&      scaledSource);
+//----------------------------------------------------------------------------------------------------------------------
+/**
  * Add scaled pressure source to acoustic density, 2D case.
  */
-void SolverCudaKernels::addPressureScaledSource(RealMatrix&        rhoX,
-                                                RealMatrix&        rhoY,
-                                                const RealMatrix&  scaledSource)
-{
-  cudaAddPressureScaledSource<SD::k2D>
-                             <<<getSolverGridSize1D(), getSolverBlockSize1D()>>>
-                             (rhoX.getDeviceData(),
-                              rhoY.getDeviceData(),
-                              nullptr,
-                              scaledSource.getDeviceData());
-  // check for errors
-  cudaCheckErrors(cudaGetLastError());
-}// end of AddPressureScaledSource
+template
+void SolverCudaKernels::addPressureScaledSource<SD::k2D>(const MatrixContainer& container,
+                                                         const RealMatrix&      scaledSource);
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -1843,7 +1835,7 @@ void SolverCudaKernels::computePressureTermsNonlinear(RealMatrix&            den
                                         container.getDuxdx().getDeviceData(),
                                         container.getDuydy().getDeviceData(),
                                         (simulationDimension == SD::k3D) ? container.getDuzdz().getDeviceData()
-                                                                       : nullptr,
+                                                                         : nullptr,
                                         container.getBOnA().getDeviceData(),
                                         nullptr);
     }

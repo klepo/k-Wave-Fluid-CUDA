@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            06 March     2019, 13:11 (revised)
+ *            07 March     2019, 09:05 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -127,18 +127,9 @@ namespace SolverCudaKernels
 
   /**
    * @brief Add transducer data source to velocity x component.
-   *
-   * @param [in, out] uxSgx                 - Here we add the signal.
-   * @param [in]      velocitySourceIndex   - Where to add the signal (source geometry).
-   * @param [in]      transducerSourceInput - Transducer signal.
-   * @param [in]      delayMask             - Delay mask to push the signal in the domain (incremented per invocation).
-   * @param [in]      timeIndex             - Actual time step.
+   * @param [in] container       - Container with all matrices.
    */
-  void addTransducerSource(RealMatrix&        uxSgx,
-                           const IndexMatrix& velocitySourceIndex,
-                           const RealMatrix&  transducerSourceInput,
-                           const IndexMatrix& delayMask,
-                           const size_t       timeIndex);
+  void addTransducerSource(const MatrixContainer& container);
 
   /**
    * @brief Add in velocity source terms.
@@ -150,8 +141,7 @@ namespace SolverCudaKernels
    */
   void addVelocitySource(RealMatrix&        velocity,
                          const RealMatrix&  velocitySourceInput,
-                         const IndexMatrix& velocitySourceIndex,
-                         const size_t       timeIndex);
+                         const IndexMatrix& velocitySourceIndex);
 
   /**
    * @brief Add in pressure source term.
@@ -170,13 +160,11 @@ namespace SolverCudaKernels
    * @param [in]  sourceInput  - Source input signal.
    * @param [in]  sourceIndex  - Source geometry.
    * @param [in]  manyFlag     - Number of time series in the source input.
-   * @param [in]  timeIndex    - Actual time step.
    */
   void insertSourceIntoScalingMatrix(RealMatrix&        scaledSource,
                                      const RealMatrix&  sourceInput,
                                      const IndexMatrix& sourceIndex,
-                                     const size_t       manyFlag,
-                                     const size_t       timeIndex);
+                                     const size_t       manyFlag);
 
   /**
    * @brief Calculate source gradient.
@@ -196,28 +184,18 @@ namespace SolverCudaKernels
 
   /**
    * @brief Add scaled pressure source to acoustic density, 3D case.
-   * @param [in, out] rhoX         - Acoustic density.
-   * @param [in, out] rhoY         - Acoustic density.
-   * @param [in, out] rhoZ         - Acoustic density.
-   * @param [in]      scaledSource - Scaled source.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
+   * @param [in] scaledSource    - Scaled source.
    */
-  void addPressureScaledSource(RealMatrix&        rhoX,
-                               RealMatrix&        rhoY,
-                               RealMatrix&        rhoZ,
-                               const RealMatrix&  scalingSource);
-  /**
-   * @brief Add scaled pressure source to acoustic density, 2D case.
-   * @param [in, out] rhoX         - Acoustic density.
-   * @param [in, out] rhoY         - Acoustic density.
-   * @param [in]      scaledSource - Scaled source.
-   */
-  void addPressureScaledSource(RealMatrix&        rhoX,
-                               RealMatrix&        rhoY,
-                               const RealMatrix&  scalingSource);
+  template<Parameters::SimulationDimension simulationDimension>
+  void addPressureScaledSource(const MatrixContainer& container,
+                               const RealMatrix&      scalingSource);
 
   /**
    * @brief Add initial pressure source to the pressure matrix and update density matrices.
    * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
    * <b>Matlab code:</b> \code
    *  % add the initial pressure to rho as a mass source (3D code)
@@ -231,8 +209,8 @@ namespace SolverCudaKernels
 
   /**
    * @brief Compute velocity for the initial pressure problem, heterogeneous medium, uniform grid.
-   *
    * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
    * <b> Matlab code: </b> \code
    *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx).
@@ -246,6 +224,7 @@ namespace SolverCudaKernels
   /**
    * @brief Compute acoustic velocity for initial pressure problem, homogeneous medium, uniform grid.
    * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
    * <b> Matlab code: </b> \code
    *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx).
@@ -259,6 +238,7 @@ namespace SolverCudaKernels
   /**
    * @brief Compute acoustic velocity for initial pressure problem, homogenous medium, non-uniform grid.
    * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
    * <b> Matlab code: </b> \code
    *  ux_sgx = dt ./ rho0_sgx .* dxudxn_sgx .* ifft(ux_sgx)
