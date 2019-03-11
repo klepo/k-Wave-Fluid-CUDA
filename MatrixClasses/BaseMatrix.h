@@ -9,10 +9,10 @@
  * @brief     The header file of the common ancestor of all matrix classes.
  *            A pure abstract class.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      11 July      2012, 11:34 (created) \n
- *            22 February  2019, 12:36 (revised)
+ *            06 March     2019, 13:19 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -53,7 +53,7 @@ class BaseMatrix
     /// Copy constructor is not allowed.
     BaseMatrix(const BaseMatrix&) = delete;
     /// Destructor
-    virtual ~BaseMatrix() {};
+    virtual ~BaseMatrix() = default;
 
     /// Operator= is not allowed.
     BaseMatrix& operator=(const BaseMatrix&) = delete;

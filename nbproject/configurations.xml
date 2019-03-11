@@ -22,8 +22,8 @@
     <logicalFolder name="KSpaceSolver"
                    displayName="KSpaceSolver"
                    projectFiles="true">
-      <itemPath>KSpaceSolver/KSpaceFirstOrder3DSolver.cpp</itemPath>
-      <itemPath>KSpaceSolver/KSpaceFirstOrder3DSolver.h</itemPath>
+      <itemPath>KSpaceSolver/KSpaceFirstOrderSolver.cpp</itemPath>
+      <itemPath>KSpaceSolver/KSpaceFirstOrderSolver.h</itemPath>
       <itemPath>KSpaceSolver/SolverCudaKernels.cu</itemPath>
       <itemPath>KSpaceSolver/SolverCudaKernels.cuh</itemPath>
     </logicalFolder>
@@ -183,12 +183,12 @@
       </item>
       <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.cpp"
             ex="false"
             tool="1"
             flavor2="0">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.h"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -376,12 +376,12 @@
       </item>
       <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.cpp"
             ex="false"
             tool="1"
             flavor2="8">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.h"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -568,12 +568,12 @@
       </item>
       <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.cpp"
             ex="false"
             tool="1"
             flavor2="8">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.h"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -759,12 +759,12 @@
       </item>
       <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.cpp"
             ex="false"
             tool="1"
             flavor2="8">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.h"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -952,12 +952,12 @@
       </item>
       <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.cpp"
             ex="false"
             tool="1"
             flavor2="8">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.h"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -1143,12 +1143,12 @@
       </item>
       <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.cpp"
             ex="false"
             tool="1"
             flavor2="8">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.h"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -1334,12 +1334,12 @@
       </item>
       <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.cpp"
             ex="false"
             tool="1"
             flavor2="8">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.h"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -1524,12 +1524,12 @@
       </item>
       <item path="Hdf5/Hdf5FileHeader.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.cpp"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.cpp"
             ex="false"
             tool="1"
             flavor2="8">
       </item>
-      <item path="KSpaceSolver/KSpaceFirstOrder3DSolver.h"
+      <item path="KSpaceSolver/KSpaceFirstOrderSolver.h"
             ex="false"
             tool="3"
             flavor2="0">

@@ -8,10 +8,10 @@
  *
  * @brief     The header file for class with time measurement.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      15 August    2012, 09:35 (created) \n
- *            22 February  2019, 15:54 (revised)
+ *            06 March     2019, 13:28 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *

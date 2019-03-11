@@ -6,9 +6,9 @@
 # * @email       jarosjir@fit.vutbr.cz
 # * @comments    Linux makefile for Release version on Ubuntu 18.04
 # * 
-# * @tool        kspaceFirstOrder3D 3.6
+# * @tool        kspaceFirstOrder 3.6
 # * @created     02 December  2014, 12:32 
-# * @kastModif   22 February  2019, 16:39
+# * @kastModif   06 March     2019, 13:55
 # *
 # * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
 # *
@@ -101,9 +101,7 @@ CXXFLAGS = -Xcompiler="-Wall -O3 -fopenmp -ffast-math -fassociative-math" \
 	   -D__KWAVE_GIT_HASH__=\"$(KWAVE_GIT_HASH)\"   \
    	   --device-c
 	   
-CUDA_ARCH = --generate-code arch=compute_20,code=sm_20	\
-	    --generate-code arch=compute_20,code=sm_21	\
-	    --generate-code arch=compute_30,code=sm_30	\
+CUDA_ARCH = --generate-code arch=compute_30,code=sm_30	\
 	    --generate-code arch=compute_32,code=sm_32	\
 	    --generate-code arch=compute_35,code=sm_35	\
 	    --generate-code arch=compute_37,code=sm_37	\
@@ -112,6 +110,10 @@ CUDA_ARCH = --generate-code arch=compute_20,code=sm_20	\
 	    --generate-code arch=compute_53,code=sm_53	\
 	    --generate-code arch=compute_60,code=sm_60	\
 	    --generate-code arch=compute_61,code=sm_61	\
+	    --generate-code arch=compute_62,code=sm_62  \
+	    --generate-code arch=compute_70,code=sm_70  \
+	    --generate-code arch=compute_72,code=sm_72  \
+	    --generate-code arch=compute_75,code=sm_75  \
 
 
   
@@ -145,7 +147,7 @@ endif
 
 ################################# Compile #####################################
 
-TARGET		= kspaceFirstOrder3D-CUDA
+TARGET		= kspaceFirstOrder-CUDA
 
 all:		$(TARGET)	
 
@@ -155,7 +157,7 @@ $(TARGET):	Containers/MatrixContainer.o             \
 		Containers/OutputStreamContainer.o       \
 		Hdf5/Hdf5File.o                          \
 		Hdf5/Hdf5FileHeader.o                    \
-		KSpaceSolver/KSpaceFirstOrder3DSolver.o  \
+		KSpaceSolver/KSpaceFirstOrderSolver.o    \
 		KSpaceSolver/SolverCudaKernels.o         \
 		Logger/Logger.o	                         \
 		MatrixClasses/BaseFloatMatrix.o          \
@@ -182,7 +184,7 @@ $(TARGET):	Containers/MatrixContainer.o             \
 		Containers/OutputStreamContainer.o       \
 		Hdf5/Hdf5File.o                          \
 		Hdf5/Hdf5FileHeader.o                    \
-		KSpaceSolver/KSpaceFirstOrder3DSolver.o  \
+		KSpaceSolver/KSpaceFirstOrderSolver.o    \
 		KSpaceSolver/SolverCudaKernels.o         \
 		Logger/Logger.o	                         \
 		MatrixClasses/BaseFloatMatrix.o          \

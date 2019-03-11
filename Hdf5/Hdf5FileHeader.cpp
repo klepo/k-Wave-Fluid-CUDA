@@ -8,10 +8,10 @@
  *
  * @brief     The implementation of the class responsible for working with file headers.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      20 July      2017, 14:54 (created) \n
- *            22 February  2019, 10:59 (revised)
+ *            06 March     2019, 12:57 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -281,7 +281,6 @@ void Hdf5FileHeader::writeHeaderToCheckpointFile(Hdf5File& checkpointFile)
 }// end of writeHeaderToCheckpointFile
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Set actual date and time.
  */
@@ -320,7 +319,6 @@ Hdf5FileHeader::FileVersion Hdf5FileHeader::getFileVersion()
 }// end of getFileVersion
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Get File type.
  */
@@ -347,7 +345,6 @@ void Hdf5FileHeader::setFileType(const Hdf5FileHeader::FileType fileType)
 }// end of setFileType
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Set Host name.
  */
@@ -373,7 +370,6 @@ void Hdf5FileHeader::setHostName()
 }// end of setHostName
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Set memory consumption.
  */
@@ -386,7 +382,6 @@ void Hdf5FileHeader::setMemoryConsumption(const size_t totalMemory)
 
 }// end of setMemoryConsumption
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Set execution times in file header.

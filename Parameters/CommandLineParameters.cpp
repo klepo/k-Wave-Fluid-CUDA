@@ -8,10 +8,10 @@
  *
  * @brief     The implementation file containing the command line parameters.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      29 August    2012, 11:25 (created) \n
- *            22 February  2019, 15:54 (revised)
+ *            06 March     2019, 13:19 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -721,7 +721,6 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
   }
 }// end of parseCommandLine
 //----------------------------------------------------------------------------------------------------------------------
-
 
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------ Protected methods -------------------------------------------------//

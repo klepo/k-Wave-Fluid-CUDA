@@ -8,10 +8,10 @@
  *
  * @brief     The header file containing the matrix container.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      02 December  2014, 16:17 (created) \n
- *            23 February  2019, 11:39 (revised)
+ *            07 March     2019, 21:00 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -52,6 +52,8 @@
  * @brief   Class implementing the matrix container.
  * @details This container is responsible to maintain all the matrices in the code except the output
  *          streams. The matrices are allocated, freed, loaded stored and check-pointed from here.
+ *          The container data is set mutable in order to forbid adding and modifying MatrixRecords but allowing to
+ *          modify matrix data by kernels.
  */
 class MatrixContainer
 {
@@ -59,7 +61,7 @@ class MatrixContainer
 
     /**
      * @enum  MatrixIdx
-     * @brief Matrix identifers of all matrices in the k-space code.
+     * @brief Matrix identifers of all matrices in the 2D and 3D fluid k-space code.
      */
     enum class MatrixIdx
     {
@@ -178,11 +180,11 @@ class MatrixContainer
       kDzudznSgz,
 
 
-      /// velocity shift for non-staggered velocity in x.
+      /// Velocity shift for non-staggered velocity in x.
       kUxShifted,
-      /// velocity shift for non-staggered velocity in y.
+      /// Velocity shift for non-staggered velocity in y.
       kUyShifted,
-      /// velocity shift for non-staggered velocity in z.
+      /// Velocity shift for non-staggered velocity in z.
       kUzShifted,
 
       /// Negative shift for non-staggered velocity in x.
@@ -192,12 +194,12 @@ class MatrixContainer
       /// Negative shift for non-staggered velocity in z.
       kZShiftNegR,
 
-      /// 3D temporary matrix.
-      kTemp1Real3D,
-      /// 3D temporary matrix.
-      kTemp2Real3D,
-      /// 3D temporary matrix.
-      kTemp3Real3D,
+      /// 2D or 3D temporary matrix.
+      kTemp1RealND,
+      /// 2D or 3D temporary matrix.
+      kTemp2RealND,
+      /// 2D or 3D temporary matrix.
+      kTemp3RealND,
       /// Temporary matrix for 1D fft in x.
       kTempCufftX,
       /// Temporary matrix for 1D fft in y.
@@ -239,7 +241,9 @@ class MatrixContainer
 
     /**
      * @brief  operator[]
-     * @param  [in]  matrixIdx - Matrix identifier
+     *         The const version is not offered since the container is mutable and one can modify records in the
+     *         container.
+     * @param  [in]  matrixIdx - Matrix identifier.
      * @return Matrix record.
      */
     inline MatrixRecord& operator[](const MatrixIdx matrixIdx)
@@ -250,14 +254,26 @@ class MatrixContainer
     /**
      * @brief      Get the matrix with a specific type from the container.
      * @details    This template routine returns the reference to the matrix re-casted to the specific class type.
-     * @param [in] matrixIdx - Matrix identifier,
-     * @return     Reference to the Matrix,
+     * @param [in] matrixIdx - Matrix identifier.
+     * @return     Reference to the Matrix
      */
     template <typename T>
     inline T& getMatrix(const MatrixIdx matrixIdx)
     {
-      return static_cast<T&> (*(mContainer[matrixIdx].matrixPtr));
-    };
+      return static_cast<T&>(*(mContainer[matrixIdx].matrixPtr));
+    }
+
+    /**
+     * @brief      Get the matrix with a specific type from the const container. The matrix is mutable
+     * @details    This template routine returns the reference to the matrix re-casted to the specific class type.
+     * @param [in] matrixIdx - Matrix identifier.
+     * @return     Reference to the Matrix, which can be mutated.
+     */
+    template <typename T>
+    inline T& getMatrix(const MatrixIdx matrixIdx) const
+    {
+      return static_cast<T&>(*(mContainer[matrixIdx].matrixPtr));
+    }
 
     /// Populate the container based on the simulation type.
     void init();
@@ -284,14 +300,562 @@ class MatrixContainer
     /// Copy all matrices from device to host (GPU -> CPU).
     void copyMatricesFromDevice();
 
+    //----------------------------------------------- Get matrices ---------------------------------------------------//
+
+    /**
+     * @brief  Get the kappa matrix from the container.
+     * @return Kappa matrix.
+     */
+    RealMatrix& getKappa() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kKappa);
+    };
+    /**
+     * @brief  Get the sourceKappa matrix from the container.
+     * @return Source kappa matrix.
+     */
+    RealMatrix& getSourceKappa() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kSourceKappa);
+    };
+
+    /**
+     * @brief  Get the c^2 matrix from the container.
+     * @return c^2 matrix.
+     */
+    RealMatrix& getC2() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kC2);
+    };
+
+    /**
+     * @brief  Get pressure matrix.
+     * @return Pressure matrix.
+     */
+    RealMatrix& getP() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kP);
+    };
+
+    //--------------------------------------------- Velocity matrices ------------------------------------------------//
+    /**
+     * @brief  Get velocity matrix on staggered grid in x direction.
+     * @return Velocity matrix on staggered grid.
+     */
+    RealMatrix& getUxSgx() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kUxSgx);
+    };
+        /**
+     * @brief  Get velocity matrix on staggered grid in y direction.
+     * @return Velocity matrix on staggered grid.
+     */
+    RealMatrix& getUySgy() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kUySgy);
+    };
+    /**
+     * @brief  Get velocity matrix on staggered grid in z direction.
+     * @return Velocity matrix on staggered grid.
+     */
+    RealMatrix& getUzSgz() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kUzSgz);
+    };
+
+    /**
+     * @brief  Get velocity shifted on normal grid in x direction.
+     * @return Unstaggeted velocity matrix.
+     */
+    RealMatrix& getUxShifted() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kUxShifted);
+    };
+    /**
+     * @brief  Get velocity shifted on normal grid in y direction.
+     * @return Unstaggered velocity matrix.
+     */
+    RealMatrix& getUyShifted() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kUyShifted);
+    };
+    /**
+     * @brief  Get velocity shifted on normal grid in z direction.
+     * @return Unstaggered velocity matrix.
+     */
+    RealMatrix& getUzShifted() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kUzShifted);
+    };
+
+    //----------------------------------------- Velocity gradient matrices -------------------------------------------//
+    /**
+     * @brief  Get velocity gradient on in x direction.
+     * @return Velocity gradient matrix.
+     */
+    RealMatrix& getDuxdx() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kDuxdx);
+    };
+    /**
+     * @brief  Get velocity gradient on in y direction.
+     * @return Velocity gradient matrix.
+     */
+    RealMatrix& getDuydy() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kDuydy);
+    };
+    /**
+     * @brief  Get velocity gradient on in z direction.
+     * @return Velocity gradient matrix.
+     */
+    RealMatrix& getDuzdz() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kDuzdz);
+    };
+
+    //---------------------------------------------- Density matrices ------------------------------------------------//
+    /**
+     * @brief  Get dt * rho0Sgx matrix (time step size * ambient velocity on staggered grid in x direction).
+     * @return Density matrix
+     */
+    RealMatrix& getDtRho0Sgx() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kDtRho0Sgx);
+    };
+    /**
+     * @brief  Get dt * rho0Sgy matrix (time step size * ambient velocity on staggered grid in y direction).
+     * @return Density matrix
+     */
+    RealMatrix& getDtRho0Sgy() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kDtRho0Sgy);
+    };
+    /**
+     * @brief  Get dt * rho0Sgz matrix (time step size * ambient velocity on staggered grid in z direction).
+     * @return Density matrix
+     */
+    RealMatrix& getDtRho0Sgz() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kDtRho0Sgz);
+    };
+
+    /**
+     * @brief  Get density matrix in x direction.
+     * @return Density matrix.
+     */
+    RealMatrix& getRhoX() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kRhoX);
+    };
+    /**
+     * @brief  Get density matrix in y direction.
+     * @return Density matrix.
+     */
+    RealMatrix& getRhoY() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kRhoY);
+    };
+    /**
+     * @brief  Get density matrix in z direction.
+     * @return Density matrix.
+     */
+    RealMatrix& getRhoZ() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kRhoZ);
+    };
+    /**
+     * @brief  Get ambient density matrix.
+     * @return Density matrix.
+     */
+    RealMatrix& getRho0() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kRho0);
+    };
+
+    //----------------------------------------------- Shift matrices -------------------------------------------------//
+    /**
+     * @brief  Get positive Fourier shift in x.
+     * @return Shift matrix.
+     */
+    ComplexMatrix& getDdxKShiftPos() const
+    {
+      return getMatrix<ComplexMatrix>(MatrixIdx::kDdxKShiftPosR);
+    };
+    /**
+     * @brief  Get positive Fourier shift in y.
+     * @return Shift matrix.
+     */
+    ComplexMatrix& getDdyKShiftPos() const
+    {
+      return getMatrix<ComplexMatrix>(MatrixIdx::kDdyKShiftPos);
+    };
+    /**
+     * @brief  Get positive Fourier shift in z.
+     * @return Shift matrix.
+     */
+    ComplexMatrix& getDdzKShiftPos() const
+    {
+      return getMatrix<ComplexMatrix>(MatrixIdx::kDdzKShiftPos);
+    };
+    /**
+     * @brief  Get negative Fourier shift in x.
+     * @return Shift matrix.
+     */
+    ComplexMatrix& getDdxKShiftNeg() const
+    {
+      return getMatrix<ComplexMatrix>(MatrixIdx::kDdxKShiftNegR);
+    };
+    /**
+     * @brief  Get negative Fourier shift in y.
+     * @return Shift matrix.
+     */
+    ComplexMatrix& getDdyKShiftNeg() const
+    {
+      return getMatrix<ComplexMatrix>(MatrixIdx::kDdyKShiftNeg);
+    };
+    /**
+     * @brief  Get negative Fourier shift in z.
+     * @return Shift matrix.
+     */
+    ComplexMatrix& getDdzKShiftNeg() const
+    {
+      return getMatrix<ComplexMatrix>(MatrixIdx::kDdzKShiftNeg);
+    };
+
+    /**
+     * @brief  Get negative shift for non-staggered velocity in x.
+     * @return Shift matrix.
+     */
+    ComplexMatrix& getXShiftNegR() const
+    {
+      return getMatrix<ComplexMatrix>(MatrixIdx::kXShiftNegR);
+    };
+    /**
+     * @brief  Get negative shift for non-staggered velocity in y.
+     * @return Shift matrix.
+     */
+    ComplexMatrix& getYShiftNegR() const
+    {
+      return getMatrix<ComplexMatrix>(MatrixIdx::kYShiftNegR);
+    };
+    /**
+     * @brief  Get negative shift for non-staggered velocity in z.
+     * @return Shift matrix.
+     */
+    ComplexMatrix& getZShiftNegR() const
+    {
+      return getMatrix<ComplexMatrix>(MatrixIdx::kZShiftNegR);
+    };
+
+    //------------------------------------------------ PML matrices --------------------------------------------------//
+    /**
+     * @brief  Get PML on staggered grid x.
+     * @return PML matrix.
+     */
+    RealMatrix& getPmlXSgx() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kPmlXSgx);
+    };
+    /**
+     * @brief  Get PML on staggered grid y.
+     * @return PML matrix.
+     */
+    RealMatrix& getPmlYSgy() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kPmlYSgy);
+    };
+    /**
+     * @brief  Get PML on staggered grid z.
+     * @return PML matrix.
+     */
+    RealMatrix& getPmlZSgz() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kPmlZSgz);
+    };
+    /**
+     * @brief  Get PML in x.
+     * @return PML matrix.
+     */
+    RealMatrix& getPmlX() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kPmlX);
+    };
+    /**
+     * @brief  Get PML in y.
+     * @return PML matrix.
+     */
+    RealMatrix& getPmlY() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kPmlY);
+    };
+    /**
+     * @brief  Get PML in z.
+     * @return PML matrix.
+     */
+    RealMatrix& getPmlZ() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kPmlZ);
+    };
+
+    //------------------------------------------- Nonlinear grid matrices --------------------------------------------//
+    /**
+     * @brief  Non uniform grid acoustic velocity in x.
+     * @return Velocity matrix.
+     */
+    RealMatrix& getDxudxn() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kDxudxn);
+    };
+    /**
+     * @brief  Non uniform grid acoustic velocity in y.
+     * @return Velocity matrix.
+     */
+    RealMatrix& getDyudyn() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kDyudyn);
+    };
+    /**
+     * @brief  Non uniform grid acoustic velocity in z.
+     * @return Velocity matrix.
+     */
+    RealMatrix& getDzudzn() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kDzudzn);
+    };
+    /**
+     * @brief  Non uniform grid acoustic velocity on staggered grid x.
+     * @return Velocity matrix.
+     */
+    RealMatrix& getDxudxnSgx() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kDxudxnSgx);
+    };
+    /**
+     * @brief  Non uniform grid acoustic velocity on staggered grid x.
+     * @return Velocity matrix.
+     */
+    RealMatrix& getDyudynSgy() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kDyudynSgy);
+    };
+    /**
+     * @brief  Non uniform grid acoustic velocity on staggered grid x.
+     * @return Velocity matrix.
+     */
+    RealMatrix& getDzudznSgz() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kDzudznSgz);
+    };
+
+    //-------------------------------------- Nonlinear and absorption matrices ---------------------------------------//
+    /**
+     * @brief  Get B on A (nonlinear coefficient).
+     * @return Nonlinear coefficient.
+     */
+    RealMatrix& getBOnA() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kBOnA);
+    };
+    /**
+     * @brief  Get absorbing coefficient Tau.
+     * @return Absorbing coefficient.
+     */
+    RealMatrix& getAbsorbTau() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kAbsorbTau);
+    };
+    /**
+     * @brief  Get absorbing coefficient Eta.
+     * @return Absorbing coefficient.
+     */
+    RealMatrix& getAbsorbEta() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kAbsorbEta);
+    };
+
+    /**
+     * @brief  Get absorbing coefficient Nabla1.
+     * @return Absorbing coefficient.
+     */
+    RealMatrix& getAbsorbNabla1() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kAbsorbNabla1);
+    };
+    /**
+     * @brief  Get absorbing coefficient Nabla2.
+     * @return Absorbing coefficient.
+     */
+    RealMatrix& getAbsorbNabla2() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kAbsorbNabla2);
+    };
+
+
+    //----------------------------------------------- Index matrices -------------------------------------------------//
+    /**
+     * @brief  Get linear sensor mask (spatial geometry of the sensor).
+     * @return Sensor mask data.
+     */
+    IndexMatrix& getSensorMaskIndex() const
+    {
+      return getMatrix<IndexMatrix>(MatrixIdx::kSensorMaskIndex);
+    };
+    /**
+     * @brief  Get cuboid corners sensor mask. (Spatial geometry of multiple sensors).
+     * @return Sensor mask data.
+     */
+    IndexMatrix& getSensorMaskCorners() const
+    {
+      return getMatrix<IndexMatrix>(MatrixIdx::kSensorMaskCorners);
+    };
+    /**
+     * @brief  Get velocity source geometry data.
+     * @return Source geometry indices
+     */
+    IndexMatrix& getVelocitySourceIndex() const
+    {
+      return getMatrix<IndexMatrix>(MatrixIdx::kVelocitySourceIndex);
+    };
+    /**
+     * @brief  Get pressure source geometry data.
+     * @return Source geometry indices
+     */
+    IndexMatrix& getPressureSourceIndex() const
+    {
+      return getMatrix<IndexMatrix>(MatrixIdx::kPressureSourceIndex);
+    };
+    /**
+     * @brief  Get delay mask for many types sources
+     * @return delay mask.
+     */
+    IndexMatrix& getDelayMask() const
+    {
+      return getMatrix<IndexMatrix>(MatrixIdx::kDelayMask);
+    }
+
+
+    //-------------------------------------------------- Sources  ----------------------------------------------------//
+    /**
+     * @brief  Get transducer source input data (signal).
+     * @return Transducer source input data.
+     */
+    RealMatrix& getTransducerSourceInput() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kTransducerSourceInput);
+    };
+    /**
+     * @brief  Get pressure source input data (signal).
+     * @return Pressure source input data.
+     */
+    RealMatrix& getPressureSourceInput() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kPressureSourceInput);
+    };
+    /**
+     * @brief  Get initial pressure source input data (whole matrix).
+     * @return Initial pressure source input data.
+     */
+    RealMatrix& getInitialPressureSourceInput() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kInitialPressureSourceInput);
+    };
+
+
+    /**
+     * @brief  Get Velocity source input data in x direction.
+     * @return Velocity source input data.
+     */
+    RealMatrix& getVelocityXSourceInput() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kVelocityXSourceInput);
+    };
+    /**
+     * @brief  Get Velocity source input data in y direction.
+     * @return Velocity source input data.
+     */
+    RealMatrix& getVelocityYSourceInput() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kVelocityYSourceInput);
+    };
+    /**
+     * @brief  Get Velocity source input data in z direction.
+     * @return Velocity source input data.
+     */
+    RealMatrix& getVelocityZSourceInput() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kVelocityZSourceInput);
+    };
+
+
+    //--------------------------------------------- Temporary matrices -----------------------------------------------//
+    /**
+     * @brief  Get first real 2D/3D temporary matrix.
+     * @return Temporary real 2D/3D matrix.
+     */
+    RealMatrix& getTemp1RealND() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kTemp1RealND);
+    };
+    /**
+     * @brief  Get second real 2D/3D temporary matrix.
+     * @return Temporary real 2D/3D matrix.
+     */
+    RealMatrix& getTemp2RealND() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kTemp2RealND);
+    };
+    /**
+     * @brief  Get third real 2D/3D temporary matrix.
+     * @return Temporary real 2D/3D matrix.
+     */
+    RealMatrix& getTemp3RealND() const
+    {
+      return getMatrix<RealMatrix>(MatrixIdx::kTemp3RealND);
+    };
+
+
+    /**
+     * @brief  Get temporary matrix for 1D fft in x.
+     * @return Temporary complex 2D/3D matrix.
+     */
+    CufftComplexMatrix& getTempCufftX() const
+    {
+      return getMatrix<CufftComplexMatrix>(MatrixIdx::kTempCufftX);
+    };
+    /**
+     * @brief  Get temporary matrix for 1D fft in y.
+     * @return Temporary complex 2D/3D matrix.
+     */
+    CufftComplexMatrix& getTempCufftY() const
+    {
+      return getMatrix<CufftComplexMatrix>(MatrixIdx::kTempCufftY);
+    };
+    /**
+     * @brief  Get temporary matrix for 1D fft in z.
+     * @return Temporary complex 3D matrix.
+     */
+    CufftComplexMatrix& getTempCufftZ() const
+    {
+      return getMatrix<CufftComplexMatrix>(MatrixIdx::kTempCufftZ);
+    };
+
+    /**
+     * @brief  Get temporary matrix for cufft shift.
+     * @return Temporary complex 3D matrix.
+     */
+    CufftComplexMatrix& getTempCufftShift() const
+    {
+      return getMatrix<CufftComplexMatrix>(MatrixIdx::kTempCufftShift);
+    };
+
   protected:
 
   private:
 
-    /// map holding the container
-    std::map<MatrixIdx, MatrixRecord> mContainer;
+    /// map holding the container, it is mutable since we want to modify data in matrices within the container.
+    mutable std::map<MatrixIdx, MatrixRecord> mContainer;
 
 };// end of MatrixContainer
 //----------------------------------------------------------------------------------------------------------------------
 #endif	/* MATRIX_CONTAINER_H */
-

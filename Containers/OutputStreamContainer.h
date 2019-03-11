@@ -8,10 +8,10 @@
  *
  * @brief     The header file defining the output stream container.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      04 December  2014, 11:00 (created) \n
- *            21 February  2019, 20:30 (revised)
+ *            06 March     2019, 12:57 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *

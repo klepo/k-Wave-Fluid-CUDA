@@ -9,10 +9,10 @@
  * @brief     The implementation file containing the base class for 64b-wide integers implemented
  *            as size_t datatype.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      26 July      2011, 14:17 (created) \n
- *            22 February  2019, 12:36 (revised)
+ *            06 March     2019, 13:19 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *

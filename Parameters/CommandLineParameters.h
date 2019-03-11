@@ -8,10 +8,10 @@
  *
  * @brief     The header file containing the command line parameters.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      29 August    2012, 11:25 (created) \n
- *            22 February  2019, 21:11 (revised)
+ *            07 March     2019, 21:00 (revised)
  *
  * @section   Params Command Line Parameters
  *
@@ -105,7 +105,7 @@
  *
 \verbatim
 ┌───────────────────────────────────────────────────────────────┐
-│                 kspaceFirstOrder3D-CUDA v1.3                  │
+│                  kspaceFirstOrder-CUDA v1.3                   │
 ├───────────────────────────────────────────────────────────────┤
 │                             Usage                             │
 ├───────────────────────────────────────────────────────────────┤
@@ -117,7 +117,7 @@
 │                      Optional parameters                      │
 ├───────────────────────────────┬───────────────────────────────┤
 │ -t <num_threads>              │ Number of CPU threads         │
-│                               │  (default =  4)               │
+│                               │  (default =  1)               │
 │ -g <device_number>            │ GPU device to run on          │
 │                               │   (default = the first free)  │
 │ -r <interval_in_%>            │ Progress print interval       │
@@ -209,7 +209,7 @@ class CommandLineParameters
     CommandLineParameters(const CommandLineParameters&) = delete;
 
     /// Destructor.
-    virtual ~CommandLineParameters() {};
+    virtual ~CommandLineParameters() = default;
 
     /// operator= not allowed.
     CommandLineParameters& operator=(const CommandLineParameters&) = delete;

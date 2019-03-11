@@ -8,10 +8,10 @@
  *
  * @brief     The implementation file for the class for storing constants residing in CUDA constant memory.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      17 February  2016, 10:53 (created) \n
- *            22 February  2019, 15:54 (revised)
+ *            06 March     2019, 13:28 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -41,8 +41,6 @@
 //--------------------------------------------------------------------------------------------------------------------//
 //---------------------------------------------------- Variables -----------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
-
-
 
 /**
  * @var      cudaDeviceConstants

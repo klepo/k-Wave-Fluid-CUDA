@@ -8,10 +8,10 @@
  *
  * @brief     The header file containing the base class for single precisions floating point numbers (floats).
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      11 July      2011, 12:13 (created) \n
- *            23 February  2019, 17:37 (revised)
+ *            06 March     2019, 13:19 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -52,7 +52,7 @@ class BaseFloatMatrix : public BaseMatrix
     /// Copy constructor is not allowed.
     BaseFloatMatrix(const BaseFloatMatrix&) = delete;
     //Destructor.
-    virtual ~BaseFloatMatrix() {};
+    virtual ~BaseFloatMatrix() = default;
 
     /// Operator= is not allowed.
     BaseFloatMatrix& operator=(const BaseFloatMatrix&);

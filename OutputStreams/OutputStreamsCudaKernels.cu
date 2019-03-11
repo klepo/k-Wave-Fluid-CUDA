@@ -8,10 +8,10 @@
  *
  * @brief     The implementation file of cuda kernels used for data sampling (output streams).
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      27 January   2015, 17:21 (created) \n
- *            22 February  2019, 15:46 (revised)
+ *            06 March     2019, 13:19 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -415,7 +415,6 @@ void OutputStreamsCudaKernels::sampleAll<BaseOutputStream::ReduceOperator::kMin>
 //-------------------------------------------------- Post-processing -------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
 
-
 /**
  * CUDA kernel to apply post-processing for RMS
  * @param [in, out] samplingBuffer - Buffer to apply post-processing on
@@ -432,7 +431,6 @@ __global__ void cudaPostProcessingRms(float*       samplingBuffer,
   }
 }// end of cudaPostProcessingRMS
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Calculate post-processing for RMS.

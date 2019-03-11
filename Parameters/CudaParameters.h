@@ -8,10 +8,10 @@
  *
  * @brief     The header file for the class for setting CUDA kernel parameters.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      12 November  2015, 16:49 (created) \n
- *            22 February  2019, 15:54 (revised)
+ *            06 March     2019, 13:28 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *

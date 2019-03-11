@@ -8,10 +8,10 @@
  *
  * @brief     The implementation file containing class managing HDF5 files .
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
- * @date      27 July     2012, 14:14 (created) \n
- *            22 February 2019, 11:02 (revised)
+ * @date      27 July      2012, 14:14 (created) \n
+ *            06 March     2019, 12:57 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -112,7 +112,6 @@ void Hdf5File::create(const string& fileName,
 }// end of create
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Open the HDF5 file.
  */
@@ -175,7 +174,6 @@ void Hdf5File::close()
 }// end of close
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Create a HDF5 group at a specified place in the file tree.
  */
@@ -209,7 +207,6 @@ hid_t Hdf5File::openGroup(const hid_t parentGroup,
   return group;
 }// end of openGroup
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Close a group.
@@ -248,24 +245,13 @@ hid_t Hdf5File::createDataset(const hid_t                    parentGroup,
                               const Hdf5File::MatrixDataType matrixDataType,
                               const size_t                   compressionLevel)
 {
-  const int rank = (dimensionSizes.is3D()) ? 3 : 4;
+  const int rank = (dimensionSizes.is4D()) ? 4 : 3;
 
   hsize_t dims [4];
   hsize_t chunk[4];
 
-  // 3D dataset
-  if (dimensionSizes.is3D())
-  {
-    dims[0] = dimensionSizes.nz;
-    dims[1] = dimensionSizes.ny;
-    dims[2] = dimensionSizes.nx;
-
-    chunk[0] = chunkSizes.nz;
-    chunk[1] = chunkSizes.ny;
-    chunk[2] = chunkSizes.nx;
-  }
-  else // 4D dataset
-  {
+  if (dimensionSizes.is4D())
+  { // 4D dataset
     dims[0] = dimensionSizes.nt;
     dims[1] = dimensionSizes.nz;
     dims[2] = dimensionSizes.ny;
@@ -275,6 +261,16 @@ hid_t Hdf5File::createDataset(const hid_t                    parentGroup,
     chunk[1] = chunkSizes.nz;
     chunk[2] = chunkSizes.ny;
     chunk[3] = chunkSizes.nx;
+  }
+  else
+  { // 3D dataset
+    dims[0] = dimensionSizes.nz;
+    dims[1] = dimensionSizes.ny;
+    dims[2] = dimensionSizes.nx;
+
+    chunk[0] = chunkSizes.nz;
+    chunk[1] = chunkSizes.ny;
+    chunk[2] = chunkSizes.nx;
   }
 
   hid_t  propertyList;
@@ -332,7 +328,6 @@ void  Hdf5File::closeDataset(const hid_t dataset)
   H5Dclose(dataset);
 }// end of closeDataset
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Write a hyperslab into the dataset, float version.
@@ -764,7 +759,6 @@ size_t Hdf5File::getDatasetNumberOfDimensions(const hid_t parentGroup,
 }// end of getDatasetNumberOfDimensions
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Get dataset element count at a specified place in the file tree.
  */
@@ -783,7 +777,6 @@ size_t Hdf5File::getDatasetSize(const hid_t parentGroup,
 }// end of getDatasetSize
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Write matrix data type into the dataset at a specified place in the file tree.
  */
@@ -798,7 +791,6 @@ void Hdf5File::writeMatrixDataType(const hid_t           parentGroup,
 }// end of writeMatrixDataType
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Write matrix data type into the dataset at a specified place in the file tree.
  */
@@ -812,7 +804,6 @@ void Hdf5File::writeMatrixDomainType(const hid_t             parentGroup,
                        kMatrixDomainTypeNames[static_cast<int>(matrixDomainType)]);
 }// end of writeMatrixDomainType
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Read matrix data type from the dataset at a specified place in the file tree.
@@ -841,7 +832,6 @@ Hdf5File::MatrixDataType Hdf5File::readMatrixDataType(const hid_t parentGroup,
 }// end of readMatrixDataType
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Read matrix dataset domain type at a specified place in the file tree.
  */
@@ -869,7 +859,6 @@ Hdf5File::MatrixDomainType Hdf5File::readMatrixDomainType(const hid_t parentGrou
 }// end of readMatrixDomainType
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Write integer attribute at a specified place in the file tree.
  */
@@ -885,7 +874,6 @@ void Hdf5File::writeStringAttribute(const hid_t   parentGroup,
   }
 }// end of writeIntAttribute
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Read integer attribute  at a specified place in the file tree.

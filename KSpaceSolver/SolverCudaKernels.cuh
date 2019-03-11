@@ -8,10 +8,10 @@
  *
  * @brief     The header file for all cuda kernels of the GPU implementation used in the 3D solver.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      11 March     2013, 13:10 (created) \n
- *            23 February  2019, 21:58 (revised)
+ *            07 March     2019, 21:00 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -37,6 +37,7 @@
 #include <MatrixClasses/IndexMatrix.h>
 #include <MatrixClasses/CufftComplexMatrix.h>
 
+#include <Containers/MatrixContainer.h>
 #include <Utils/DimensionSizes.h>
 
 #include <Parameters/Parameters.h>
@@ -44,8 +45,8 @@
 
 /**
  * @namespace   SolverCudaKernels
- * @brief       List of cuda kernels used k-space first order 3D solver.
- * @details     List of cuda kernels used k-space first order 3D solver.
+ * @brief       List of cuda kernels used k-space first order 2D/3D solver.
+ * @details     List of cuda kernels used k-space first order 2D/3D solver.
  *
  */
 namespace SolverCudaKernels
@@ -78,102 +79,57 @@ namespace SolverCudaKernels
   //--------------------------------------------- velocity operations ------------------------------------------------//
   /**
    * @brief Compute acoustic velocity for heterogeneous medium and a uniform grid.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in, out] uxSgx     - Acoustic velocity on staggered grid in x direction.
-   * @param [in, out] uySgy     - Acoustic velocity on staggered grid in y direction.
-   * @param [in, out] uzSgz     - Acoustic velocity on staggered grid in z direction.
-   * @param [in]      ifftX     - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
-   * @param [in]      ifftY     - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
-   * @param [in]      ifftZ     - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
-   * @param [in]      dtRho0Sgx - Acoustic density on staggered grid in x direction.
-   * @param [in]      dtRho0Sgy - Acoustic density on staggered grid in y direction.
-   * @param [in]      dtRho0Sgz - Acoustic density on staggered grid in z direction.
-   * @param [in]      pmlX      - Perfectly matched layer in x direction.
-   * @param [in]      pmlY      - Perfectly matched layer in y direction.
-   * @param [in]      pmlZ      - Perfectly matched layer in z direction.
+   * <b> Matlab code: </b> \code
+   *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* real(ifftX)
+   *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) - dt .* rho0_sgy_inv .* real(ifftY)
+   *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz) - dt .* rho0_sgz_inv .* real(ifftZ)
+   * \endcode
    */
-  void computeVelocity(RealMatrix&       uxSgx,
-                       RealMatrix&       uySgy,
-                       RealMatrix&       uzSgz,
-                       const RealMatrix& ifftX,
-                       const RealMatrix& ifftY,
-                       const RealMatrix& ifftZ,
-                       const RealMatrix& dtRho0Sgx,
-                       const RealMatrix& dtRho0Sgy,
-                       const RealMatrix& dtRho0Sgz,
-                       const RealMatrix& pmlX,
-                       const RealMatrix& pmlY,
-                       const RealMatrix& pmlZ);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeVelocityHeterogeneous(const MatrixContainer& container);
 
 
   /**
    * @brief Compute acoustic velocity for homogeneous medium and a uniform grid.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in, out] uxSgx - Acoustic velocity on staggered grid in x direction.
-   * @param [in, out] uySgy - Acoustic velocity on staggered grid in y direction.
-   * @param [in, out] uzSgz - Acoustic velocity on staggered grid in z direction.
-   * @param [in]      ifftX - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
-   * @param [in]      ifftY - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
-   * @param [in]      ifftZ - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
-   * @param [in]      pmlX  - Perfectly matched layer in x direction.
-   * @param [in]      pmlY  - Perfectly matched layer in y direction.
-   * @param [in]      pmlZ  - Perfectly matched layer in z direction.
+   * <b> Matlab code: </b> \code
+   *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx) - dt .* rho0_sgx_inv .* real(ifftX)
+   *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) - dt .* rho0_sgy_inv .* real(ifftY)
+   *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz) - dt .* rho0_sgz_inv .* real(ifftZ)
+   *\endcode
    */
-  void computeVelocityHomogeneousUniform(RealMatrix&       uxSgx,
-                                         RealMatrix&       uySgy,
-                                         RealMatrix&       uzSgz,
-                                         const RealMatrix& ifftX,
-                                         const RealMatrix& ifftY,
-                                         const RealMatrix& ifftZ,
-                                         const RealMatrix& pmlX,
-                                         const RealMatrix& pmlY,
-                                         const RealMatrix& pmlZ);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeVelocityHomogeneousUniform(const MatrixContainer& container);
 
   /**
-   * @brief Compute acoustic velocity for homogenous medium and non-uniform grid.
+   * @brief  Compute acoustic velocity for homogenous medium and nonuniform grid.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in,out] uxSgx     - Acoustic velocity on staggered grid in x direction.
-   * @param [in,out] uySgy     - Acoustic velocity on staggered grid in y direction.
-   * @param [in,out] uzSgz     - Acoustic velocity on staggered grid in z direction.
-   * @param [in]      ifftX    - ifftn( bsxfun(\@times, ddx_k_shift_pos, kappa .* p_k))
-   * @param [in]      ifftY    - ifftn( bsxfun(\@times, ddy_k_shift_pos, kappa .* p_k))
-   * @param [in]      ifftZ    - ifftn( bsxfun(\@times, ddz_k_shift_pos, kappa .* p_k))
-   * @param [in]     dxudxnSgx - Non uniform grid shift in x direction.
-   * @param [in]     dyudynSgy - Non uniform grid shift in y direction.
-   * @param [in]     dzudznSgz - Non uniform grid shift in z direction.
-   * @param [in]     pmlX      - Perfectly matched layer in x direction.
-   * @param [in]     pmlY      - Perfectly matched layer in y direction.
-   * @param [in]     pmlZ      - Perfectly matched layer in z direction.
+   * <b> Matlab code: </b> \code
+   *  ux_sgx = bsxfun(@times, pml_x_sgx, bsxfun(@times, pml_x_sgx, ux_sgx)  ...
+   *                  - dt .* rho0_sgx_inv .* dxudxnSgx.* real(ifftX));
+   *  uy_sgy = bsxfun(@times, pml_y_sgy, bsxfun(@times, pml_y_sgy, uy_sgy) ...
+   *                  - dt .* rho0_sgy_inv .* dyudynSgy.* real(ifftY);
+   *  uz_sgz = bsxfun(@times, pml_z_sgz, bsxfun(@times, pml_z_sgz, uz_sgz)
+   *                  - dt .* rho0_sgz_inv .* dzudznSgz.* real(ifftZ);
+   *\endcode
    */
-  void computeVelocityHomogeneousNonuniform(RealMatrix&       uxSgx,
-                                            RealMatrix&       uySgy,
-                                            RealMatrix&       uzSgz,
-                                            const RealMatrix& ifftX,
-                                            const RealMatrix& ifftY,
-                                            const RealMatrix& ifftZ,
-                                            const RealMatrix& dxudxnSgx,
-                                            const RealMatrix& dyudynSgy,
-                                            const RealMatrix& dzudznSgz,
-                                            const RealMatrix& pmlX,
-                                            const RealMatrix& pmlY,
-                                            const RealMatrix& pmlZ);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeVelocityHomogeneousNonuniform(const MatrixContainer& container);
 
   //--------------------------------------------------- Sources ------------------------------------------------------//
 
   /**
    * @brief Add transducer data source to velocity x component.
-   *
-   * @param [in, out] uxSgx                 - Here we add the signal.
-   * @param [in]      velocitySourceIndex   - Where to add the signal (source geometry).
-   * @param [in]      transducerSourceInput - Transducer signal.
-   * @param [in]      delayMask             - Delay mask to push the signal in the domain (incremented per invocation).
-   * @param [in]      timeIndex             - Actual time step.
+   * @param [in] container       - Container with all matrices.
    */
-  void addTransducerSource(RealMatrix&        uxSgx,
-                           const IndexMatrix& velocitySourceIndex,
-                           const RealMatrix&  transducerSourceInput,
-                           const IndexMatrix& delayMask,
-                           const size_t       timeIndex);
+  void addTransducerSource(const MatrixContainer& container);
 
   /**
    * @brief Add in velocity source terms.
@@ -181,29 +137,19 @@ namespace SolverCudaKernels
    * @param [in, out] velocity       - Velocity matrix to update.
    * @param [in] velocitySourceInput - Source input to add.
    * @param [in] velocitySourceIndex - Source geometry index matrix.
-   * @param [in] timeIndex           - Actual time step.
    */
   void addVelocitySource(RealMatrix&        velocity,
                          const RealMatrix&  velocitySourceInput,
-                         const IndexMatrix& velocitySourceIndex,
-                         const size_t       timeIndex);
+                         const IndexMatrix& velocitySourceIndex);
 
   /**
    * @brief Add in pressure source term.
    *
-   * @param [out] rhoX                - Acoustic density.
-   * @param [out] rhoY                - Acoustic density.
-   * @param [out] rhoZ                - Acoustic density.
-   * @param [in]  pressureSourceInput - Source input to add.
-   * @param [in]  pressureSourceIndex - Index matrix with source.
-   * @param [in]  timeIndex           - Actual times step.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    */
-  void addPressureSource(RealMatrix&        rhoX,
-                         RealMatrix&        rhoY,
-                         RealMatrix&        rhoZ,
-                         const RealMatrix&  pressureSourceInput,
-                         const IndexMatrix& pressureSourceIndex,
-                         const size_t       timeIndex);
+  template<Parameters::SimulationDimension simulationDimension>
+  void addPressureSource(const MatrixContainer& container);
 
 
   /**
@@ -213,13 +159,11 @@ namespace SolverCudaKernels
    * @param [in]  sourceInput  - Source input signal.
    * @param [in]  sourceIndex  - Source geometry.
    * @param [in]  manyFlag     - Number of time series in the source input.
-   * @param [in]  timeIndex    - Actual time step.
    */
   void insertSourceIntoScalingMatrix(RealMatrix&        scaledSource,
                                      const RealMatrix&  sourceInput,
                                      const IndexMatrix& sourceIndex,
-                                     const size_t       manyFlag,
-                                     const size_t       timeIndex);
+                                     const size_t       manyFlag);
 
   /**
    * @brief Calculate source gradient.
@@ -238,194 +182,142 @@ namespace SolverCudaKernels
                                const RealMatrix&  scalingSource);
 
   /**
-   * @brief Add scaled pressure source to acoustic density.
-   * @param [in, out] rhoX         - Acoustic density.
-   * @param [in, out] rhoY         - Acoustic density.
-   * @param [in, out] rhoZ         - Acoustic density.
-   * @param [in]      scaledSource - Scaled source.
+   * @brief Add scaled pressure source to acoustic density, 3D case.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
+   * @param [in] scaledSource    - Scaled source.
    */
-  void addPressureScaledSource(RealMatrix&        rhoX,
-                               RealMatrix&        rhoY,
-                               RealMatrix&        rhoZ,
-                               const RealMatrix&  scalingSource);
+  template<Parameters::SimulationDimension simulationDimension>
+  void addPressureScaledSource(const MatrixContainer& container,
+                               const RealMatrix&      scalingSource);
 
-   /**
-    * @brief Add initial pressure source to the pressure matrix and update density matrices.
-    *
-    * @param [out] p                     - New pressure field.
-    * @param [out] rhoX                  - Density in x direction.
-    * @param [out] rhoY                  - Density in y direction.
-    * @param [out] rhoZ                  - Density in z direction.
-    * @param [in]  initialPerssureSource - Initial pressure source.
-    * @param [in]  isC2Scalar            - is sound speed homogenous?
-    * @param [in]  c2                    - Sound speed for heterogeneous case.
-    */
-  void addInitialPressureSource(RealMatrix&       p,
-                                RealMatrix&       rhoX,
-                                RealMatrix&       rhoY,
-                                RealMatrix&       rhoZ,
-                                const RealMatrix& initialPerssureSource,
-                                const bool        isC2Scalar,
-                                const float*      c2);
+  /**
+   * @brief Add initial pressure source to the pressure matrix and update density matrices.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
+   *
+   * <b>Matlab code:</b> \code
+   *  % add the initial pressure to rho as a mass source (3D code)
+   *  p = source.p0;
+   *  rhox = source.p0 ./ (3 .* c.^2);
+   *  rhoy = source.p0 ./ (3 .* c.^2);
+   *  rhoz = source.p0 ./ (3 .* c.^2);
+   * \endcode
+   */
+  template<Parameters::SimulationDimension simulationDimension>
+  void addInitialPressureSource(const MatrixContainer& container);
 
   /**
    * @brief Compute velocity for the initial pressure problem, heterogeneous medium, uniform grid.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in, out] uxSgx     - Velocity matrix in x direction.
-   * @param [in, out] uySgy     - Velocity matrix in y direction.
-   * @param [in, out] uzSgz     - Velocity matrix in y direction.
-   * @param [in]      dtRho0Sgx - Density matrix in x direction.
-   * @param [in]      dtRho0Sgy - Density matrix in y direction.
-   * @param [in]      dtRho0Sgz - Density matrix in z direction.
+   * <b> Matlab code: </b> \code
+   *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx);
+   *  uy_sgy = dt ./ rho0_sgy .* ifft(uy_sgy);
+   *  uz_sgz = dt ./ rho0_sgz .* ifft(uz_sgz);
+     * \endcode
    */
-  void computeInitialVelocity(RealMatrix&       uxSgx,
-                              RealMatrix&       uySgy,
-                              RealMatrix&       uzSgz,
-                              const RealMatrix& dtRho0Sgx,
-                              const RealMatrix& dtRho0Sgy,
-                              const RealMatrix& dtRho0Sgz);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeInitialVelocityHeterogeneous(const MatrixContainer& container);
 
   /**
    * @brief Compute acoustic velocity for initial pressure problem, homogeneous medium, uniform grid.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in, out] uxSgx - Velocity matrix in x direction.
-   * @param [in, out] uySgy - Velocity matrix in y direction.
-   * @param [in, out] uzSgz - Velocity matrix in y direction.
+   * <b> Matlab code: </b> \code
+   *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx);
+   *  uy_sgy = dt ./ rho0_sgy .* ifft(uy_sgy);
+   *  uz_sgz = dt ./ rho0_sgz .* ifft(uz_sgz);
+   * \endcode
    */
-  void computeInitialVelocityHomogeneousUniform(RealMatrix& uxSgx,
-                                                RealMatrix& uySgy,
-                                                RealMatrix& uzSgz);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeInitialVelocityHomogeneousUniform(const MatrixContainer& container);
 
   /**
    * @brief Compute acoustic velocity for initial pressure problem, homogenous medium, non-uniform grid.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in, out] uxSgx - Velocity matrix in x direction.
-   * @param [in, out] uySgy - Velocity matrix in y direction.
-   * @param [in, out] uzSgz - Velocity matrix in y direction
-   * @param [in] dxudxnSgx  - Non uniform grid shift in x direction.
-   * @param [in] dyudynSgy  - Non uniform grid shift in y direction.
-   * @param [in] dzudznSgz  - Non uniform grid shift in z direction.
+   * <b> Matlab code: </b> \code
+   *  ux_sgx = dt ./ rho0_sgx .* dxudxn_sgx .* ifft(ux_sgx);
+   *  uy_sgy = dt ./ rho0_sgy .* dyudxn_sgy .* ifft(uy_sgy);
+   *  uz_sgz = dt ./ rho0_sgz .* dzudzn_sgz .* ifft(uz_sgz);
+   * \endcode
    */
-  void computeInitialVelocityHomogeneousNonuniform(RealMatrix&       uxSgx,
-                                                   RealMatrix&       uySgy,
-                                                   RealMatrix&       uzSgz,
-                                                   const RealMatrix& dxudxnSgx,
-                                                   const RealMatrix& dyudynSgy,
-                                                   const RealMatrix& dzudznSgz);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeInitialVelocityHomogeneousNonuniform(const MatrixContainer& container);
 
 
   //----------------------------------------------- pressure kernels -------------------------------------------------//
   /**
    * @brief Compute spectral part of pressure gradient in between FFTs.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in, out] ifftX        - It takes the FFT of pressure (common for all three components) and returns
-   *                                 the spectral part in x direction (the input for inverse FFT that follows).
-   * @param [out]     ifftY        - spectral part in y dimension (the input for inverse FFT that follows).
-   * @param [out]     ifftZ        - spectral part in z dimension (the input for inverse FFT that follows).
-   * @param [in]      kappa        - Kappa matrix.
-   * @param [in]      ddxKShiftPos - Positive spectral shift in x direction.
-   * @param [in]      ddyKShiftPos - Positive spectral shift in y direction.
-   * @param [in]      ddzKShiftPos - Positive spectral shift in z direction.
+   * <b> Matlab code: </b> \code
+   *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k);
+   *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k);
+   *  bsxfun(@times, ddx_k_shift_pos, kappa .* p_k);
+   * \endcode
+   *
    */
-   void computePressureGradient(CufftComplexMatrix& ifftX,
-                                CufftComplexMatrix& ifftY,
-                                CufftComplexMatrix& ifftZ,
-                                const RealMatrix&    kappa,
-                                const ComplexMatrix& ddxKShiftPos,
-                                const ComplexMatrix& ddyKShiftPos,
-                                const ComplexMatrix& ddzKShiftPos);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computePressureGradient(const MatrixContainer& container);
 
-   /**
-    * @brief Compute spatial part of the velocity gradient in between FFTs on uniform grid.
-    *
-    * @param [in, out] fftX    - input is the FFT of velocity, output is the spectral part in x.
-    * @param [in, out] fftY    - input is the FFT of velocity, output is the spectral part in y.
-    * @param [in, out] fftZ    - input is the FFT of velocity, output is the spectral part in z.
-    * @param [in] kappa        - Kappa matrix
-    * @param [in] ddxKShiftNeg - Negative spectral shift in x direction.
-    * @param [in] ddyKShiftNeg - Negative spectral shift in x direction.
-    * @param [in] ddzKShiftNeg - Negative spectral shift in x direction.
-    */
-  void computeVelocityGradient(CufftComplexMatrix&  fftX,
-                               CufftComplexMatrix&  fftY,
-                               CufftComplexMatrix&  fftZ,
-                               const RealMatrix&    kappa,
-                               const ComplexMatrix& ddxKShiftNeg,
-                               const ComplexMatrix& ddyKShiftNeg,
-                               const ComplexMatrix& ddzKShiftNeg);
+  /**
+   * @brief Compute spatial part of the velocity gradient in between FFTs on uniform grid.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
+   *
+   * <b> Matlab code: </b> \code
+   *  bsxfun(@times, ddx_k_shift_neg, kappa .* fftn(ux_sgx));
+   *  bsxfun(@times, ddy_k_shift_neg, kappa .* fftn(uy_sgy));
+   *  bsxfun(@times, ddz_k_shift_neg, kappa .* fftn(uz_sgz));
+   * \endcode
+   */
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeVelocityGradient(const MatrixContainer& container);
 
   /**
    * @brief Shift gradient of acoustic velocity on non-uniform grid.
-   *
-   * @param [in,out] duxdx  - Gradient of particle velocity in x direction.
-   * @param [in,out] duydy  - Gradient of particle velocity in y direction.
-   * @param [in,out] duzdz  - Gradient of particle velocity in z direction.
-   * @param [in]     dxudxn - Non uniform grid shift in x direction.
-   * @param [in]     dyudyn - Non uniform grid shift in y direction.
-   * @param [in]     dzudzn - Non uniform grid shift in z direction.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    */
-  void computeVelocityGradientShiftNonuniform(RealMatrix&       duxdx,
-                                              RealMatrix&       duydy,
-                                              RealMatrix&       duzdz,
-                                              const RealMatrix& dxudxn,
-                                              const RealMatrix& dyudyn,
-                                              const RealMatrix& dzudzn);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeVelocityGradientShiftNonuniform(const MatrixContainer& container);
 
   //---------------------------------------------- density kernels ---------------------------------------------------//
 
   /**
    * @brief Calculate acoustic density for non-linear case, homogeneous case is default.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in, out] rhoX         - Acoustic density in x direction.
-   * @param [in, out] rhoY         - Acoustic density in y direction.
-   * @param [in, out] rhoZ         - Acoustic density in z direction.
-   * @param [in]      pmlX         - PML layer in x direction.
-   * @param [in]      pmlY         - PML layer in x direction.
-   * @param [in]      pmlZ         - PML layer in x direction.
-   * @param [in]      duxdx        - Gradient of velocity x direction.
-   * @param [in]      duydy        - Gradient of velocity y direction.
-   * @param [in]      duzdz        - Gradient of velocity z direction.
-   * @param [in]      isRho0Scalar - Is the density homogeneous?
-   * @param [in]      rho0Data     - If density is heterogeneous, here is the matrix with data.
+   * <b>Matlab code:</b> \code
+   *  rho0_plus_rho = 2 .* (rhox + rhoy + rhoz) + rho0;
+   *  rhox = bsxfun(@times, pml_x, bsxfun(@times, pml_x, rhox) - dt .* rho0_plus_rho .* duxdx);
+   *  rhoy = bsxfun(@times, pml_y, bsxfun(@times, pml_y, rhoy) - dt .* rho0_plus_rho .* duydy);
+   *  rhoz = bsxfun(@times, pml_z, bsxfun(@times, pml_z, rhoz) - dt .* rho0_plus_rho .* duzdz);
+   * \endcode
    */
-  void computeDensityNonlinear(RealMatrix&       rhoX,
-                               RealMatrix&       rhoY,
-                               RealMatrix&       rhoZ,
-                               const RealMatrix& pmlX,
-                               const RealMatrix& pmlY,
-                               const RealMatrix& pmlZ,
-                               const RealMatrix& duxdx,
-                               const RealMatrix& duydy,
-                               const RealMatrix& duzdz,
-                               const bool        isRho0Scalar = true,
-                               const float*      rho0Data     = nullptr);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeDensityNonlinear(const MatrixContainer& container);
 
   /**
    * @brief Calculate acoustic density for linear case, homogeneous case is default.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
    *
-   * @param [in, out] rhoX         - Acoustic density in x direction.
-   * @param [in, out] rhoY         - Acoustic density in y direction.
-   * @param [in, out] rhoZ         - Acoustic density in z direction.
-   * @param [in]      pmlX         - PML layer in x direction.
-   * @param [in]      pmlY         - PML layer in x direction.
-   * @param [in]      pmlZ         - PML layer in x direction.
-   * @param [in]      duxdx        - Gradient of velocity x direction.
-   * @param [in]      duydy        - Gradient of velocity y direction.
-   * @param [in]      duzdz        - Gradient of velocity z direction.
-   * @param [in]      isRho0Scalar - Is the density homogeneous?
-   * @param [in]      rho0Data     - If density is heterogeneous, here is the matrix with data.
+   * <b>Matlab code:</b> \code
+   *  rhox = bsxfun(@times, pml_x, bsxfun(@times, pml_x, rhox) - dt .* rho0 .* duxdx);
+   *  rhoy = bsxfun(@times, pml_y, bsxfun(@times, pml_y, rhoy) - dt .* rho0 .* duydy);
+   *  rhoz = bsxfun(@times, pml_z, bsxfun(@times, pml_z, rhoz) - dt .* rho0 .* duzdz);
+   * \endcode
    */
-  void computeDensityLinear(RealMatrix&       rhoX,
-                            RealMatrix&       rhoY,
-                            RealMatrix&       rhoZ,
-                            const RealMatrix& pmlX,
-                            const RealMatrix& pmlY,
-                            const RealMatrix& pmlZ,
-                            const RealMatrix& duxdx,
-                            const RealMatrix& duydy,
-                            const RealMatrix& duzdz,
-                            const bool        isRho0Scalar = true,
-                            const float*      rho0Data     = nullptr);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computeDensityLinear(const MatrixContainer& container);
 
 
   //-------------------------------------------- new value of pressure -----------------------------------------------//
@@ -433,68 +325,42 @@ namespace SolverCudaKernels
   /**
    * @brief Calculate three temporary sums in the new pressure formula, non-linear absorbing case.
    *
-   * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz
-   * @param [out] nonlinearTerm       - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz)
-   * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz)
-   * @param [in]  rhoX                - Acoustic density x direction
-   * @param [in]  rhoY                - Acoustic density y direction
-   * @param [in]  rhoZ                - Acoustic density z direction
-   * @param [in]  duxdx               - Gradient of velocity in x direction
-   * @param [in]  duydy               - Gradient of velocity in y direction
-   * @param [in]  duzdz               - Gradient of velocity in z direction
-   * @param [in]  isBonAScalar        - Is nonlinear coefficient B/A homogeneous?
-   * @param [in]  bOnAData            - Heterogeneous value for BonA
-   * @param [in]  isRho0Scalar        - Is density homogeneous?
-   * @param [in]  rho0Data            - Heterogeneous value for rho0
+   * @tparam simulationDimension      - Dimensionality of the simulation.
+   * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz;
+   * @param [out] nonlinearTerm       - BonA + rho ^2 / 2 rho0  + (rhox_sgx + rhoy_sgy + rhoz_sgz);
+   * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz);
+   * @param [in]  container           - Container with all matrices.
    */
-  void computePressureTermsNonlinear(RealMatrix&       densitySum,
-                                     RealMatrix&       nonlinearTerm,
-                                     RealMatrix&       velocityGradientSum,
-                                     const RealMatrix& rhoX,
-                                     const RealMatrix& rhoY,
-                                     const RealMatrix& rhoZ,
-                                     const RealMatrix& duxdx,
-                                     const RealMatrix& duydy,
-                                     const RealMatrix& duzdz,
-                                     const bool        is_BonA_scalar,
-                                     const float*      bOnAData,
-                                     const bool        is_rho0_scalar,
-                                     const float*      rho0Data);
+  template<Parameters::SimulationDimension simulationDimension>
+  void computePressureTermsNonlinear(RealMatrix&            densitySum,
+                                     RealMatrix&            nonlinearTerm,
+                                     RealMatrix&            velocityGradientSum,
+                                     const MatrixContainer& container);
 
   /**
    * @brief Calculate two temporary sums in the new pressure formula, linear absorbing case.
-   *
-   * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz
+   * @tparam simulationDimension      - Dimensionality of the simulation.
+   * @param [out] densitySum          - rhox_sgx + rhoy_sgy + rhoz_sgz;
    * @param [out] velocityGradientSum - rho0* (duxdx + duydy + duzdz);
-   * @param [in]  rhoX                - Acoustic density in x direction.
-   * @param [in]  rhoY                - Acoustic density in y direction.
-   * @param [in]  rhoZ                - Acoustic density in z direction.
-   * @param [in]  duxdx               - Velocity gradient in x direction.
-   * @param [in]  duydy               - Velocity gradient in x direction.
-   * @param [in]  duzdz               - Velocity gradient in x direction.
-   * @param [in]  isRho0Scalar        - Is density  homogeneous?
-   * @param [in]  rho0Data            - Acoustic density data in heterogeneous case.
+   * @param [in]  container           - Container with all matrices.
    */
-  void computePressureTermsLinear(RealMatrix&       densitySum,
-                                  RealMatrix&       velocityGradientSum,
-                                  const RealMatrix& rhoX,
-                                  const RealMatrix& rhoY,
-                                  const RealMatrix& rhoZ,
-                                  const RealMatrix& duxdx,
-                                  const RealMatrix& duydy,
-                                  const RealMatrix& duzdz,
-                                  const bool         isRho0Scalar,
-                                  const float*       rho0Data);
-
-
+  template<Parameters::SimulationDimension simulationDimension>
+  void computePressureTermsLinear(RealMatrix&            densitySum,
+                                  RealMatrix&            velocityGradientSum,
+                                  const MatrixContainer& container);
 
   /**
    * @brief Compute absorbing term with abosrbNabla1 and absorbNabla2.
    *
-   * @param [in,out] fftPart1     - fftPart1 = absorbNabla1 .* fftPart1
-   * @param [in,out] fftPart2     - fftPart1 = absorbNabla1 .* fftPart2
+   * @param [in,out] fftPart1     - fftPart1 = absorbNabla1 .* fftPart1;
+   * @param [in,out] fftPart2     - fftPart1 = absorbNabla1 .* fftPart2;
    * @param [in]     absorbNabla1 - Absorption coefficient 1.
    * @param [in]     absorbNabla2 - Absorption coefficient 2.
+   *
+   * <b>Matlab code:</b> \code
+   *  fftPart1 = absorbNabla1 .* fftPart1;
+   *  fftPart2 = absorbNabla2 .* fftPart2;
+   * \endcode
    */
   void computeAbsorbtionTerm(CufftComplexMatrix& fftPart1,
                              CufftComplexMatrix& fftPart2,
@@ -503,89 +369,79 @@ namespace SolverCudaKernels
 
   /**
    * @brief Sum sub-terms to calculate new pressure in non-linear case.
+   *        The output is stored into the pressure matrix.
    *
-   * @param [in,out] p                   - New value of pressure
-   * @param [in]     nonlinearTerm       - Nonlinear term
-   * @param [in]     absorbTauTerm       - Absorb tau term from the pressure eq.
-   * @param [in]     absorbEtaTerm       - Absorb eta term from the pressure eq.
-   * @param [in]     isC2Scalar          - is sound speed homogeneous?
-   * @param [in]     c2Data              - sound speed data in heterogeneous case.
-   * @param [in]     areTauAndEtaScalars - is absorption homogeneous?
-   * @param [in]     absorbTauData       - Absorb tau data in heterogenous case.
-   * @param [in]     absorbEtaData       - Absorb eta data in heterogenous case.
+   * @param [in] nonlinearTerm - Nonlinear term
+   * @param [in] absorbTauTerm - Absorb tau term from the pressure eq.
+   * @param [in] absorbEtaTerm - Absorb eta term from the pressure eq.
+   * @param [in] container     - Container with all matrices.
+   *
+   * <b>Matlab code:</b> \code
+   *  % calculate p using a nonlinear absorbing equation of state
+   *  p = c0.^2 .* (...
+   *                nonlinearTerm ...
+   *                + absorb_tau .* absorbTauTerm...
+   *                - absorb_eta .* absorbEtaTerm...
+   *                );
+   * \endcode
    */
-  void sumPressureTermsNonlinear(RealMatrix&       p,
-                                 const RealMatrix& nonlinearTerm,
-                                 const RealMatrix& absorbTauTerm,
-                                 const RealMatrix& absorbEtaTerm,
-                                 const bool        isC2Scalar,
-                                 const float*      c2Data,
-                                 const bool        areTauAndEtaScalars,
-                                 const float*      absorbTauData,
-                                 const float*      absorbEtaData);
+  void sumPressureTermsNonlinear(const RealMatrix&      nonlinearTerm,
+                                 const RealMatrix&      absorbTauTerm,
+                                 const RealMatrix&      absorbEtaTerm,
+                                 const MatrixContainer& container);
 
   /**
    * @brief Sum sub-terms to calculate new pressure, linear case.
-   * @param [out] p                   - New value of pressure.
-   * @param [in]  absorbTauTerm       - Absorb tau term from the pressure eq.
-   * @param [in]  absorbEtaTerm       - Absorb tau term from the pressure eq.
-   * @param [in]  densitySum          - Sum of acoustic density.
-   * @param [in]  isC2Scalar          - is sound speed homogeneous?
-   * @param [in]  c2Data              - sound speed data in heterogeneous case.
-   * @param [in]  areTauAndEtaScalars - is absorption homogeneous?
-   * @param [in]  absorbTauData       - Absorb tau data in heterogenous case.
-   * @param [in]  absorbEtaData       - Absorb eta data in heterogenous case.
+   *        The output is stored into the pressure matrix.
+   *
+   * @param [in]  absorbTauTerm - Absorb tau term from the pressure eq.
+   * @param [in]  absorbEtaTerm - Absorb tau term from the pressure eq.
+   * @param [in]  densitySum    - Sum of acoustic density.
+   * @param [in] container      - Container with all matrices.
+   *
+   * <b>Matlab code:</b> \code
+   *  % calculate p using a nonlinear absorbing equation of state
+   *  p = c0.^2 .* (...
+   *                densitySum
+   *                + absorb_tau .* absorbTauTerm...
+   *                - absorb_eta .* absorbEtaTerm...
+   *                );
+   * \endcode
    */
-  void sumPressureTermsLinear(RealMatrix&       p,
-                              const RealMatrix& absorbTauTerm,
-                              const RealMatrix& absorbEtaTerm,
-                              const RealMatrix& densitySum,
-                              const bool        isC2Scalar,
-                              const float*      c2Data,
-                              const bool        areTauAndEtaScalars,
-                              const float*      absorbTauData,
-                              const float*      absorbEtaData);
-
-  /**
-   * @brief Sum sub-terms for new pressure, linear lossless case.
-   * @param [out] p            - New value of pressure
-   * @param [in]  rhoX         - Acoustic density in x direction.
-   * @param [in]  rhoY         - Acoustic density in y direction.
-   * @param [in]  rhoZ         - Acoustic density in z direction.
-   * @param [in]  isC2Scalar   - Is sound speed homogenous?
-   * @param [in]  c2Data       - Sound speed data in heterogeneous case.
-   * @param [in]  isBOnAScalar - Is nonlinearity homogeneous?
-   * @param [in]  bOnAData     - B on A data in heterogeneous case.
-   * @param [in]  isRho0Scalar - Is density homogeneous?
-   * @param [in]  rho0Data     - Acoustic density data in heterogeneous case.
-   */
-  void sumPressureNonlinearLossless(RealMatrix&       p,
-                                    const RealMatrix& rhoX,
-                                    const RealMatrix& rhoY,
-                                    const RealMatrix& rhoZ,
-                                    const bool        isC2Scalar,
-                                    const float*      c2Data,
-                                    const bool        isBOnAScalar,
-                                    const float*      bOnAData,
-                                    const bool        isRho0Scalar,
-                                    const float*      rho0Data);
+  void sumPressureTermsLinear(const RealMatrix&      absorbTauTerm,
+                              const RealMatrix&      absorbEtaTerm,
+                              const RealMatrix&      densitySum,
+                              const MatrixContainer& container);
 
   /**
    * @brief Sum sub-terms for new pressure, linear lossless case.
    *
-   * @param [out] p          - New value of pressure
-   * @param [in]  rhoX       - Acoustic density in x direction.
-   * @param [in]  rhoY       - Acoustic density in x direction.
-   * @param [in]  rhoZ       - Acoustic density in x direction.
-   * @param [in]  isC2Scalar - Is sound speed homogenous?
-   * @param [in]  c2Data     - Sound speed data in heterogeneous case.
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
+   *
+   * <b>Matlab code:</b> \code
+   *  % calculate p using a nonlinear adiabatic equation of state
+   *  p = c0.^2 .* (rhox + rhoy + rhoz + medium.BonA .* (rhox + rhoy + rhoz).^2 ./ (2 .* rho0));
+   * \endcode
+   *
    */
-  void sumPressureLinearLossless(RealMatrix&       p,
-                                 const RealMatrix& rhoX,
-                                 const RealMatrix& rhoY,
-                                 const RealMatrix& rhoZ,
-                                 const bool        isC2Scalar,
-                                 const float*      c2Data);
+  template<Parameters::SimulationDimension simulationDimension>
+  void sumPressureNonlinearLossless(const MatrixContainer& container);
+
+  /**
+   * @brief Sum sub-terms for new pressure, linear lossless case.
+   *
+   * @tparam simulationDimension - Dimensionality of the simulation.
+   * @param [in] container       - Container with all matrices.
+   *
+   * <b>Matlab code:</b> \code
+   *  % calculate p using a linear adiabatic equation of state
+   *  p = c0.^2 .* (rhox + rhoy + rhoz);
+   * \endcode
+   *
+   */
+  template<Parameters::SimulationDimension simulationDimension>
+  void sumPressureLinearLossless(const MatrixContainer& container);
 
   //--------------------------------------------- unstaggered velocity -----------------------------------------------//
 

@@ -8,10 +8,10 @@
  *
  * @brief     The header file for the class for setting CUDA kernel parameters.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      12 November  2015, 16:49 (created) \n
- *            22 February  2019, 22:11 (revised)
+ *            06 March     2019, 13:28 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -61,9 +61,6 @@ CudaParameters::CudaParameters() :
 {
 }// end of default constructor
 //----------------------------------------------------------------------------------------------------------------------
-
-
-
 
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------- Public methods ---------------------------------------------------//
@@ -186,7 +183,6 @@ void CudaParameters::selectDevice(const int deviceIdx)
 }// end of selectDevice
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Based on the dimension sizes, sensors masks, and the GPU architecture, adequate CUDA kernel configurations
  * are selected. \n
@@ -243,7 +239,6 @@ void CudaParameters::setKernelConfiguration()
 }// end of setKernelConfiguration
 //----------------------------------------------------------------------------------------------------------------------
 
-
 /**
  * Upload useful simulation constants into device constant memory.
  */
@@ -255,7 +250,10 @@ void CudaParameters::setUpDeviceConstants() const
   DimensionSizes fullDimSizes    = params.getFullDimensionSizes();
   DimensionSizes reducedDimSizes = params.getReducedDimensionSizes();
 
+
   // Set values for constant memory
+  constantsToTransfer.simulationDimension = params.getSimulationDimension();
+
   constantsToTransfer.nx  = static_cast<unsigned int>(fullDimSizes.nx);
   constantsToTransfer.ny  = static_cast<unsigned int>(fullDimSizes.ny);
   constantsToTransfer.nz  = static_cast<unsigned int>(fullDimSizes.nz);
@@ -297,7 +295,6 @@ void CudaParameters::setUpDeviceConstants() const
   constantsToTransfer.uploadDeviceConstants();
 }// end of setUpDeviceConstants
 //----------------------------------------------------------------------------------------------------------------------
-
 
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------ Protected methods -------------------------------------------------//

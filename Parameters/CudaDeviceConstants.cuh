@@ -8,10 +8,10 @@
  *
  * @brief     The header file for the class for storing constants residing in CUDA constant memory.
  *
- * @version   kspaceFirstOrder3D 3.6
+ * @version   kspaceFirstOrder 3.6
  *
  * @date      17 February  2016, 10:53 (created) \n
- *            22 February  2019, 22:10 (revised)
+ *            06 March     2019, 13:28 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -46,6 +46,8 @@ struct CudaDeviceConstants
   /// Upload device constants into GPU memory.
   __host__ void uploadDeviceConstants();
 
+  /// is the simulation 2D or 3D.
+  Parameters::SimulationDimension simulationDimension;
   /// size of X dimension.
   unsigned int nx;
   /// size of Y dimension.
@@ -63,13 +65,13 @@ struct CudaDeviceConstants
   /// complex number of elements.
   unsigned int nElementsComplex;
   /// normalization constant for 3D FFT.
-  float  fftDivider;
+  float fftDivider;
   /// normalization constant for 1D FFT over X.
-  float  fftDividerX;
+  float fftDividerX;
   /// normalization constant for 1D FFT over Y.
-  float  fftDividerY;
+  float fftDividerY;
   /// normalization constant for 1D FFT over Z.
-  float  fftDividerZ;
+  float fftDividerZ;
 
   /// dt
   float dt;
