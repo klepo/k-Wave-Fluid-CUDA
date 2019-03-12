@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      13 July      2016, 12:33 (created) \n
- *            06 March     2019, 13:15 (revised)
+ *            12 March     2019, 10:58 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -212,7 +212,7 @@ OutputMessage kOutFmtSimulatoinFinalSeparator
   = "└──────────┴────────────────┴──────────────┴────────────────────┘\n";
 
 ///Output message
-OutputMessage kOutFmtCheckpointTimeSteps
+OutputMessage kOutFmtCheckpointCompletedTimeSteps
   = "│ Number of time steps completed:                    %10u │\n";
 ///Output message
 OutputMessage kOutFmtCreatingCheckpoint
@@ -251,6 +251,9 @@ OutputMessage kOutFmtCheckpointFile
 ///Output message
 OutputMessage kOutFmtCheckpointInterval
   = "│ Checkpoint interval:                                %8lus │\n";
+///Output message
+OutputMessage kOutFmtCheckpointTimeSteps
+  = "│ Checkpoint time steps:                               %8lu │\n";
 ///Output message
 OutputMessage kOutFmtCompressionLevel
   = "│ Compression level:                                   %8lu │\n";
@@ -411,6 +414,8 @@ OutputMessage kOutFmtUsagePart2
     "│ --checkpoint_file <file_name> │ HDF5 checkpoint file          │\n"
     "│ --checkpoint_interval <sec>   │ Checkpoint after a given      │\n"
     "│                               │   number of seconds           │\n"
+    "│ --checkpoint_timesteps <step> │ Checkpoint after a given      │\n"
+    "│                               │   number of time steps        │\n"
     "├───────────────────────────────┴───────────────────────────────┤\n"
     "│                          Output flags                         │\n"
     "├───────────────────────────────┬───────────────────────────────┤\n"

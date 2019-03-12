@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      09 August    2012, 13:39 (created) \n
- *            06 March     2019, 13:28 (revised)
+ *            12 March     2019, 11:01 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -37,12 +37,14 @@
 #include <string>
 #include <exception>
 #include <stdexcept>
+#include <limits>
 
 #include <Parameters/Parameters.h>
 #include <Parameters/CudaParameters.h>
 #include <Utils/MatrixNames.h>
 #include <Logger/Logger.h>
 
+#include "Utils/TimeMeasure.h"
 
 using std::ios;
 using std::string;
@@ -129,25 +131,14 @@ void Parameters::init(int argc, char** argv)
     throw std::invalid_argument(Logger::formatMessage(kErrFmtIllegalSamplingStartTimeStep, 1l, mNt));
   }
 
+  // Checkpoint by number of time steps
+  if (mCommandLineParameters.getCheckpointTimeSteps() > 0)
+  {
+    mTimeStepsToCheckpoint = mCommandLineParameters.getCheckpointTimeSteps();
+  }
+
   Logger::log(Logger::LogLevel::kBasic, kOutFmtDone);
 }// end of parseCommandLine
-//----------------------------------------------------------------------------------------------------------------------
-
-/**
- * Select a device device for execution.
- */
-void Parameters::selectDevice()
-{
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtSelectedDevice);
-  Logger::flush(Logger::LogLevel::kBasic);
-
-  int deviceIdx = mCommandLineParameters.getCudaDeviceIdx();
-  mCudaParameters.selectDevice(deviceIdx); // throws an exception when wrong
-
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceId, mCudaParameters.getDeviceIdx());
-
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceName, mCudaParameters.getDeviceName().c_str());
-}// end of selectDevice
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -564,7 +555,51 @@ string Parameters::getGitHash() const
 }// end of getGitHash
 //----------------------------------------------------------------------------------------------------------------------
 
+/**
+ * Select a device device for execution.
+ */
+void Parameters::selectDevice()
+{
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtSelectedDevice);
+  Logger::flush(Logger::LogLevel::kBasic);
 
+  int deviceIdx = mCommandLineParameters.getCudaDeviceIdx();
+  mCudaParameters.selectDevice(deviceIdx); // throws an exception when wrong
+
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceId, mCudaParameters.getDeviceIdx());
+
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceName, mCudaParameters.getDeviceName().c_str());
+}// end of selectDevice
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Is time to checkpoint?
+ */
+bool Parameters::isTimeToCheckpoint(TimeMeasure timer) const
+{
+  timer.stop();
+
+  const auto checkpointInterval = mCommandLineParameters.getCheckpointInterval();
+
+  return (isCheckpointEnabled() &&
+          ((mTimeStepsToCheckpoint == 0) ||
+           (( checkpointInterval > 0) && (timer.getElapsedTime() > float(checkpointInterval)))
+          )
+         );
+}// end of isTimeToCheckpoint
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Increment simulation time step and decrement steps to checkpoint.
+ */
+void Parameters::incrementTimeIndex()
+{
+  mTimeIndex++;
+  mTimeStepsToCheckpoint--;
+ } // end of incrementTimeIndex
+//----------------------------------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------ Protected methods -------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
@@ -578,9 +613,9 @@ Parameters::Parameters()
     mCommandLineParameters(),
     mInputFile(), mOutputFile(), mCheckpointFile(), mFileHeader(),
     mFullDimensionSizes(0,0,0), mReducedDimensionSizes(0,0,0),
-    mNt(0), mTimeIndex(0),
+    mNt(0), mTimeIndex(0), mTimeStepsToCheckpoint(std::numeric_limits<size_t>::max()),
     mDt(0.0f), mDx(0.0f), mDy(0.0f), mDz(0.0f),
-    mCRef(0.0f), mC0ScalarFlag(false),   mC0Scalar(0.0f),
+    mCRef(0.0f), mC0ScalarFlag(false), mC0Scalar(0.0f),
     mRho0ScalarFlag(false), mRho0Scalar(0.0f),
     mRho0SgxScalar(0.0f),   mRho0SgyScalar(0.0f), mRho0SgzScalar(0.0f),
     mNonUniformGridFlag(0), mAbsorbingFlag(0), mNonLinearFlag(0),
