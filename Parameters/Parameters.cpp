@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      09 August    2012, 13:39 (created) \n
- *            12 March     2019, 11:01 (revised)
+ *            14 March     2019, 09:47 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -33,6 +33,14 @@
   #include <omp.h>
 #endif
 
+// Windows build needs to undefine macro MINMAX to support std::limits
+#ifdef _WIN64
+  #ifndef NOMINMAX
+    # define NOMINMAX
+  #endif
+  
+  #include <windows.h>
+#endif
 
 #include <string>
 #include <exception>

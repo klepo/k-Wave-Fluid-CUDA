@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      11 July      2012, 10:30 (created) \n
- *            06 March     2019, 13:19 (revised)
+ *            14 March     2019, 09:48 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -32,6 +32,15 @@
 #include <cmath>
 #include <limits>
 #include <immintrin.h>
+
+// Windows build needs to undefine macro MINMAX to support std::limits
+#ifdef _WIN64
+  #ifndef NOMINMAX
+    # define NOMINMAX
+  #endif
+  
+  #include <windows.h>
+#endif
 
 #include <OutputStreams/BaseOutputStream.h>
 #include <OutputStreams/OutputStreamsCudaKernels.cuh>
