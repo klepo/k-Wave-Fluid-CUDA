@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            07 March     2019, 09:05 (revised)
+ *            12 March     2019, 10:55 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -363,12 +363,6 @@ class KSpaceFirstOrderSolver
 
     /// Print progress statistics.
     void printStatistics();
-
-    /**
-     * @brief  Is time to checkpoint (save actual state on disk).
-     * @return true if it is time to interrupt the simulation and checkpoint.
-     */
-    bool isTimeToCheckpoint();
 
     /**
      * @brief  Was the loop interrupted to checkpoint?

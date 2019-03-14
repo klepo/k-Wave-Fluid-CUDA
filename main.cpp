@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      11 July      2012, 10:57 (created) \n
- *            07 March     2019, 21:00 (revised)
+ *            12 March     2019, 11:05 (revised)
  *
  *
  * @mainpage kspaceFirstOrder-CUDA
@@ -151,7 +151,12 @@
  * the simulation by  <tt>\--checkpoint_file</tt> and the period in seconds after which the simulation will be
  * interrupted by <tt>\--checkpoint_interval</tt>.  When running on a cluster, please allocate enough time for the
  * checkpoint procedure  that can take a non-negligible amount of time (7 matrices have to be stored in  the
- * checkpoint file and all aggregated quantities are flushed into the output file). Please note, that the checkpoint
+ * checkpoint file and all aggregated quantities are flushed into the output file).
+ * Alternatively, the user can specify the number of time steps by <tt>\--checkpoint_timesteps</tt> after which the
+ * simulation is interrupted. The time step interval is calculated from the beginning of current leg, not from the
+ * beginning of the whole simulation. The user can combine both approaches, seconds and time steps. In this case the
+ * first condition met triggers the checkpoint.
+ * Please note, that the checkpoint
  * file name and path is not checked at the beginning of the simulation, but at the time the code starts
  * checkpointing. Thus make sure the file path was correctly specified (otherwise you will not find out the simulation
  * crashed until the first leg of the simulation finishes). The rationale behind this is that to keep as high level of
@@ -221,6 +226,8 @@
 │ --checkpoint_file <file_name> │ HDF5 Checkpoint file          │
 │ --checkpoint_interval <sec>   │ Checkpoint after a given      │
 │                               │   number of seconds           │
+│ --checkpoint_timesteps <step> │ Checkpoint after a given      │
+│                               │   number of time steps        │
 ├───────────────────────────────┴───────────────────────────────┤
 │                          Output flags                         │
 ├───────────────────────────────┬───────────────────────────────┤

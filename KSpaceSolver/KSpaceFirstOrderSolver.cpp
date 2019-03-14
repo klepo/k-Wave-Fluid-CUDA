@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      12 July      2012, 10:27 (created)\n
- *            07 March     2019, 09:06 (revised)
+ *            12 March     2019, 10:56 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -330,7 +330,7 @@ void KSpaceFirstOrderSolver::compute()
     if (isCheckpointInterruption())
     { // Checkpoint
       Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, mSimulationTime.getElapsedTime());
-      Logger::log(Logger::LogLevel::kBasic, kOutFmtCheckpointTimeSteps, mParameters.getTimeIndex());
+      Logger::log(Logger::LogLevel::kBasic, kOutFmtCheckpointCompletedTimeSteps, mParameters.getTimeIndex());
       Logger::log(Logger::LogLevel::kBasic, kOutFmtCheckpointHeader);
       Logger::log(Logger::LogLevel::kBasic, kOutFmtCreatingCheckpoint);
       Logger::flush(Logger::LogLevel::kBasic);
@@ -783,7 +783,8 @@ void KSpaceFirstOrderSolver::computeMainLoop()
   mIterationTime.start();
 
   // execute main loop
-  while ((mParameters.getTimeIndex() < mParameters.getNt()) && (!isTimeToCheckpoint()))
+  while ((mParameters.getTimeIndex() < mParameters.getNt()) &&
+         (!mParameters.isTimeToCheckpoint(mTotalTime)))
   {
     const size_t timeIndex = mParameters.getTimeIndex();
 
@@ -837,12 +838,12 @@ void KSpaceFirstOrderSolver::computeMainLoop()
     mIsTimestepRightAfterRestore = false;
   }
 
-    // Since disk operations are one step delayed, we have to do the last one here.
-    // However we need to check if the loop wasn't skipped due to very short checkpoint interval
-    if (mParameters.getTimeIndex() > mParameters.getSamplingStartTimeIndex() && (!mIsTimestepRightAfterRestore))
-    {
-      mOutputStreamContainer.flushRawStreams();
-    }
+  // Since disk operations are one step delayed, we have to do the last one here.
+  // However we need to check if the loop wasn't skipped due to very short checkpoint interval
+  if (mParameters.getTimeIndex() > mParameters.getSamplingStartTimeIndex() && (!mIsTimestepRightAfterRestore))
+  {
+    mOutputStreamContainer.flushRawStreams();
+  }
 }// end of computeMainLoop()
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -1742,20 +1743,6 @@ void KSpaceFirstOrderSolver::printStatistics()
   }
 }// end of printStatistics
 //----------------------------------------------------------------------------------------------------------------------
-
-/**
- * Is time to checkpoint?
- */
-bool KSpaceFirstOrderSolver::isTimeToCheckpoint()
-{
-  if (!mParameters.isCheckpointEnabled()) return false;
-
-  mTotalTime.stop();
-
-  return (mTotalTime.getElapsedTime() > static_cast<float>(mParameters.getCheckpointInterval()));
-}// end of isTimeToCheckpoint
-//----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Was the loop interrupted to checkpoint?

@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      29 August    2012, 11:25 (created) \n
- *            06 March     2019, 13:19 (revised)
+ *            12 March     2019, 10:59 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -101,8 +101,15 @@ void CommandLineParameters::printComandlineParamers()
                 Logger::wordWrapString(kOutFmtCheckpointFile + mCheckpointFileName,kErrFmtPathDelimiters, 15).c_str());
 
     Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSeparator);
+    if (mCheckpointInterval > 0)
+    {
+      Logger::log(Logger::LogLevel::kAdvanced, kOutFmtCheckpointInterval, mCheckpointInterval);
+    }
 
-    Logger::log(Logger::LogLevel::kAdvanced, kOutFmtCheckpointInterval, mCheckpointInterval);
+    if (mCheckpointTimeSteps > 0)
+    {
+      Logger::log(Logger::LogLevel::kAdvanced, kOutFmtCheckpointTimeSteps, mCheckpointTimeSteps);
+    }
   }
   else
   {
@@ -235,9 +242,10 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
     { "copy_sensor_mask",     no_argument,       nullptr, 2 },
     { "checkpoint_file"    ,  required_argument, nullptr, 3 },
     { "checkpoint_interval",  required_argument, nullptr, 4 },
+    { "checkpoint_timesteps", required_argument, nullptr, 5 },
     { "help",                 no_argument,       nullptr,'h'},
-    { "verbose",              required_argument, nullptr, 5 },
-    { "version",              no_argument,       nullptr, 6 },
+    { "verbose",              required_argument, nullptr, 6 },
+    { "version",              no_argument,       nullptr, 7 },
 
     { "p_raw",                no_argument, nullptr,'p' },
     { "p_rms",                no_argument, nullptr, 10 },
@@ -463,7 +471,26 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         break;
       }
 
-      case 5: // verbose
+      case 5: // checkpoint_timesteps
+      {
+        try
+        {
+          checkpointFlag = true;
+          if (std::stoll(optarg) <= 0)
+          {
+           throw std::invalid_argument("checkpoint_timesteps");
+          }
+          mCheckpointTimeSteps = std::stoll(optarg);
+        }
+        catch (...)
+        {
+          printUsage();
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoCheckpointInterval, " ", errorLineIndent));
+        }
+        break;
+      }
+
+      case 6: // verbose
       {
         try
         {
@@ -482,7 +509,7 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         break;
       }
 
-      case 6: // version
+      case 7: // version
       {
         mPrintVersionFlag = true;
         break;
@@ -655,7 +682,14 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
             break;
           }
 
-          case 5: // verbose
+          case 5: // checkpoint_timesteps
+          {
+            printUsage();
+            Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoCheckpointTimeSteps," ", errorLineIndent));
+            break;
+          }
+
+          case 6: // verbose
           {
             printUsage();
             Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoVerboseLevel, " ", errorLineIndent));
@@ -703,10 +737,10 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
       Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoCheckpointFile, " ", errorLineIndent));
     }
 
-    if (mCheckpointInterval <= 0)
+    if ((mCheckpointInterval <= 0) && (mCheckpointTimeSteps <= 0))
     {
       printUsage();
-      Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoCheckpointInterval, " ", errorLineIndent));
+      Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtNoCheckpointIntervalOrTimeSteps, " ", errorLineIndent));
     }
   }
 
@@ -741,7 +775,7 @@ CommandLineParameters::CommandLineParameters() :
   mProgressPrintInterval(kDefaultProgressPrintInterval),
   mCompressionLevel(kDefaultCompressionLevel),
   mBenchmarkFlag (false), mBenchmarkTimeStepCount(0),
-  mCheckpointInterval(0),
+  mCheckpointInterval(0), mCheckpointTimeSteps(0),
   mPrintVersionFlag (false),
 
   // output flags

@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      29 August    2012, 11:25 (created) \n
- *            07 March     2019, 21:00 (revised)
+ *            12 March     2019, 11:00 (revised)
  *
  * @section   Params Command Line Parameters
  *
@@ -66,12 +66,16 @@
  * the simulation by  <tt>\--checkpoint_file</tt> and the period in seconds after which the simulation will be
  * interrupted by <tt>\--checkpoint_interval</tt>.  When running on a cluster, please allocate enough time for the
  * checkpoint procedure  that can take a non-negligible amount of time (7 matrices have to be stored in  the
- * checkpoint file and all aggregated quantities are flushed into the output file). Please note, that the checkpoint
+ * checkpoint file and all aggregated quantities are flushed into the output file).
+ * Alternatively, the user can specify the number of time steps by <tt>\--checkpoint_timesteps</tt> after which the
+ * simulation is interrupted. The time step interval is calculated from the beginning of current leg, not from the
+ * beginning of the whole simulation. The user can combine both approaches, seconds and time steps. In this case the
+ * first condition met triggers the checkpoint.
+ * Please note, that the checkpoint
  * file name and path is not checked at the beginning of the simulation, but at the time the code starts
  * checkpointing. Thus make sure the file path was correctly specified (otherwise you will not find out the simulation
  * crashed until the first leg of the simulation finishes). The rationale behind this is that to keep as high level of
  * fault tolerance as possible, the checkpoint file should be touched even when really necessary.
- *
  * When controlling a multi-leg simulation by a script loop, the parameters of the code remains the same in all legs.
  * The first leg of the simulation creates a checkpoint  file while the last one deletes it. If the checkpoint file is
  * not found the simulation starts from the beginning. In order to find out how many steps have been finished, please
@@ -136,6 +140,8 @@
 │ --checkpoint_file <file_name> │ HDF5 Checkpoint file          │
 │ --checkpoint_interval <sec>   │ Checkpoint after a given      │
 │                               │   number of seconds           │
+│ --checkpoint_timesteps <step> │ Checkpoint after a given      │
+│                               │   number of time steps        │
 ├───────────────────────────────┴───────────────────────────────┤
 │                          Output flags                         │
 ├───────────────────────────────┬───────────────────────────────┤
@@ -271,13 +277,19 @@ class CommandLineParameters
      * @brief  Is checkpoint enabled?
      * @return true if checkpointing is enabled.
      */
-    bool   isCheckpointEnabled()        const { return (mCheckpointInterval > 0); };
+    bool   isCheckpointEnabled()        const { return ((mCheckpointInterval > 0) || (mCheckpointTimeSteps > 0)); };
 
     /**
      * @brief  Get checkpoint interval.
      * @return Checkpoint interval in seconds.
      */
     size_t getCheckpointInterval()      const { return mCheckpointInterval; };
+
+    /**
+     * @brief  Get checkpoint interval in time steps.
+     * @return Checkpoint interval in time steps.
+     */
+    size_t getCheckpointTimeSteps()      const { return mCheckpointTimeSteps; };
 
     /**
      * @brief  Is --version set?
@@ -430,10 +442,12 @@ class CommandLineParameters
 
     /// BenchmarkFlag value.
     bool   mBenchmarkFlag;
-    /// Number of time steps used to benchmark the code
+    /// Number of time steps used to benchmark the code.
     size_t mBenchmarkTimeStepCount;
-    /// Checkpoint interval in seconds
+    /// Checkpoint interval in seconds.
     size_t mCheckpointInterval;
+    /// Checkpoint interval in time steps.
+    size_t mCheckpointTimeSteps;
 
     /// Print version of the code and exit.
     bool mPrintVersionFlag;
