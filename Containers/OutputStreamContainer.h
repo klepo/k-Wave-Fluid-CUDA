@@ -61,18 +61,32 @@ class OutputStreamContainer
     {
       /// Pressure time series.
       kPressureRaw,
+      /// Compressed pressure time series.
+      kPressureC,
       /// Velocity x time series.
       kVelocityXRaw,
       /// Velocity y time series.
       kVelocityYRaw,
       /// Velocity z time series.
       kVelocityZRaw,
+      /// Compressed velocity x time series.
+      kVelocityXC,
+      /// Compressed velocity y time series.
+      kVelocityYC,
+      /// Compressed velocity z time series.
+      kVelocityZC,
       /// Non staggered velocity x time series.
       kVelocityXNonStaggeredRaw,
       /// Non staggered velocity y time series.
       kVelocityYNonStaggeredRaw,
       /// Non staggered velocity z time series.
       kVelocityZNonStaggeredRaw,
+      /// Compressed non staggered velocity x time series.
+      kVelocityXNonStaggeredC,
+      /// Compressed non staggered velocity y time series.
+      kVelocityYNonStaggeredC,
+      /// Compressed non staggered velocity z time series.
+      kVelocityZNonStaggeredC,
 
       /// RMS of pressure over sensor mask.
       kPressureRms,
@@ -192,7 +206,7 @@ class OutputStreamContainer
 
   protected:
 
-   private:
+  private:
     /**
      * @brief Create a new output stream.
      *

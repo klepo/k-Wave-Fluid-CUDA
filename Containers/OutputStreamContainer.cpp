@@ -86,6 +86,11 @@ void OutputStreamContainer::init(MatrixContainer& matrixContainer)
     mContainer[OI::kPressureRaw] = createOutputStream(matrixContainer, MI::kP, kPressureRawName, RO::kNone);
   }
 
+  if (params.getStorePressureCFlag())
+  {
+    mContainer[OI::kPressureC] = createOutputStream(matrixContainer, MI::kP, kPressureRawName, RO::kC);
+  }
+
   if (params.getStorePressureRmsFlag())
   {
     mContainer[OI::kPressureRms] = createOutputStream(matrixContainer, MI::kP, kPressureRmsName, RO::kRms);
@@ -128,6 +133,16 @@ void OutputStreamContainer::init(MatrixContainer& matrixContainer)
     }
   }
 
+  if (params.getStoreVelocityCFlag())
+  {
+    mContainer[OI::kVelocityXC] = createOutputStream(matrixContainer, MI::kUxSgx, kUxName, RO::kC);
+    mContainer[OI::kVelocityYC] = createOutputStream(matrixContainer, MI::kUySgy, kUyName, RO::kC);
+    if (is3DSimulation)
+    {
+      mContainer[OI::kVelocityZC] = createOutputStream(matrixContainer, MI::kUzSgz, kUzName, RO::kC);
+    }
+  }
+
   if (params.getStoreVelocityNonStaggeredRawFlag())
   {
     mContainer[OI::kVelocityXNonStaggeredRaw] = createOutputStream(matrixContainer,
@@ -147,6 +162,16 @@ void OutputStreamContainer::init(MatrixContainer& matrixContainer)
     }
   }
 
+  if (params.getStoreVelocityNonStaggeredCFlag())
+  {
+    mContainer[OI::kVelocityXNonStaggeredC] = createOutputStream(matrixContainer, MI::kUxShifted, kUxNonStaggeredName, RO::kC);
+    mContainer[OI::kVelocityYNonStaggeredC] = createOutputStream(matrixContainer, MI::kUyShifted, kUyNonStaggeredName, RO::kC);
+    if (is3DSimulation)
+    {
+      mContainer[OI::kVelocityZNonStaggeredC] = createOutputStream(matrixContainer, MI::kUzShifted, kUzNonStaggeredName, RO::kC);
+    }  
+  }
+
   if (params.getStoreVelocityRmsFlag())
   {
     mContainer[OI::kVelocityXRms]   = createOutputStream(matrixContainer, MI::kUxSgx, kUxRmsName, RO::kRms);
@@ -157,7 +182,7 @@ void OutputStreamContainer::init(MatrixContainer& matrixContainer)
     }
   }
 
-   if (params.getStoreVelocityMaxFlag())
+  if (params.getStoreVelocityMaxFlag())
   {
     mContainer[OI::kVelocityXMax]   = createOutputStream(matrixContainer, MI::kUxSgx, kUxMaxName, RO::kMax);
     mContainer[OI::kVelocityYMax]   = createOutputStream(matrixContainer, MI::kUySgy, kUyMaxName, RO::kMax);
