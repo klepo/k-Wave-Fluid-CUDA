@@ -147,14 +147,15 @@ TARGET		= kspaceFirstOrder-CUDA
 all:		$(TARGET)	
 
 
-$(TARGET):	Containers/MatrixContainer.o             \
+$(TARGET):	Compression/CompressHelper.o         \
+		Containers/MatrixContainer.o             \
 		Containers/MatrixRecord.o                \
 		Containers/OutputStreamContainer.o       \
 		Hdf5/Hdf5File.o                          \
 		Hdf5/Hdf5FileHeader.o                    \
-		KSpaceSolver/KSpaceFirstOrderSolver.o  \
+		KSpaceSolver/KSpaceFirstOrderSolver.o    \
 		KSpaceSolver/SolverCudaKernels.o         \
-		Logger/Logger.o	                         \
+		Logger/Logger.o                          \
 		MatrixClasses/BaseFloatMatrix.o          \
 		MatrixClasses/BaseIndexMatrix.o          \
 		MatrixClasses/CufftComplexMatrix.o       \
@@ -173,15 +174,16 @@ $(TARGET):	Containers/MatrixContainer.o             \
 		main.o
 
 
-	$(CXX) $(LDFLAGS) $(CUDA_ARCH) main.o	         \
+	$(CXX) $(LDFLAGS) $(CUDA_ARCH) main.o        \
+		Compression/CompressHelper.o             \
 		Containers/MatrixContainer.o             \
 		Containers/MatrixRecord.o                \
 		Containers/OutputStreamContainer.o       \
 		Hdf5/Hdf5File.o                          \
 		Hdf5/Hdf5FileHeader.o                    \
-		KSpaceSolver/KSpaceFirstOrderSolver.o  \
+		KSpaceSolver/KSpaceFirstOrderSolver.o    \
 		KSpaceSolver/SolverCudaKernels.o         \
-		Logger/Logger.o	                         \
+		Logger/Logger.o                          \
 		MatrixClasses/BaseFloatMatrix.o          \
 		MatrixClasses/BaseIndexMatrix.o          \
 		MatrixClasses/CufftComplexMatrix.o       \
