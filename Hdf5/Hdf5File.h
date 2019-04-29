@@ -585,6 +585,7 @@ class Hdf5File
      * @brief Close a group.
      * @param[in] group - Group to close.
      */
+
     void closeGroup(const hid_t group);
     /**
      * @brief   Get handle to the root group of the file.
@@ -593,6 +594,23 @@ class Hdf5File
      */
     hid_t getRootGroup() const { return mFile; };
 
+    /**
+     * @brief Check group exists.
+     * @param [in] parentGroup - Parent group.
+     * @param [in] groupName   - Group name.
+     * @return true            - If the group exists.
+     */
+    bool groupExists(const hid_t parentGroup,
+                     MatrixName& groupName);
+
+    /**
+     * @brief Check dataset exists.
+     * @param [in] parentGroup - Parent group.
+     * @param [in] groupName   - Dataset name.
+     * @return true            - If the dataset exists.
+     */
+    bool datasetExists(const hid_t parentGroup,
+                     MatrixName& datasetName);
 
     //-------------------------------------------- Dataset manipulators ----------------------------------------------//
     /**
@@ -633,6 +651,23 @@ class Hdf5File
 
 
     //---------------------------------------- Dataset Read/Write operations -----------------------------------------//
+    /**
+     * @brief Read a hyperslab from the dataset.
+     *
+     * @tparam     T         - Data type to be written.
+     * @param [in] dataset   - Dataset id.
+     * @param [in] position  - Position in the dataset.
+     * @param [in] size      - Size of the hyperslab.
+     * @param [out] data     - Pointer to data.
+     * @throw ios::failure   - If error happens.
+     * @warning Limited to float and size_t data types.
+     */
+    template<class T>
+    void readHyperSlab(const hid_t           dataset,
+                       const DimensionSizes& position,
+                       const DimensionSizes& size,
+                       T*                    data);
+
     /**
      * @brief Write a hyperslab into the dataset.
      *
@@ -825,6 +860,34 @@ class Hdf5File
                                 MatrixName&        attributeName,
                                 const std::string& value);
     /**
+     * @brief Write long long attribute into the dataset under the root group.
+     *
+     * @param [in] parentGroup   - Where the dataset is.
+     * @param [in] datasetName   - Dataset name.
+     * @param [in] attributeName - Attribute name.
+     * @param [in] value         - Data to write.
+     * @throw ios::failure       - If error happens.
+     */
+    void   writeLongLongAttribute(const hid_t        parentGroup,
+                                MatrixName&        datasetName,
+                                MatrixName&        attributeName,
+                                const long long value);
+
+    /**
+     * @brief Write float attribute into the dataset under the root group.
+     *
+     * @param [in] parentGroup   - Where the dataset is.
+     * @param [in] datasetName   - Dataset name.
+     * @param [in] attributeName - Attribute name.
+     * @param [in] value         - Data to write.
+     * @throw ios::failure       - If error happens.
+     */
+    void writeFloatAttribute(const hid_t     parentGroup,
+                             MatrixName&     datasetName,
+                             MatrixName&     attributeName,
+                             const float value);
+
+    /**
      * @brief Read string attribute from the dataset under the root group.
      *
      * @param [in] parentGroup   - Where the dataset is.
@@ -837,7 +900,42 @@ class Hdf5File
                                     MatrixName& datasetName,
                                     MatrixName& attributeName);
 
-  protected:
+    /**
+     * @brief Read long long attribute from the dataset under the root group.
+     *
+     * @param [in] parentGroup   - Where the dataset is.
+     * @param [in] datasetName   - Dataset name.
+     * @param [in] attributeName - Attribute name.
+     * @return Attribute value.
+     * @throw ios::failure       - If error happens.
+     */
+    long long readLongLongAttribute(const hid_t parentGroup,
+                                    MatrixName& datasetName,
+                                    MatrixName& attributeName);
+
+    /**
+     * @brief Read float attribute from the dataset under the root group.
+     *
+     * @param [in] parentGroup   - Where the dataset is.
+     * @param [in] datasetName   - Dataset name.
+     * @param [in] attributeName - Attribute name.
+     * @return Attribute value.
+     * @throw ios::failure       - If error happens.
+     */
+    float readFloatAttribute(const hid_t parentGroup,
+                             MatrixName& datasetName,
+                             MatrixName& attributeName);
+
+    /// String representation of the period in the compressed dataset.
+    static const std::string kCPeriodName;
+    /// String representation of the number of harmonics in the compressed dataset.
+    static const std::string kCHarmonicsName;
+    /// String representation of the multiple of overlap size in the compressed dataset.
+    static const std::string kCMOSName;
+    /// String representation of the period in the HDF5 input file.
+    static const std::string kPeriodName;
+
+protected:
 
   private:
     /// String representation of the Domain type in the HDF5 file.
