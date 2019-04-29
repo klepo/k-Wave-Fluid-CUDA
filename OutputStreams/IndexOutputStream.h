@@ -107,7 +107,7 @@ class IndexOutputStream : public BaseOutputStream
   protected:
 
     /// Flush the buffer to the file.
-    virtual void flushBufferToFile();
+    virtual void flushBufferToFile(float *bufferToFlush = nullptr);
 
     /// Sensor mask to sample data.
     const IndexMatrix& mSensorMask;

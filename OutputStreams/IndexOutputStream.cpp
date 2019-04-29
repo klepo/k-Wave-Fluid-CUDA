@@ -61,6 +61,8 @@ IndexOutputStream::IndexOutputStream(Hdf5File&            file,
 {
   // Create event for sampling
   cudaCheckErrors(cudaEventCreate(&mEventSamplingFinished));
+
+  allocateMinMaxMemory(1);
 }// end of IndexOutputStream
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -83,16 +85,32 @@ IndexOutputStream::~IndexOutputStream()
  */
 void IndexOutputStream::create()
 {
-
   size_t nSampledElementsPerStep = mSensorMask.size();
 
   const Parameters& params = Parameters::getInstance();
 
+  std::string objectName = mRootObjectName;
+
   // Derive dataset dimension sizes
-  DimensionSizes datasetSize(nSampledElementsPerStep,
-                             (mReduceOp == ReduceOperator::kNone) ?
-                                params.getNt() - params.getSamplingStartTimeIndex() : 1,
-                              1);
+  DimensionSizes datasetSize(nSampledElementsPerStep, 1, 1);
+  if (mReduceOp == ReduceOperator::kNone)
+  {
+    datasetSize = DimensionSizes(nSampledElementsPerStep,
+                                 params.getNt() - params.getSamplingStartTimeIndex(),
+                                 1);
+  }
+  else if (mReduceOp == ReduceOperator::kC)
+  {
+    // Extend "x" dimension for copression coefficients
+    nSampledElementsPerStep *= mCompressHelper->getHarmonics() * 2;
+    size_t steps = params.getNt() - params.getSamplingStartTimeIndex();
+
+    // TODO minimal number of steps for compression
+    size_t compressedSteps = size_t(std::max(float(floor(float(steps) / mCompressHelper->getOSize())) - 1, 1.0f));
+    datasetSize = DimensionSizes(nSampledElementsPerStep, compressedSteps, 1);
+
+    objectName = objectName + "_c";
+  }
 
   // Set HDF5 chunk size
   DimensionSizes chunkSize(nSampledElementsPerStep, 1, 1);
@@ -104,21 +122,32 @@ void IndexOutputStream::create()
 
   // Create a dataset under the root group
   mDataset = mFile.createDataset(mFile.getRootGroup(),
-                                 mRootObjectName,
+                                 objectName,
                                  datasetSize,
                                  chunkSize,
                                  Hdf5File::MatrixDataType::kFloat,
                                  params.getCompressionLevel());
 
     // Write dataset parameters
-  mFile.writeMatrixDomainType(mFile.getRootGroup(), mRootObjectName, Hdf5File::MatrixDomainType::kReal);
-  mFile.writeMatrixDataType  (mFile.getRootGroup(), mRootObjectName, Hdf5File::MatrixDataType::kFloat);
+  mFile.writeMatrixDomainType(mFile.getRootGroup(), objectName, Hdf5File::MatrixDomainType::kReal);
+  mFile.writeMatrixDataType  (mFile.getRootGroup(), objectName, Hdf5File::MatrixDataType::kFloat);
+
+  // Write compression parameters as attributes
+  if (mReduceOp == ReduceOperator::kC)
+  {
+    mFile.writeLongLongAttribute(mFile.getRootGroup(), objectName, "c_harmonics", ssize_t(mCompressHelper->getHarmonics()));
+    mFile.writeStringAttribute(mFile.getRootGroup(), objectName, "c_type", "c");
+    mFile.writeFloatAttribute(mFile.getRootGroup(), objectName, "c_period", mCompressHelper->getPeriod());
+    mFile.writeLongLongAttribute(mFile.getRootGroup(), objectName, "c_mos", ssize_t(mCompressHelper->getMos()));
+    mFile.writeStringAttribute(mFile.getRootGroup(), objectName, "src_dataset_name", mRootObjectName);
+  }
 
   // Sampled time step
   mSampledTimeStep = 0;
 
   // Set buffer size
-  mSize = nSampledElementsPerStep;
+  mSize = mSensorMask.size();
+  mCSize = nSampledElementsPerStep;
 
   // Allocate memory
   allocateMemory();
@@ -136,35 +165,56 @@ void IndexOutputStream::reopen()
   // Set buffer size
   mSize = mSensorMask.size();
 
+  std::string objectName = mRootObjectName;
+
+  if (mReduceOp == ReduceOperator::kC)
+  {
+    mCSize = mSize * mCompressHelper->getHarmonics() * 2;
+    objectName = objectName + "_c";
+  }
+
   // Allocate memory
    allocateMemory();
 
   // Reopen the dataset
-  mDataset = mFile.openDataset(mFile.getRootGroup(), mRootObjectName);
+  mDataset = mFile.openDataset(mFile.getRootGroup(), objectName);
 
-
-  if (mReduceOp == ReduceOperator::kNone)
+  if (mReduceOp == ReduceOperator::kNone || mReduceOp == ReduceOperator::kC)
   { // raw time series - just seek to the right place in the dataset
     mSampledTimeStep = (params.getTimeIndex() < params.getSamplingStartTimeIndex()) ?
                         0 : (params.getTimeIndex() - params.getSamplingStartTimeIndex());
 
+    if (mReduceOp == ReduceOperator::kC)
+    {
+      mCompressedTimeStep = size_t(std::max(float(floor(float(mSampledTimeStep) / mCompressHelper->getOSize())), 0.0f));
+    }
   }
   else
   { // aggregated quantities - reload data
     mSampledTimeStep = 0;
 
     // Read data from disk only if there were anything stored there (t_index >= start_index)
-    if (Parameters::getInstance().getTimeIndex() > Parameters::getInstance().getSamplingStartTimeIndex())
+    if (params.getTimeIndex() > params.getSamplingStartTimeIndex())
     {
       // Since there is only a single timestep in the dataset, I can read the whole dataset
       mFile.readCompleteDataset(mFile.getRootGroup(),
-                                mRootObjectName,
+                                objectName,
                                 DimensionSizes(mSize, 1, 1),
                                 mHostBuffer);
 
       // Send data to device
       copyToDevice();
     }
+  }
+
+  if (params.getTimeIndex() > params.getSamplingStartTimeIndex())
+  {
+    // Reload temp coefficients from checkpoint file
+    loadCheckpointCompressionCoefficients();
+
+    // Reload min and max values
+    const std::string datasetName = (mReduceOp == ReduceOperator::kC) ? mRootObjectName + "_c" : mRootObjectName;
+    loadMinMaxValues(mFile, mFile.getRootGroup(), datasetName);
   }
 }// end of reopen
 //----------------------------------------------------------------------------------------------------------------------
@@ -177,6 +227,7 @@ void IndexOutputStream::sample()
   switch (mReduceOp)
   {
     case ReduceOperator::kNone:
+    case ReduceOperator::kC:
     {
       OutputStreamsCudaKernels::sampleIndex<ReduceOperator::kNone>
                                            (mDeviceBuffer,
@@ -234,8 +285,66 @@ void IndexOutputStream::flushRaw()
     // make sure the data has been copied from the GPU
     cudaEventSynchronize(mEventSamplingFinished);
 
+    for (ssize_t i = 0; i < ssize_t(mSensorMask.size()); i++)
+    {
+      checkOrSetMinMaxValue(minValue[0], maxValue[0], mHostBuffer[i], minValueIndex[0], maxValueIndex[0], mSensorMask.size() * mSampledTimeStep + i);
+    }
+
     // only raw time series are flushed down to the disk every time step
     flushBufferToFile();
+  }
+  if (mReduceOp == ReduceOperator::kC)
+  {
+    // make sure the data has been copied from the GPU
+    cudaEventSynchronize(mEventSamplingFinished);
+
+    // Compression
+    // Compute local index and flags
+    mStepLocal = (mSampledTimeStep) % (mCompressHelper->getBSize() - 1);
+    mSavingFlag = ((mStepLocal + 1) % mCompressHelper->getOSize() == 0) ? true : false;
+    mOddFrameFlag = ((mCompressedTimeStep + 1) % 2 == 0) ? true : false;
+
+    // For every point
+    #pragma omp parallel for
+    for (ssize_t i = 0; i < ssize_t(mSensorMask.size()); i++)
+    {
+      // Tady je někde problém
+      checkOrSetMinMaxValue(minValue[0], maxValue[0], mHostBuffer[i], minValueIndex[0], maxValueIndex[0], mSensorMask.size() * mSampledTimeStep + i);
+      size_t offset = mCompressHelper->getHarmonics() * i;
+
+      //For every harmonics
+      for (size_t ih = 0; ih < mCompressHelper->getHarmonics(); ih++)
+      {
+          size_t pH = offset + ih;
+          size_t bIndex = ih * mCompressHelper->getBSize() + mStepLocal;
+
+          // Correlation step
+          reinterpret_cast<floatC *>(mHostBuffer1)[pH] += mCompressHelper->getBE()[bIndex] * mHostBuffer[i];
+          reinterpret_cast<floatC *>(mHostBuffer2)[pH] += mCompressHelper->getBE_1()[bIndex] * mHostBuffer[i];
+        }
+    }
+
+    if (mSavingFlag)
+    {
+      // Select accumulated value
+      float *data = mOddFrameFlag ? mHostBuffer1 : mHostBuffer2;
+
+      // Store selected buffer
+      if (mCompressedTimeStep > 0)
+      {
+        flushBufferToFile(data);
+      }
+
+      // Set zeros for next accumulation
+      //memset(data, 0, mBufferSize * sizeof(float));
+      #pragma omp parallel for
+      for (ssize_t i = 0; i < ssize_t(mCSize); i++)
+      {
+        data[i] = 0.0f;
+      }
+      mCompressedTimeStep++;
+    }
+    mSampledTimeStep++;
   }
 }// end of flushRaw
 //----------------------------------------------------------------------------------------------------------------------
@@ -250,13 +359,17 @@ void IndexOutputStream::postProcess()
 
   // When no reduction operator is applied, the data is flushed after every time step
   // which means it has been done before
-  if (mReduceOp != ReduceOperator::kNone)
+  if (mReduceOp != ReduceOperator::kNone && mReduceOp != ReduceOperator::kC)
   {
     // Copy data from GPU matrix
     copyFromDevice();
     // flush to disk
     flushBufferToFile();
   }
+
+  // Store min and max values
+  const std::string datasetName = (mReduceOp == ReduceOperator::kC) ? mRootObjectName + "_c" : mRootObjectName;
+  storeMinMaxValues(mFile, mFile.getRootGroup(), datasetName);
 }// end of postProcess
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -266,13 +379,18 @@ void IndexOutputStream::postProcess()
 void IndexOutputStream::checkpoint()
 {
   // raw data has already been flushed, others has to be flushed here
-  if (mReduceOp != ReduceOperator::kNone)
+  if (mReduceOp != ReduceOperator::kNone && mReduceOp != ReduceOperator::kC)
   {
     // copy data from the device
     copyFromDevice();
     // flush to disk
     flushBufferToFile();
   }
+  storeCheckpointCompressionCoefficients();
+
+  // Store min and max values
+  const std::string datasetName = (mReduceOp == ReduceOperator::kC) ? mRootObjectName + "_c" : mRootObjectName;
+  storeMinMaxValues(mFile, mFile.getRootGroup(), datasetName);
 }// end of checkpoint
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -298,13 +416,13 @@ void IndexOutputStream::close()
 /**
  * Flush the buffer down to the file at the actual position
  */
-void IndexOutputStream::flushBufferToFile()
+void IndexOutputStream::flushBufferToFile(float *bufferToFlush)
 {
   mFile.writeHyperSlab(mDataset,
-                       DimensionSizes(0,mSampledTimeStep,0),
-                       DimensionSizes(mSize,1,1),
-                       mHostBuffer);
-  mSampledTimeStep++;
+                       DimensionSizes(0, (mReduceOp == ReduceOperator::kC) ? mCompressedTimeStep - 1 : mSampledTimeStep, 0),
+                       DimensionSizes((mReduceOp == ReduceOperator::kC) ? mCSize : mSize, 1, 1),
+                       (bufferToFlush != nullptr) ? bufferToFlush : mHostBuffer);
+  if (mReduceOp != ReduceOperator::kC) mSampledTimeStep++;
 }// end of flushToFile
 //----------------------------------------------------------------------------------------------------------------------
 
