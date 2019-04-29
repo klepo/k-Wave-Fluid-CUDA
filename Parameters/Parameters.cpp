@@ -191,12 +191,12 @@ void Parameters::printSimulatoinSetup()
  */
 void Parameters::readScalarsFromInputFile()
 {
-  DimensionSizes scalarSizes(1,1,1);
+  DimensionSizes scalarSizes(1, 1, 1);
 
   if (!mInputFile.isOpen())
   {
     // Open file -- exceptions handled in main
-    mInputFile.open(mCommandLineParameters.getInputFileName());
+    mInputFile.open(mCommandLineParameters.getInputFileName(), H5F_ACC_RDWR);
   }
 
   mFileHeader.readHeaderFromInputFile(mInputFile);
@@ -257,14 +257,13 @@ void Parameters::readScalarsFromInputFile()
     mInputFile.readScalarValue(rootGroup, kPmlZAlphaName, mPmlZAlpha);
   }
 
-
   // if the file is of version 1.0, there must be a sensor mask index (backward compatibility)
   if (mFileHeader.getFileVersion() == Hdf5FileHeader::FileVersion::kVersion10)
   {
     mSensorMaskIndexSize = mInputFile.getDatasetSize(rootGroup, kSensorMaskIndexName);
 
     //if -u_non_staggered_raw enabled, throw an error - not supported
-    if (getStoreVelocityNonStaggeredRawFlag())
+    if (getStoreVelocityNonStaggeredRawFlag() || getStoreVelocityNonStaggeredCFlag())
     {
       throw ios::failure(kErrFmtNonStaggeredVelocityNotSupportedFileVersion);
     }
@@ -455,6 +454,90 @@ void Parameters::readScalarsFromInputFile()
       mInputFile.readScalarValue(rootGroup, kRho0SgzName, mRho0SgzScalar);
     }
   }
+  // Init compression stuff
+  if (mCommandLineParameters.getStorePressureCFlag() || mCommandLineParameters.getStoreVelocityCFlag() || mCommandLineParameters.getStoreVelocityNonStaggeredCFlag())
+  {
+    if (mCommandLineParameters.getPeriod() > 0 && mCommandLineParameters.getFrequency() > 0)
+    {
+      throw ios::failure(Logger::formatMessage(kErrFmtBadPeriodAndFrequencyValue));
+    }
+
+    if (mCommandLineParameters.getFrequency() > 0)
+    {
+      try
+      {
+        mCommandLineParameters.mPeriod = 1.0f / (mCommandLineParameters.getFrequency() * mDt);
+        mInputFile.writeFloatAttribute(rootGroup, kPressureSourceInputName, Hdf5File::kPeriodName, mCommandLineParameters.getPeriod());
+      }
+      catch (...)
+      {
+        throw ios::failure(Logger::formatMessage(kErrFmtCannotComputePeriodValue));
+      }
+    }
+
+    if (!(mCommandLineParameters.getPeriod() > 0) && mPressureSourceFlag)
+    {
+      /*try
+      {
+        mCommandLineParameters.mPeriod = mInputFile.readFloatAttribute(rootGroup, kPressureSourceInputName, Hdf5File::kPeriodName);
+      }
+      catch (...)*/
+      {
+        mCommandLineParameters.mPeriod = 0;
+        DimensionSizes size = mInputFile.getDatasetDimensionSizes(rootGroup, kPressureSourceInputName);
+        hsize_t length = 0;
+        hsize_t limit = 500;
+        length = size.ny > limit ? limit : size.ny;
+        float *data = static_cast<float *>(_mm_malloc(length * sizeof(float), kDataAlignment));
+        // Read only part of the dataset
+        hid_t dataset = mInputFile.openDataset(rootGroup, kPressureSourceInputName);
+        mInputFile.readHyperSlab(dataset, DimensionSizes(size.nx / 2, size.ny - length, 0), DimensionSizes(1, length, 1), data);
+        mInputFile.closeDataset(dataset);
+        // Compute period
+        mCommandLineParameters.mPeriod = CompressHelper::findPeriod(data, length);
+        _mm_free(data);
+        mInputFile.writeFloatAttribute(rootGroup, kPressureSourceInputName, Hdf5File::kPeriodName, mCommandLineParameters.getPeriod());
+      }
+    }
+
+    if (!(mCommandLineParameters.getPeriod() > 0))
+    {
+      throw ios::failure(Logger::formatMessage(kErrFmtMissingPeriodValue));
+    }
+
+
+    if (!(mCommandLineParameters.getFrequency() > 0))
+    {
+      mCommandLineParameters.mFrequency = 1.0f / (mCommandLineParameters.getPeriod() * mDt);
+    }
+
+    // Create compression helper
+    CompressHelper &compressHelper = CompressHelper::getInstance();
+    compressHelper.init(mCommandLineParameters.getPeriod(), mCommandLineParameters.getMOS(), mCommandLineParameters.getHarmonics(), true);
+
+    // Set compression sizes for temp buffers
+    // complex number -> * 2
+    if (mSensorMaskType == SensorMaskType::kIndex)
+    {
+      mCompressedDimensionSizes = DimensionSizes(mSensorMaskIndexSize * compressHelper.getHarmonics() * 2, 1, 1);
+    }
+    else if (mSensorMaskType == SensorMaskType::kCorners)
+    {
+      DimensionSizes size = mInputFile.getDatasetDimensionSizes(rootGroup, kSensorMaskCornersName);
+      size_t *data = static_cast<size_t *>(_mm_malloc(size.nElements() * sizeof(size_t), kDataAlignment));
+      mInputFile.readCompleteDataset(rootGroup, kSensorMaskCornersName, size, data);
+      size_t cuboidsSize = 0;
+      for (size_t i = 0; i < mSensorMaskCornersSize; i++)
+      {
+        DimensionSizes corner1(data[i * 6], data[i * 6 + 1], data[i * 6 + 2]);
+        DimensionSizes corner2(data[i * 6 + 3], data[i * 6 + 4], data[i * 6 + 5]);
+        cuboidsSize += (corner2 - corner1).nElements();
+      }
+      _mm_free(data);
+
+      mCompressedDimensionSizes = DimensionSizes(cuboidsSize * compressHelper.getHarmonics() * 2, 1, 1);
+    }
+  }
 }// end of readScalarsFromInputFile
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -642,3 +725,13 @@ Parameters::Parameters()
 
 }// end of Parameters()
 //----------------------------------------------------------------------------------------------------------------------
+
+size_t Parameters::getCompressedSteps() const
+{
+    return mCompressedSteps;
+}
+
+DimensionSizes Parameters::getCompressedDimensionSizes() const
+{
+    return mCompressedDimensionSizes;
+}

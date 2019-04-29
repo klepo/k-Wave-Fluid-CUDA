@@ -149,6 +149,8 @@
 │                               │   (default output flag)       │
 │                               │   (the same as --p_raw)       │
 │ --p_raw                       │ Store raw time series of p    │
+│ --p_c                         │ Store compressed              │
+│                               │    time series of p           │
 │ --p_rms                       │ Store rms of p                │
 │ --p_max                       │ Store max of p                │
 │ --p_min                       │ Store min of p                │
@@ -160,8 +162,12 @@
 │                               │    (the same as --u_raw)      │
 │ --u_raw                       │ Store raw time series of      │
 │                               │    ux, uy, uz                 │
+│ --u_c                         │ Store compressed              │
+│                               │    time series of ux, uy, uz  │
 │ --u_non_staggered_raw         │ Store non-staggered raw time  │
 │                               │   series of ux, uy, uz        │
+│ --u_non_staggered_c           │ Store non-staggered compressed│
+│                               │   time series of ux, uy, uz   │
 │ --u_rms                       │ Store rms of ux, uy, uz       │
 │ --u_max                       │ Store max of ux, uy, uz       │
 │ --u_min                       │ Store min of ux, uy, uz       │
@@ -170,6 +176,21 @@
 │ --u_min_all                   │ Store min of ux, uy, uz       │
 │                               │   (whole domain)              │
 │ --u_final                     │ Store final acoustic velocity │
+├───────────────────────────────┴───────────────────────────────┤
+│                Time series compression flags                  │
+├───────────────────────────────┬───────────────────────────────┤
+│ --frequency <frequency>       │ Frequency for time series     │
+│                               │   compression (needs dt for   │
+│                               │   computing period)           │
+│ --period <period>             │ Period for time series        │
+│                               │   compression                 │
+│                               │   (default = computed from    │
+│                               │   p_source_input dataset)     │
+│ --mos <mos>                   │ Multiple of overlap size  for │
+│                               │   compression                 │
+│                               │   (default = 1)               │
+│ --harmonics <harmonics>       │ Number of hamornics for       │
+│                               │   compression (default = 1)   │
 ├───────────────────────────────┼───────────────────────────────┤
 │ -s <time_step>                │ When data collection begins   │
 │                               │   (default = 1)               │
@@ -235,7 +256,6 @@ class CommandLineParameters
      * @return Checkpoint file name.
      */
     const std::string& getCheckpointFileName() const { return mCheckpointFileName; };
-
 
     /**
      * @brief  Get number of threads.
@@ -304,7 +324,11 @@ class CommandLineParameters
      * @return true if the flag is set.
      */
     bool   getStorePressureRawFlag()      const { return mStorePressureRawFlag; };
-
+    /**
+     * @brief  Is --p_c set?
+     * @return true if the flag is set.
+     */
+    bool   getStorePressureCFlag()        const { return mStorePressureCFlag; };
     /**
      * @brief  Is --p_rms set?
      * @return true if the flag is set.
@@ -347,13 +371,21 @@ class CommandLineParameters
      * @return true if the flag is set.
      */
     bool   getStoreVelocityRawFlag()             const { return mStoreVelocityRawFlag; };
-
+    /**
+     * @brief  Is --u_c set?
+     * @return true if the flag is set.
+     */
+    bool   getStoreVelocityCFlag()               const { return mStoreVelocityCFlag; };
     /**
      * @brief  Is --u_non_staggered_raw set?
      * @return true if the flag is set.
      */
     bool   getStoreVelocityNonStaggeredRawFlag() const { return mStoreVelocityNonStaggeredRawFlag; };
-
+    /**
+     * @brief  Is --u_non_staggered_c set?
+     * @return true if the flag is set.
+     */
+    bool   getStoreVelocityNonStaggeredCFlag()   const { return mStoreVelocityNonStaggeredCFlag; };
     /**
      * @brief  Is --u_rms set?
      * @return true if the flag is set.
@@ -382,7 +414,7 @@ class CommandLineParameters
      * @brief  Is --u_min set?
      * @return true if the flag is set.
      */
-    bool getStoreVelocityMinAllFlag()            const { return mStoreVelocityMinAllFlag; };
+    bool   getStoreVelocityMinAllFlag()          const { return mStoreVelocityMinAllFlag; };
 
     /**
      * @brief  Is --u_final set?
@@ -416,6 +448,13 @@ class CommandLineParameters
      * @throw call exit when error in commandline.
      */
     void parseCommandLine(int argc, char** argv);
+
+    float getFrequency() const;
+    float getPeriod() const;
+
+    size_t getMOS() const;
+
+    size_t getHarmonics() const;
 
   protected:
     /// Default constructor - only friend class can create an instance.
@@ -454,6 +493,8 @@ class CommandLineParameters
 
     /// Store raw time-series of pressure over the sensor mask?
     bool mStorePressureRawFlag;
+    /// Store compressed time-series of pressure over the sensor mask?
+    bool mStorePressureCFlag;
     /// Store RMS of pressure over the the sensor mask?
     bool mStorePressureRmsFlag;
     /// Store maximum of pressure over the sensor mask?
@@ -469,8 +510,12 @@ class CommandLineParameters
 
     /// Store raw time-series of velocity over the sensor mask?
     bool mStoreVelocityRawFlag;
+    /// Store compressed time-series of velocity over the sensor mask?
+    bool mStoreVelocityCFlag;
     /// Store un staggered raw time-series of velocity over the sensor mask?
     bool mStoreVelocityNonStaggeredRawFlag;
+    /// Store compressed un staggered raw time-series of velocity over the sensor mask?
+    bool mStoreVelocityNonStaggeredCFlag;
     /// Store RMS of velocity over the the sensor mask?
     bool mStoreVelocityRmsFlag;
     /// Store maximum of velocity over the sensor mask?
@@ -489,6 +534,15 @@ class CommandLineParameters
 
     /// When to start sampling data.
     size_t mSamplingStartTimeStep;
+
+    /// Period for compression.
+    float mPeriod = 0;
+    /// Frequency for compression.
+    float mFrequency = 0;
+    /// Multiple of overlap size for compression.
+    size_t mMOS = 1;
+    /// Number of harmonics for compression.
+    size_t mHarmonics = 1;
 
     /// Default compression level.
     static constexpr size_t kDefaultCompressionLevel      = 0;

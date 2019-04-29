@@ -126,6 +126,13 @@ void CommandLineParameters::printComandlineParamers()
     Logger::log(Logger::LogLevel::kFull, kOutFmtBenchmarkTimeStep, mBenchmarkTimeStepCount);
   }
 
+  if (mStorePressureCFlag || mStoreVelocityCFlag || mStoreVelocityNonStaggeredCFlag)
+  {
+    Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSeparator);
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtCompressionSettings, mFrequency, mPeriod, mMOS, mHarmonics);
+    Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSeparator);
+  }
+
   Logger::log(Logger::LogLevel::kAdvanced, kOutFmtSamplingFlags);
 
 
@@ -135,6 +142,10 @@ void CommandLineParameters::printComandlineParamers()
   if (mStorePressureRawFlag)
   {
     sampledQuantitiesList += "p_raw, ";
+  }
+  if (mStorePressureCFlag)
+  {
+    sampledQuantitiesList += "p_c, ";
   }
   if (mStorePressureRmsFlag)
   {
@@ -166,6 +177,10 @@ void CommandLineParameters::printComandlineParamers()
   {
     sampledQuantitiesList += "u_raw, ";
   }
+  if (mStoreVelocityCFlag)
+  {
+    sampledQuantitiesList += "u_c, ";
+  }
   if (mStoreVelocityRmsFlag)
   {
     sampledQuantitiesList += "u_rms, ";
@@ -190,10 +205,13 @@ void CommandLineParameters::printComandlineParamers()
   {
     sampledQuantitiesList += "u_final, ";
   }
-
   if (mStoreVelocityNonStaggeredRawFlag)
   {
     sampledQuantitiesList += "u_non_staggered_raw, ";
+  }
+  if (mStoreVelocityNonStaggeredCFlag)
+  {
+    sampledQuantitiesList += "u_non_staggered_c, ";
   }
 
   // remove comma and space symbols
@@ -248,6 +266,7 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
     { "version",              no_argument,       nullptr, 7 },
 
     { "p_raw",                no_argument, nullptr,'p' },
+    { "p_c",                  no_argument, nullptr, 9  },
     { "p_rms",                no_argument, nullptr, 10 },
     { "p_max",                no_argument, nullptr, 11 },
     { "p_min",                no_argument, nullptr, 12 },
@@ -255,14 +274,21 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
     { "p_min_all",            no_argument, nullptr, 14 },
     { "p_final",              no_argument, nullptr, 15 },
 
+    { "frequency",            required_argument, nullptr, 16 },
+    { "period",               required_argument, nullptr, 17 },
+    { "mos",                  required_argument, nullptr, 18 },
+    { "harmonics",            required_argument, nullptr, 19 },
+
     { "u_raw",                no_argument, nullptr,'u' },
-    { "u_rms",                no_argument, nullptr, 20},
-    { "u_max",                no_argument, nullptr, 21},
-    { "u_min",                no_argument, nullptr, 22},
-    { "u_max_all",            no_argument, nullptr, 23},
-    { "u_min_all",            no_argument, nullptr, 24},
-    { "u_final",              no_argument, nullptr, 25},
-    { "u_non_staggered_raw",  no_argument, nullptr, 26},
+    { "u_rms",                no_argument, nullptr, 20 },
+    { "u_max",                no_argument, nullptr, 21 },
+    { "u_min",                no_argument, nullptr, 22 },
+    { "u_max_all",            no_argument, nullptr, 23 },
+    { "u_min_all",            no_argument, nullptr, 24 },
+    { "u_final",              no_argument, nullptr, 25 },
+    { "u_non_staggered_raw",  no_argument, nullptr, 26 },
+    { "u_c",                  no_argument, nullptr, 27 },
+    { "u_non_staggered_c",    no_argument, nullptr, 28 },
 
     { nullptr,                no_argument, nullptr, 0}
   };
@@ -521,6 +547,12 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         break;
       }
 
+      case 9: // p_c
+      {
+        mStorePressureCFlag = true;
+        break;
+      }
+
       case 10: // p_rms
       {
         mStorePressureRmsFlag = true;
@@ -557,9 +589,87 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
         break;
       }
 
+      case 16: // frequency
+      {
+        try
+        {
+          if (std::stof(optarg) < 1)
+          {
+            throw std::invalid_argument("--frequency");
+          }
+          mFrequency = std::stof(optarg);
+        }
+        catch (...)
+        {
+          printUsage();
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtInvalidFrequency, " ", errorLineIndent));
+        }
+        break;
+      }
+
+      case 17: // period
+      {
+        try
+        {
+          if (std::stof(optarg) < 1)
+          {
+            throw std::invalid_argument("--period");
+          }
+          mPeriod = std::stof(optarg);
+        }
+        catch (...)
+        {
+          printUsage();
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtInvalidPeriod, " ", errorLineIndent));
+        }
+        break;
+      }
+
+      case 18: // mos
+      {
+        try
+        {
+          if (std::stoll(optarg) < 1)
+          {
+            throw std::invalid_argument("--mos");
+          }
+          mMOS = std::stoull(optarg);
+        }
+        catch (...)
+        {
+          printUsage();
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtInvalidMOS, " ", errorLineIndent));
+        }
+        break;
+      }
+
+      case 19: // harmonics
+      {
+        try
+        {
+          if (std::stoll(optarg) < 1)
+          {
+            throw std::invalid_argument("--harmonics");
+          }
+          mHarmonics = std::stoull(optarg);
+        }
+        catch (...)
+        {
+          printUsage();
+          Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtInvalidHarmonics, " ", errorLineIndent));
+        }
+        break;
+      }
+
       case 'u':
       {
         mStoreVelocityRawFlag = true;
+        break;
+      }
+
+      case 27: // u_c
+      {
+        mStoreVelocityCFlag = true;
         break;
       }
 
@@ -602,6 +712,12 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
       case 26: // u_non_staggered_raw
       {
         mStoreVelocityNonStaggeredRawFlag = true;
+        break;
+      }
+
+      case 28: // u_non_staggered_c
+      {
+        mStoreVelocityNonStaggeredCFlag = true;
         break;
       }
 
@@ -745,10 +861,12 @@ void CommandLineParameters::parseCommandLine(int argc, char** argv)
   }
 
   // set a default flag if necessary
-  if (!(mStorePressureRawFlag    || mStorePressureRmsFlag    || mStorePressureMaxFlag      || mStorePressureMinFlag ||
-        mStorePressureMaxAllFlag || mStorePressureMinAllFlag || mStorePressureFinalAllFlag ||
-        mStoreVelocityRawFlag    || mStoreVelocityNonStaggeredRawFlag                      ||
-        mStoreVelocityRmsFlag    || mStoreVelocityMaxFlag    || mStoreVelocityMinFlag      ||
+  if (!(mStorePressureRawFlag    || mStorePressureCFlag      ||
+        mStorePressureRmsFlag    || mStorePressureMaxFlag    || mStorePressureMinFlag             ||
+        mStorePressureMaxAllFlag || mStorePressureMinAllFlag || mStorePressureFinalAllFlag        ||
+        mStoreVelocityRawFlag    || mStoreVelocityCFlag      ||
+        mStoreVelocityNonStaggeredCFlag || mStoreVelocityNonStaggeredRawFlag ||
+        mStoreVelocityRmsFlag    || mStoreVelocityMaxFlag    || mStoreVelocityMinFlag             ||
         mStoreVelocityMaxAllFlag || mStoreVelocityMinAllFlag || mStoreVelocityFinalAllFlag ))
   {
     mStorePressureRawFlag = true;
@@ -779,10 +897,11 @@ CommandLineParameters::CommandLineParameters() :
   mPrintVersionFlag (false),
 
   // output flags
-  mStorePressureRawFlag(false), mStorePressureRmsFlag(false),
+  mStorePressureRawFlag(false), mStorePressureCFlag(false), mStorePressureRmsFlag(false),
   mStorePressureMaxFlag(false), mStorePressureMinFlag(false),
   mStorePressureMaxAllFlag(false), mStorePressureMinAllFlag(false), mStorePressureFinalAllFlag(false),
-  mStoreVelocityRawFlag(false), mStoreVelocityNonStaggeredRawFlag(false),
+  mStoreVelocityRawFlag(false), mStoreVelocityCFlag(false),
+  mStoreVelocityNonStaggeredRawFlag(false), mStoreVelocityNonStaggeredCFlag(false),
   mStoreVelocityRmsFlag(false), mStoreVelocityMaxFlag(false), mStoreVelocityMinFlag(false),
   mStoreVelocityMaxAllFlag(false), mStoreVelocityMinAllFlag(false), mStoreVelocityFinalAllFlag(false),
   mCopySensorMaskFlag(false),
@@ -791,3 +910,23 @@ CommandLineParameters::CommandLineParameters() :
 
 }// end of CommandLineParameters
 //----------------------------------------------------------------------------------------------------------------------
+
+size_t CommandLineParameters::getHarmonics() const
+{
+  return mHarmonics;
+}
+
+size_t CommandLineParameters::getMOS() const
+{
+  return mMOS;
+}
+
+float CommandLineParameters::getFrequency() const
+{
+  return mFrequency;
+}
+
+float CommandLineParameters::getPeriod() const
+{
+  return mPeriod;
+}

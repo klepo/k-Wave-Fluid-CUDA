@@ -39,7 +39,8 @@
 #include <Utils/DimensionSizes.h>
 #include <Utils/TimeMeasure.h>
 #include <Hdf5/Hdf5FileHeader.h>
-#include <Hdf5/Hdf5FileHeader.h>
+
+#include <Compression/CompressHelper.h>
 
 /**
  * @class   Parameters
@@ -116,6 +117,7 @@ class Parameters
 
     /// Print the simulation setup (all parameters).
     void printSimulatoinSetup();
+
     /**
      * @brief  Shall the code print version and exit?
      * @return True if the flag is set.
@@ -202,40 +204,42 @@ class Parameters
      * @return Handle to the input file.
      */
     Hdf5File& getInputFile()                 { return mInputFile; };
+
     /**
      * @brief  Get output file handle.
      * @return Handle to the output file.
      */
     Hdf5File& getOutputFile()                { return mOutputFile; };
+
     /**
      * @brief  Get checkpoint file handle.
      * @return Handle to the checkpoint file.
      */
     Hdf5File& getCheckpointFile()            { return mCheckpointFile; };
+
     /**
      * @brief  Get file header handle.
      * @return Handle to the file header.
      */
     Hdf5FileHeader& getFileHeader()          { return mFileHeader; };
 
-
     /**
      * @brief  Get input file name.
      * @return Input file name
      */
     std::string getInputFileName()      const { return mCommandLineParameters.getInputFileName(); };
+
     /**
      * @brief  Get output file name.
      * @return Output file name.
      */
     std::string getOutputFileName()     const { return mCommandLineParameters.getOutputFileName(); };
+
     /**
      * @brief  Get checkpoint file name.
      * @return Checkpoint file name
      */
     std::string getCheckpointFileName() const { return mCommandLineParameters.getCheckpointFileName(); };
-
-
 
     //-------------------------------------------- Simulation dimensions ---------------------------------------------//
     /**
@@ -375,6 +379,7 @@ class Parameters
     float  getDtRho0SgzScalar() const { return mDt / mRho0SgzScalar; };
 
     //----------------------------------------- Absorption and nonlinearity ------------------------------------------//
+
     /**
      * @brief  Enable non uniform grid? - not implemented yet.
      * @return Non uniform flag.
@@ -391,7 +396,6 @@ class Parameters
      */
     size_t getNonLinearFlag()        const { return mNonLinearFlag; };
 
-
     /**
      * @brief  Is alpha absorption coefficient homogeneous (scalar value)?
      * @return True if scalar.
@@ -401,7 +405,7 @@ class Parameters
      * @brief  Get value of alpha absorption coefficient.
      * @return Alpha absorption coefficient.
      */
-    float  getAlphaCoeffScalar()     const { return mAlphaCoeffScalar; }
+    float  getAlphaCoeffScalar()     const { return mAlphaCoeffScalar; };
     /**
      * @brief  Get alpha power value for the absorption law.
      * @return Alpha power value.
@@ -428,7 +432,6 @@ class Parameters
      */
     void   setAbsorbTauScalar(const float absorbTau) { mAbsorbTauScalar = absorbTau; };
 
-
     /**
      * @brief  Is nonlinear coefficient homogeneous in the medium (scalar value)?
      * @return True if scalar
@@ -439,7 +442,6 @@ class Parameters
      * @return Nonlinear coefficient.
      */
     float  getBOnAScalar()           const { return mBOnAScalar; };
-
 
     //------------------------------------------ Perfectly matched layer ---------------------------------------------//
     /**
@@ -511,7 +513,6 @@ class Parameters
      */
     size_t getVelocityZSourceFlag()       const { return mVelocityZSourceFlag; };
 
-
     /**
      * @brief  Get spatial size of the pressure source.
      * @return Size of the pressure source in grid points.
@@ -527,7 +528,6 @@ class Parameters
      * @return Size of the velocity source in grid points.
      */
     size_t getVelocitySourceIndexSize()   const { return mVelocitySourceIndexSize; }
-
 
     /**
      * @brief  Get pressure source mode.
@@ -551,8 +551,6 @@ class Parameters
      */
     size_t  getVelocitySourceMany()       const { return mVelocitySourceMany; };
 
-
-
     //-------------------------------------------------- Sensors -----------------------------------------------------//
     /**
      * @brief  Get sensor mask type (linear or corners).
@@ -575,12 +573,16 @@ class Parameters
      */
     size_t getSamplingStartTimeIndex()     const { return mCommandLineParameters.getSamplingStartTimeIndex(); };
 
-
     /**
      * @brief  Is  -p or --p_raw specified at the command line?
      * @return True if the flag is set.
      */
     bool getStorePressureRawFlag()         const { return mCommandLineParameters.getStorePressureRawFlag(); };
+    /**
+     * @brief  Is --p_c set?
+     * @return True if the flag is set.
+     */
+    bool getStorePressureCFlag()           const { return mCommandLineParameters.getStorePressureCFlag(); };
     /**
      * @brief  Is --p_rms set?
      * @return True if the flag is set.
@@ -619,12 +621,25 @@ class Parameters
      */
     bool getStoreVelocityRawFlag()         const { return mCommandLineParameters.getStoreVelocityRawFlag(); };
     /**
+     * @brief  Is --u_c set?
+     * @return True if the flag is set.
+     */
+    bool getStoreVelocityCFlag()           const { return mCommandLineParameters.getStoreVelocityCFlag(); };
+    /**
      * @brief  Is --u_non_staggered_raw set?
      * @return True if the flag is set.
      */
     bool getStoreVelocityNonStaggeredRawFlag () const
     {
       return mCommandLineParameters.getStoreVelocityNonStaggeredRawFlag();
+    };
+    /**
+     * @brief  Is --u_non_staggered_c set?
+     * @return True if the flag is set.
+     */
+    bool getStoreVelocityNonStaggeredCFlag()    const
+    {
+      return mCommandLineParameters.getStoreVelocityNonStaggeredCFlag();
     };
     /**
      * @brief  Is --u_rms set?
@@ -663,8 +678,15 @@ class Parameters
      */
     bool getCopySensorMaskFlag()           const { return mCommandLineParameters.getCopySensorMaskFlag(); };
 
-  protected:
-    /// Constructor.
+    DimensionSizes getCompressedDimensionSizes() const;
+
+    CompressHelper *getCompressHelper() const;
+
+    size_t getCompressedSteps() const;
+
+protected:
+
+    /// Constructor not allowed for public.
     Parameters();
 
   private:
@@ -674,19 +696,25 @@ class Parameters
     CommandLineParameters mCommandLineParameters;
 
     /// Handle to the input HDF5 file.
-    Hdf5File mInputFile;
+    Hdf5File        mInputFile;
     /// Handle to the output HDF5 file.
-    Hdf5File mOutputFile;
+    Hdf5File        mOutputFile;
     /// Handle to the checkpoint HDF5 file.
-    Hdf5File mCheckpointFile;
+    Hdf5File        mCheckpointFile;
 
-    /// Handle to the file header.
+    /// Handle to file header.
     Hdf5FileHeader mFileHeader;
 
     /// Full 3D dimension sizes.
     DimensionSizes mFullDimensionSizes;
     /// Reduced 3D dimension sizes.
     DimensionSizes mReducedDimensionSizes;
+
+    /// Compressed 3D dimension sizes.
+    DimensionSizes mCompressedDimensionSizes;
+
+    /// Compressed output steps
+    size_t mCompressedSteps = 0;
 
     /// Total number of time steps.
     size_t  mNt;
@@ -721,7 +749,6 @@ class Parameters
     float mRho0SgyScalar;
     ///  Homogeneous medium density on staggered grid in z direction.
     float mRho0SgzScalar;
-
 
     /// Enable non uniform grid?
     size_t mNonUniformGridFlag;
@@ -779,7 +806,7 @@ class Parameters
     size_t mPressureSourceIndexSize;
     /// Spatial size of the transducer source.
     size_t mTransducerSourceInputSize;
-    /// Spatial size of the velocity source.e
+    /// Spatial size of the velocity source.
     size_t mVelocitySourceIndexSize;
 
     /// Pressure source mode.
@@ -792,7 +819,6 @@ class Parameters
     /// Number of time series in the velocity sources.
     size_t     mVelocitySourceMany;
 
-
     /// Sensor mask type (index / corners).
     SensorMaskType mSensorMaskType;
     /// How many elements there are in the linear mask
@@ -804,6 +830,7 @@ class Parameters
     static bool        sParametersInstanceFlag;
     /// Singleton instance
     static Parameters* sPrametersInstance;
+
 };// end of Parameters
 //----------------------------------------------------------------------------------------------------------------------
 
