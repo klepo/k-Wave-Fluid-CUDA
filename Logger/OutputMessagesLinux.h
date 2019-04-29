@@ -264,6 +264,13 @@ OutputMessage kOutFmtPrintProgressIntrerval
 OutputMessage kOutFmtBenchmarkTimeStep
   = "│ Benchmark time steps:                                %8lu │\n";
 ///Output message
+OutputMessage kOutFmtCompressionSettings
+  = "│ Compression frequency:                        %12.4f Hz │\n"
+    "│             period:                           %9.4f steps │\n"
+    "│             MOS:                                         %4lu │\n"
+    "│             harmonics:                                   %4lu │\n";
+
+///Output message
 OutputMessage kOutFmtSamplingFlags
   = "├───────────────────────────────────────────────────────────────┤\n"
     "│                        Sampling flags                         │\n"
@@ -423,6 +430,8 @@ OutputMessage kOutFmtUsagePart2
     "│                               │   (default output flag)       │\n"
     "│                               │   (the same as --p_raw)       │\n"
     "│ --p_raw                       │ Store raw time series of p    │\n"
+    "│ --p_c                         │ Store compressed time         │\n"
+    "│                               │    series of p                │\n"
     "│ --p_rms                       │ Store rms of p                │\n"
     "│ --p_max                       │ Store max of p                │\n"
     "│ --p_min                       │ Store min of p                │\n"
@@ -434,8 +443,12 @@ OutputMessage kOutFmtUsagePart2
     "│                               │    (the same as --u_raw)      │\n"
     "│ --u_raw                       │ Store raw time series of      │\n"
     "│                               │    ux, uy, uz                 │\n"
+    "│ --u_c                         │ Store compressed time         │\n"
+    "│                               │    series of ux, uy, uz       │\n"
     "│ --u_non_staggered_raw         │ Store non-staggered raw time  │\n"
     "│                               │   series of ux, uy, uz        │\n"
+    "│ --u_non_staggered_c           │ Store non-staggered compressed│\n"
+    "│                               │   time series of ux, uy, uz   │\n"
     "│ --u_rms                       │ Store rms of ux, uy, uz       │\n"
     "│ --u_max                       │ Store max of ux, uy, uz       │\n"
     "│ --u_min                       │ Store min of ux, uy, uz       │\n"
@@ -444,6 +457,21 @@ OutputMessage kOutFmtUsagePart2
     "│ --u_min_all                   │ Store min of ux, uy, uz       │\n"
     "│                               │   (whole domain)              │\n"
     "│ --u_final                     │ Store final acoustic velocity │\n"
+    "├───────────────────────────────┴───────────────────────────────┤\n"
+    "│                Time series compression flags                  │\n"
+    "├───────────────────────────────┬───────────────────────────────┤\n"
+    "│ --frequency <frequency>       │ Frequency for time series     │\n"
+    "│                               │   compression (needs dt for   │\n"
+    "│                               │   computing period)           │\n"
+    "│ --period <period>             │ Period for time series        │\n"
+    "│                               │   compression                 │\n"
+    "│                               │   (default = computed from    │\n"
+    "│                               │   p_source_input dataset)     │\n"
+    "│ --mos <mos>                   │ Multiple of overlap size  for │\n"
+    "│                               │   compression                 │\n"
+    "│                               │   (default = 1)               │\n"
+    "│ --harmonics <harmonics>       │ Number of hamornics for       │\n"
+    "│                               │   compression (default = 1)   │\n"
     "├───────────────────────────────┼───────────────────────────────┤\n"
     "│ -s <time_step>                │ When data collection begins   │\n"
     "│                               │   (default = 1)               │\n"

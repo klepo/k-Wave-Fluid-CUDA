@@ -192,6 +192,31 @@ ErrorMessage kErrFmtUnknownParameterOrArgument
   = "Error: Unknown command line parameter or missing argument.";
 
 /// Command line parameters error message
+ErrorMessage kErrFmtInvalidFrequency
+  = "Error: Invalid frequency value.";
+/// Command line parameters error message
+ErrorMessage kErrFmtInvalidPeriod
+  = "Error: Invalid period value.";
+/// Command line parameters error message
+ErrorMessage kErrFmtInvalidMOS
+  = "Error: Invalid multiple of overlap size value.";
+/// Command line parameters error message
+ErrorMessage kErrFmtInvalidHarmonics
+  = "Error: Invalid harmonics value.";
+/// Command line parameters error message
+ErrorMessage kErrFmtMissingFrequencyValue
+  = "Error: Missing frequency value.";
+/// Command line parameters error message
+ErrorMessage kErrFmtMissingPeriodValue
+  = "Error: Missing period value.";
+/// Command line parameters error message
+ErrorMessage kErrFmtBadPeriodAndFrequencyValue
+  = "Error: Period and frequency values are set concurrently. Set only one of them.";
+/// Command line parameters error message
+ErrorMessage kErrFmtCannotComputePeriodValue
+  = "Error: Cannot compute period from frequency, missing dt dataset.";
+
+/// Command line parameters error message
 ErrorMessage kErrFmtIllegalAlphaPowerValue
   = "Error: Illegal value of alpha_power (must not equal to 1.0).";
 /// Command line parameters error message
