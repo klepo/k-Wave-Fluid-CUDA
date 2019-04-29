@@ -235,6 +235,8 @@
 │                               │   (default output flag)       │
 │                               │   (the same as --p_raw)       │
 │ --p_raw                       │ Store raw time series of p    │
+│ --p_c                         │ Store compressed              │
+│                               │    time series of p           │
 │ --p_rms                       │ Store rms of p                │
 │ --p_max                       │ Store max of p                │
 │ --p_min                       │ Store min of p                │
@@ -246,8 +248,12 @@
 │                               │    (the same as --u_raw)      │
 │ --u_raw                       │ Store raw time series of      │
 │                               │    ux, uy, uz                 │
+│ --u_c                         │ Store compressed              │
+│                               │    time series of ux, uy, uz  │
 │ --u_non_staggered_raw         │ Store non-staggered raw time  │
 │                               │   series of ux, uy, uz        │
+│ --u_non_staggered_c           │ Store non-staggered compressed│
+│                               │   time series of ux, uy, uz   │
 │ --u_rms                       │ Store rms of ux, uy, uz       │
 │ --u_max                       │ Store max of ux, uy, uz       │
 │ --u_min                       │ Store min of ux, uy, uz       │
@@ -256,6 +262,21 @@
 │ --u_min_all                   │ Store min of ux, uy, uz       │
 │                               │   (whole domain)              │
 │ --u_final                     │ Store final acoustic velocity │
+├───────────────────────────────┴───────────────────────────────┤
+│                Time series compression flags                  │
+├───────────────────────────────┬───────────────────────────────┤
+│ --frequency <frequency>       │ Frequency for time series     │
+│                               │   compression (needs dt for   │
+│                               │   computing period)           │
+│ --period <period>             │ Period for time series        │
+│                               │   compression                 │
+│                               │   (default = computed from    │
+│                               │   p_source_input dataset)     │
+│ --mos <mos>                   │ Multiple of overlap size  for │
+│                               │   compression                 │
+│                               │   (default = 1)               │
+│ --harmonics <harmonics>       │ Number of hamornics for       │
+│                               │   compression (default = 1)   │
 ├───────────────────────────────┼───────────────────────────────┤
 │ -s <time_step>                │ When data collection begins   │
 │                               │   (default = 1)               │
