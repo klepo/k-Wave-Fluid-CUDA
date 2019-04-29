@@ -11,7 +11,7 @@
  *
  * @version   kspaceFirstOrder 3.6
  *
- * @date      12 July      2012, 10:27 (created)\n
+ * @date      12 July      2012, 10:27 (created) \n
  *            12 March     2019, 10:56 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
@@ -38,6 +38,7 @@
 
 // Windows build
 #ifdef _WIN64
+  #define _CRT_SECURE_NO_WARNINGS
   #define _USE_MATH_DEFINES
   #include <cmath>
   #include <Windows.h>
@@ -49,6 +50,7 @@
   #include <omp.h>
 #endif
 
+#include <ctime>
 #include <limits>
 
 #include <KSpaceSolver/KSpaceFirstOrderSolver.h>
@@ -192,7 +194,6 @@ void KSpaceFirstOrderSolver::loadInputData()
     // Read necessary matrices from the checkpoint file
     mMatrixContainer.loadDataFromCheckpointFile();
 
-    checkpointFile.close();
     Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
 
     //--------------------------------------- Read data from the output file -----------------------------------------//
@@ -211,6 +212,7 @@ void KSpaceFirstOrderSolver::loadInputData()
     // Reopen streams
     mOutputStreamContainer.reopenStreams();
     Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
+    checkpointFile.close();
   }
   else
   {
@@ -474,7 +476,7 @@ void KSpaceFirstOrderSolver::printFullCodeNameAndLicense() const
     Logger::log(Logger::LogLevel::kBasic, kOutFmtIntelCompiler, __INTEL_COMPILER);
   #endif
   #ifdef _MSC_VER
-	Logger::log(Logger::LogLevel::kBasic, kOutFmtVisualStudioCompiler, _MSC_VER);
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtVisualStudioCompiler, _MSC_VER);
   #endif
 
       // instruction set
@@ -654,7 +656,7 @@ void KSpaceFirstOrderSolver::initializeCufftPlans()
 
   // if necessary, create 1D shift plans.
   // in this case, the matrix has a bit bigger dimensions to be able to store shifted matrices.
-  if (Parameters::getInstance().getStoreVelocityNonStaggeredRawFlag())
+  if (Parameters::getInstance().getStoreVelocityNonStaggeredRawFlag() || Parameters::getInstance().getStoreVelocityNonStaggeredCFlag())
   {
     // X shifts
     CufftComplexMatrix::createR2CFftPlan1DX(mParameters.getFullDimensionSizes());
@@ -925,7 +927,7 @@ void KSpaceFirstOrderSolver::storeSensorData()
     }
 
     // if --u_non_staggered is switched on, calculate unstaggered velocity.
-    if (mParameters.getStoreVelocityNonStaggeredRawFlag())
+    if (mParameters.getStoreVelocityNonStaggeredRawFlag() || mParameters.getStoreVelocityNonStaggeredCFlag())
     {
       computeShiftedVelocity();
     }
@@ -1012,7 +1014,6 @@ void KSpaceFirstOrderSolver::saveCheckpointData()
 
   fileHeader.writeHeaderToCheckpointFile(checkpointFile);
 
-  checkpointFile.close();
   Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
 
   // checkpoint output streams only if necessary (t_index > start_index), we're here one step ahead!
@@ -1025,8 +1026,10 @@ void KSpaceFirstOrderSolver::saveCheckpointData()
 
     Logger::log(Logger::LogLevel::kFull, kOutFmtDone);
   }
-
   mOutputStreamContainer.closeStreams();
+
+  // Close the checkpoint file
+  checkpointFile.close();
 }// end of saveCheckpointData()
 //----------------------------------------------------------------------------------------------------------------------
 
