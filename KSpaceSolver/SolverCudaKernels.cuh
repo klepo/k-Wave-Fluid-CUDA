@@ -216,7 +216,7 @@ namespace SolverCudaKernels
    *  ux_sgx = dt ./ rho0_sgx .* ifft(ux_sgx);
    *  uy_sgy = dt ./ rho0_sgy .* ifft(uy_sgy);
    *  uz_sgz = dt ./ rho0_sgz .* ifft(uz_sgz);
-     * \endcode
+    * \endcode
    */
   template<Parameters::SimulationDimension simulationDimension>
   void computeInitialVelocityHeterogeneous(const MatrixContainer& container);

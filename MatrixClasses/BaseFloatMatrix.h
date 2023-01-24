@@ -35,113 +35,108 @@
 #include <MatrixClasses/BaseMatrix.h>
 #include <Utils/DimensionSizes.h>
 
-
 /**
  * @class   BaseFloatMatrix
  * @brief   Abstract base class for float based matrices defining basic interface. Higher dimensional
  *          matrices stored as 1D arrays, row-major order.
  *
  * @details Abstract base class for float based matrices defining basic interface. Higher dimensional matrices stored
- *          as 1D arrays, row-major order.Implemented both on CPU and GPU side. The I/O is done via HDF5 files.
+ *          as 1D arrays, row-major order. Implemented both on CPU and GPU side. The I/O is done via HDF5 files.
  */
-class BaseFloatMatrix : public BaseMatrix
-{
-  public:
-    /// Default constructor.
-    BaseFloatMatrix();
-    /// Copy constructor is not allowed.
-    BaseFloatMatrix(const BaseFloatMatrix&) = delete;
-    //Destructor.
-    virtual ~BaseFloatMatrix() = default;
+class BaseFloatMatrix : public BaseMatrix {
+public:
+  /// Default constructor.
+  BaseFloatMatrix();
+  /// Copy constructor is not allowed.
+  BaseFloatMatrix(const BaseFloatMatrix&) = delete;
+  /// Destructor.
+  virtual ~BaseFloatMatrix() = default;
 
-    /// Operator= is not allowed.
-    BaseFloatMatrix& operator=(const BaseFloatMatrix&);
+  /// Operator= is not allowed.
+  BaseFloatMatrix& operator=(const BaseFloatMatrix&);
 
-    /**
-     * @brief  Get dimension sizes of the matrix.
-     * @return Dimension sizes of the matrix.
-     */
-    virtual const DimensionSizes& getDimensionSizes() const { return mDimensionSizes; }
-    /**
-     * @brief  Size of the matrix.
-     * @return Number of elements.
-     */
-    virtual size_t size()                             const { return mSize; };
-    /**
-     * @brief  The capacity of the matrix (this may differ from size due to padding, etc.).
-     * @return Capacity of the currently allocated storage.
-     */
-    virtual size_t capacity()                         const { return mCapacity; };
+  /**
+   * @brief  Get dimension sizes of the matrix.
+   * @return Dimension sizes of the matrix.
+   */
+  virtual const DimensionSizes& getDimensionSizes() const { return mDimensionSizes; }
+  /**
+   * @brief  Size of the matrix.
+   * @return Number of elements.
+   */
+  virtual size_t size() const { return mSize; };
+  /**
+   * @brief  The capacity of the matrix (this may differ from size due to padding, etc.).
+   * @return Capacity of the currently allocated storage.
+   */
+  virtual size_t capacity() const { return mCapacity; };
 
-    /// Zero all elements of the matrix (NUMA first touch).
-    virtual void   zeroMatrix();
-    /// Zero all elements of the matrix on device only.
-    virtual void   zeroDeviceMatrix();
+  /// Zero all elements of the matrix (NUMA first touch).
+  virtual void zeroMatrix();
+  /// Zero all elements of the matrix on device only.
+  virtual void zeroDeviceMatrix();
 
-    /**
-     * @brief Calculate matrix = scalar / matrix.
-     * @param [in] scalar - Scalar constant
-     */
-    virtual void   scalarDividedBy(const float scalar);
+  /**
+   * @brief Calculate matrix = scalar / matrix.
+   * @param [in] scalar - Scalar constant
+   */
+  virtual void scalarDividedBy(const float scalar);
 
+  /**
+   * @brief  Get matrix data stored stored on the host side (for direct host kernels).
+   * @return Pointer to matrix data stored on the host side.
+   */
+  virtual float* getHostData() { return mHostData; }
+  /**
+   * @brief  Get matrix data stored stored on the host side (for direct host kernels).
+   * @return Pointer to matrix data stored on the host side.
+   */
+  virtual const float* getHostData() const { return mHostData; }
+  /**
+   * @brief  Get matrix data stored stored on the device side (for direct device kernels).
+   * @return Pointer to matrix data on the device side.
+   */
+  virtual float* getDeviceData() { return mDeviceData; }
+  /**
+   * @brief  Get matrix data stored stored on the device side (for direct device kernels).
+   * @return Pointer to matrix data on the device side.
+   */
+  virtual const float* getDeviceData() const { return mDeviceData; }
 
-    /**
-     * @brief  Get matrix data stored stored on the host side (for direct host kernels).
-     * @return Pointer to matrix data stored on the host side.
-     */
-    virtual float*       getHostData()                      { return mHostData; }
-    /**
-     * @brief  Get matrix data stored stored on the host side (for direct host kernels).
-     * @return Pointer to matrix data stored on the host side.
-     */
-    virtual const float* getHostData()                const { return mHostData; }
-    /**
-     * @brief  Get matrix data stored stored on the device side (for direct device kernels).
-     * @return Pointer to matrix data on the device side.
-     */
-    virtual float*       getDeviceData()                    { return mDeviceData; }
-    /**
-     * @brief  Get matrix data stored stored on the device side (for direct device kernels).
-     * @return Pointer to matrix data on the device side.
-     */
-    virtual const float* getDeviceData()              const { return mDeviceData; }
+  /// Copy data from CPU -> GPU (Host -> Device).
+  virtual void copyToDevice();
+  /// Copy data from GPU -> CPU (Device -> Host).
+  virtual void copyFromDevice();
 
-    /// Copy data from CPU -> GPU (Host -> Device).
-    virtual void copyToDevice();
-    /// Copy data from GPU -> CPU (Device -> Host).
-    virtual void copyFromDevice();
+protected:
+  /**
+   * @brief Aligned memory allocation (both on CPU and GPU).
+   * @throw std::bad_alloc - If there's not enough memory.
+   */
+  virtual void allocateMemory();
+  /// Memory allocation (both on CPU and GPU).
+  virtual void freeMemory();
 
-  protected:
+  /// Total number of used elements.
+  size_t mSize;
+  /// Total number of allocated elements (in terms of floats).
+  size_t mCapacity;
 
-   /**
-    * @brief Aligned memory allocation (both on CPU and GPU).
-    * @throw std::bad_alloc - If there's not enough memory.
-    */
-    virtual void allocateMemory();
-    /// Memory allocation (both on CPU and GPU).
-    virtual void freeMemory();
+  /// Dimension sizes.
+  DimensionSizes mDimensionSizes;
 
-    /// Total number of used elements.
-    size_t mSize;
-    /// Total number of allocated elements (in terms of floats).
-    size_t mCapacity;
+  /// Size of a 1D row in X dimension.
+  size_t mRowSize;
+  /// Size of a XY slab.
+  size_t mSlabSize;
 
-    /// Dimension sizes.
-    DimensionSizes mDimensionSizes;
+  /// Raw CPU matrix data.
+  float* mHostData;
+  /// Raw GPU matrix data.
+  float* mDeviceData;
 
-    /// Size of a 1D row in X dimension.
-    size_t mRowSize;
-    /// Size of a XY slab.
-    size_t mSlabSize;
-
-    /// Raw CPU matrix data.
-    float* mHostData;
-    /// Raw GPU matrix data.
-    float* mDeviceData;
-
-  private:
-
-};//end of BaseFloatMatrix
+private:
+}; //end of BaseFloatMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif /* BASE_INDEX_MATRIX_H */
+#endif /* BASE_FLOAT_MATRIX_H */

@@ -262,6 +262,27 @@
 │ --u_min_all                   │ Store min of ux, uy, uz       │
 │                               │   (whole domain)              │
 │ --u_final                     │ Store final acoustic velocity │
+├───────────────────────────────┼───────────────────────────────┤
+│ --I_avg                       │ Store average intensity       │
+│ --I_avg_c                     │ Store average intensity       │
+│                               │   computed using compression  │
+│ --Q_term                      │ Store Q term (volume rate of  │
+│                               │   heat deposition)            │
+│ --Q_term_c                    │ Store Q term (volume rate of  │
+│                               │   heat deposition) computed   │
+│                               │   using compression           │
+│ --post                        │ Do not simulate, do only      │
+│                               │   post-processing (Compute    │
+│                               │   I_avg(_c) and Q_term(_c))   │
+│ --block_size                  │ Maximum block size for        │
+│                               │   dataset reading (computing  │
+│                               │   average intensity without   │
+│                               │   compression)                │
+│ --no_overlap                  │ Compression without basis     │
+│                               │   overlapping flag - less RAM │
+│                               │   , more errors               │
+│ --40-bit_complex              │ Compression 64-bit complex    │
+│                               │   floats to 40-bit            │
 ├───────────────────────────────┴───────────────────────────────┤
 │                Time series compression flags                  │
 ├───────────────────────────────┬───────────────────────────────┤
@@ -599,6 +620,7 @@
 | 5a. Simulation Results: if sensor_mask_type == 0 (index), or File version == 1.0                                     |
 +----------------------------------------------------------------------------------------------------------------------+
 | p                           (Nsens, Nt - s, 1) float       real           -p or --p_raw                              |
+| p_c                         (NsensC, Nc, 1)    float       complex        --p_c                                      |
 | p_rms                       (Nsens, 1, 1)      float       real           --p_rms                                    |
 | p_max                       (Nsens, 1, 1)      float       real           --p_max                                    |
 | p_min                       (Nsens, 1, 1)      float       real           --p_min                                    |
@@ -610,10 +632,19 @@
 | uy                          (Nsens, Nt - s, 1) float       real           -u or --u_raw                              |
 | uz                          (Nsens, Nt - s, 1) float       real           -u or --u_raw and Nz > 1                   |
 |                                                                                                                      |
+| ux_c                        (NsensC, Nc, 1)    float       complex        --u_c                                      |
+| uy_c                        (NsensC, Nc, 1)    float       complex        --u_c                                      |
+| uz_c                        (NsensC, Nc, 1)    float       complex        --u_c       and Nz > 1                     |
+|                                                                                                                      |
 | ux_non_staggered            (Nsens, Nt - s, 1) float       real           --u_non_staggered_raw (File version ==1.1) |
 | uy_non_staggered            (Nsens, Nt - s, 1) float       real           --u_non_staggered_raw (File version ==1.1) |
 | uz_non_staggered            (Nsens, Nt - s, 1) float       real           --u_non_staggered_raw (File version ==1.1) |
 |                                                                                      and Nz > 1                      |
+|                                                                                                                      |
+| ux_non_staggered_c          (NsensC, Nc, 1)    float       complex        --u_non_staggered_c (File version ==1.1)   |
+| uy_non_staggered_c          (NsensC, Nc, 1)    float       complex        --u_non_staggered_c (File version ==1.1)   |
+| uz_non_staggered_c          (NsensC, Nc, 1)    float       complex        --u_non_staggered_c (File version ==1.1)   |
+|                                                                                       and Nz > 1                     |
 |                                                                                                                      |
 | ux_rms                      (Nsens, 1, 1)      float       real           --u_rms                                    |
 | uy_rms                      (Nsens, 1, 1)      float       real           --u_rms                                    |
@@ -638,12 +669,28 @@
 | ux_final                    (Nx, Ny, Nz)       float       real           --u_final                                  |
 | uy_final                    (Nx, Ny, Nz)       float       real           --u_final                                  |
 | uz_final                    (Nx, Ny, Nz)       float       real           --u_final   and Nz > 1                     |
+|                                                                                                                      |
+| Ix_avg                      (Nx, Ny, Nz)       float       real           --I_avg                                    |
+| Iy_avg                      (Nx, Ny, Nz)       float       real           --I_avg                                    |
+| Iz_avg                      (Nx, Ny, Nz)       float       real           --I_avg     and Nz > 1                     |
+|                                                                                                                      |
+| Q_term                      (Nx, Ny, Nz)       float       real           --Q_term                                   |
+|                                                                                                                      |
+| Ix_avg_c                    (Nx, Ny, Nz)       float       real           --I_avg_c                                  |
+| Iy_avg_c                    (Nx, Ny, Nz)       float       real           --I_avg_c                                  |
+| Iz_avg_c                    (Nx, Ny, Nz)       float       real           --I_avg_c   and Nz > 1                     |
+|                                                                                                                      |
+| Q_term_c                    (Nx, Ny, Nz)       float       real           --Q_term_c                                 |
 +----------------------------------------------------------------------------------------------------------------------+
 | 5b. Simulation Results: if sensor_mask_type == 1 (corners) and file version == 1.1                                   |
 +----------------------------------------------------------------------------------------------------------------------+
 | /p                          group of datasets, one per cuboid             -p or --p_raw                              |
 | /p/1                        (Cx, Cy, Cz, Nt-s) float       real             1st sampled cuboid                       |
 | /p/2                        (Cx, Cy, Cz, Nt-s) float       real             2nd sampled cuboid, etc.                 |
+|                                                                                                                      |
+| /p_c                        group of datasets, one per cuboid             --p_c                                      |
+| /p_c/1                      (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
+| /p_c/2                      (CxC, Cy, Cz, Nc)  float       complex          2nd sampled cuboid, etc.                 |
 |                                                                                                                      |
 | /p_rms                      group of datasets, one per cuboid             --p_rms                                    |
 | /p_rms/1                    (Cx, Cy, Cz, Nt-s) float       real             1st sampled cuboid                       |
@@ -666,12 +713,26 @@
 | /uz                         group of datasets, one per cuboid             -u or --u_raw         and Nz > 1           |
 | /uz/1                       (Cx, Cy, Cz, Nt-s) float       real              1st sampled cuboid                      |
 |                                                                                                                      |
+| /ux_c                       group of datasets, one per cuboid             --u_c                                      |
+| /ux_c/1                     (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
+| /uy_c                       group of datasets, one per cuboid             --u_c                                      |
+| /uy_c/1                     (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
+| /uz_c                       group of datasets, one per cuboid             --u_c                 and Nz > 1           |
+| /uz_c/1                     (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
+|                                                                                                                      |
 | /ux_non_staggered           group of datasets, one per cuboid             --u_non_staggered_raw                      |
 | /ux_non_staggered/1         (Cx, Cy, Cz, Nt-s) float       real             1st sampled cuboid                       |
 | /uy_non_staggered           group of datasets, one per cuboid             --u_non_staggered_raw                      |
 | /uy_non_staggered/1         (Cx, Cy, Cz, Nt-s) float       real             1st sampled cuboid                       |
 | /uz_non_staggered           group of datasets, one per cuboid             --u_non_staggered_raw and Nz > 1           |
 | /uz_non_staggered/1         (Cx, Cy, Cz, Nt-s) float       real             1st sampled cuboid                       |
+|                                                                                                                      |
+| /ux_non_staggered_c         group of datasets, one per cuboid             --u_non_staggered_c                        |
+| /ux_non_staggered_c/1       (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
+| /uy_non_staggered_c         group of datasets, one per cuboid             --u_non_staggered_c                        |
+| /uy_non_staggered_c/1       (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
+| /uz_non_staggered_c         group of datasets, one per cuboid             --u_non_staggered_c   and Nz > 1           |
+| /uz_non_staggered_c/1       (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
 |                                                                                                                      |
 | /ux_rms                     group of datasets, one per cuboid             --u_rms                                    |
 | /ux_rms/1                   (Cx, Cy, Cz, Nt-s) float       real             1st sampled cuboid                       |
@@ -705,6 +766,18 @@
 | ux_final                    (Nx, Ny, Nz)       float       real           --u_final                                  |
 | uy_final                    (Nx, Ny, Nz)       float       real           --u_final                                  |
 | uz_final                    (Nx, Ny, Nz)       float       real           --u_final             and Nz > 1           |
+|                                                                                                                      |
+| Ix_avg                      (Nx, Ny, Nz)       float       real           --I_avg                                    |
+| Iy_avg                      (Nx, Ny, Nz)       float       real           --I_avg                                    |
+| Iz_avg                      (Nx, Ny, Nz)       float       real           --I_avg               and Nz > 1           |
+|                                                                                                                      |
+| Q_term                      (Nx, Ny, Nz)       float       real           --Q_term                                   |
+|                                                                                                                      |
+| Ix_avg_c                    (Nx, Ny, Nz)       float       real           --I_avg_c                                  |
+| Iy_avg_c                    (Nx, Ny, Nz)       float       real           --I_avg_c                                  |
+| Iz_avg_c                    (Nx, Ny, Nz)       float       real           --I_avg_c             and Nz > 1           |
+|                                                                                                                      |
+| Q_term_c                    (Nx, Ny, Nz)       float       real           --Q_term_c                                 |
 +----------------------------------------------------------------------------------------------------------------------+
 \endverbatim
  *
@@ -728,12 +801,11 @@
 #include <exception>
 
 #ifdef _OPENMP
-  #include <omp.h>
+#include <omp.h>
 #endif
 
 #include <KSpaceSolver/KSpaceFirstOrderSolver.h>
 #include <Logger/Logger.h>
-
 
 using std::string;
 
@@ -744,8 +816,7 @@ using std::string;
  * @param [in] argv  - Commandline parameters.
  * @return EXIT_SUCCESS - If the simulation completed correctly.
  */
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   // Create k-Space solver
   KSpaceFirstOrderSolver kSpaceSolver;
 
@@ -758,40 +829,34 @@ int main(int argc, char** argv)
   Parameters& params = Parameters::getInstance();
 
   //------------------------------------- Init simulation ---------------------------------------//
-  try
-  {
+  try {
     // Initialise Parameters by parsing the command line and reading input file scalars
     params.init(argc, argv);
     // Select GPU
     params.selectDevice();
 
     // When we know the GPU, we can print out the code version
-    if (params.isPrintVersionOnly())
-    {
+    if (params.isPrintVersionOnly()) {
       kSpaceSolver.printFullCodeNameAndLicense();
       return EXIT_SUCCESS;
     }
-  }
-  catch (const std::exception &e)
-  {
-     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
+  } catch (const std::exception& e) {
+    Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     // must be repeated in case the GPU we want to print out the code version for and all GPUs are busy
-    if (params.isPrintVersionOnly())
-    {
+    if (params.isPrintVersionOnly()) {
       kSpaceSolver.printFullCodeNameAndLicense();
     }
 
-    if (!params.isPrintVersionOnly())
-    {
+    if (!params.isPrintVersionOnly()) {
       Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
     }
-    Logger::errorAndTerminate(Logger::wordWrapString(e.what(),kErrFmtPathDelimiters, 9));
+    Logger::errorAndTerminate(Logger::wordWrapString(e.what(), kErrFmtPathDelimiters, 9));
   }
 
-  // set number of threads and bind them to cores
-  #ifdef _OPENMP
-    omp_set_num_threads(params.getNumberOfThreads());
-  #endif
+// set number of threads and bind them to cores
+#ifdef _OPENMP
+  omp_set_num_threads(int(params.getNumberOfThreads()));
+#endif
 
   // Print simulation setup
   params.printSimulatoinSetup();
@@ -799,19 +864,14 @@ int main(int argc, char** argv)
   Logger::log(Logger::LogLevel::kBasic, kOutFmtInitializationHeader);
 
   //-------------------------------------- Allocate memory --------------------------------------//
-  try
-  {
+  try {
     kSpaceSolver.allocateMemory();
-  }
-  catch (const std::bad_alloc& e)
-  {
+  } catch (const std::bad_alloc&) {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
     // 9 = Indentation of Error:
-    Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtOutOfMemory," ", 9));
-  }
-  catch (const std::exception& e)
-  {
+    Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtOutOfMemory, " ", 9));
+  } catch (const std::exception& e) {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
     const string errorMessage = string(kErrFmtUnknownError) + e.what();
@@ -819,19 +879,14 @@ int main(int argc, char** argv)
   }
 
   //-------------------------------------- Load input data --------------------------------------//
-  try
-  {
+  try {
     kSpaceSolver.loadInputData();
-  }
-  catch (const std::ios::failure& e)
-  {
+  } catch (const std::ios::failure& e) {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
     // 9 = Indentation of Error:
     Logger::errorAndTerminate(Logger::wordWrapString(e.what(), kErrFmtPathDelimiters, 9));
-  }
-  catch (const std::exception& e)
-  {
+  } catch (const std::exception& e) {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
 
@@ -842,12 +897,10 @@ int main(int argc, char** argv)
   Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, kSpaceSolver.getDataLoadTime());
 
   // did we recover from checkpoint?
-  if (params.getTimeIndex() > 0)
-  {
+  if (params.getTimeIndex() > 0) {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtRecoveredFrom, params.getTimeIndex());
   }
-
 
   //----------------------------------------- Simulation ----------------------------------------//
   Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
@@ -856,14 +909,13 @@ int main(int argc, char** argv)
 
   //------------------------------------------- Summary -----------------------------------------//
   Logger::log(Logger::LogLevel::kBasic, kOutFmtSummaryHeader);
-  Logger::log(Logger::LogLevel::kBasic, kOutFmtHostMemoryUsage,   kSpaceSolver.getHostMemoryUsage());
+  Logger::log(Logger::LogLevel::kBasic, kOutFmtHostMemoryUsage, kSpaceSolver.getHostMemoryUsage());
   Logger::log(Logger::LogLevel::kBasic, kOutFmtDeviceMemoryUsage, kSpaceSolver.getDeviceMemoryUsage());
 
   Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
 
-// Elapsed Time time
-if (kSpaceSolver.getCumulatedTotalTime() != kSpaceSolver.getTotalTime())
-  {
+  // Elapsed time
+  if (kSpaceSolver.getCumulatedTotalTime() != kSpaceSolver.getTotalTime()) {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLegExecutionTime, kSpaceSolver.getTotalTime());
   }
   Logger::log(Logger::LogLevel::kBasic, kOutFmtTotalExecutionTime, kSpaceSolver.getCumulatedTotalTime());
@@ -871,5 +923,5 @@ if (kSpaceSolver.getCumulatedTotalTime() != kSpaceSolver.getTotalTime())
   Logger::log(Logger::LogLevel::kBasic, kOutFmtEndOfSimulation);
 
   return EXIT_SUCCESS;
-}// end of main
+} // end of main
 //----------------------------------------------------------------------------------------------------------------------

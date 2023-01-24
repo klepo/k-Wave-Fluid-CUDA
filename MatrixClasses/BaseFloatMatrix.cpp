@@ -30,20 +30,17 @@
  * If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
  */
 
-
 #include <immintrin.h>
 
 #include <MatrixClasses/BaseFloatMatrix.h>
 #include <Utils/DimensionSizes.h>
 #include <Logger/Logger.h>
 
-
 using std::string;
 
 //--------------------------------------------------------------------------------------------------------------------//
 //---------------------------------------------------- Constants -----------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
-
 
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------- Public methods ---------------------------------------------------//
@@ -57,68 +54,59 @@ BaseFloatMatrix::BaseFloatMatrix()
     mSize(0), mCapacity(0),
     mDimensionSizes(),
     mRowSize(0), mSlabSize(0),
-    mHostData(nullptr), mDeviceData(nullptr)
-{
+    mHostData(nullptr), mDeviceData(nullptr) {
 
-}// end of BaseFloatMatrix
+} // end of BaseFloatMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Zero all allocated elements in parallel. \n
  * Also work as the first touch strategy on NUMA machines.
  */
-void BaseFloatMatrix::zeroMatrix()
-{
-  #pragma omp parallel for schedule (static)
-  for (size_t i = 0; i < mCapacity; i++)
-  {
+void BaseFloatMatrix::zeroMatrix() {
+#pragma omp parallel for schedule(static)
+  for (size_t i = 0; i < mCapacity; i++) {
     mHostData[i] = 0.0f;
   }
-}// end of zeroMatrix
+} // end of zeroMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Zero all allocated elements on device.
  */
-void BaseFloatMatrix::zeroDeviceMatrix()
-{
+void BaseFloatMatrix::zeroDeviceMatrix() {
   cudaCheckErrors(cudaMemset(mDeviceData, 0, mCapacity * sizeof(float)));
-}// end of zeroDeviceMatrix
+} // end of zeroDeviceMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Calculate matrix = scalar / matrix.
  */
-void BaseFloatMatrix::scalarDividedBy(const float scalar)
-{
-  #pragma omp parallel for schedule (static)
-  for (size_t i = 0; i < mCapacity; i++)
-  {
+void BaseFloatMatrix::scalarDividedBy(const float scalar) {
+#pragma omp parallel for schedule(static)
+  for (size_t i = 0; i < mCapacity; i++) {
     mHostData[i] = scalar / mHostData[i];
   }
-}// end of scalarDividedBy
+} // end of scalarDividedBy
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Copy data from CPU -> GPU (Host -> Device).
  * The transfer is synchronous (there is nothing to overlap with in the code)
  */
-void BaseFloatMatrix::copyToDevice()
-{
+void BaseFloatMatrix::copyToDevice() {
   cudaCheckErrors(cudaMemcpy(mDeviceData, mHostData, mCapacity * sizeof(float), cudaMemcpyHostToDevice));
-}// end of copyToDevice
+} // end of copyToDevice
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Copy data from GPU -> CPU (Device -> Host).
  * The transfer is synchronous (there is nothing to overlap with in the code)
  */
-void BaseFloatMatrix::copyFromDevice()
-{
+void BaseFloatMatrix::copyFromDevice() {
   cudaCheckErrors(cudaMemcpy(mHostData, mDeviceData, mCapacity * sizeof(float), cudaMemcpyDeviceToHost));
-}// end of copyFromDevice
+} // end of copyFromDevice
 //----------------------------------------------------------------------------------------------------------------------
-
 
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------ Protected methods -------------------------------------------------//
@@ -128,15 +116,13 @@ void BaseFloatMatrix::copyFromDevice()
  * Memory allocation based on the total number of elements. \n
  * CPU memory is aligned by the kDataAlignment and then registered as pinned and zeroed.
  */
-void BaseFloatMatrix::allocateMemory()
-{
+void BaseFloatMatrix::allocateMemory() {
   // Size of memory to allocate
   size_t sizeInBytes = mCapacity * sizeof(float);
 
   // Allocate CPU memory
   mHostData = static_cast<float*>(_mm_malloc(sizeInBytes, kDataAlignment));
-  if (!mHostData)
-  {
+  if (!mHostData) {
     throw std::bad_alloc();
   }
 
@@ -144,35 +130,31 @@ void BaseFloatMatrix::allocateMemory()
   cudaCheckErrors(cudaHostRegister(mHostData, sizeInBytes, cudaHostRegisterPortable));
 
   // Allocate memory on the GPU
-  if ((cudaMalloc<float>(&mDeviceData, sizeInBytes) != cudaSuccess) || (!mDeviceData))
-  {
+  if ((cudaMalloc<float>(&mDeviceData, sizeInBytes) != cudaSuccess) || (!mDeviceData)) {
     throw std::bad_alloc();
   }
   // This has to be done for simulations based on input sources
   zeroMatrix();
-}//end of allocateMemory
+} //end of allocateMemory
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Free memory.
  */
-void BaseFloatMatrix::freeMemory()
-{
+void BaseFloatMatrix::freeMemory() {
   // Free CPU memory
-  if (mHostData)
-  {
+  if (mHostData) {
     cudaHostUnregister(mHostData);
     _mm_free(mHostData);
   }
   mHostData = nullptr;
 
   // Free GPU memory
-  if (mDeviceData)
-  {
+  if (mDeviceData) {
     cudaCheckErrors(cudaFree(mDeviceData));
   }
   mDeviceData = nullptr;
-}//end of freeMemory
+} //end of freeMemory
 //----------------------------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------------------------//

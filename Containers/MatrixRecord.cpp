@@ -35,7 +35,6 @@
 //---------------------------------------------------- Constants -----------------------------------------------------//
 //----------------------------------------------------------------------------------------------------------------------
 
-
 //----------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------- Public methods ---------------------------------------------------//
 //----------------------------------------------------------------------------------------------------------------------
@@ -49,10 +48,9 @@ MatrixRecord::MatrixRecord()
     dimensionSizes(),
     loadData(false),
     checkpoint(false),
-    matrixName()
-{
+    matrixName() {
 
-}// end of constructor
+} // end of constructor
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -64,47 +62,43 @@ MatrixRecord::MatrixRecord(const MatrixRecord& src)
     dimensionSizes(src.dimensionSizes),
     loadData(src.loadData),
     checkpoint(src.checkpoint),
-    matrixName(src.matrixName)
-{
+    matrixName(src.matrixName) {
 
-}// end of copy constructor
+} // end of copy constructor
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * operator =
  */
-MatrixRecord& MatrixRecord::operator=(const MatrixRecord& src)
-{
-  if (this != &src)
-  {
-    matrixPtr       = src.matrixPtr;
-    matrixType      = src.matrixType;
-    dimensionSizes  = src.dimensionSizes;
-    loadData        = src.loadData;
-    checkpoint      = src.checkpoint;
-    matrixName      = src.matrixName;
+MatrixRecord& MatrixRecord::operator=(const MatrixRecord& src) {
+  if (this != &src) {
+    matrixPtr = src.matrixPtr;
+    matrixType = src.matrixType;
+    dimensionSizes = src.dimensionSizes;
+    loadData = src.loadData;
+    checkpoint = src.checkpoint;
+    matrixName = src.matrixName;
   }
 
   return *this;
-}// end of operator=
+} // end of operator=
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Set all values for the record.
  */
-void MatrixRecord::set(const MatrixType     matrixType,
+void MatrixRecord::set(const MatrixType matrixType,
                        const DimensionSizes dimensionSizes,
-                       const bool           loadData,
-                       const bool           checkpoint,
-                       MatrixName&          matrixName)
-{
-  this->matrixPtr        = nullptr;
-  this->matrixType       = matrixType;
-  this->dimensionSizes   = dimensionSizes;
-  this->loadData         = loadData;
-  this->checkpoint       = checkpoint;
-  this->matrixName       = matrixName;
-}// end of set
+                       const bool loadData,
+                       const bool checkpoint,
+                       MatrixName& matrixName) {
+  this->matrixPtr = nullptr;
+  this->matrixType = matrixType;
+  this->dimensionSizes = dimensionSizes;
+  this->loadData = loadData;
+  this->checkpoint = checkpoint;
+  this->matrixName = matrixName;
+} // end of set
 //----------------------------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------------------------//

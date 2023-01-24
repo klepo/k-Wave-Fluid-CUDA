@@ -32,12 +32,24 @@
 #ifndef BASE_OUTPUT_STREAM_H
 #define BASE_OUTPUT_STREAM_H
 
+#include <limits>
+
+// Windows build needs to undefine macro MINMAX to support std::limits
+#ifdef _WIN64
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#endif
 
 #include <MatrixClasses/RealMatrix.h>
 #include <MatrixClasses/IndexMatrix.h>
 #include <Hdf5/Hdf5File.h>
-
 #include <Compression/CompressHelper.h>
+#include <Logger/Logger.h>
+
+class OutputStreamContainer;
+
 /**
  * @class   BaseOutputStream
  * @brief   Abstract base class for output data streams (sampled data).
@@ -46,146 +58,230 @@
  * HDF5 file.
  *
  */
-class BaseOutputStream
-{
-  public:
-    /**
-     * @enum  ReduceOperator
-     * @brief How to aggregate data.
-     */
-    enum class ReduceOperator
-    {
-      /// Store actual data (time series).
-      kNone,
-      /// Store compressed data (time series).
-      kC,
-      /// Calculate root mean square.
-      kRms,
-      /// Store maximum.
-      kMax,
-      /// Store minimum.
-      kMin
-    };
+class BaseOutputStream {
+public:
+  /**
+    * @enum  ReduceOperator
+    * @brief How to aggregate data.
+    */
+  enum class ReduceOperator {
+    /// Store actual data (time series).
+    kNone,
+    /// Store compressed data (time series).
+    kC,
+    /// Calculate root mean square.
+    kRms,
+    /// Store maximum.
+    kMax,
+    /// Store minimum.
+    kMin,
+    /// Store average intensity
+    kIAvg,
+    /// Store average intensity using compression
+    kIAvgC,
+    /// Store Q term
+    kQTerm,
+    /// Store Q term using compression
+    kQTermC
+  };
 
+  /// Default constructor not allowed.
+  BaseOutputStream() = delete;
 
-    /// Default constructor not allowed.
-    BaseOutputStream() = delete;
+  /**
+    * @brief Constructor - there is no sensor mask by default!
+    *
+    * The constructor links the HDF5 dataset, source (sampled matrix) and the reduce operator together.
+    * The constructor DOES NOT allocate memory because the size of the sensor mask is not known at the time the
+    * instance of the class is being created.
+    *
+    * @param [in] file           - Handle to the HDF5 (output) file.
+    * @param [in] rootObjectName - The root object that stores the sample  data (dataset or group).
+    * @param [in] sourceMatrix   - The source matrix (only real matrices are supported).
+    * @param [in] reduceOp       - Reduction operator.
+    */
+  BaseOutputStream(Hdf5File& file,
+                   MatrixName& rootObjectName,
+                   const RealMatrix& sourceMatrix,
+                   const ReduceOperator reduceOp,
+                   OutputStreamContainer* outputStreamContainer,
+                   bool doNotSaveFlag);
 
-    /**
-     * @brief Constructor - there is no sensor mask by default!
-     *
-     * The constructor links the HDF5 dataset, source (sampled matrix) and the reduce operator together.
-     * The constructor DOES NOT allocate memory because the size of the sensor mask is not known at the time the
-     * instance of the class is being created.
-     *
-     * @param [in] file           - Handle to the HDF5 (output) file.
-     * @param [in] rootObjectName - The root object that stores the sample  data (dataset or group).
-     * @param [in] sourceMatrix   - The source matrix (only real matrices are supported).
-     * @param [in] reduceOp       - Reduction operator.
-     */
-    BaseOutputStream(Hdf5File&            file,
-                     MatrixName&          rootObjectName,
-                     const RealMatrix&    sourceMatrix,
-                     const ReduceOperator reduceOp);
+  /// Copy constructor not allowed.
+  BaseOutputStream(const BaseOutputStream&) = delete;
+  /// Destructor.
+  virtual ~BaseOutputStream(){};
 
-    /// Copy constructor not allowed.
-    BaseOutputStream(const BaseOutputStream&) = delete;
-    /// Destructor.
-    virtual ~BaseOutputStream() {};
+  /// Operator= is not allowed.
+  BaseOutputStream& operator=(const BaseOutputStream&) = delete;
 
-    /// Operator= is not allowed.
-    BaseOutputStream& operator=(const BaseOutputStream&) = delete;
+  /// Create a HDF5 stream and allocate data for it.
+  virtual void create() = 0;
 
-    /// Create a HDF5 stream and allocate data for it.
-    virtual void create() = 0;
+  /// Reopen the output stream after restart.
+  virtual void reopen() = 0;
 
-    /// Reopen the output stream after restart.
-    virtual void reopen() = 0;
+  /// Sample data into buffer, apply reduction - based on a sensor mask (no data flushed to disk).
+  virtual void sample() = 0;
 
-    /// Sample data into buffer, apply reduction - based on a sensor mask (no data flushed to disk).
-    virtual void sample() = 0;
+  /// Post sampling step, can work with other filled stream buffers.
+  virtual void postSample();
 
-    /// Flush raw data to disk.
-    virtual void flushRaw() = 0;
+  /// Post sampling step 2, can work with other filled stream buffers.
+  virtual void postSample2();
 
-    /// Apply post-processing on the buffer and flush it to the file.
-    virtual void postProcess();
+  /// Apply post-processing on the buffer and flush it to the file.
+  virtual void postProcess();
 
-    /// Checkpoint the stream.
-    virtual void checkpoint() = 0;
+  /// Apply post-processing 2 on the buffer and flush it to the file.
+  virtual void postProcess2();
 
-    /// Close stream (apply post-processing if necessary, flush data and close).
-    virtual void close() = 0;
+  /// Flush raw data to disk.
+  virtual void flushRaw() = 0;
 
-  protected:
-    /**
-     * @brief    Allocate memory using proper memory alignment.
-     * @throw    std::bad_alloc - If there's not enough memory.
-     * @warning  This can routine is not used in the base class (should be used in derived ones).
-     */
-    virtual void allocateMemory();
-    /**
-     * @brief   Free memory.
-     * @warning This can routine is not used in the base class (should be used in derived ones).
-     */
-    virtual void freeMemory();
+  /// Checkpoint the stream.
+  virtual void checkpoint() = 0;
 
-    virtual void allocateMinMaxMemory(hsize_t items);
-    virtual void checkOrSetMinMaxValue(float &minV, float &maxV, float value, hsize_t &minVIndex, hsize_t &maxVIndex, hsize_t index);
-    virtual void loadMinMaxValues(Hdf5File &file, hid_t group, std::string datasetName, size_t index = 0, bool checkpoint = false);
-    virtual void storeMinMaxValues(Hdf5File &file, hid_t group, std::string datasetName, size_t index = 0, bool checkpoint = false);
-    virtual void loadCheckpointCompressionCoefficients();
-    virtual void storeCheckpointCompressionCoefficients();
+  /// Close stream (apply post-processing if necessary, flush data and close).
+  virtual void close() = 0;
 
-    /// Copy data Host -> Device
-    virtual void copyToDevice();
-    /// Copy data Device -> Host
-    virtual void copyFromDevice();
+  /// Get current store buffer.
+  float* getCurrentStoreBuffer();
 
-    /// Handle to HDF5 output file.
-    Hdf5File& mFile;
+  /// Zero current store buffer.
+  void zeroCurrentStoreBuffer();
 
-    /// HDF5 group/dataset in the output file where to store data in.
-    std::string mRootObjectName;
+protected:
+  /**
+    * @struct ReducedValue
+    * @brief  This structure is for minimal and maximal value and their indices.
+    */
+  struct ReducedValue {
+    /// Min or max value.
+    float value;
+    /// 1D index.
+    hsize_t index;
+  };
 
-    /// Source matrix to be sampled.
-    const RealMatrix& mSourceMatrix;
+  /**
+    * @brief    Allocate memory using proper memory alignment.
+    * @throw    std::bad_alloc - If there's not enough memory.
+    * @warning  This can routine is not used in the base class (should be used in derived ones).
+    */
+  virtual void allocateMemory();
+  /**
+    * @brief   Free memory.
+    * @warning This can routine is not used in the base class (should be used in derived ones).
+    */
+  virtual void freeMemory();
 
-    /// HDF5 dataset handle.
-    hid_t mDataset;
-    /// Reduction operator.
-    const ReduceOperator mReduceOp;
+  /**
+    * @brief Check or set local minimal and maximal value and their indices.
+    * @param [out] minValue - Minimal reduced local value
+    * @param [out] maxValue - Maximal reduced local value
+    * @param [in] value     - Value to check
+    * @param [in] index     - Index of value
+    */
+  virtual void checkOrSetMinMaxValue(ReducedValue& minValue, ReducedValue& maxValue, float value, hsize_t index);
+  /**
+    * @brief Check or set global (#pragma omp critical) minimal and maximal value and their indices.
+    * @param [out] minValue     - Minimal reduced global value
+    * @param [out] maxValue     - Maximal reduced global value
+    * @param [in] minValueLocal - Minimal reduced local value
+    * @param [in] maxValueLocal - Maximal reduced local value
+    */
+  virtual void checkOrSetMinMaxValueGlobal(ReducedValue& minValue, ReducedValue& maxValue, ReducedValue minValueLocal, ReducedValue maxValueLocal);
+  /**
+    * @brief Load minimal and maximal values from dataset attributes.
+    * @param [in, out] file   - File handle.
+    * @param [in] group       - Group id
+    * @param [in] datasetName - Dataset name
+    * @param [out] minValue   - Minimal reduced value
+    * @param [out] maxValue   - Maximal reduced value
+    */
+  virtual void loadMinMaxValues(Hdf5File& file, hid_t group, std::string datasetName, ReducedValue& minValue, ReducedValue& maxValue);
+  /**
+    * @brief Store minimal and maximal values as dataset attributes.
+    * @param [in, out] file   - File handle.
+    * @param [in] group       - Group id
+    * @param [in] datasetName - Dataset name
+    * @param [in] minValue    - Minimal reduced value
+    * @param [in] maxValue    - Maximal reduced value
+    */
+  virtual void storeMinMaxValues(Hdf5File& file, hid_t group, std::string datasetName, ReducedValue minValue, ReducedValue maxValue);
+  /**
+    * @brief Load checkpoint compression coefficients and average intensity.
+    */
+  virtual void loadCheckpointCompressionCoefficients();
+  /**
+    * @brief Store checkpoint compression coefficients and average intensity.
+    */
+  virtual void storeCheckpointCompressionCoefficients();
 
-    /// Position in the dataset
-    DimensionSizes mPosition;
+  /// Copy data Host -> Device
+  virtual void copyToDevice();
+  /// Copy data Device -> Host
+  virtual void copyFromDevice();
 
-    /// Buffer size
-    size_t  mSize;
+  /// Handle to HDF5 output file.
+  Hdf5File& mFile;
+  /// HDF5 group/dataset in the output file where to store data in.
+  std::string mRootObjectName;
+  /// Source matrix to be sampled.
+  const RealMatrix& mSourceMatrix;
+  /// Reduction operator.
+  const ReduceOperator mReduceOp;
 
-    /// Temporary buffer for store on the GPU side.
-    float* mHostBuffer;
-    /// Temporary buffer on the GPU side - only for aggregated quantities.
-    float* mDeviceBuffer;
+  /// Buffer size
+  size_t mSize;
+  /// Temporary buffer for store on the GPU side.
+  float* mHostBuffer;
+  /// Temporary buffer on the GPU side - only for aggregated quantities.
+  float* mDeviceBuffer;
 
-    /// Compression variables
-    float* mHostBuffer1 = nullptr;
-    float* mHostBuffer2 = nullptr;
-    size_t  mCSize = 0;
-    CompressHelper *mCompressHelper = nullptr;
-    hsize_t mStepLocal = 0;
-    bool mSavingFlag = false;
-    bool mOddFrameFlag = false;
-    hsize_t mCompressedTimeStep = 0;
+  /// Compression helper variables
+  /// Output stream container for getting pressure compression coefficients
+  /// from velocity output streams.
+  OutputStreamContainer* mOutputStreamContainer = nullptr;
+  /// Flag for not saving of compression coefficients or average intensity,
+  /// if we want save e.g. only Q term.
+  bool mDoNotSaveFlag = false;
+  /// Compression buffer size
+  size_t mOSize;
+  /// First store buffer for compression coefficients.
+  float* mHostBuffer1 = nullptr;
+  /// Second store buffer for compression coefficients.
+  float* mHostBuffer2 = nullptr;
+  /// Odd or even buffer with compression coefficients.
+  float* mCurrentStoreBuffer = nullptr;
+  /// Velocity output stream index
+  int mVelocityOutputStreamIdx = -1;
+  /// Compression helper object.
+  CompressHelper* mCompressHelper = nullptr;
+  /// Local step index.
+  hsize_t mStepLocal = 0;
+  /// Saving flag.
+  bool mSavingFlag = false;
+  /// Odd frame flag.
+  bool mOddFrameFlag = false;
+  /// Number of compressed coefficients.
+  hsize_t mCompressedTimeStep = 0;
+  /// Compression complex exponential window basis
+  const FloatComplex* mBE = nullptr;
+  /// Compression inverted complex exponential window basis
+  const FloatComplex* mBE_1 = nullptr;
+  /// Complex size
+  float mComplexSize = 2.0f;
+  /// Max exponent
+  int mE = 124;
+  /// Shift flag.
+  bool mShiftFlag = false;
+  /// Mirror first "half" frame flag.
+  bool mMirrorFirstHalfFrameFlag = false;
 
-    float* maxValue = nullptr;
-    float* minValue = nullptr;
-    hsize_t* maxValueIndex = nullptr;
-    hsize_t* minValueIndex = nullptr;
-    hsize_t items = 1;
+  /// Chunk size of 4MB in number of float elements.
+  static constexpr size_t kChunkSize4MB = 1048576;
 
-    /// Chunk size of 4MB in number of float elements.
-    static constexpr size_t kChunkSize4MB = 1048576;
-
-};// end of BaseOutputStream
+}; // end of BaseOutputStream
 //----------------------------------------------------------------------------------------------------------------------
 #endif /* BASE_OUTPUT_STREAM_H */

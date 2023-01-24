@@ -326,6 +326,7 @@
 | 5a. Simulation Results: if sensor_mask_type == 0 (index), or File version == 1.0                                     |
 +----------------------------------------------------------------------------------------------------------------------+
 | p                           (Nsens, Nt - s, 1) float       real           -p or --p_raw                              |
+| p_c                         (NsensC, Nc, 1)    float       complex        --p_c                                      |
 | p_rms                       (Nsens, 1, 1)      float       real           --p_rms                                    |
 | p_max                       (Nsens, 1, 1)      float       real           --p_max                                    |
 | p_min                       (Nsens, 1, 1)      float       real           --p_min                                    |
@@ -337,10 +338,19 @@
 | uy                          (Nsens, Nt - s, 1) float       real           -u or --u_raw                              |
 | uz                          (Nsens, Nt - s, 1) float       real           -u or --u_raw and Nz > 1                   |
 |                                                                                                                      |
+| ux_c                        (NsensC, Nc, 1)    float       complex        --u_c                                      |
+| uy_c                        (NsensC, Nc, 1)    float       complex        --u_c                                      |
+| uz_c                        (NsensC, Nc, 1)    float       complex        --u_c       and Nz > 1                     |
+|                                                                                                                      |
 | ux_non_staggered            (Nsens, Nt - s, 1) float       real           --u_non_staggered_raw (File version ==1.1) |
 | uy_non_staggered            (Nsens, Nt - s, 1) float       real           --u_non_staggered_raw (File version ==1.1) |
 | uz_non_staggered            (Nsens, Nt - s, 1) float       real           --u_non_staggered_raw (File version ==1.1) |
 |                                                                                      and Nz > 1                      |
+|                                                                                                                      |
+| ux_non_staggered_c          (NsensC, Nc, 1)    float       complex        --u_non_staggered_c (File version ==1.1)   |
+| uy_non_staggered_c          (NsensC, Nc, 1)    float       complex        --u_non_staggered_c (File version ==1.1)   |
+| uz_non_staggered_c          (NsensC, Nc, 1)    float       complex        --u_non_staggered_c (File version ==1.1)   |
+|                                                                                       and Nz > 1                     |
 |                                                                                                                      |
 | ux_rms                      (Nsens, 1, 1)      float       real           --u_rms                                    |
 | uy_rms                      (Nsens, 1, 1)      float       real           --u_rms                                    |
@@ -365,12 +375,28 @@
 | ux_final                    (Nx, Ny, Nz)       float       real           --u_final                                  |
 | uy_final                    (Nx, Ny, Nz)       float       real           --u_final                                  |
 | uz_final                    (Nx, Ny, Nz)       float       real           --u_final   and Nz > 1                     |
+|                                                                                                                      |
+| Ix_avg                      (Nx, Ny, Nz)       float       real           --I_avg                                    |
+| Iy_avg                      (Nx, Ny, Nz)       float       real           --I_avg                                    |
+| Iz_avg                      (Nx, Ny, Nz)       float       real           --I_avg     and Nz > 1                     |
+|                                                                                                                      |
+| Q_term                      (Nx, Ny, Nz)       float       real           --Q_term                                   |
+|                                                                                                                      |
+| Ix_avg_c                    (Nx, Ny, Nz)       float       real           --I_avg_c                                  |
+| Iy_avg_c                    (Nx, Ny, Nz)       float       real           --I_avg_c                                  |
+| Iz_avg_c                    (Nx, Ny, Nz)       float       real           --I_avg_c   and Nz > 1                     |
+|                                                                                                                      |
+| Q_term_c                    (Nx, Ny, Nz)       float       real           --Q_term_c                                 |
 +----------------------------------------------------------------------------------------------------------------------+
 | 5b. Simulation Results: if sensor_mask_type == 1 (corners) and file version == 1.1                                   |
 +----------------------------------------------------------------------------------------------------------------------+
 | /p                          group of datasets, one per cuboid             -p or --p_raw                              |
 | /p/1                        (Cx, Cy, Cz, Nt-s) float       real             1st sampled cuboid                       |
 | /p/2                        (Cx, Cy, Cz, Nt-s) float       real             2nd sampled cuboid, etc.                 |
+|                                                                                                                      |
+| /p_c                        group of datasets, one per cuboid             --p_c                                      |
+| /p_c/1                      (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
+| /p_c/2                      (CxC, Cy, Cz, Nc)  float       complex          2nd sampled cuboid, etc.                 |
 |                                                                                                                      |
 | /p_rms                      group of datasets, one per cuboid             --p_rms                                    |
 | /p_rms/1                    (Cx, Cy, Cz, Nt-s) float       real             1st sampled cuboid                       |
@@ -393,12 +419,26 @@
 | /uz                         group of datasets, one per cuboid             -u or --u_raw         and Nz > 1           |
 | /uz/1                       (Cx, Cy, Cz, Nt-s) float       real              1st sampled cuboid                      |
 |                                                                                                                      |
+| /ux_c                       group of datasets, one per cuboid             --u_c                                      |
+| /ux_c/1                     (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
+| /uy_c                       group of datasets, one per cuboid             --u_c                                      |
+| /uy_c/1                     (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
+| /uz_c                       group of datasets, one per cuboid             --u_c                 and Nz > 1           |
+| /uz_c/1                     (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
+|                                                                                                                      |
 | /ux_non_staggered           group of datasets, one per cuboid             --u_non_staggered_raw                      |
 | /ux_non_staggered/1         (Cx, Cy, Cz, Nt-s) float       real             1st sampled cuboid                       |
 | /uy_non_staggered           group of datasets, one per cuboid             --u_non_staggered_raw                      |
 | /uy_non_staggered/1         (Cx, Cy, Cz, Nt-s) float       real             1st sampled cuboid                       |
 | /uz_non_staggered           group of datasets, one per cuboid             --u_non_staggered_raw and Nz > 1           |
 | /uz_non_staggered/1         (Cx, Cy, Cz, Nt-s) float       real             1st sampled cuboid                       |
+|                                                                                                                      |
+| /ux_non_staggered_c         group of datasets, one per cuboid             --u_non_staggered_c                        |
+| /ux_non_staggered_c/1       (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
+| /uy_non_staggered_c         group of datasets, one per cuboid             --u_non_staggered_c                        |
+| /uy_non_staggered_c/1       (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
+| /uz_non_staggered_c         group of datasets, one per cuboid             --u_non_staggered_c   and Nz > 1           |
+| /uz_non_staggered_c/1       (CxC, Cy, Cz, Nc)  float       complex          1st sampled cuboid                       |
 |                                                                                                                      |
 | /ux_rms                     group of datasets, one per cuboid             --u_rms                                    |
 | /ux_rms/1                   (Cx, Cy, Cz, Nt-s) float       real             1st sampled cuboid                       |
@@ -432,6 +472,18 @@
 | ux_final                    (Nx, Ny, Nz)       float       real           --u_final                                  |
 | uy_final                    (Nx, Ny, Nz)       float       real           --u_final                                  |
 | uz_final                    (Nx, Ny, Nz)       float       real           --u_final             and Nz > 1           |
+|                                                                                                                      |
+| Ix_avg                      (Nx, Ny, Nz)       float       real           --I_avg                                    |
+| Iy_avg                      (Nx, Ny, Nz)       float       real           --I_avg                                    |
+| Iz_avg                      (Nx, Ny, Nz)       float       real           --I_avg               and Nz > 1           |
+|                                                                                                                      |
+| Q_term                      (Nx, Ny, Nz)       float       real           --Q_term                                   |
+|                                                                                                                      |
+| Ix_avg_c                    (Nx, Ny, Nz)       float       real           --I_avg_c                                  |
+| Iy_avg_c                    (Nx, Ny, Nz)       float       real           --I_avg_c                                  |
+| Iz_avg_c                    (Nx, Ny, Nz)       float       real           --I_avg_c             and Nz > 1           |
+|                                                                                                                      |
+| Q_term_c                    (Nx, Ny, Nz)       float       real           --Q_term_c                                 |
 +----------------------------------------------------------------------------------------------------------------------+
 \endverbatim
  *
@@ -456,14 +508,13 @@
 #ifndef HDF5_FILE_H
 #define HDF5_FILE_H
 
-
 #include <hdf5.h>
 #include <hdf5_hl.h>
 #include <map>
+#include <string>
 
 #include <Utils/DimensionSizes.h>
 #include <Utils/MatrixNames.h>
-
 
 /**
  * @class Hdf5File
@@ -472,487 +523,503 @@
  * This class is responsible for working with HDF5 files. It offers routines to manage files (create, open, close)
  * as well as creating, reading and modifying the contents (groups and datasets).
  */
-class Hdf5File
-{
-  public:
+class Hdf5File {
+public:
+  /**
+   * @enum    MatrixDataType
+   * @brief   HDF5 matrix data type (float or uint64).
+   * @details HDF5 matrix data type (float or uint64).
+   */
+  enum class MatrixDataType {
+    /// The matrix is stored in floating point 32b wide format.
+    kFloat = 0,
+    /// The matrix is stored in fixed point point 64b wide format.
+    kLong = 1
+  };
 
-    /**
-     * @enum    MatrixDataType
-     * @brief   HDF5 matrix data type (float or uint64).
-     * @details HDF5 matrix data type (float or uint64).
-     */
-    enum class MatrixDataType
-    {
-      /// The matrix is stored in floating point 32b wide format.
-      kFloat = 0,
-      /// The matrix is stored in fixed point point 64b wide format.
-      kLong  = 1
-    };
+  /**
+   * @enum    MatrixDomainType
+   * @brief   HDF5 Matrix domain type (real or complex).
+   * @details HDF5 Matrix domain type (real or complex).
+   */
+  enum class MatrixDomainType {
+    /// The matrix is defined on real domain.
+    kReal = 0,
+    /// The matrix is defined on complex domain.
+    kComplex = 1
+  };
 
-    /**
-     * @enum    MatrixDomainType
-     * @brief   HDF5 Matrix domain type (real or complex).
-     * @details HDF5 Matrix domain type (real or complex).
-     */
-    enum class MatrixDomainType
-    {
-      /// The matrix is defined on real domain.
-      kReal    = 0,
-      /// The matrix is defined on complex domain.
-      kComplex = 1
-    };
+  /// Constructor of the class.
+  Hdf5File();
+  /// Copy constructor is not allowed.
+  Hdf5File(const Hdf5File&) = delete;
+  /// Destructor.
+  virtual ~Hdf5File();
 
+  /// Operator = is not allowed.
+  Hdf5File& operator=(const Hdf5File&) = delete;
 
-    /// Constructor of the class.
-    Hdf5File();
-    /// Copy constructor is not allowed.
-    Hdf5File(const Hdf5File&) = delete;
-    /// Destructor.
-    virtual ~Hdf5File();
+  //------------------------------------------- Basic file operations ----------------------------------------------//
+  /**
+   * @brief Create the HDF5 file.
+   *
+   * The file is always created in read write mode mode, by default overwriting an old file of the same name.
+   * Other HDF5 flags are set to default.
+   *
+   * @param [in] fileName - File name.
+   * @param [in] flags    - How to create the file, by default overwrite existing file.
+   * @throw ios:failure   - If error happened (file is open or cannot be created).
+   */
+  void create(const std::string& fileName,
+              unsigned int       flags = H5F_ACC_TRUNC);
 
-    /// Operator = is not allowed.
-    Hdf5File& operator=(const Hdf5File&) = delete;
+  /**
+   * @brief Open the HDF5 file.
+   *
+   * The file is opened in read only mode by default. Other HDF5 flags are set to default.
+   *
+   * @param [in] fileName - File name
+   * @param [in] flags    - Open mode, by default read only.
+   * @throw ios:failure   - If error happened (file not found, file is not a HDF5 file, file is already open).
+   *
+   */
+  void open(const std::string& fileName,
+            unsigned int       flags = H5F_ACC_RDONLY);
 
-    //------------------------------------------- Basic file operations ----------------------------------------------//
-    /**
-     * @brief Create the HDF5 file.
-     *
-     * The file is always created in read write mode mode, by default overwriting an old file of the same name.
-     * Other HDF5 flags are set to default.
-     *
-     * @param [in] fileName - File name.
-     * @param [in] flags    - How to create the file, by default overwrite existing file.
-     * @throw ios:failure   - If error happened (file is open or cannot be created).
-     */
-    void create(const std::string& fileName,
-                unsigned int       flags = H5F_ACC_TRUNC);
-    /**
-     * @brief Open the HDF5 file.
-     *
-     * The file is opened in read only mode by default. Other HDF5 flags are set to default.
-     *
-     * @param [in] fileName - File name
-     * @param [in] flags    - Open mode, by default read only.
-     * @throw ios:failure   - If error happened (file not found, file is not a HDF5 file, file is already open).
-     *
-     */
-    void open(const std::string& fileName,
-              unsigned int       flags  = H5F_ACC_RDONLY);
-    /**
-     * @brief   Is the file opened?
-     * @details Is the file opened?
-     * @return  true - If the file is opened.
-     */
-    bool isOpen() const { return mFile != H5I_BADID; };
-    /**
-     * @brief  Can I access the file.
-     * @details  Can the code access the file, e.g. does it exist, do we have enough privileges, etc.
-     *
-     * @param  [in] fileName - Name of the file.
-     * @return true          - If it is possible to access the file.
-     */
-    static bool canAccess(const std::string& fileName);
-    /**
-     * @brief Close the HDF5 file.
-     * @throw ios::failure - If an error happens
-     */
-    void close();
+  /**
+   * @brief   Is the file opened?
+   * @details Is the file opened?
+   * @return  true - If the file is opened.
+   */
+  bool isOpen() const { return mFile != H5I_BADID; };
 
-    //--------------------------------------------- Group manipulators -----------------------------------------------//
-    /**
-     * @brief   Create a HDF5 group at a specified place in the file tree.
-     * @details Other HDF5 flags are set to default.
-     *
-     * @param [in] parentGroup  - Where to link the group at.
-     * @param [in] groupName    - Group name.
-     * @return A handle to the new group.
-     * @throw ios::failure      - If error happens.
-     */
-    hid_t createGroup(const hid_t parentGroup,
-                      MatrixName& groupName);
-    /**
-     * @brief   Open a HDF5 group at a specified place in the file tree.
-     * @details Other HDF5 flags are set to default.
-     *
-     * @param [in] parentGroup - Parent group.
-     * @param [in] groupName   - Group name.
-     * @return A handle to the group.
-     * @throw ios::failure      - If error happens.
-     */
-    hid_t openGroup(const hid_t parentGroup,
+  /**
+   * @brief  Can I access the file.
+   * @details  Can the code access the file, e.g. does it exist, do we have enough privileges, etc.
+   *
+   * @param  [in] fileName - Name of the file.
+   * @return true          - If it is possible to access the file.
+   */
+  static bool canAccess(const std::string& fileName);
+
+  /**
+   * @brief Close the HDF5 file.
+   * @throw ios::failure - If an error happens
+   */
+  void close();
+
+  //--------------------------------------------- Group manipulators -----------------------------------------------//
+  /**
+   * @brief   Create a HDF5 group at a specified place in the file tree.
+   * @details Other HDF5 flags are set to default.
+   *
+   * @param [in] parentGroup  - Where to link the group at.
+   * @param [in] groupName    - Group name.
+   * @return A handle to the new group.
+   * @throw ios::failure      - If error happens.
+   */
+  hid_t createGroup(const hid_t parentGroup,
                     MatrixName& groupName);
-    /**
-     * @brief Close a group.
-     * @param[in] group - Group to close.
-     */
 
-    void closeGroup(const hid_t group);
-    /**
-     * @brief   Get handle to the root group of the file.
-     * @details Get handle to the root group of the file.
-     * @return  Handle to the root group.
-     */
-    hid_t getRootGroup() const { return mFile; };
+  /**
+   * @brief   Open a HDF5 group at a specified place in the file tree.
+   * @details Other HDF5 flags are set to default.
+   *
+   * @param [in] parentGroup - Parent group.
+   * @param [in] groupName   - Group name.
+   * @return A handle to the group.
+   * @throw ios::failure      - If error happens.
+   */
+  hid_t openGroup(const hid_t parentGroup,
+                  MatrixName& groupName);
 
-    /**
-     * @brief Check group exists.
-     * @param [in] parentGroup - Parent group.
-     * @param [in] groupName   - Group name.
-     * @return true            - If the group exists.
-     */
-    bool groupExists(const hid_t parentGroup,
-                     MatrixName& groupName);
+  /**
+   * @brief Close a group.
+   * @param[in] group - Group to close.
+   */
+  void closeGroup(const hid_t group);
 
-    /**
-     * @brief Check dataset exists.
-     * @param [in] parentGroup - Parent group.
-     * @param [in] groupName   - Dataset name.
-     * @return true            - If the dataset exists.
-     */
-    bool datasetExists(const hid_t parentGroup,
+  /**
+   * @brief   Get handle to the root group of the file.
+   * @details Get handle to the root group of the file.
+   * @return  Handle to the root group.
+   */
+  hid_t getRootGroup() const { return mFile; };
+
+  /**
+   * @brief Check group exists.
+   * @param [in] parentGroup - Parent group.
+   * @param [in] groupName   - Group name.
+   * @return true            - If the group exists.
+   */
+  bool groupExists(const hid_t parentGroup,
+                   MatrixName& groupName);
+
+  /**
+   * @brief Check dataset exists.
+   * @param [in] parentGroup - Parent group.
+   * @param [in] groupName   - Dataset name.
+   * @return true            - If the dataset exists.
+   */
+  bool datasetExists(const hid_t parentGroup,
                      MatrixName& datasetName);
 
-    //-------------------------------------------- Dataset manipulators ----------------------------------------------//
-    /**
-     * @brief   Open a dataset at a specified place in the file tree.
-     * @details Other HDF5 flags are set to default.
-     *
-     * @param [in] parentGroup - Parent group id (can be the file id for root)..
-     * @param [in] datasetName - Dataset name.
-     * @return A handle to open dataset.
-     * @throw ios::failure     - If error happens.
-     */
-    hid_t openDataset(const hid_t parentGroup,
-                      MatrixName& datasetName);
-    /**
-     * @brief   Create a float HDF5 dataset at a specified place in the file tree (3D/4D).
-     * @details Other HDF5 flags are set to default.
-     *
-     * @param [in] parentGroup      - Parent group id.
-     * @param [in] datasetName      - Dataset name.
-     * @param [in] dimensionSizes   - Dimension sizes.
-     * @param [in] chunkSizes       - Chunk sizes.
-     * @param [in] matrixDataType   - Matrix data type
-     * @param [in] compressionLevel - Compression level.
-     * @return A handle to the new dataset.
-     * @throw  ios::failure         - If error happens.
-     */
-    hid_t createDataset(const hid_t           parentGroup,
-                        MatrixName&           datasetName,
-                        const DimensionSizes& dimensionSizes,
-                        const DimensionSizes& chunkSizes,
-                        const MatrixDataType  matrixDataType,
-                        const size_t          compressionLevel);
-    /**
-     * @brief Close dataset.
-     * @param [in] dataset - Dataset to close.
-     */
-    void  closeDataset(const hid_t dataset);
+  //-------------------------------------------- Dataset manipulators ----------------------------------------------//
+  /**
+   * @brief   Open a dataset at a specified place in the file tree.
+   * @details Other HDF5 flags are set to default.
+   *
+   * @param [in] parentGroup - Parent group id (can be the file id for root).
+   * @param [in] datasetName - Dataset name.
+   * @return A handle to open dataset.
+   * @throw ios::failure     - If error happens.
+   */
+  hid_t openDataset(const hid_t parentGroup,
+                    MatrixName& datasetName);
 
+  /**
+   * @brief   Create a float HDF5 dataset at a specified place in the file tree (3D/4D).
+   * @details Other HDF5 flags are set to default.
+   *
+   * @param [in] parentGroup      - Parent group id.
+   * @param [in] datasetName      - Dataset name.
+   * @param [in] dimensionSizes   - Dimension sizes.
+   * @param [in] chunkSizes       - Chunk sizes.
+   * @param [in] matrixDataType   - Matrix data type
+   * @param [in] compressionLevel - Compression level.
+   * @return A handle to the new dataset.
+   * @throw  ios::failure         - If error happens.
+   */
+  hid_t createDataset(const hid_t           parentGroup,
+                      MatrixName&           datasetName,
+                      const DimensionSizes& dimensionSizes,
+                      const DimensionSizes& chunkSizes,
+                      const MatrixDataType  matrixDataType,
+                      const size_t          compressionLevel);
 
-    //---------------------------------------- Dataset Read/Write operations -----------------------------------------//
-    /**
-     * @brief Read a hyperslab from the dataset.
-     *
-     * @tparam     T         - Data type to be written.
-     * @param [in] dataset   - Dataset id.
-     * @param [in] position  - Position in the dataset.
-     * @param [in] size      - Size of the hyperslab.
-     * @param [out] data     - Pointer to data.
-     * @throw ios::failure   - If error happens.
-     * @warning Limited to float and size_t data types.
-     */
-    template<class T>
-    void readHyperSlab(const hid_t           dataset,
-                       const DimensionSizes& position,
-                       const DimensionSizes& size,
-                       T*                    data);
+  /**
+   * @brief Close dataset.
+   * @param [in] dataset - Dataset to close.
+   */
+  void closeDataset(const hid_t dataset);
 
-    /**
-     * @brief Write a hyperslab into the dataset.
-     *
-     * @tparam     T         - Data type to be written.
-     * @param [in] dataset   - Dataset id.
-     * @param [in] position  - Position in the dataset.
-     * @param [in] size      - Size of the hyperslab.
-     * @param [in] data      - Data to be written.
-     * @throw ios::failure   - If error happens.
-     * @warning Limited to float and size_t data types.
-     */
-    template<class T>
-    void writeHyperSlab(const hid_t           dataset,
-                        const DimensionSizes& position,
-                        const DimensionSizes& size,
-                        const T*              data);
+  //---------------------------------------- Dataset Read/Write operations -----------------------------------------//
+  /**
+   * @brief Read a hyperslab from the dataset.
+   *
+   * @tparam     T         - Data type to be written.
+   * @param [in] dataset   - Dataset id.
+   * @param [in] position  - Position in the dataset.
+   * @param [in] size      - Size of the hyperslab.
+   * @param [out] data     - Pointer to data.
+   * @throw ios::failure   - If error happens.
+   * @warning Limited to float and size_t data types.
+   */
+  template <class T>
+  void readHyperSlab(const hid_t           dataset,
+                     const DimensionSizes& position,
+                     const DimensionSizes& size,
+                     T*                    data);
 
-    /**
-     * @brief   Write a cuboid selected within the matrixData into a hyperslab.
-     * @details The routine writes 3D cuboid into a 4D dataset (only intended for raw time series).
-     *
-     * @param [in] dataset           - Dataset to write MatrixData into.
-     * @param [in] hyperslabPosition - Position in the dataset (hyperslab) - may be 3D/4D.
-     * @param [in] cuboidPosition    - Position of the cuboid in MatrixData (what to sample) - must be 3D.
-     * @param [in] cuboidSize        - Cuboid size (size of data being sampled) - must by 3D.
-     * @param [in] matrixDimensions  - Size of the original matrix (the sampled one).
-     * @param [in] matrixData        - C array of matrix data.
-     * @throw ios::failure           - If error happens.
-     */
-    void writeCuboidToHyperSlab(const hid_t           dataset,
-                                const DimensionSizes& hyperslabPosition,
-                                const DimensionSizes& cuboidPosition,
-                                const DimensionSizes& cuboidSize,
-                                const DimensionSizes& matrixDimensions,
-                                const float*          matrixData);
-    /**
-     * @brief Write sensor data selected by the sensor mask.
-     *
-     * A routine pick elements from the MatixData based on the sensor data and store them into a single
-     * hyperslab of size [Nsens, 1, 1].
-     *
-     * @param [in] dataset           - Dataset to write MaatrixData into.
-     * @param [in] hyperslabPosition - 3D position in the dataset (hyperslab).
-     * @param [in] indexSensorSize   - Size of the index based sensor mask.
-     * @param [in] indexSensorData   - Index based sensor mask.
-     * @param [in] matrixDimensions  - Size of the sampled matrix.
-     * @param [in] matrixData        - Matrix data.
-     * @warning  Very slow at this version of HDF5 for orthogonal planes-> DO NOT USE.
-     * @throw ios::failure           - If error happens.
-     */
-    void writeDataByMaskToHyperSlab(const hid_t           dataset,
-                                    const DimensionSizes& hyperslabPosition,
-                                    const size_t          indexSensorSize,
-                                    const size_t*         indexSensorData,
-                                    const DimensionSizes& matrixDimensions,
-                                    const float*          matrixData);
-    /**
-     * @brief   Write the scalar value under a specified group
-     * @details No chunks and no compression is used.
-     *
-     * @tparam     T         - Data type to be written.
-     * @param [in] parentGroup - Where to link the scalar dataset.
-     * @param [in] datasetName - HDF5 dataset name.
-     * @param [in] value       - data to be written.
-     * @throw ios::failure     - If error happens.
-     * @warning Limited to float and size_t data types
-     */
-    template<class T>
-    void writeScalarValue(const hid_t parentGroup,
-                          MatrixName& datasetName,
-                          const T     value);
+  /**
+   * @brief Write a hyperslab into the dataset.
+   *
+   * @tparam     T         - Data type to be written.
+   * @param [in] dataset   - Dataset id.
+   * @param [in] position  - Position in the dataset.
+   * @param [in] size      - Size of the hyperslab.
+   * @param [in] data      - Data to be written.
+   * @throw ios::failure   - If error happens.
+   * @warning Limited to float and size_t data types.
+   */
+  template <class T>
+  void writeHyperSlab(const hid_t           dataset,
+                      const DimensionSizes& position,
+                      const DimensionSizes& size,
+                      const T*              data);
 
-    /**
-     * @brief Read the scalar value under a specified group.
-     *
-     * @tparam      T           - Data type to be written.
-     * @param [in]  parentGroup - Where to link the scalar dataset.
-     * @param [in]  datasetName - HDF5 dataset name.
-     * @param [out] value       - Data to be read.
-     * @throw ios::failure      - If error happens.
-     * @warning Limited to float and size_t data types
-     */
-    template<class T>
-    void readScalarValue(const hid_t parentGroup,
-                         MatrixName& datasetName,
-                         T&          value);
-    /**
-     * @brief Read data from the dataset at a specified place in the file tree.
-     *
-     * @tparam      T              - Data type to be written.
-     * @param [in]  parentGroup    - Where is the dataset situated.
-     * @param [in]  datasetName    - Dataset name.
-     * @param [in]  dimensionSizes - Dimension sizes.
-     * @param [out] data           - Pointer to data.
-     * @throw ios::failure         - If error happens.
-     */
-    template<class T>
-    void readCompleteDataset(const hid_t           parentGroup,
-                             MatrixName&           datasetName,
-                             const DimensionSizes& dimensionSizes,
-                             T*                    data);
+  /**
+   * @brief   Write a cuboid selected within the matrixData into a hyperslab.
+   * @details The routine writes 3D cuboid into a 4D dataset (only intended for raw time series).
+   *
+   * @param [in] dataset           - Dataset to write MatrixData into.
+   * @param [in] hyperslabPosition - Position in the dataset (hyperslab) - may be 3D/4D.
+   * @param [in] cuboidPosition    - Position of the cuboid in MatrixData (what to sample) - must be 3D.
+   * @param [in] cuboidSize        - Cuboid size (size of data being sampled) - must by 3D.
+   * @param [in] matrixDimensions  - Size of the original matrix (the sampled one).
+   * @param [in] matrixData        - C array of matrix data.
+   * @throw ios::failure           - If error happens.
+   */
+  void writeCuboidToHyperSlab(const hid_t           dataset,
+                              const DimensionSizes& hyperslabPosition,
+                              const DimensionSizes& cuboidPosition,
+                              const DimensionSizes& cuboidSize,
+                              const DimensionSizes& matrixDimensions,
+                              const float*          matrixData);
 
-    //--------------------------------------- Attributes Read/Write operations ---------------------------------------//
-    /**
-     * @brief Get dimension sizes of the dataset under a specified group.
-     *
-     * @param [in] parentGroup - Where the dataset is.
-     * @param [in] datasetName - Dataset name.
-     * @return Dimension sizes of the dataset.
-     * @throw ios::failure     - If error happens.
-     */
-    DimensionSizes getDatasetDimensionSizes(const hid_t parentGroup,
-                                            MatrixName& datasetName);
-    /**
-     * @brief Get number of dimensions of the dataset  under a specified group.
-     *
-     * @param [in] parentGroup - Where the dataset is.
-     * @param [in] datasetName - Dataset name.
-     * @return Number of dimensions.
-     * @throw ios::failure     - If error happens.
-     */
-    size_t getDatasetNumberOfDimensions(const hid_t parentGroup,
-                                        MatrixName& datasetName);
-    /**
-     * @brief Get dataset element count at a specified place in the file tree.
-     *
-     * @param [in] parentGroup - Where the dataset is.
-     * @param [in] datasetName - Dataset name.
-     * @return Number of elements.
-     * @throw ios::failure     - If error happens.
-     */
-    size_t getDatasetSize(const hid_t parentGroup,
-                          MatrixName& datasetName);
+  /**
+   * @brief Write sensor data selected by the sensor mask.
+   *
+   * A routine pick elements from the MatixData based on the sensor data and store them into a single
+   * hyperslab of size [Nsens, 1, 1].
+   *
+   * @param [in] dataset           - Dataset to write MaatrixData into.
+   * @param [in] hyperslabPosition - 3D position in the dataset (hyperslab).
+   * @param [in] indexSensorSize   - Size of the index based sensor mask.
+   * @param [in] indexSensorData   - Index based sensor mask.
+   * @param [in] matrixDimensions  - Size of the sampled matrix.
+   * @param [in] matrixData        - Matrix data.
+   * @warning  Very slow at this version of HDF5 for orthogonal planes-> DO NOT USE.
+   * @throw ios::failure           - If error happens.
+   */
+  void writeDataByMaskToHyperSlab(const hid_t           dataset,
+                                  const DimensionSizes& hyperslabPosition,
+                                  const size_t          indexSensorSize,
+                                  const size_t*         indexSensorData,
+                                  const DimensionSizes& matrixDimensions,
+                                  const float*          matrixData);
 
-    /**
-     * @brief Write matrix data type into the dataset at a specified place in the file tree.
-     *
-     * @param [in] parentGroup    - Where the dataset is.
-     * @param [in] datasetName    - Dataset name.
-     * @param [in] matrixDataType - Matrix data type in the file.
-     * @throw ios::failure        - If error happens.
-     */
-    void writeMatrixDataType (const hid_t           parentGroup,
-                              MatrixName&           datasetName,
-                              const MatrixDataType& matrixDataType);
-    /**
-     * @brief  Write matrix data type into the dataset at a specified place in the file tree.
-     *
-     * @param [in] parentGroup      - Where the dataset is.
-     * @param [in] datasetName      - Dataset name.
-     * @param [in] matrixDomainType - Matrix domain type.
-     * @throw ios::failure          - If error happens.
-     */
-    void writeMatrixDomainType(const hid_t             parentGroup,
-                               MatrixName&             datasetName,
-                               const MatrixDomainType& matrixDomainType);
+  /**
+   * @brief   Write the scalar value under a specified group
+   * @details No chunks and no compression is used.
+   *
+   * @tparam     T         - Data type to be written.
+   * @param [in] parentGroup - Where to link the scalar dataset.
+   * @param [in] datasetName - HDF5 dataset name.
+   * @param [in] value       - data to be written.
+   * @throw ios::failure     - If error happens.
+   * @warning Limited to float and size_t data types
+   */
+  template <class T>
+  void writeScalarValue(const hid_t parentGroup,
+                        MatrixName& datasetName,
+                        const T     value);
 
-    /**
-     * @brief Read matrix data type from the dataset at a specified place in the file tree.
-     *
-     * @param [in] parentGroup - Where the dataset is.
-     * @param [in] datasetName - Dataset name.
-     * @return Matrix data type.
-     * @throw ios::failure     - If error happens.
-     */
-    MatrixDataType   readMatrixDataType(const hid_t parentGroup,
-                                        MatrixName& datasetName);
-    /**
-     * @brief Read matrix dataset domain type at a specified place in the file tree.
-     *
-     * @param [in] parentGroup - Where the dataset is.
-     * @param [in] datasetName - Dataset name.
-     * @return Matrix domain type.
-     * @throw ios::failure      - If error happens.
-     */
-    MatrixDomainType readMatrixDomainType(const hid_t parentGroup,
+  /**
+   * @brief Read the scalar value under a specified group.
+   *
+   * @tparam      T           - Data type to be written.
+   * @param [in]  parentGroup - Where to link the scalar dataset.
+   * @param [in]  datasetName - HDF5 dataset name.
+   * @param [out] value       - Data to be read.
+   * @throw ios::failure      - If error happens.
+   * @warning Limited to float and size_t data types
+   */
+  template <class T>
+  void readScalarValue(const hid_t parentGroup,
+                       MatrixName& datasetName,
+                       T&          value);
+
+  /**
+   * @brief Read data from the dataset at a specified place in the file tree.
+   *
+   * @tparam      T              - Data type to be written.
+   * @param [in]  parentGroup    - Where is the dataset situated.
+   * @param [in]  datasetName    - Dataset name.
+   * @param [in]  dimensionSizes - Dimension sizes.
+   * @param [out] data           - Pointer to data.
+   * @throw ios::failure         - If error happens.
+   */
+  template <class T>
+  void readCompleteDataset(const hid_t           parentGroup,
+                           MatrixName&           datasetName,
+                           const DimensionSizes& dimensionSizes,
+                           T*                    data);
+
+  //--------------------------------------- Attributes Read/Write operations ---------------------------------------//
+  /**
+   * @brief Get dimension sizes of the dataset under a specified group.
+   *
+   * @param [in] parentGroup - Where the dataset is.
+   * @param [in] datasetName - Dataset name.
+   * @return Dimension sizes of the dataset.
+   * @throw ios::failure     - If error happens.
+   */
+  DimensionSizes getDatasetDimensionSizes(const hid_t parentGroup,
                                           MatrixName& datasetName);
 
-    /**
-     * @brief Write string attribute into the dataset under the root group.
-     *
-     * @param [in] parentGroup   - Where the dataset is.
-     * @param [in] datasetName   - Dataset name.
-     * @param [in] attributeName - Attribute name.
-     * @param [in] value         - Data to write.
-     * @throw ios::failure       - If error happens.
-     */
-    void   writeStringAttribute(const hid_t        parentGroup,
-                                MatrixName&        datasetName,
-                                MatrixName&        attributeName,
-                                const std::string& value);
-    /**
-     * @brief Write long long attribute into the dataset under the root group.
-     *
-     * @param [in] parentGroup   - Where the dataset is.
-     * @param [in] datasetName   - Dataset name.
-     * @param [in] attributeName - Attribute name.
-     * @param [in] value         - Data to write.
-     * @throw ios::failure       - If error happens.
-     */
-    void   writeLongLongAttribute(const hid_t        parentGroup,
-                                MatrixName&        datasetName,
-                                MatrixName&        attributeName,
-                                const long long value);
+  /**
+   * @brief Get number of dimensions of the dataset  under a specified group.
+   *
+   * @param [in] parentGroup - Where the dataset is.
+   * @param [in] datasetName - Dataset name.
+   * @return Number of dimensions.
+   * @throw ios::failure     - If error happens.
+   */
+  size_t getDatasetNumberOfDimensions(const hid_t parentGroup,
+                                      MatrixName& datasetName);
 
-    /**
-     * @brief Write float attribute into the dataset under the root group.
-     *
-     * @param [in] parentGroup   - Where the dataset is.
-     * @param [in] datasetName   - Dataset name.
-     * @param [in] attributeName - Attribute name.
-     * @param [in] value         - Data to write.
-     * @throw ios::failure       - If error happens.
-     */
-    void writeFloatAttribute(const hid_t     parentGroup,
-                             MatrixName&     datasetName,
-                             MatrixName&     attributeName,
-                             const float value);
+  /**
+   * @brief Get dataset element count at a specified place in the file tree.
+   *
+   * @param [in] parentGroup - Where the dataset is.
+   * @param [in] datasetName - Dataset name.
+   * @return Number of elements.
+   * @throw ios::failure     - If error happens.
+   */
+  size_t getDatasetSize(const hid_t parentGroup,
+                        MatrixName& datasetName);
 
-    /**
-     * @brief Read string attribute from the dataset under the root group.
-     *
-     * @param [in] parentGroup   - Where the dataset is.
-     * @param [in] datasetName   - Dataset name.
-     * @param [in] attributeName - Attribute name.
-     * @return Attribute value.
-     * @throw ios::failure       - If error happens.
-     */
-    std::string readStringAttribute(const hid_t parentGroup,
-                                    MatrixName& datasetName,
-                                    MatrixName& attributeName);
+  /**
+   * @brief Write matrix data type into the dataset at a specified place in the file tree.
+   *
+   * @param [in] parentGroup    - Where the dataset is.
+   * @param [in] datasetName    - Dataset name.
+   * @param [in] matrixDataType - Matrix data type in the file.
+   * @throw ios::failure        - If error happens.
+   */
+  void writeMatrixDataType(const hid_t           parentGroup,
+                           MatrixName&           datasetName,
+                           const MatrixDataType& matrixDataType);
 
-    /**
-     * @brief Read long long attribute from the dataset under the root group.
-     *
-     * @param [in] parentGroup   - Where the dataset is.
-     * @param [in] datasetName   - Dataset name.
-     * @param [in] attributeName - Attribute name.
-     * @return Attribute value.
-     * @throw ios::failure       - If error happens.
-     */
-    long long readLongLongAttribute(const hid_t parentGroup,
-                                    MatrixName& datasetName,
-                                    MatrixName& attributeName);
+  /**
+   * @brief  Write matrix data type into the dataset at a specified place in the file tree.
+   *
+   * @param [in] parentGroup      - Where the dataset is.
+   * @param [in] datasetName      - Dataset name.
+   * @param [in] matrixDomainType - Matrix domain type.
+   * @throw ios::failure          - If error happens.
+   */
+  void writeMatrixDomainType(const hid_t             parentGroup,
+                             MatrixName&             datasetName,
+                             const MatrixDomainType& matrixDomainType);
 
-    /**
-     * @brief Read float attribute from the dataset under the root group.
-     *
-     * @param [in] parentGroup   - Where the dataset is.
-     * @param [in] datasetName   - Dataset name.
-     * @param [in] attributeName - Attribute name.
-     * @return Attribute value.
-     * @throw ios::failure       - If error happens.
-     */
-    float readFloatAttribute(const hid_t parentGroup,
-                             MatrixName& datasetName,
-                             MatrixName& attributeName);
+  /**
+   * @brief Read matrix data type from the dataset at a specified place in the file tree.
+   *
+   * @param [in] parentGroup - Where the dataset is.
+   * @param [in] datasetName - Dataset name.
+   * @return Matrix data type.
+   * @throw ios::failure     - If error happens.
+   */
+  MatrixDataType readMatrixDataType(const hid_t parentGroup,
+                                    MatrixName& datasetName);
 
-    /// String representation of the period in the compressed dataset.
-    static const std::string kCPeriodName;
-    /// String representation of the number of harmonics in the compressed dataset.
-    static const std::string kCHarmonicsName;
-    /// String representation of the multiple of overlap size in the compressed dataset.
-    static const std::string kCMOSName;
-    /// String representation of the period in the HDF5 input file.
-    static const std::string kPeriodName;
+  /**
+   * @brief Read matrix dataset domain type at a specified place in the file tree.
+   *
+   * @param [in] parentGroup - Where the dataset is.
+   * @param [in] datasetName - Dataset name.
+   * @return Matrix domain type.
+   * @throw ios::failure      - If error happens.
+   */
+  MatrixDomainType readMatrixDomainType(const hid_t parentGroup,
+                                        MatrixName& datasetName);
 
-protected:
+  /**
+   * @brief Write string attribute into the dataset under the root group.
+   *
+   * @param [in] parentGroup   - Where the dataset is.
+   * @param [in] datasetName   - Dataset name.
+   * @param [in] attributeName - Attribute name.
+   * @param [in] value         - Data to write.
+   * @throw ios::failure       - If error happens.
+   */
+  void writeStringAttribute(const hid_t        parentGroup,
+                            MatrixName&        datasetName,
+                            MatrixName&        attributeName,
+                            const std::string& value);
 
-  private:
-    /// String representation of the Domain type in the HDF5 file.
-    static const std::string kMatrixDomainTypeName;
-    /// String representation of the Data type in the HDF5 file.
-    static const std::string kMatrixDataTypeName;
+  /**
+   * @brief Write long long attribute into the dataset under the root group.
+   *
+   * @param [in] parentGroup   - Where the dataset is.
+   * @param [in] datasetName   - Dataset name.
+   * @param [in] attributeName - Attribute name.
+   * @param [in] value         - Data to write.
+   * @throw ios::failure       - If error happens.
+   */
+  void writeLongLongAttribute(const hid_t     parentGroup,
+                              MatrixName&     datasetName,
+                              MatrixName&     attributeName,
+                              const long long value);
 
-    /// String representation of different domain types.
-    static const std::string kMatrixDomainTypeNames[];
-    /// String representation of different data types.
-    static const std::string kMatrixDataTypeNames[];
+  /**
+   * @brief Write float attribute into the dataset under the root group.
+   *
+   * @param [in] parentGroup   - Where the dataset is.
+   * @param [in] datasetName   - Dataset name.
+   * @param [in] attributeName - Attribute name.
+   * @param [in] value         - Data to write.
+   * @throw ios::failure       - If error happens.
+   */
+  void writeFloatAttribute(const hid_t parentGroup,
+                           MatrixName& datasetName,
+                           MatrixName& attributeName,
+                           const float value);
 
-    /// HDF file handle.
-    hid_t  mFile;
-    /// File name.
-    std::string mFileName;
+  /**
+   * @brief Read string attribute from the dataset under the root group.
+   *
+   * @param [in] parentGroup   - Where the dataset is.
+   * @param [in] datasetName   - Dataset name.
+   * @param [in] attributeName - Attribute name.
+   * @return Attribute value.
+   * @throw ios::failure       - If error happens.
+   */
+  std::string readStringAttribute(const hid_t parentGroup,
+                                  MatrixName& datasetName,
+                                  MatrixName& attributeName);
+
+  /**
+   * @brief Read long long attribute from the dataset under the root group.
+   *
+   * @param [in] parentGroup   - Where the dataset is.
+   * @param [in] datasetName   - Dataset name.
+   * @param [in] attributeName - Attribute name.
+   * @return Attribute value.
+   * @throw ios::failure       - If error happens.
+   */
+  long long readLongLongAttribute(const hid_t parentGroup,
+                                  MatrixName& datasetName,
+                                  MatrixName& attributeName);
+
+  /**
+   * @brief Read float attribute from the dataset under the root group.
+   *
+   * @param [in] parentGroup   - Where the dataset is.
+   * @param [in] datasetName   - Dataset name.
+   * @param [in] attributeName - Attribute name.
+   * @return Attribute value.
+   * @throw ios::failure       - If error happens.
+   */
+  float readFloatAttribute(const hid_t parentGroup,
+                           MatrixName& datasetName,
+                           MatrixName& attributeName);
+
+  /**
+   * @brief Get file size.
+   *
+   * @return File size.
+   * @throw ios::failure     - If error happens.
+   */
+  hsize_t getFileSize();
+
+  /// String representation of the period in the compressed dataset.
+  static const std::string kCPeriodName;
+  /// String representation of the number of harmonics in the compressed dataset.
+  static const std::string kCHarmonicsName;
+  /// String representation of the multiple of overlap size in the compressed dataset.
+  static const std::string kCMOSName;
+  /// String representation of the period in the HDF5 input file.
+  static const std::string kPeriodName;
+
+private:
+  /// String representation of the Domain type in the HDF5 file.
+  static const std::string kMatrixDomainTypeName;
+  /// String representation of the Data type in the HDF5 file.
+  static const std::string kMatrixDataTypeName;
+
+  /// String representation of different domain types.
+  static const std::string kMatrixDomainTypeNames[];
+  /// String representation of different data types.
+  static const std::string kMatrixDataTypeNames[];
+
+  /// HDF file handle.
+  hid_t mFile;
+  /// File name.
+  std::string mFileName;
 }; // Hdf5File
 //----------------------------------------------------------------------------------------------------------------------
 
-#endif	/* HDF5_FILE_H */
+#endif /* HDF5_FILE_H */

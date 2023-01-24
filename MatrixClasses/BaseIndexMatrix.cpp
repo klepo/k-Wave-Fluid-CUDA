@@ -36,16 +36,13 @@
 #include <Utils/DimensionSizes.h>
 #include <Logger/Logger.h>
 
-
 //--------------------------------------------------------------------------------------------------------------------//
 //---------------------------------------------------- Constants -----------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
 
-
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------- Public methods ---------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
-
 
 /**
  * Default constructor
@@ -55,41 +52,36 @@ BaseIndexMatrix::BaseIndexMatrix()
     mSize(0), mCapacity(0),
     mDimensionSizes(),
     mRowSize(0), mSlabSize(0),
-    mHostData(nullptr), mDeviceData(nullptr)
-{
+    mHostData(nullptr), mDeviceData(nullptr) {
 
-}// end of BaseIndexMatrix
+} // end of BaseIndexMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Zero all allocated elements.
  */
-void BaseIndexMatrix::zeroMatrix()
-{
-  #pragma omp parallel for schedule (static)
-  for (size_t i = 0; i < mCapacity; i++)
-  {
+void BaseIndexMatrix::zeroMatrix() {
+#pragma omp parallel for schedule(static)
+  for (size_t i = 0; i < mCapacity; i++) {
     mHostData[i] = size_t(0);
   }
-}// end of zeroMatrix
+} // end of zeroMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Copy data from CPU -> GPU (Host -> Device).
  */
-void BaseIndexMatrix::copyToDevice()
-{
+void BaseIndexMatrix::copyToDevice() {
   cudaCheckErrors(cudaMemcpy(mDeviceData, mHostData, mCapacity * sizeof(size_t), cudaMemcpyHostToDevice));
-}// end of copyToDevice
+} // end of copyToDevice
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Copy data from GPU -> CPU (Device -> Host).
  */
-void BaseIndexMatrix::copyFromDevice()
-{
+void BaseIndexMatrix::copyFromDevice() {
   cudaCheckErrors(cudaMemcpy(mHostData, mDeviceData, mCapacity * sizeof(size_t), cudaMemcpyDeviceToHost));
-}// end of copyFromDevice
+} // end of copyFromDevice
 //----------------------------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -102,47 +94,41 @@ void BaseIndexMatrix::copyFromDevice()
  * CPU memory is aligned by the kDataAlignment and then registered as pinned and zeroed.
  * The GPU memory is allocated on GPU but not zeroed (no reason).
  */
-void BaseIndexMatrix::allocateMemory()
-{
+void BaseIndexMatrix::allocateMemory() {
   //size of memory to allocate
   size_t sizeInBytes = mCapacity * sizeof(size_t);
 
   mHostData = static_cast<size_t*>(_mm_malloc(sizeInBytes, kDataAlignment));
 
-  if (!mHostData)
-  {
+  if (!mHostData) {
     throw std::bad_alloc();
   }
 
   // Register Host memory (pin in memory)
   cudaCheckErrors(cudaHostRegister(mHostData, sizeInBytes, cudaHostRegisterPortable));
 
-  if ((cudaMalloc<size_t>(&mDeviceData, sizeInBytes) != cudaSuccess) || (!mDeviceData))
-  {
+  if ((cudaMalloc<size_t>(&mDeviceData, sizeInBytes) != cudaSuccess) || (!mDeviceData)) {
     throw std::bad_alloc();
   }
-}// end of allocateMemory
+} // end of allocateMemory
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Free memory.
  */
-void BaseIndexMatrix::freeMemory()
-{
-  if (mHostData)
-  {
+void BaseIndexMatrix::freeMemory() {
+  if (mHostData) {
     cudaHostUnregister(mHostData);
     _mm_free(mHostData);
   }
   mHostData = nullptr;
 
   // Free GPU memory
-  if (mDeviceData)
-  {
+  if (mDeviceData) {
     cudaCheckErrors(cudaFree(mDeviceData));
   }
   mDeviceData = nullptr;
-}// end of freeMemory
+} // end of freeMemory
 //----------------------------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------------------------//

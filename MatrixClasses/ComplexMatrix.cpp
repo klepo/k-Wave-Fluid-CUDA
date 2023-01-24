@@ -36,7 +36,6 @@
 //---------------------------------------------------- Constants -----------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
 
-
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------- Public methods ---------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
@@ -45,8 +44,7 @@
  * Constructor.
  */
 ComplexMatrix::ComplexMatrix(const DimensionSizes& dimensionSizes)
-  : BaseFloatMatrix()
-{
+  : BaseFloatMatrix() {
   initDimensions(dimensionSizes);
   allocateMemory();
 } // end of ComplexMatrixData
@@ -55,47 +53,41 @@ ComplexMatrix::ComplexMatrix(const DimensionSizes& dimensionSizes)
 /**
  * Destructor.
  */
-ComplexMatrix::~ComplexMatrix()
-{
+ComplexMatrix::~ComplexMatrix() {
   freeMemory();
-}// end of ComplexMatrix
+} // end of ComplexMatrix
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Read data from HDF5 file (do some basic checks). Only from the root group.
  */
-void ComplexMatrix::readData(Hdf5File&   file,
-                             MatrixName& matrixName)
-{
+void ComplexMatrix::readData(Hdf5File& file,
+                             MatrixName& matrixName) {
   // check data type
-  if (file.readMatrixDataType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDataType::kFloat)
-  {
+  if (file.readMatrixDataType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDataType::kFloat) {
     throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotFloat, matrixName.c_str()));
   }
 
   // check domain type
-  if (file.readMatrixDomainType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDomainType::kComplex)
-  {
+  if (file.readMatrixDomainType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDomainType::kComplex) {
     throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotComplex, matrixName.c_str()));
   }
 
-  // Initialise dimensions
+  // Initialize dimensions
   DimensionSizes complexDims = mDimensionSizes;
   complexDims.nx = 2 * complexDims.nx;
 
   // Read data from the file
   file.readCompleteDataset(file.getRootGroup(), matrixName, complexDims, mHostData);
-}// end of readData
+} // end of readData
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write data to HDF5 file (only from the root group).
  */
-void ComplexMatrix::writeData(Hdf5File&    file,
-                              MatrixName&  matrixName,
-                              const size_t compressionLevel)
-{
+void ComplexMatrix::writeData(Hdf5File& file,
+                              MatrixName& matrixName,
+                              const size_t compressionLevel) {
   // set dimensions and chunks
   DimensionSizes complexDims = mDimensionSizes;
   complexDims.nx = 2 * complexDims.nx;
@@ -110,16 +102,15 @@ void ComplexMatrix::writeData(Hdf5File&    file,
                                      chunks,
                                      Hdf5File::MatrixDataType::kFloat,
                                      compressionLevel);
- // Write write the matrix at once.
+  // Write write the matrix at once.
   file.writeHyperSlab(dataset, DimensionSizes(0, 0, 0), mDimensionSizes, mHostData);
   file.closeDataset(dataset);
 
- // Write data and domain type
-  file.writeMatrixDataType(file.getRootGroup()  , matrixName, Hdf5File::MatrixDataType::kFloat);
+  // Write data and domain type
+  file.writeMatrixDataType(file.getRootGroup(), matrixName, Hdf5File::MatrixDataType::kFloat);
   file.writeMatrixDomainType(file.getRootGroup(), matrixName, Hdf5File::MatrixDomainType::kComplex);
-}// end of writeData
+} // end of writeData
 //----------------------------------------------------------------------------------------------------------------------
-
 
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------ Protected methods -------------------------------------------------//
@@ -132,16 +123,15 @@ void ComplexMatrix::writeData(Hdf5File&    file,
 /**
  * Initialize matrix dimension sizes.
  */
-void ComplexMatrix::initDimensions(const DimensionSizes& dimensionSizes)
-{
+void ComplexMatrix::initDimensions(const DimensionSizes& dimensionSizes) {
   mDimensionSizes = dimensionSizes;
 
   mSize = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
 
-  mRowSize  = 2 * dimensionSizes.nx;
+  mRowSize = 2 * dimensionSizes.nx;
   mSlabSize = 2 * dimensionSizes.nx * dimensionSizes.ny;
   // compute actual necessary memory sizes
   mCapacity = 2 * mSize;
 
-}// end of initDimensions
+} // end of initDimensions
 //----------------------------------------------------------------------------------------------------------------------

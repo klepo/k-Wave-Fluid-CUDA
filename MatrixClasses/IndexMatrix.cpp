@@ -36,85 +36,71 @@
 //---------------------------------------------------- Constants -----------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
 
-
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------- Public methods ---------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
-
 
 /**
  * Constructor allocating memory.
  */
 IndexMatrix::IndexMatrix(const DimensionSizes& dimensionSizes)
-  : BaseIndexMatrix()
-{
+  : BaseIndexMatrix() {
   mDimensionSizes = dimensionSizes;
 
   mSize = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
 
   mCapacity = mSize;
 
-  mRowSize  = dimensionSizes.nx;
+  mRowSize = dimensionSizes.nx;
   mSlabSize = dimensionSizes.nx * dimensionSizes.ny;
 
   allocateMemory();
-}// end of IndexMatrix
+} // end of IndexMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Destructor.
  */
-IndexMatrix::~IndexMatrix()
-{
+IndexMatrix::~IndexMatrix() {
   freeMemory();
-}// end of ~IndexMatrix
+} // end of ~IndexMatrix
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read data from HDF5 file (only from the root group).
  */
-void IndexMatrix::readData(Hdf5File&   file,
-                           MatrixName& matrixName)
-{
-  if (file.readMatrixDataType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDataType::kLong)
-  {
+void IndexMatrix::readData(Hdf5File& file,
+                           MatrixName& matrixName) {
+  if (file.readMatrixDataType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDataType::kLong) {
     throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotIndex, matrixName.c_str()));
   }
 
-  if (file.readMatrixDomainType(file.getRootGroup(),matrixName) != Hdf5File::MatrixDomainType::kReal)
-  {
-    throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotReal,matrixName.c_str()));
+  if (file.readMatrixDomainType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDomainType::kReal) {
+    throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotReal, matrixName.c_str()));
   }
 
   file.readCompleteDataset(file.getRootGroup(), matrixName, mDimensionSizes, mHostData);
-}// end of readData
+} // end of readData
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write data to HDF5 file.
  */
-void IndexMatrix::writeData(Hdf5File&    file,
-                            MatrixName&  matrixName,
-                            const size_t compressionLevel)
-{
+void IndexMatrix::writeData(Hdf5File& file,
+                            MatrixName& matrixName,
+                            const size_t compressionLevel) {
   // set chunks - may be necessary for long index based sensor masks
   DimensionSizes chunks = mDimensionSizes;
   chunks.nz = 1;
 
   //1D matrices
-  if ((mDimensionSizes.ny == 1) && (mDimensionSizes.nz == 1))
-  {
+  if ((mDimensionSizes.ny == 1) && (mDimensionSizes.nz == 1)) {
     // Chunk = 4MB
-    if (mDimensionSizes.nx > (4 * kChunkSize1D4MB))
-    {
+    if (mDimensionSizes.nx > (4 * kChunkSize1D4MB)) {
       chunks.nx = kChunkSize1D4MB;
-    }
-    else if (mDimensionSizes.nx > (4 * kChunkSize1D1MB))
-    {
+    } else if (mDimensionSizes.nx > (4 * kChunkSize1D1MB)) {
       chunks.nx = kChunkSize1D1MB;
-    }
-    else if (mDimensionSizes.nx > (4 * kChunkSize1D256kB))
-    {
+    } else if (mDimensionSizes.nx > (4 * kChunkSize1D256kB)) {
       chunks.nx = kChunkSize1D256kB;
     }
   }
@@ -132,82 +118,97 @@ void IndexMatrix::writeData(Hdf5File&    file,
   file.closeDataset(dataset);
 
   // write data and domain types
-  file.writeMatrixDataType(file.getRootGroup(),   matrixName, Hdf5File::MatrixDataType::kLong);
+  file.writeMatrixDataType(file.getRootGroup(), matrixName, Hdf5File::MatrixDataType::kLong);
   file.writeMatrixDomainType(file.getRootGroup(), matrixName, Hdf5File::MatrixDomainType::kReal);
-}// end of writeData
+} // end of writeData
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Get the top left corner of the index-th cuboid. Cuboids are stored as 6-tuples (two 3D
  * coordinates). This gives the first three coordinates.
  */
-DimensionSizes IndexMatrix::getTopLeftCorner(const size_t& index) const
-{
-  size_t x =  mHostData[6 * index    ];
-  size_t y =  mHostData[6 * index + 1];
-  size_t z =  mHostData[6 * index + 2];
+DimensionSizes IndexMatrix::getTopLeftCorner(const size_t& index) const {
+  size_t x = mHostData[6 * index];
+  size_t y = mHostData[6 * index + 1];
+  size_t z = mHostData[6 * index + 2];
 
   return DimensionSizes(x, y, z);
-}// end of getTopLeftCorner
+} // end of getTopLeftCorner
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get the top bottom right of the index-th cuboid. Cuboids are stored as 6-tuples (two 3D
  * coordinates). This gives the first three coordinates. This routine works only on the CPU side.
 */
-DimensionSizes IndexMatrix::getBottomRightCorner(const size_t& index) const
-{
-  size_t x =  mHostData[6 * index + 3];
-  size_t y =  mHostData[6 * index + 4];
-  size_t z =  mHostData[6 * index + 5];
+DimensionSizes IndexMatrix::getBottomRightCorner(const size_t& index) const {
+  size_t x = mHostData[6 * index + 3];
+  size_t y = mHostData[6 * index + 4];
+  size_t z = mHostData[6 * index + 5];
 
   return DimensionSizes(x, y, z);
-}// end of GetBottomRightCorner
+} // end of GetBottomRightCorner
 //----------------------------------------------------------------------------------------------------------------------
-
 
 /**
  * Recompute indeces, MATLAB -> C++.
  */
-void IndexMatrix::recomputeIndicesToCPP()
-{
-  #pragma omp parallel for if (mSize > 1e5)
-  for (size_t i = 0; i < mSize; i++)
-  {
+void IndexMatrix::recomputeIndicesToCPP() {
+#pragma omp parallel for if (mSize > 1e5)
+  for (size_t i = 0; i < mSize; i++) {
     mHostData[i]--;
   }
-}// end of recomputeIndicesToCPP
+} // end of recomputeIndicesToCPP
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Recompute indeces, C++ -> MATLAB.
  */
-void IndexMatrix::recomputeIndicesToMatlab()
-{
-  #pragma omp parallel for if (mSize > 1e5)
-  for (size_t i = 0; i < mSize; i++)
-  {
+void IndexMatrix::recomputeIndicesToMatlab() {
+#pragma omp parallel for if (mSize > 1e5)
+  for (size_t i = 0; i < mSize; i++) {
     mHostData[i]++;
   }
-}// end of recomputeIndicesToMatlab
+} // end of recomputeIndicesToMatlab
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get total number of elements in all cuboids to be able to allocate output file.
  */
-size_t IndexMatrix::getSizeOfAllCuboids() const
-{
+size_t IndexMatrix::getSizeOfAllCuboids(float sizeMultiplier) const {
   size_t elementSum = 0;
-  for (size_t cuboidIdx = 0; cuboidIdx < mDimensionSizes.ny; cuboidIdx++)
-  {
-    elementSum += (getBottomRightCorner(cuboidIdx) - getTopLeftCorner(cuboidIdx)).nElements();
+  for (size_t cuboidIdx = 0; cuboidIdx < mDimensionSizes.ny; cuboidIdx++) {
+    elementSum += getSizeOfCuboid(cuboidIdx, sizeMultiplier);
   }
 
   return elementSum;
-}// end of getSizeOfAllCuboids
+} // end of getSizeOfAllCuboids
 //----------------------------------------------------------------------------------------------------------------------
 
+/**
+ * Get total number of elements in cuboid with given index.
+ */
+size_t IndexMatrix::getSizeOfCuboid(size_t cuboidIdx, float sizeMultiplier) const {
+  if (sizeMultiplier != 1.0f) {
+    return getDimensionSizesOfCuboid(cuboidIdx, sizeMultiplier).nElements();
+  } else {
+    return getDimensionSizesOfCuboid(cuboidIdx).nElements();
+  }
+} // end of getSizeOfCuboid
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Get dimension sizes of cuboid with given index.
+ */
+DimensionSizes IndexMatrix::getDimensionSizesOfCuboid(size_t cuboidIdx, float sizeMultiplier) const {
+  if (sizeMultiplier != 1.0f) {
+    DimensionSizes dims = getBottomRightCorner(cuboidIdx) - getTopLeftCorner(cuboidIdx);
+    dims.nx = hsize_t(ceilf(dims.nx * sizeMultiplier));
+    return dims;
+  } else {
+    return getBottomRightCorner(cuboidIdx) - getTopLeftCorner(cuboidIdx);
+  }
+} // end of getDimensionSizesOfCuboid
+//----------------------------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------ Protected methods -------------------------------------------------//

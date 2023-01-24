@@ -33,13 +33,12 @@
 #define OUTPUT_MESSAGES_H
 
 #ifdef __linux__
-  #include <Logger/OutputMessagesLinux.h>
+#include <Logger/OutputMessagesLinux.h>
 #endif
 
 // Windows build
 #ifdef _WIN64
-  #include <Logger/OutputMessagesWindows.h>
+#include <Logger/OutputMessagesWindows.h>
 #endif
 
 #endif /* OUTPUT_MESSAGES_H */
-
