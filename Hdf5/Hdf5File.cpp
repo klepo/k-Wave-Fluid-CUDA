@@ -1,7 +1,7 @@
 /**
  * @file      Hdf5File.cpp
  *
- * @author    Jiri Jaros \n
+ * @author    Jiri Jaros, Petr Kleparnik \n
  *            Faculty of Information Technology \n
  *            Brno University of Technology \n
  *            jarosjir@fit.vutbr.cz
@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      27 July      2012, 14:14 (created) \n
- *            06 March     2019, 12:57 (revised)
+ *            08 February  2023, 12:00 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -35,12 +35,12 @@
 
 // Linux build
 #ifdef __linux__
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 
-//Windows 64 build
+// Windows 64 build
 #ifdef _WIN64
-#include <io.h>
+  #include <io.h>
 #endif
 
 #include <Hdf5/Hdf5File.h>
@@ -57,15 +57,15 @@ using std::string;
 //--------------------------------------------------------------------------------------------------------------------//
 
 const string Hdf5File::kMatrixDomainTypeName = "domain_type";
-const string Hdf5File::kMatrixDataTypeName = "data_type";
+const string Hdf5File::kMatrixDataTypeName   = "data_type";
 
-const string Hdf5File::kCPeriodName = "c_period";
+const string Hdf5File::kCPeriodName    = "c_period";
 const string Hdf5File::kCHarmonicsName = "c_hamornics";
-const string Hdf5File::kCMOSName = "c_mos";
-const string Hdf5File::kPeriodName = "period";
+const string Hdf5File::kCMOSName       = "c_mos";
+const string Hdf5File::kPeriodName     = "period";
 
 const string Hdf5File::kMatrixDomainTypeNames[] = {"real", "complex"};
-const string Hdf5File::kMatrixDataTypeNames[] = {"float", "long"};
+const string Hdf5File::kMatrixDataTypeNames[]   = {"float", "long"};
 
 //--------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------- Public methods ---------------------------------------------------//
@@ -74,28 +74,31 @@ const string Hdf5File::kMatrixDataTypeNames[] = {"float", "long"};
 /**
  * Constructor.
  */
-Hdf5File::Hdf5File()
-  : mFile(H5I_BADID), mFileName("") {
-
+Hdf5File::Hdf5File() : mFile(H5I_BADID), mFileName("")
+{
 } // end of constructor
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Destructor.
  */
-Hdf5File::~Hdf5File() {
+Hdf5File::~Hdf5File()
+{
   if (isOpen())
     close();
-} //end of destructor
+} // end of destructor
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Create the HDF5 file.
  */
-void Hdf5File::create(const string& fileName,
-                      unsigned int flags) {
+void Hdf5File::create(const string& fileName, unsigned int flags)
+{
   // file is opened
-  if (isOpen()) {
+  if (isOpen())
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotRecreateFile, fileName.c_str()));
   }
 
@@ -104,41 +107,48 @@ void Hdf5File::create(const string& fileName,
 
   mFile = H5Fcreate(fileName.c_str(), flags, H5P_DEFAULT, H5P_DEFAULT);
 
-  if (mFile < 0) {
+  if (mFile < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotCreateFile, fileName.c_str()));
   }
 } // end of create
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Open the HDF5 file.
  */
-void Hdf5File::open(const string& fileName,
-                    unsigned int flags) {
+void Hdf5File::open(const string& fileName, unsigned int flags)
+{
   const char* cFileName = fileName.c_str();
 
-  if (isOpen()) {
+  if (isOpen())
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReopenFile, cFileName));
   };
 
   mFileName = fileName;
 
-  if (H5Fis_hdf5(cFileName) == 0) {
+  if (H5Fis_hdf5(cFileName) == 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtNotHdf5File, cFileName));
   }
 
   mFile = H5Fopen(cFileName, flags, H5P_DEFAULT);
 
-  if (mFile < 0) {
+  if (mFile < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtFileNotOpen, cFileName));
   }
 } // end of open
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Can I access the file.
  */
-bool Hdf5File::canAccess(const string& fileName) {
+bool Hdf5File::canAccess(const string& fileName)
+{
 #ifdef __linux__
   return (access(fileName.c_str(), F_OK) == 0);
 #endif
@@ -147,131 +157,155 @@ bool Hdf5File::canAccess(const string& fileName) {
   return (_access_s(fileName.c_str(), 0) == 0);
 #endif
 } // end of canAccess
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Close the HDF5 file.
  */
-void Hdf5File::close() {
+void Hdf5File::close()
+{
   // Terminate access to the file.
   herr_t status = H5Fclose(mFile);
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotCloseFile, mFileName.c_str()));
   }
 
   mFileName = "";
-  mFile = H5I_BADID;
+  mFile     = H5I_BADID;
 } // end of close
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Create a HDF5 group at a specified place in the file tree.
  */
-hid_t Hdf5File::createGroup(const hid_t parentGroup,
-                            MatrixName& groupName) {
+hid_t Hdf5File::createGroup(const hid_t parentGroup, MatrixName& groupName)
+{
   hid_t group = H5Gcreate(parentGroup, groupName.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
-  //if error
-  if (group == H5I_INVALID_HID) {
+  // if error
+  if (group == H5I_INVALID_HID)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotCreateGroup, groupName.c_str(), mFileName.c_str()));
   }
 
   return group;
 } // end of createGroup
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Open a HDF5 group at a specified place in the file tree.
  */
-hid_t Hdf5File::openGroup(const hid_t parentGroup,
-                          MatrixName& groupName) {
+hid_t Hdf5File::openGroup(const hid_t parentGroup, MatrixName& groupName)
+{
   hid_t group = H5Gopen(parentGroup, groupName.c_str(), H5P_DEFAULT);
 
-  //if error
-  if (group == H5I_INVALID_HID) {
+  // if error
+  if (group == H5I_INVALID_HID)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenGroup, groupName.c_str(), mFileName.c_str()));
   }
 
   return group;
 } // end of openGroup
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Close a group.
  */
-void Hdf5File::closeGroup(const hid_t group) {
+void Hdf5File::closeGroup(const hid_t group)
+{
   H5Gclose(group);
 } // end of closeGroup
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Check group exists
  */
-bool Hdf5File::groupExists(const hid_t parentGroup, MatrixName& groupName) {
-  if (H5Lexists(parentGroup, groupName.c_str(), 0) && H5Oexists_by_name(parentGroup, groupName.c_str(), 0)) {
+bool Hdf5File::groupExists(const hid_t parentGroup, MatrixName& groupName)
+{
+  if (H5Lexists(parentGroup, groupName.c_str(), 0) && H5Oexists_by_name(parentGroup, groupName.c_str(), 0))
+  {
     H5O_info_t objectInfo;
     herr_t err = H5Oget_info_by_name(parentGroup, groupName.c_str(), &objectInfo, 0);
-    if (err < 0) {
+    if (err < 0)
+    {
       throw ios::failure("H5Oget_info_by_name error");
     }
-    if (H5G_obj_t(objectInfo.type) == H5G_GROUP) {
+    if (H5G_obj_t(objectInfo.type) == H5G_GROUP)
+    {
       return true;
     }
   }
   return false;
 } // end of groupExists
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Check dataset exists
  */
-bool Hdf5File::datasetExists(const hid_t parentGroup, MatrixName& datasetName) {
-  if (H5Lexists(parentGroup, datasetName.c_str(), 0) && H5Oexists_by_name(parentGroup, datasetName.c_str(), 0)) {
+bool Hdf5File::datasetExists(const hid_t parentGroup, MatrixName& datasetName)
+{
+  if (H5Lexists(parentGroup, datasetName.c_str(), 0) && H5Oexists_by_name(parentGroup, datasetName.c_str(), 0))
+  {
     H5O_info_t objectInfo;
     herr_t err = H5Oget_info_by_name(parentGroup, datasetName.c_str(), &objectInfo, 0);
-    if (err < 0) {
+    if (err < 0)
+    {
       throw ios::failure("H5Oget_info_by_name error");
     }
-    if (H5G_obj_t(objectInfo.type) == H5G_DATASET) {
+    if (H5G_obj_t(objectInfo.type) == H5G_DATASET)
+    {
       return true;
     }
   }
   return false;
 } // end of datasetExists
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Open a dataset at a specified place in the file tree.
  */
-hid_t Hdf5File::openDataset(const hid_t parentGroup,
-                            MatrixName& datasetName) {
+hid_t Hdf5File::openDataset(const hid_t parentGroup, MatrixName& datasetName)
+{
   // Open dataset
   hid_t dataset = H5Dopen(parentGroup, datasetName.c_str(), H5P_DEFAULT);
 
-  if (dataset == H5I_INVALID_HID) {
+  if (dataset == H5I_INVALID_HID)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotOpenDataset, mFileName.c_str(), datasetName.c_str()));
   }
 
   return dataset;
 } // end of openDataset
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Create dataset.
  */
 hid_t Hdf5File::createDataset(const hid_t parentGroup,
-                              MatrixName& datasetName,
-                              const DimensionSizes& dimensionSizes,
-                              const DimensionSizes& chunkSizes,
-                              const Hdf5File::MatrixDataType matrixDataType,
-                              const size_t compressionLevel) {
+  MatrixName& datasetName,
+  const DimensionSizes& dimensionSizes,
+  const DimensionSizes& chunkSizes,
+  const Hdf5File::MatrixDataType matrixDataType,
+  const size_t compressionLevel)
+{
   const int rank = (dimensionSizes.is4D()) ? 4 : 3;
 
   hsize_t dims[4];
   hsize_t chunk[4];
 
   // 4D dataset
-  if (dimensionSizes.is4D()) {
+  if (dimensionSizes.is4D())
+  {
     dims[0] = dimensionSizes.nt;
     dims[1] = dimensionSizes.nz;
     dims[2] = dimensionSizes.ny;
@@ -281,7 +315,9 @@ hid_t Hdf5File::createDataset(const hid_t parentGroup,
     chunk[1] = chunkSizes.nz;
     chunk[2] = chunkSizes.ny;
     chunk[3] = chunkSizes.nx;
-  } else { // 3D dataset
+  }
+  else
+  { // 3D dataset
     dims[0] = dimensionSizes.nz;
     dims[1] = dimensionSizes.ny;
     dims[2] = dimensionSizes.nx;
@@ -300,31 +336,27 @@ hid_t Hdf5File::createDataset(const hid_t parentGroup,
   propertyList = H5Pcreate(H5P_DATASET_CREATE);
 
   status = H5Pset_chunk(propertyList, rank, chunk);
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotCreateDataset, mFileName.c_str(), datasetName.c_str()));
   }
 
   // set compression level
   status = H5Pset_deflate(propertyList, static_cast<unsigned int>(compressionLevel));
-  if (status < 0) {
-    throw ios::failure(Logger::formatMessage(kErrFmtCannotSetCompression,
-                                             mFileName.c_str(),
-                                             datasetName.c_str(),
-                                             compressionLevel));
+  if (status < 0)
+  {
+    throw ios::failure(
+      Logger::formatMessage(kErrFmtCannotSetCompression, mFileName.c_str(), datasetName.c_str(), compressionLevel));
   }
 
   const hid_t datasetType = (matrixDataType == MatrixDataType::kFloat) ? H5T_NATIVE_FLOAT : H5T_STD_U64LE;
 
   // create dataset
-  hid_t dataset = H5Dcreate(parentGroup,
-                            datasetName.c_str(),
-                            datasetType,
-                            dataspace,
-                            H5P_DEFAULT,
-                            propertyList,
-                            H5P_DEFAULT);
+  hid_t dataset =
+    H5Dcreate(parentGroup, datasetName.c_str(), datasetType, dataspace, H5P_DEFAULT, propertyList, H5P_DEFAULT);
 
-  if (dataset == H5I_INVALID_HID) {
+  if (dataset == H5I_INVALID_HID)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotCreateDataset, mFileName.c_str(), datasetName.c_str()));
   }
 
@@ -333,26 +365,27 @@ hid_t Hdf5File::createDataset(const hid_t parentGroup,
   return dataset;
 
 } // end of createDataset
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Close dataset.
  */
-void Hdf5File::closeDataset(const hid_t dataset) {
+void Hdf5File::closeDataset(const hid_t dataset)
+{
   H5Dclose(dataset);
 } // end of closeDataset
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read a hyperslab from the dataset.
  */
-template <class T>
-void Hdf5File::readHyperSlab(const hid_t dataset,
-                             const DimensionSizes& position,
-                             const DimensionSizes& size,
-                             T* data) {
+template<class T>
+void Hdf5File::readHyperSlab(const hid_t dataset, const DimensionSizes& position, const DimensionSizes& size, T* data)
+{
   const size_t n = H5Iget_name(dataset, NULL, 0);
-  char* buffer = new char[n + 1]();
+  char* buffer   = new char[n + 1]();
   H5Iget_name(dataset, buffer, n + 1);
   std::string name = buffer;
   delete[] buffer;
@@ -361,7 +394,7 @@ void Hdf5File::readHyperSlab(const hid_t dataset,
   hid_t filespace, memspace;
 
   // Get file space to find out number of dimensions
-  filespace = H5Dget_space(dataset);
+  filespace      = H5Dget_space(dataset);
   const int rank = H5Sget_simple_extent_ndims(filespace);
 
   // Select sizes and positions, windows hack
@@ -369,7 +402,8 @@ void Hdf5File::readHyperSlab(const hid_t dataset,
   hsize_t offset[4];
 
   // 3D dataset
-  if (rank == 3) {
+  if (rank == 3)
+  {
     nElement[0] = size.nz;
     nElement[1] = size.ny;
     nElement[2] = size.nx;
@@ -377,7 +411,8 @@ void Hdf5File::readHyperSlab(const hid_t dataset,
     offset[0] = position.nz;
     offset[1] = position.ny;
     offset[2] = position.nx;
-  } else // 4D dataset
+  }
+  else // 4D dataset
   {
     nElement[0] = size.nt;
     nElement[1] = size.nz;
@@ -392,7 +427,8 @@ void Hdf5File::readHyperSlab(const hid_t dataset,
 
   // select hyperslab
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, nElement, NULL);
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, name.c_str()));
   }
 
@@ -402,49 +438,49 @@ void Hdf5File::readHyperSlab(const hid_t dataset,
   // set status to error value to catch unknown data type.
   status = -1;
   // write based on datatype
-  if (std::is_same<T, size_t>()) {
+  if (std::is_same<T, size_t>())
+  {
     status = H5Dread(dataset, H5T_STD_U64LE, memspace, filespace, H5P_DEFAULT, data);
   }
-  if (std::is_same<T, float>()) {
+  if (std::is_same<T, float>())
+  {
     status = H5Dread(dataset, H5T_NATIVE_FLOAT, memspace, filespace, H5P_DEFAULT, data);
   }
 
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, name.c_str()));
   }
 
   H5Sclose(memspace);
   H5Sclose(filespace);
 } // end of readHyperSlab
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read a hyperslab into the dataset, float version explicit instance.
  */
-template void Hdf5File::readHyperSlab<float>(const hid_t dataset,
-                                             const DimensionSizes& position,
-                                             const DimensionSizes& size,
-                                             float* data);
+template void Hdf5File::readHyperSlab<float>(
+  const hid_t dataset, const DimensionSizes& position, const DimensionSizes& size, float* data);
 //----------------------------------------------------------------------------------------------------------------------
 /**
  * Read a hyperslab into the dataset, index version explicit instance.
  */
-template void Hdf5File::readHyperSlab<size_t>(const hid_t dataset,
-                                              const DimensionSizes& position,
-                                              const DimensionSizes& size,
-                                              size_t* data);
+template void Hdf5File::readHyperSlab<size_t>(
+  const hid_t dataset, const DimensionSizes& position, const DimensionSizes& size, size_t* data);
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write a hyperslab into the dataset.
  */
-template <class T>
-void Hdf5File::writeHyperSlab(const hid_t dataset,
-                              const DimensionSizes& position,
-                              const DimensionSizes& size,
-                              const T* data) {
+template<class T>
+void Hdf5File::writeHyperSlab(
+  const hid_t dataset, const DimensionSizes& position, const DimensionSizes& size, const T* data)
+{
   const size_t n = H5Iget_name(dataset, NULL, 0);
-  char* buffer = new char[n + 1]();
+  char* buffer   = new char[n + 1]();
   H5Iget_name(dataset, buffer, n + 1);
   std::string name = buffer;
   delete[] buffer;
@@ -453,7 +489,7 @@ void Hdf5File::writeHyperSlab(const hid_t dataset,
   hid_t filespace, memspace;
 
   // Get file space to find out number of dimensions
-  filespace = H5Dget_space(dataset);
+  filespace      = H5Dget_space(dataset);
   const int rank = H5Sget_simple_extent_ndims(filespace);
 
   // Select sizes and positions, windows hack
@@ -461,7 +497,8 @@ void Hdf5File::writeHyperSlab(const hid_t dataset,
   hsize_t offset[4];
 
   // 3D dataset
-  if (rank == 3) {
+  if (rank == 3)
+  {
     nElement[0] = size.nz;
     nElement[1] = size.ny;
     nElement[2] = size.nx;
@@ -469,7 +506,8 @@ void Hdf5File::writeHyperSlab(const hid_t dataset,
     offset[0] = position.nz;
     offset[1] = position.ny;
     offset[2] = position.nx;
-  } else // 4D dataset
+  }
+  else // 4D dataset
   {
     nElement[0] = size.nt;
     nElement[1] = size.nz;
@@ -484,7 +522,8 @@ void Hdf5File::writeHyperSlab(const hid_t dataset,
 
   // select hyperslab
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, nElement, NULL);
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, name.c_str()));
   }
 
@@ -494,50 +533,52 @@ void Hdf5File::writeHyperSlab(const hid_t dataset,
   // set status to error value to catch unknown data type.
   status = -1;
   // write based on datatype
-  if (std::is_same<T, size_t>()) {
+  if (std::is_same<T, size_t>())
+  {
     status = H5Dwrite(dataset, H5T_STD_U64LE, memspace, filespace, H5P_DEFAULT, data);
   }
-  if (std::is_same<T, float>()) {
+  if (std::is_same<T, float>())
+  {
     status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, memspace, filespace, H5P_DEFAULT, data);
   }
 
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, name.c_str()));
   }
 
   H5Sclose(memspace);
   H5Sclose(filespace);
 } // end of writeHyperSlab
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write a hyperslab into the dataset, float version explicit instance.
  */
-template void Hdf5File::writeHyperSlab<float>(const hid_t dataset,
-                                              const DimensionSizes& position,
-                                              const DimensionSizes& size,
-                                              const float* data);
+template void Hdf5File::writeHyperSlab<float>(
+  const hid_t dataset, const DimensionSizes& position, const DimensionSizes& size, const float* data);
 //----------------------------------------------------------------------------------------------------------------------
 /**
  * Write a hyperslab into the dataset, index version explicit instance.
  */
-template void Hdf5File::writeHyperSlab<size_t>(const hid_t dataset,
-                                               const DimensionSizes& position,
-                                               const DimensionSizes& size,
-                                               const size_t* data);
+template void Hdf5File::writeHyperSlab<size_t>(
+  const hid_t dataset, const DimensionSizes& position, const DimensionSizes& size, const size_t* data);
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write a cuboid selected within the matrixData into a hyperslab.
  */
 void Hdf5File::writeCuboidToHyperSlab(const hid_t dataset,
-                                      const DimensionSizes& hyperslabPosition,
-                                      const DimensionSizes& cuboidPosition,
-                                      const DimensionSizes& cuboidSize,
-                                      const DimensionSizes& matrixDimensions,
-                                      const float* matrixData) {
+  const DimensionSizes& hyperslabPosition,
+  const DimensionSizes& cuboidPosition,
+  const DimensionSizes& cuboidSize,
+  const DimensionSizes& matrixDimensions,
+  const float* matrixData)
+{
   const size_t n = H5Iget_name(dataset, NULL, 0);
-  char* buffer = new char[n + 1]();
+  char* buffer   = new char[n + 1]();
   H5Iget_name(dataset, buffer, n + 1);
   std::string name = buffer;
   delete[] buffer;
@@ -549,36 +590,37 @@ void Hdf5File::writeCuboidToHyperSlab(const hid_t dataset,
 
   // Select sizes and positions
   // The T here is always 1 (only one timestep)
-  hsize_t slabSize[rank] = {1, cuboidSize.nz, cuboidSize.ny, cuboidSize.nx};
-  hsize_t offsetInDataset[rank] = {hyperslabPosition.nt,
-                                   hyperslabPosition.nz,
-                                   hyperslabPosition.ny,
-                                   hyperslabPosition.nx};
+  hsize_t slabSize[rank]        = {1, cuboidSize.nz, cuboidSize.ny, cuboidSize.nx};
+  hsize_t offsetInDataset[rank] = {
+    hyperslabPosition.nt, hyperslabPosition.nz, hyperslabPosition.ny, hyperslabPosition.nx};
   hsize_t offsetInMatrixData[] = {cuboidPosition.nz, cuboidPosition.ny, cuboidPosition.nx};
-  hsize_t matrixSize[] = {matrixDimensions.nz, matrixDimensions.ny, matrixDimensions.nx};
+  hsize_t matrixSize[]         = {matrixDimensions.nz, matrixDimensions.ny, matrixDimensions.nx};
 
   // select hyperslab in the HDF5 dataset
   filespace = H5Dget_space(dataset);
-  status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offsetInDataset, NULL, slabSize, NULL);
-  if (status < 0) {
+  status    = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offsetInDataset, NULL, slabSize, NULL);
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, name.c_str()));
   }
 
   // assign memspace and select the cuboid in the sampled matrix
   memspace = H5Screate_simple(3, matrixSize, NULL);
-  status = H5Sselect_hyperslab(memspace,
-                               H5S_SELECT_SET,
-                               offsetInMatrixData,
-                               NULL,
-                               slabSize + 1, // Slab size has to be 3D in this case (done by skipping the T dimension)
-                               NULL);
-  if (status < 0) {
+  status   = H5Sselect_hyperslab(memspace,
+      H5S_SELECT_SET,
+      offsetInMatrixData,
+      NULL,
+      slabSize + 1, // Slab size has to be 3D in this case (done by skipping the T dimension)
+      NULL);
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, name.c_str()));
   }
 
   // Write the data
   status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, memspace, filespace, H5P_DEFAULT, matrixData);
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, name.c_str()));
   }
 
@@ -586,19 +628,21 @@ void Hdf5File::writeCuboidToHyperSlab(const hid_t dataset,
   H5Sclose(memspace);
   H5Sclose(filespace);
 } // end of writeCuboidToHyperSlab
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write sensor data selected by the sensor mask.
  */
 void Hdf5File::writeDataByMaskToHyperSlab(const hid_t dataset,
-                                          const DimensionSizes& hyperslabPosition,
-                                          const size_t indexSensorSize,
-                                          const size_t* indexSensorData,
-                                          const DimensionSizes& matrixDimensions,
-                                          const float* matrixData) {
+  const DimensionSizes& hyperslabPosition,
+  const size_t indexSensorSize,
+  const size_t* indexSensorData,
+  const DimensionSizes& matrixDimensions,
+  const float* matrixData)
+{
   const size_t n = H5Iget_name(dataset, NULL, 0);
-  char* buffer = new char[n + 1]();
+  char* buffer   = new char[n + 1]();
   H5Iget_name(dataset, buffer, n + 1);
   std::string name = buffer;
   delete[] buffer;
@@ -610,41 +654,31 @@ void Hdf5File::writeDataByMaskToHyperSlab(const hid_t dataset,
 
   // Select sizes and positions
   // Only one timestep
-  hsize_t slabSize[rank] = {1, 1, indexSensorSize};
+  hsize_t slabSize[rank]        = {1, 1, indexSensorSize};
   hsize_t offsetInDataset[rank] = {hyperslabPosition.nz, hyperslabPosition.ny, hyperslabPosition.nx};
   // treat as a 1D array
-  hsize_t matrixSize = matrixDimensions.nz * matrixDimensions.ny * matrixDimensions.nx;
+  hsize_t matrixSize            = matrixDimensions.nz * matrixDimensions.ny * matrixDimensions.nx;
 
   // select hyperslab in the HDF5 dataset
   filespace = H5Dget_space(dataset);
-  status = H5Sselect_hyperslab(filespace,
-                               H5S_SELECT_SET,
-                               offsetInDataset,
-                               NULL,
-                               slabSize,
-                               NULL);
-  if (status < 0) {
+  status    = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offsetInDataset, NULL, slabSize, NULL);
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, name.c_str()));
   }
 
   // assign 1D memspace and select the elements within the array
   memspace = H5Screate_simple(1, &matrixSize, NULL);
-  status = H5Sselect_elements(memspace,
-                              H5S_SELECT_SET,
-                              indexSensorSize,
-                              (hsize_t*)(indexSensorData));
-  if (status < 0) {
+  status   = H5Sselect_elements(memspace, H5S_SELECT_SET, indexSensorSize, (hsize_t*)(indexSensorData));
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, name.c_str()));
   }
 
   // Write the data
-  status = H5Dwrite(dataset,
-                    H5T_NATIVE_FLOAT,
-                    memspace,
-                    filespace,
-                    H5P_DEFAULT,
-                    matrixData);
-  if (status < 0) {
+  status = H5Dwrite(dataset, H5T_NATIVE_FLOAT, memspace, filespace, H5P_DEFAULT, matrixData);
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, name.c_str()));
   }
 
@@ -652,320 +686,329 @@ void Hdf5File::writeDataByMaskToHyperSlab(const hid_t dataset,
   H5Sclose(memspace);
   H5Sclose(filespace);
 } // end of writeSensorbyMaskToHyperSlab
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write a scalar value at a specified place in the file tree.
  */
-template <class T>
-void Hdf5File::writeScalarValue(const hid_t parentGroup,
-                                MatrixName& datasetName,
-                                const T value) {
-  constexpr int rank = 3;
+template<class T> void Hdf5File::writeScalarValue(const hid_t parentGroup, MatrixName& datasetName, const T value)
+{
+  constexpr int rank   = 3;
   const hsize_t dims[] = {1, 1, 1};
 
-  hid_t dataset = H5I_INVALID_HID;
+  hid_t dataset   = H5I_INVALID_HID;
   hid_t dataspace = H5I_INVALID_HID;
-  hid_t datatype = H5I_INVALID_HID;
+  hid_t datatype  = H5I_INVALID_HID;
   herr_t status;
 
-  if (std::is_same<T, float>()) {
+  if (std::is_same<T, float>())
+  {
     datatype = H5T_NATIVE_FLOAT;
   }
 
-  if (std::is_same<T, size_t>()) {
+  if (std::is_same<T, size_t>())
+  {
     datatype = H5T_STD_U64LE;
   }
 
   const char* cDatasetName = datasetName.c_str();
-  if (H5LTfind_dataset(parentGroup, cDatasetName) == 1) { // dataset already exists (from previous simulation leg) open it
+  if (H5LTfind_dataset(parentGroup, cDatasetName) == 1)
+  { // dataset already exists (from previous simulation leg) open it
     dataset = openDataset(parentGroup, cDatasetName);
-  } else { // dataset does not exist yet -> create it
+  }
+  else
+  { // dataset does not exist yet -> create it
     dataspace = H5Screate_simple(rank, dims, NULL);
-    dataset = H5Dcreate(parentGroup,
-                        cDatasetName,
-                        datatype,
-                        dataspace,
-                        H5P_DEFAULT,
-                        H5P_DEFAULT,
-                        H5P_DEFAULT);
+    dataset   = H5Dcreate(parentGroup, cDatasetName, datatype, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
   }
 
   // was created correctly?
-  if (dataset == H5I_INVALID_HID) {
+  if (dataset == H5I_INVALID_HID)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, cDatasetName));
   }
 
   status = H5Dwrite(dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, &value);
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteDataset, cDatasetName));
   }
 
-  if (std::is_same<T, float>()) {
+  if (std::is_same<T, float>())
+  {
     writeMatrixDataType(parentGroup, datasetName, MatrixDataType::kFloat);
   }
-  if (std::is_same<T, size_t>()) {
+  if (std::is_same<T, size_t>())
+  {
     writeMatrixDataType(parentGroup, datasetName, MatrixDataType::kLong);
   }
   writeMatrixDomainType(parentGroup, datasetName, MatrixDomainType::kReal);
 
 } // end of writeScalarValue
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write the scalar value under a specified group, float value explicit instance.
  */
-template void Hdf5File::writeScalarValue<float>(const hid_t parentGroup,
-                                                MatrixName& datasetName,
-                                                const float value);
+template void Hdf5File::writeScalarValue<float>(const hid_t parentGroup, MatrixName& datasetName, const float value);
 //----------------------------------------------------------------------------------------------------------------------
 /**
  * Write the scalar value under a specified group, index value explicit instance.
  */
-template void Hdf5File::writeScalarValue<size_t>(const hid_t parentGroup,
-                                                 MatrixName& datasetName,
-                                                 const size_t value);
+template void Hdf5File::writeScalarValue<size_t>(const hid_t parentGroup, MatrixName& datasetName, const size_t value);
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read the scalar value under a specified group.
  */
-template <class T>
-void Hdf5File::readScalarValue(const hid_t parentGroup,
-                               MatrixName& datasetName,
-                               T& value) {
+template<class T> void Hdf5File::readScalarValue(const hid_t parentGroup, MatrixName& datasetName, T& value)
+{
   readCompleteDataset(parentGroup, datasetName, DimensionSizes(1, 1, 1), &value);
 } // end of readScalarValue
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read the scalar value under a specified group, float value, explicit instance.
  */
-template void Hdf5File::readScalarValue<float>(const hid_t parentGroup,
-                                               MatrixName& datasetName,
-                                               float& value);
+template void Hdf5File::readScalarValue<float>(const hid_t parentGroup, MatrixName& datasetName, float& value);
 //----------------------------------------------------------------------------------------------------------------------
 /**
  * Read the scalar value under a specified group, float value, explicit instance
  *
  */
-template void Hdf5File::readScalarValue<size_t>(const hid_t parentGroup,
-                                                MatrixName& datasetName,
-                                                size_t& value);
+template void Hdf5File::readScalarValue<size_t>(const hid_t parentGroup, MatrixName& datasetName, size_t& value);
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read data from the dataset at a specified place in the file tree.
  */
-template <class T>
-void Hdf5File::readCompleteDataset(const hid_t parentGroup,
-                                   MatrixName& datasetName,
-                                   const DimensionSizes& dimensionSizes,
-                                   T* data) {
+template<class T>
+void Hdf5File::readCompleteDataset(
+  const hid_t parentGroup, MatrixName& datasetName, const DimensionSizes& dimensionSizes, T* data)
+{
   const char* cDatasetName = datasetName.c_str();
   // Check Dimensions sizes
-  if (getDatasetDimensionSizes(parentGroup, datasetName).nElements() != dimensionSizes.nElements()) {
+  if (getDatasetDimensionSizes(parentGroup, datasetName).nElements() != dimensionSizes.nElements())
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtBadDimensionSizes, cDatasetName));
   }
 
   herr_t status = -1;
-  if (std::is_same<T, float>()) {
+  if (std::is_same<T, float>())
+  {
     status = H5LTread_dataset(parentGroup, cDatasetName, H5T_NATIVE_FLOAT, data);
   }
-  if (std::is_same<T, size_t>()) {
+  if (std::is_same<T, size_t>())
+  {
     status = H5LTread_dataset(parentGroup, cDatasetName, H5T_STD_U64LE, data);
   }
 
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, cDatasetName));
   }
 } // end of readCompleteDataset
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read data from the dataset at a specified place in the file tree, float version explicit instance.
  */
-template void Hdf5File::readCompleteDataset<float>(const hid_t parentGroup,
-                                                   MatrixName& datasetName,
-                                                   const DimensionSizes& dimensionSizes,
-                                                   float* data);
+template void Hdf5File::readCompleteDataset<float>(
+  const hid_t parentGroup, MatrixName& datasetName, const DimensionSizes& dimensionSizes, float* data);
 //----------------------------------------------------------------------------------------------------------------------
 /**
  * Read data from the dataset at a specified place in the file tree, index version explicit instance.
  */
-template void Hdf5File::readCompleteDataset<size_t>(const hid_t parentGroup,
-                                                    MatrixName& datasetName,
-                                                    const DimensionSizes& dimensionSizes,
-                                                    size_t* data);
+template void Hdf5File::readCompleteDataset<size_t>(
+  const hid_t parentGroup, MatrixName& datasetName, const DimensionSizes& dimensionSizes, size_t* data);
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
-  * Get dimension sizes of the dataset  under a specified group.
-  */
-DimensionSizes Hdf5File::getDatasetDimensionSizes(const hid_t parentGroup,
-                                                  MatrixName& datasetName) {
+ * Get dimension sizes of the dataset  under a specified group.
+ */
+DimensionSizes Hdf5File::getDatasetDimensionSizes(const hid_t parentGroup, MatrixName& datasetName)
+{
   const size_t ndims = getDatasetNumberOfDimensions(parentGroup, datasetName);
-  hsize_t dims[4] = {0, 0, 0, 0};
+  hsize_t dims[4]    = {0, 0, 0, 0};
 
   herr_t status = H5LTget_dataset_info(parentGroup, datasetName.c_str(), dims, NULL, NULL);
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, datasetName.c_str()));
   }
 
-  if (ndims == 3) {
+  if (ndims == 3)
+  {
     return DimensionSizes(dims[2], dims[1], dims[0]);
-  } else {
+  }
+  else
+  {
     return DimensionSizes(dims[3], dims[2], dims[1], dims[0]);
   }
 } // end of getDatasetDimensionSizes
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get number of dimensions of the dataset under a specified group.
  */
-size_t Hdf5File::getDatasetNumberOfDimensions(const hid_t parentGroup,
-                                              MatrixName& datasetName) {
+size_t Hdf5File::getDatasetNumberOfDimensions(const hid_t parentGroup, MatrixName& datasetName)
+{
   int dims = 0;
 
   herr_t status = H5LTget_dataset_ndims(parentGroup, datasetName.c_str(), &dims);
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, datasetName.c_str()));
   }
 
   return dims;
 } // end of getDatasetNumberOfDimensions
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Get dataset element count at a specified place in the file tree.
  */
-size_t Hdf5File::getDatasetSize(const hid_t parentGroup,
-                                MatrixName& datasetName) {
+size_t Hdf5File::getDatasetSize(const hid_t parentGroup, MatrixName& datasetName)
+{
   hsize_t dims[4] = {1, 1, 1, 1};
 
   herr_t status = H5LTget_dataset_info(parentGroup, datasetName.c_str(), dims, NULL, NULL);
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReadDataset, datasetName.c_str()));
   }
 
   return dims[0] * dims[1] * dims[2] * dims[3];
 } // end of getDatasetSize
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write matrix data type into the dataset at a specified place in the file tree.
  */
-void Hdf5File::writeMatrixDataType(const hid_t parentGroup,
-                                   MatrixName& datasetName,
-                                   const MatrixDataType& matrixDataType) {
-  writeStringAttribute(parentGroup,
-                       datasetName,
-                       kMatrixDataTypeName,
-                       kMatrixDataTypeNames[static_cast<int>(matrixDataType)]);
+void Hdf5File::writeMatrixDataType(
+  const hid_t parentGroup, MatrixName& datasetName, const MatrixDataType& matrixDataType)
+{
+  writeStringAttribute(
+    parentGroup, datasetName, kMatrixDataTypeName, kMatrixDataTypeNames[static_cast<int>(matrixDataType)]);
 } // end of writeMatrixDataType
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write matrix data type into the dataset at a specified place in the file tree.
  */
-void Hdf5File::writeMatrixDomainType(const hid_t parentGroup,
-                                     MatrixName& datasetName,
-                                     const MatrixDomainType& matrixDomainType) {
-  writeStringAttribute(parentGroup,
-                       datasetName,
-                       kMatrixDomainTypeName,
-                       kMatrixDomainTypeNames[static_cast<int>(matrixDomainType)]);
+void Hdf5File::writeMatrixDomainType(
+  const hid_t parentGroup, MatrixName& datasetName, const MatrixDomainType& matrixDomainType)
+{
+  writeStringAttribute(
+    parentGroup, datasetName, kMatrixDomainTypeName, kMatrixDomainTypeNames[static_cast<int>(matrixDomainType)]);
 } // end of writeMatrixDomainType
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read matrix data type from the dataset at a specified place in the file tree.
  */
-Hdf5File::MatrixDataType Hdf5File::readMatrixDataType(const hid_t parentGroup,
-                                                      MatrixName& datasetName) {
+Hdf5File::MatrixDataType Hdf5File::readMatrixDataType(const hid_t parentGroup, MatrixName& datasetName)
+{
   const string paramValue = readStringAttribute(parentGroup, datasetName, kMatrixDataTypeName);
 
-  if (paramValue == kMatrixDataTypeNames[0]) {
+  if (paramValue == kMatrixDataTypeNames[0])
+  {
     return static_cast<MatrixDataType>(0);
   }
-  if (paramValue == kMatrixDataTypeNames[1]) {
+  if (paramValue == kMatrixDataTypeNames[1])
+  {
     return static_cast<MatrixDataType>(1);
   }
 
-  throw ios::failure(Logger::formatMessage(kErrFmtBadAttributeValue,
-                                           datasetName.c_str(),
-                                           kMatrixDataTypeName.c_str(),
-                                           paramValue.c_str()));
+  throw ios::failure(Logger::formatMessage(
+    kErrFmtBadAttributeValue, datasetName.c_str(), kMatrixDataTypeName.c_str(), paramValue.c_str()));
 
   // this will never be executed (just to prevent warning)
   return static_cast<MatrixDataType>(0);
 } // end of readMatrixDataType
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read matrix dataset domain type at a specified place in the file tree.
  */
-Hdf5File::MatrixDomainType Hdf5File::readMatrixDomainType(const hid_t parentGroup,
-                                                          MatrixName& datasetName) {
+Hdf5File::MatrixDomainType Hdf5File::readMatrixDomainType(const hid_t parentGroup, MatrixName& datasetName)
+{
   const string paramValue = readStringAttribute(parentGroup, datasetName, kMatrixDomainTypeName);
 
-  if (paramValue == kMatrixDomainTypeNames[0]) {
+  if (paramValue == kMatrixDomainTypeNames[0])
+  {
     return static_cast<MatrixDomainType>(0);
   }
-  if (paramValue == kMatrixDomainTypeNames[1]) {
+  if (paramValue == kMatrixDomainTypeNames[1])
+  {
     return static_cast<MatrixDomainType>(1);
   }
 
-  throw ios::failure(Logger::formatMessage(kErrFmtBadAttributeValue,
-                                           datasetName.c_str(),
-                                           kMatrixDomainTypeName.c_str(),
-                                           paramValue.c_str()));
+  throw ios::failure(Logger::formatMessage(
+    kErrFmtBadAttributeValue, datasetName.c_str(), kMatrixDomainTypeName.c_str(), paramValue.c_str()));
 
   // This line will never be executed (just to prevent warning)
   return static_cast<MatrixDomainType>(0);
 } // end of readMatrixDomainType
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write string attribute at a specified place in the file tree.
  */
-void Hdf5File::writeStringAttribute(const hid_t parentGroup,
-                                    MatrixName& datasetName,
-                                    MatrixName& attributeName,
-                                    const string& value) {
+void Hdf5File::writeStringAttribute(
+  const hid_t parentGroup, MatrixName& datasetName, MatrixName& attributeName, const string& value)
+{
   herr_t status = H5LTset_attribute_string(parentGroup, datasetName.c_str(), attributeName.c_str(), value.c_str());
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteAttribute, attributeName.c_str(), datasetName.c_str()));
   }
 } // end of writeStringAttribute
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write long long attribute at a specified place in the file tree.
  */
-void Hdf5File::writeLongLongAttribute(const hid_t parentGroup,
-                                      MatrixName& datasetName,
-                                      MatrixName& attributeName,
-                                      const long long value) {
+void Hdf5File::writeLongLongAttribute(
+  const hid_t parentGroup, MatrixName& datasetName, MatrixName& attributeName, const long long value)
+{
   herr_t status = H5LTset_attribute_long_long(parentGroup, datasetName.c_str(), attributeName.c_str(), &value, 1);
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteAttribute, attributeName.c_str(), datasetName.c_str()));
   }
 } // end of writeLongLongAttribute
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Write float attribute at a specified place in the file tree.
  */
-void Hdf5File::writeFloatAttribute(const hid_t parentGroup,
-                                   MatrixName& datasetName,
-                                   MatrixName& attributeName,
-                                   const float value) {
+void Hdf5File::writeFloatAttribute(
+  const hid_t parentGroup, MatrixName& datasetName, MatrixName& attributeName, const float value)
+{
   herr_t status = H5LTset_attribute_float(parentGroup, datasetName.c_str(), attributeName.c_str(), &value, 1);
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotWriteAttribute, attributeName.c_str(), datasetName.c_str()));
   }
 } // end of writeFloatAttribute
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -977,61 +1020,71 @@ void Hdf5File::writeFloatAttribute(const hid_t parentGroup,
  * @return Attribute value
  * @throw ios::failure
  */
-string Hdf5File::readStringAttribute(const hid_t parentGroup,
-                                     MatrixName& datasetName,
-                                     MatrixName& attributeName) {
+string Hdf5File::readStringAttribute(const hid_t parentGroup, MatrixName& datasetName, MatrixName& attributeName)
+{
   char value[256] = "";
-  herr_t status = H5LTget_attribute_string(parentGroup, datasetName.c_str(), attributeName.c_str(), value);
+  herr_t status   = H5LTget_attribute_string(parentGroup, datasetName.c_str(), attributeName.c_str(), value);
 
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReadAttribute, attributeName.c_str(), datasetName.c_str()));
   }
 
   return string(value);
 } // end of readStringAttribute
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read long long attribute at a specified place in the file tree.
  */
-long long Hdf5File::readLongLongAttribute(const hid_t parentGroup, MatrixName& datasetName, MatrixName& attributeName) {
+long long Hdf5File::readLongLongAttribute(const hid_t parentGroup, MatrixName& datasetName, MatrixName& attributeName)
+{
   long long value;
   herr_t status = H5LTget_attribute_long_long(parentGroup, datasetName.c_str(), attributeName.c_str(), &value);
 
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReadAttribute, attributeName.c_str(), datasetName.c_str()));
   }
 
   return value;
 } // end of readLongLongAttribute
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Read float attribute at a specified place in the file tree.
  */
-float Hdf5File::readFloatAttribute(const hid_t parentGroup, MatrixName& datasetName, MatrixName& attributeName) {
+float Hdf5File::readFloatAttribute(const hid_t parentGroup, MatrixName& datasetName, MatrixName& attributeName)
+{
   float value;
   herr_t status = H5LTget_attribute_float(parentGroup, datasetName.c_str(), attributeName.c_str(), &value);
 
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotReadAttribute, attributeName.c_str(), datasetName.c_str()));
   }
 
   return value;
 } // end of readFloatAttribute
+
 //----------------------------------------------------------------------------------------------------------------------
 /**
  * @brief Get file size.
  */
-hsize_t Hdf5File::getFileSize() {
+hsize_t Hdf5File::getFileSize()
+{
   hsize_t size;
   herr_t status = H5Fget_filesize(mFile, &size);
 
-  if (status < 0) {
+  if (status < 0)
+  {
     throw ios::failure(Logger::formatMessage(kErrFmtCannotGetFileSize, mFileName.c_str()));
   }
   return size;
 } // end of getFileSize
+
 //----------------------------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------------------------//

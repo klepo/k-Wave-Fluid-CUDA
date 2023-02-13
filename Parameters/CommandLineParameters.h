@@ -1,7 +1,7 @@
 /**
  * @file      CommandLineParameters.h
  *
- * @author    Jiri Jaros \n
+ * @author    Jiri Jaros, Petr Kleparnik \n
  *            Faculty of Information Technology \n
  *            Brno University of Technology \n
  *            jarosjir@fit.vutbr.cz
@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      29 August    2012, 11:25 (created) \n
- *            12 March     2019, 11:00 (revised)
+ *            08 February  2023, 12:00 (revised)
  *
  * @section   Params Command Line Parameters
  *
@@ -247,414 +247,550 @@
  * @brief   The class to parse and store command line parameters.
  * @details The class to parse and store command line parameters.
  */
-class CommandLineParameters {
-public:
-  /// Only Parameters can create this class.
-  friend class Parameters;
+class CommandLineParameters
+{
+  public:
+    /// Only Parameters can create this class.
+    friend class Parameters;
 
-  /// Copy constructor not allowed.
-  CommandLineParameters(const CommandLineParameters&) = delete;
+    /// Copy constructor not allowed.
+    CommandLineParameters(const CommandLineParameters&) = delete;
 
-  /// Destructor.
-  virtual ~CommandLineParameters() = default;
+    /// Destructor.
+    virtual ~CommandLineParameters() = default;
 
-  /// operator= not allowed.
-  CommandLineParameters& operator=(const CommandLineParameters&) = delete;
+    /// operator= not allowed.
+    CommandLineParameters& operator=(const CommandLineParameters&) = delete;
 
-  /**
-   * @brief Get input file name.
-   * @return Input file name.
-   */
-  const std::string& getInputFileName() const { return mInputFileName; };
-  /**
-   * @brief  Get output file name.
-   * @return Output file name.
-   */
-  const std::string& getOutputFileName() const { return mOutputFileName; };
-  /**
-   * @brief  Get Checkpoint file name.
-   * @return Checkpoint file name.
-   */
-  const std::string& getCheckpointFileName() const { return mCheckpointFileName; };
+    /**
+     * @brief Get input file name.
+     * @return Input file name.
+     */
+    const std::string& getInputFileName() const
+    {
+      return mInputFileName;
+    };
+    /**
+     * @brief  Get output file name.
+     * @return Output file name.
+     */
+    const std::string& getOutputFileName() const
+    {
+      return mOutputFileName;
+    };
+    /**
+     * @brief  Get Checkpoint file name.
+     * @return Checkpoint file name.
+     */
+    const std::string& getCheckpointFileName() const
+    {
+      return mCheckpointFileName;
+    };
 
-  /**
-   * @brief  Get number of threads.
-   * @return Number of CPU threads value.
-   */
-  size_t getNumberOfThreads() const { return mNumberOfThreads; };
+    /**
+     * @brief  Get number of threads.
+     * @return Number of CPU threads value.
+     */
+    size_t getNumberOfThreads() const
+    {
+      return mNumberOfThreads;
+    };
 
-  /**
-   * @brief  Get GPU device id specified by the user (not necessary the one the code runs on).
-   * @return Device id specified by the user.
-   */
-  int getCudaDeviceIdx() const { return mCudaDeviceIdx; };
+    /**
+     * @brief  Get GPU device id specified by the user (not necessary the one the code runs on).
+     * @return Device id specified by the user.
+     */
+    int getCudaDeviceIdx() const
+    {
+      return mCudaDeviceIdx;
+    };
 
-  /**
-   * @brief Get progress print interval.
-   * @return How often to print progress.
-   */
-  float getProgressPrintInterval() const { return mProgressPrintInterval; };
+    /**
+     * @brief Get progress print interval.
+     * @return How often to print progress.
+     */
+    float getProgressPrintInterval() const
+    {
+      return mProgressPrintInterval;
+    };
 
-  /**
-   * @brief  Get compression level.
-   * @return Compression level value for output and checkpoint files.
-   */
-  size_t getCompressionLevel() const { return mCompressionLevel; };
+    /**
+     * @brief  Get compression level.
+     * @return Compression level value for output and checkpoint files.
+     */
+    size_t getCompressionLevel() const
+    {
+      return mCompressionLevel;
+    };
 
-  /**
-   * @brief  Is --benchmark set?
-   * @return true if the flag is set.
-   */
-  bool isBenchmarkEnabled() const { return mBenchmarkFlag; };
+    /**
+     * @brief  Is --benchmark set?
+     * @return true if the flag is set.
+     */
+    bool isBenchmarkEnabled() const
+    {
+      return mBenchmarkFlag;
+    };
 
-  /**
-   * @brief  Get benchmark time step count.
-   * @return Number of time steps used to benchmark the code.
-   */
-  size_t getBenchmarkTimeStepsCount() const { return mBenchmarkTimeStepCount; };
+    /**
+     * @brief  Get benchmark time step count.
+     * @return Number of time steps used to benchmark the code.
+     */
+    size_t getBenchmarkTimeStepsCount() const
+    {
+      return mBenchmarkTimeStepCount;
+    };
 
-  /**
-   * @brief  Is checkpoint enabled?
-   * @return true if checkpointing is enabled.
-   */
-  bool isCheckpointEnabled() const { return ((mCheckpointInterval > 0) || (mCheckpointTimeSteps > 0)); };
+    /**
+     * @brief  Is checkpoint enabled?
+     * @return true if checkpointing is enabled.
+     */
+    bool isCheckpointEnabled() const
+    {
+      return ((mCheckpointInterval > 0) || (mCheckpointTimeSteps > 0));
+    };
 
-  /**
-   * @brief  Get checkpoint interval.
-   * @return Checkpoint interval in seconds.
-   */
-  size_t getCheckpointInterval() const { return mCheckpointInterval; };
+    /**
+     * @brief  Get checkpoint interval.
+     * @return Checkpoint interval in seconds.
+     */
+    size_t getCheckpointInterval() const
+    {
+      return mCheckpointInterval;
+    };
 
-  /**
-   * @brief  Get checkpoint interval in time steps.
-   * @return Checkpoint interval in time steps.
-   */
-  size_t getCheckpointTimeSteps() const { return mCheckpointTimeSteps; };
+    /**
+     * @brief  Get checkpoint interval in time steps.
+     * @return Checkpoint interval in time steps.
+     */
+    size_t getCheckpointTimeSteps() const
+    {
+      return mCheckpointTimeSteps;
+    };
 
-  /**
-   * @brief  Is --version set?
-   * @return true if the flag is set.
-   */
-  bool isPrintVersionOnly() const { return mPrintVersionFlag; };
+    /**
+     * @brief  Is --version set?
+     * @return true if the flag is set.
+     */
+    bool isPrintVersionOnly() const
+    {
+      return mPrintVersionFlag;
+    };
 
-  //------------------------------------------------ Output flags --------------------------------------------------//
-  /**
-   * @brief Is --p_raw set?
-   * @return true if the flag is set.
-   */
-  bool getStorePressureRawFlag() const { return mStorePressureRawFlag; };
+    //------------------------------------------------ Output flags --------------------------------------------------//
+    /**
+     * @brief Is --p_raw set?
+     * @return true if the flag is set.
+     */
+    bool getStorePressureRawFlag() const
+    {
+      return mStorePressureRawFlag;
+    };
 
-  /**
-   * @brief  Is --p_c set?
-   * @return true if the flag is set.
-   */
-  bool getStorePressureCFlag() const { return mStorePressureCFlag; };
+    /**
+     * @brief  Is --p_c set?
+     * @return true if the flag is set.
+     */
+    bool getStorePressureCFlag() const
+    {
+      return mStorePressureCFlag;
+    };
 
-  /**
-   * @brief  Is --p_rms set?
-   * @return true if the flag is set.
-   */
-  bool getStorePressureRmsFlag() const { return mStorePressureRmsFlag; };
+    /**
+     * @brief  Is --p_rms set?
+     * @return true if the flag is set.
+     */
+    bool getStorePressureRmsFlag() const
+    {
+      return mStorePressureRmsFlag;
+    };
 
-  /**
-   * @brief  Is --p_max set?
-   * @return true if the flag is set.
-   */
-  bool getStorePressureMaxFlag() const { return mStorePressureMaxFlag; };
+    /**
+     * @brief  Is --p_max set?
+     * @return true if the flag is set.
+     */
+    bool getStorePressureMaxFlag() const
+    {
+      return mStorePressureMaxFlag;
+    };
 
-  /**
-   * @brief  Is --p_min set?
-   * @return true if the flag is set.
-   */
-  bool getStorePressureMinFlag() const { return mStorePressureMinFlag; };
+    /**
+     * @brief  Is --p_min set?
+     * @return true if the flag is set.
+     */
+    bool getStorePressureMinFlag() const
+    {
+      return mStorePressureMinFlag;
+    };
 
-  /**
-   * @brief  Is --p_max_all set?
-   * @return true if the flag is set.
-   */
-  bool getStorePressureMaxAllFlag() const { return mStorePressureMaxAllFlag; };
+    /**
+     * @brief  Is --p_max_all set?
+     * @return true if the flag is set.
+     */
+    bool getStorePressureMaxAllFlag() const
+    {
+      return mStorePressureMaxAllFlag;
+    };
 
-  /**
-   * @brief  Is --p_min_all set?
-   * @return true if the flag is set.
-   */
-  bool getStorePressureMinAllFlag() const { return mStorePressureMinAllFlag; };
+    /**
+     * @brief  Is --p_min_all set?
+     * @return true if the flag is set.
+     */
+    bool getStorePressureMinAllFlag() const
+    {
+      return mStorePressureMinAllFlag;
+    };
 
-  /**
-   * @brief  Is --p_final set?
-   * @return true if the flag is set.
-   */
-  bool getStorePressureFinalAllFlag() const { return mStorePressureFinalAllFlag; };
+    /**
+     * @brief  Is --p_final set?
+     * @return true if the flag is set.
+     */
+    bool getStorePressureFinalAllFlag() const
+    {
+      return mStorePressureFinalAllFlag;
+    };
 
-  /**
-   * @brief  Is --u_raw set?
-   * @return true if the flag is set.
-   */
-  bool getStoreVelocityRawFlag() const { return mStoreVelocityRawFlag; };
+    /**
+     * @brief  Is --u_raw set?
+     * @return true if the flag is set.
+     */
+    bool getStoreVelocityRawFlag() const
+    {
+      return mStoreVelocityRawFlag;
+    };
 
-  /**
-   * @brief  Is --u_c set?
-   * @return true if the flag is set.
-   */
-  bool getStoreVelocityCFlag() const { return mStoreVelocityCFlag; };
+    /**
+     * @brief  Is --u_c set?
+     * @return true if the flag is set.
+     */
+    bool getStoreVelocityCFlag() const
+    {
+      return mStoreVelocityCFlag;
+    };
 
-  /**
-   * @brief  Is --u_non_staggered_raw set?
-   * @return true if the flag is set.
-   */
-  bool getStoreVelocityNonStaggeredRawFlag() const { return mStoreVelocityNonStaggeredRawFlag; };
+    /**
+     * @brief  Is --u_non_staggered_raw set?
+     * @return true if the flag is set.
+     */
+    bool getStoreVelocityNonStaggeredRawFlag() const
+    {
+      return mStoreVelocityNonStaggeredRawFlag;
+    };
 
-  /**
-   * @brief  Is --u_non_staggered_c set?
-   * @return true if the flag is set.
-   */
-  bool getStoreVelocityNonStaggeredCFlag() const { return mStoreVelocityNonStaggeredCFlag; };
+    /**
+     * @brief  Is --u_non_staggered_c set?
+     * @return true if the flag is set.
+     */
+    bool getStoreVelocityNonStaggeredCFlag() const
+    {
+      return mStoreVelocityNonStaggeredCFlag;
+    };
 
-  /**
-   * @brief  Is --u_rms set?
-   * @return true if the flag is set.
-   */
-  bool getStoreVelocityRmsFlag() const { return mStoreVelocityRmsFlag; };
+    /**
+     * @brief  Is --u_rms set?
+     * @return true if the flag is set.
+     */
+    bool getStoreVelocityRmsFlag() const
+    {
+      return mStoreVelocityRmsFlag;
+    };
 
-  /**
-   * @brief  Is --u_max set?
-   * @return true if the flag is set.
-   */
-  bool getStoreVelocityMaxFlag() const { return mStoreVelocityMaxFlag; };
+    /**
+     * @brief  Is --u_max set?
+     * @return true if the flag is set.
+     */
+    bool getStoreVelocityMaxFlag() const
+    {
+      return mStoreVelocityMaxFlag;
+    };
 
-  /**
-   * @brief  Is --u_min set?
-   * @return true if the flag is set.
-   */
-  bool getStoreVelocityMinFlag() const { return mStoreVelocityMinFlag; };
+    /**
+     * @brief  Is --u_min set?
+     * @return true if the flag is set.
+     */
+    bool getStoreVelocityMinFlag() const
+    {
+      return mStoreVelocityMinFlag;
+    };
 
-  /**
-   * @brief  Is --u_max_all set?
-   * @return true if the flag is set.
-   */
-  bool getStoreVelocityMaxAllFlag() const { return mStoreVelocityMaxAllFlag; };
+    /**
+     * @brief  Is --u_max_all set?
+     * @return true if the flag is set.
+     */
+    bool getStoreVelocityMaxAllFlag() const
+    {
+      return mStoreVelocityMaxAllFlag;
+    };
 
-  /**
-   * @brief  Is --u_min set?
-   * @return true if the flag is set.
-   */
-  bool getStoreVelocityMinAllFlag() const { return mStoreVelocityMinAllFlag; };
+    /**
+     * @brief  Is --u_min set?
+     * @return true if the flag is set.
+     */
+    bool getStoreVelocityMinAllFlag() const
+    {
+      return mStoreVelocityMinAllFlag;
+    };
 
-  /**
-   * @brief  Is --u_final set?
-   * @return true if the flag is set.
-   */
-  bool getStoreVelocityFinalAllFlag() const { return mStoreVelocityFinalAllFlag; };
+    /**
+     * @brief  Is --u_final set?
+     * @return true if the flag is set.
+     */
+    bool getStoreVelocityFinalAllFlag() const
+    {
+      return mStoreVelocityFinalAllFlag;
+    };
 
-  /**
-   * @brief  Is --I_avg set?
-   * @return true if the flag is set.
-   */
-  bool getStoreIntensityAvgFlag() const { return mStoreIntensityAvgFlag; };
+    /**
+     * @brief  Is --I_avg set?
+     * @return true if the flag is set.
+     */
+    bool getStoreIntensityAvgFlag() const
+    {
+      return mStoreIntensityAvgFlag;
+    };
 
-  /**
-   * @brief  Is --I_avg_c set?
-   * @return true if the flag is set.
-   */
-  bool getStoreIntensityAvgCFlag() const { return mStoreIntensityAvgCFlag; };
+    /**
+     * @brief  Is --I_avg_c set?
+     * @return true if the flag is set.
+     */
+    bool getStoreIntensityAvgCFlag() const
+    {
+      return mStoreIntensityAvgCFlag;
+    };
 
-  /**
-   * @brief  Is --Q_term set?
-   * @return true if the flag is set.
-   */
-  bool getStoreQTermFlag() const { return mStoreQTermFlag; };
+    /**
+     * @brief  Is --Q_term set?
+     * @return true if the flag is set.
+     */
+    bool getStoreQTermFlag() const
+    {
+      return mStoreQTermFlag;
+    };
 
-  /**
-   * @brief  Is --Q_term_c set?
-   * @return true if the flag is set.
-   */
-  bool getStoreQTermCFlag() const { return mStoreQTermCFlag; };
+    /**
+     * @brief  Is --Q_term_c set?
+     * @return true if the flag is set.
+     */
+    bool getStoreQTermCFlag() const
+    {
+      return mStoreQTermCFlag;
+    };
 
-  /**
-   * @brief  Is --post set?
-   * @return true if the flag is set.
-   */
-  bool getOnlyPostProcessingFlag() const { return mOnlyPostProcessingFlag; };
+    /**
+     * @brief  Is --post set?
+     * @return true if the flag is set.
+     */
+    bool getOnlyPostProcessingFlag() const
+    {
+      return mOnlyPostProcessingFlag;
+    };
 
-  /**
-   * @brief  Is --copy_mask set set?
-   * @return true if the flag is set.
-   */
-  bool getCopySensorMaskFlag() const { return mCopySensorMaskFlag; };
+    /**
+     * @brief  Is --copy_mask set set?
+     * @return true if the flag is set.
+     */
+    bool getCopySensorMaskFlag() const
+    {
+      return mCopySensorMaskFlag;
+    };
 
-  /**
-   * @brief  Get start time index when sensor data collection begins.
-   * @return When to start sampling data.
-   */
-  size_t getSamplingStartTimeIndex() const { return mSamplingStartTimeStep; };
+    /**
+     * @brief  Get start time index when sensor data collection begins.
+     * @return When to start sampling data.
+     */
+    size_t getSamplingStartTimeIndex() const
+    {
+      return mSamplingStartTimeStep;
+    };
 
-  /**
-   * @brief  Get compression frequency.
-   * @return Compression frequency.
-   */
-  float getFrequency() const { return mFrequency; }
+    /**
+     * @brief  Get compression frequency.
+     * @return Compression frequency.
+     */
+    float getFrequency() const
+    {
+      return mFrequency;
+    }
 
-  /**
-   * @brief  Get compression period.
-   * @return Compression period.
-   */
-  float getPeriod() const { return mPeriod; }
+    /**
+     * @brief  Get compression period.
+     * @return Compression period.
+     */
+    float getPeriod() const
+    {
+      return mPeriod;
+    }
 
-  /**
-   * @brief  Get Multiple of overlap size for compression.
-   * @return Compression multiple of overlap size.
-   */
-  size_t getMOS() const { return mMOS; }
+    /**
+     * @brief  Get Multiple of overlap size for compression.
+     * @return Compression multiple of overlap size.
+     */
+    size_t getMOS() const
+    {
+      return mMOS;
+    }
 
-  /**
-   * @brief  Get number of harmonics for compression.
-   * @return Number of harmonics for compression.
-   */
-  size_t getHarmonics() const { return mHarmonics; }
+    /**
+     * @brief  Get number of harmonics for compression.
+     * @return Number of harmonics for compression.
+     */
+    size_t getHarmonics() const
+    {
+      return mHarmonics;
+    }
 
-  /**
-   * @brief  Get compression basis overlapping flag.
-   * @return Compression basis overlapping flag.
-   */
-  size_t getNoCompressionOverlapFlag() const { return mNoCompressionOverlapFlag; }
+    /**
+     * @brief  Get compression basis overlapping flag.
+     * @return Compression basis overlapping flag.
+     */
+    size_t getNoCompressionOverlapFlag() const
+    {
+      return mNoCompressionOverlapFlag;
+    }
 
-  /**
-   * @brief  Get 40-bit compression flag.
-   * @return 40-bit compression flag.
-   */
-  size_t get40bitCompressionFlag() const { return m40bitCompressionFlag; }
+    /**
+     * @brief  Get 40-bit compression flag.
+     * @return 40-bit compression flag.
+     */
+    size_t get40bitCompressionFlag() const
+    {
+      return m40bitCompressionFlag;
+    }
 
-  /**
-   * @brief  Get maximum block size for dataset reading (computing average intensity).
-   * @return Block size for dataset reading.
-   */
-  size_t getBlockSize() const { return mBlockSize; }
+    /**
+     * @brief  Get maximum block size for dataset reading (computing average intensity).
+     * @return Block size for dataset reading.
+     */
+    size_t getBlockSize() const
+    {
+      return mBlockSize;
+    }
 
-  /// Print usage of the code
-  void printUsage();
-  /// Print setup commandline parameters.
-  void printComandlineParamers();
+    /// Print usage of the code
+    void printUsage();
+    /// Print setup commandline parameters.
+    void printComandlineParamers();
 
-  /**
-   * @brief Parse commandline parameters.
-   * @param [in, out] argc - number of commandline parameters.
-   * @param [in, out] argv - commandline parameters.
-   *
-   * @throw call exit when error in commandline.
-   */
-  void parseCommandLine(int argc, char** argv);
+    /**
+     * @brief Parse commandline parameters.
+     * @param [in, out] argc - number of commandline parameters.
+     * @param [in, out] argv - commandline parameters.
+     *
+     * @throw call exit when error in commandline.
+     */
+    void parseCommandLine(int argc, char** argv);
 
-protected:
-  /// Default constructor - only friend class can create an instance.
-  CommandLineParameters();
+  protected:
+    /// Default constructor - only friend class can create an instance.
+    CommandLineParameters();
 
-private:
-  /// Input file name.
-  std::string mInputFileName;
-  /// Output file name.
-  std::string mOutputFileName;
-  /// Checkpoint file name.
-  std::string mCheckpointFileName;
+  private:
+    /// Input file name.
+    std::string mInputFileName;
+    /// Output file name.
+    std::string mOutputFileName;
+    /// Checkpoint file name.
+    std::string mCheckpointFileName;
 
-  /// Number of CPU threads value.
-  size_t mNumberOfThreads;
+    /// Number of CPU threads value.
+    size_t mNumberOfThreads;
 
-  /// Id of selected GPU devices.
-  int mCudaDeviceIdx;
+    /// Id of selected GPU devices.
+    int mCudaDeviceIdx;
 
-  /// Progress interval value.
-  float mProgressPrintInterval;
-  /// Compression level value for output and checkpoint files.
-  size_t mCompressionLevel;
+    /// Progress interval value.
+    float mProgressPrintInterval;
+    /// Compression level value for output and checkpoint files.
+    size_t mCompressionLevel;
 
-  /// BenchmarkFlag value.
-  bool mBenchmarkFlag;
-  /// Number of time steps used to benchmark the code
-  size_t mBenchmarkTimeStepCount;
-  /// Checkpoint interval in seconds.
-  size_t mCheckpointInterval;
-  /// Checkpoint interval in time steps.
-  size_t mCheckpointTimeSteps;
+    /// BenchmarkFlag value.
+    bool mBenchmarkFlag;
+    /// Number of time steps used to benchmark the code
+    size_t mBenchmarkTimeStepCount;
+    /// Checkpoint interval in seconds.
+    size_t mCheckpointInterval;
+    /// Checkpoint interval in time steps.
+    size_t mCheckpointTimeSteps;
 
-  /// Print version of the code and exit.
-  bool mPrintVersionFlag;
+    /// Print version of the code and exit.
+    bool mPrintVersionFlag;
 
-  /// Store raw time-series of pressure over the sensor mask?
-  bool mStorePressureRawFlag;
-  /// Store compressed time-series of pressure over the sensor mask?
-  bool mStorePressureCFlag;
-  /// Store RMS of pressure over the the sensor mask?
-  bool mStorePressureRmsFlag;
-  /// Store maximum of pressure over the sensor mask?
-  bool mStorePressureMaxFlag;
-  /// Store minimum of pressure over the sensor mask?
-  bool mStorePressureMinFlag;
-  /// Store maximum of pressure over the whole domain?
-  bool mStorePressureMaxAllFlag;
-  /// Store minimum of pressure over the whole domain?
-  bool mStorePressureMinAllFlag;
-  /// Store pressure in the final time step over the whole domain?
-  bool mStorePressureFinalAllFlag;
+    /// Store raw time-series of pressure over the sensor mask?
+    bool mStorePressureRawFlag;
+    /// Store compressed time-series of pressure over the sensor mask?
+    bool mStorePressureCFlag;
+    /// Store RMS of pressure over the the sensor mask?
+    bool mStorePressureRmsFlag;
+    /// Store maximum of pressure over the sensor mask?
+    bool mStorePressureMaxFlag;
+    /// Store minimum of pressure over the sensor mask?
+    bool mStorePressureMinFlag;
+    /// Store maximum of pressure over the whole domain?
+    bool mStorePressureMaxAllFlag;
+    /// Store minimum of pressure over the whole domain?
+    bool mStorePressureMinAllFlag;
+    /// Store pressure in the final time step over the whole domain?
+    bool mStorePressureFinalAllFlag;
 
-  /// Store raw time-series of velocity over the sensor mask?
-  bool mStoreVelocityRawFlag;
-  /// Store compressed time-series of velocity over the sensor mask?
-  bool mStoreVelocityCFlag;
-  /// Store un staggered raw time-series of velocity over the sensor mask?
-  bool mStoreVelocityNonStaggeredRawFlag;
-  /// Store compressed un staggered raw time-series of velocity over the sensor mask?
-  bool mStoreVelocityNonStaggeredCFlag;
-  /// Store RMS of velocity over the the sensor mask?
-  bool mStoreVelocityRmsFlag;
-  /// Store maximum of velocity over the sensor mask?
-  bool mStoreVelocityMaxFlag;
-  /// Store minimum of velocity over the sensor mask?
-  bool mStoreVelocityMinFlag;
-  /// Store maximum of velocity over the whole domain?
-  bool mStoreVelocityMaxAllFlag;
-  /// Store minimum of velocity over the whole domain?
-  bool mStoreVelocityMinAllFlag;
-  /// Store velocity in the final time step over the whole domain?
-  bool mStoreVelocityFinalAllFlag;
+    /// Store raw time-series of velocity over the sensor mask?
+    bool mStoreVelocityRawFlag;
+    /// Store compressed time-series of velocity over the sensor mask?
+    bool mStoreVelocityCFlag;
+    /// Store un staggered raw time-series of velocity over the sensor mask?
+    bool mStoreVelocityNonStaggeredRawFlag;
+    /// Store compressed un staggered raw time-series of velocity over the sensor mask?
+    bool mStoreVelocityNonStaggeredCFlag;
+    /// Store RMS of velocity over the the sensor mask?
+    bool mStoreVelocityRmsFlag;
+    /// Store maximum of velocity over the sensor mask?
+    bool mStoreVelocityMaxFlag;
+    /// Store minimum of velocity over the sensor mask?
+    bool mStoreVelocityMinFlag;
+    /// Store maximum of velocity over the whole domain?
+    bool mStoreVelocityMaxAllFlag;
+    /// Store minimum of velocity over the whole domain?
+    bool mStoreVelocityMinAllFlag;
+    /// Store velocity in the final time step over the whole domain?
+    bool mStoreVelocityFinalAllFlag;
 
-  /// Store average intensity?
-  bool mStoreIntensityAvgFlag;
-  /// Store average intensity using compression?
-  bool mStoreIntensityAvgCFlag;
-  /// Store Q term (volume rate of heat deposition)?
-  bool mStoreQTermFlag;
-  /// Store Q term (volume rate of heat deposition) using compression?
-  bool mStoreQTermCFlag;
+    /// Store average intensity?
+    bool mStoreIntensityAvgFlag;
+    /// Store average intensity using compression?
+    bool mStoreIntensityAvgCFlag;
+    /// Store Q term (volume rate of heat deposition)?
+    bool mStoreQTermFlag;
+    /// Store Q term (volume rate of heat deposition) using compression?
+    bool mStoreQTermCFlag;
 
-  /// Do not simulate, do only post-processing (Compute I_avg and Q_term)
-  bool mOnlyPostProcessingFlag;
+    /// Do not simulate, do only post-processing (Compute I_avg and Q_term)
+    bool mOnlyPostProcessingFlag;
 
-  /// Copy sensor mask to the output file.
-  bool mCopySensorMaskFlag;
-  /// When to start sampling data.
-  size_t mSamplingStartTimeStep;
+    /// Copy sensor mask to the output file.
+    bool mCopySensorMaskFlag;
+    /// When to start sampling data.
+    size_t mSamplingStartTimeStep;
 
-  /// Period for compression.
-  float mPeriod = 0.0f;
-  /// Frequency for compression.
-  float mFrequency = 0.0f;
-  /// Multiple of overlap size for compression.
-  size_t mMOS = 1;
-  /// Number of harmonics for compression.
-  size_t mHarmonics = 1;
-  /// Compression without basis overlapping flag - less RAM, more errors
-  bool mNoCompressionOverlapFlag = false;
-  /// Compression 64-bit complex floats to 40-bit
-  bool m40bitCompressionFlag = false;
+    /// Period for compression.
+    float mPeriod                  = 0.0f;
+    /// Frequency for compression.
+    float mFrequency               = 0.0f;
+    /// Multiple of overlap size for compression.
+    size_t mMOS                    = 1;
+    /// Number of harmonics for compression.
+    size_t mHarmonics              = 1;
+    /// Compression without basis overlapping flag - less RAM, more errors
+    bool mNoCompressionOverlapFlag = false;
+    /// Compression 64-bit complex floats to 40-bit
+    bool m40bitCompressionFlag     = false;
 
-  /// Maximum block size for dataset reading (computing average intensity).
-  /// Default value is computed according to free RAM memory.
-  size_t mBlockSize = 0;
+    /// Maximum block size for dataset reading (computing average intensity).
+    /// Default value is computed according to free RAM memory.
+    size_t mBlockSize = 0;
 
-  /// Default compression level.
-  static constexpr size_t kDefaultCompressionLevel = 0;
-  /// Default progress print interval.
-  static constexpr float kDefaultProgressPrintInterval = 0.0f;
+    /// Default compression level.
+    static constexpr size_t kDefaultCompressionLevel     = 0;
+    /// Default progress print interval.
+    static constexpr float kDefaultProgressPrintInterval = 0.0f;
 }; // end of class CommandLineParameters
 //----------------------------------------------------------------------------------------------------------------------
 

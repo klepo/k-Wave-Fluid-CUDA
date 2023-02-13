@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      09 August    2011, 13:10 (created) \n
- *            06 March     2019, 13:19 (revised)
+ *            08 February  2023, 12:00 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -47,226 +47,226 @@
  * \li If the matrix is 2D the ND transform is ND and the batch of 1D goes over the second domain.
 
  */
-class CufftComplexMatrix : public ComplexMatrix {
-public:
-  /// Default constructor not allowed.
-  CufftComplexMatrix() = delete;
-  /**
-    * @brief Constructor, inherited from ComplexMatrix.
-    * @param [in] dimensionSizes - Dimension sizes of the matrix.
-    */
-  CufftComplexMatrix(const DimensionSizes& dimensionSizes) : ComplexMatrix(dimensionSizes){};
-  /// Copy constructor not allowed.
-  CufftComplexMatrix(const CufftComplexMatrix&) = delete;
-  /// Destructor (Inherited from TComplexMatrix).
-  virtual ~CufftComplexMatrix() = default;
+class CufftComplexMatrix : public ComplexMatrix
+{
+  public:
+    /// Default constructor not allowed.
+    CufftComplexMatrix() = delete;
+    /**
+     * @brief Constructor, inherited from ComplexMatrix.
+     * @param [in] dimensionSizes - Dimension sizes of the matrix.
+     */
+    CufftComplexMatrix(const DimensionSizes& dimensionSizes) : ComplexMatrix(dimensionSizes){};
+    /// Copy constructor not allowed.
+    CufftComplexMatrix(const CufftComplexMatrix&) = delete;
+    /// Destructor (Inherited from TComplexMatrix).
+    virtual ~CufftComplexMatrix()                 = default;
 
-  /// operator= is not allowed.
-  CufftComplexMatrix& operator=(const CufftComplexMatrix&) = delete;
+    /// operator= is not allowed.
+    CufftComplexMatrix& operator=(const CufftComplexMatrix&) = delete;
 
-  /**
-    * @brief Create cuFFT plan for 2D/3D Real-to-Complex FFT.
-    * @param [in] inMatrixDims  - The dimension sizes of the input matrix.
-    * @throw std::runtime_error - If the plan can't be created.
-    */
-  static void createR2CFftPlanND(const DimensionSizes& inMatrixDims);
-  /**
-    * @brief Create cuFFT plan for 2D/3D Complex-to-Real FFT.
-    * @param [in] outMatrixDims  - the dimension sizes of the output matrix.
-    * @throw std::runtime_error  - If the plan can't be created.
-    */
-  static void createC2RFftPlanND(const DimensionSizes& outMatrixDims);
+    /**
+     * @brief Create cuFFT plan for 2D/3D Real-to-Complex FFT.
+     * @param [in] inMatrixDims  - The dimension sizes of the input matrix.
+     * @throw std::runtime_error - If the plan can't be created.
+     */
+    static void createR2CFftPlanND(const DimensionSizes& inMatrixDims);
+    /**
+     * @brief Create cuFFT plan for 2D/3D Complex-to-Real FFT.
+     * @param [in] outMatrixDims  - the dimension sizes of the output matrix.
+     * @throw std::runtime_error  - If the plan can't be created.
+     */
+    static void createC2RFftPlanND(const DimensionSizes& outMatrixDims);
 
-  /**
-    * @brief   Create cuFFT plan for 1DX Real-to-Complex.
-    * @details This version doesn't need any scratch place for planning. All 1D transforms are done in a
-    *          single batch (no transpose needed) and in out-of-place manner.
-    *
-    *          This routine can be used for both 2D and 3D simulations.
-    *
-    * @param [in] inMatrixDims  - The dimension sizes of the input matrix.
-    * @throw std::runtime_error - If the plan can't be created.
-    */
-  static void createR2CFftPlan1DX(const DimensionSizes& inMatrixDims);
-  /**
-    * @brief   Create cuFFT plan for 1DY Real-to-Complex.
-    * @details This version doesn't need any scratch place for planning. All 1D transforms are done in a single
-    *          batch. Data is transposed and padded according to the cuFFT data layout before the
-    *          transform. The FFT is done in-place.
-    *
-    *          This routine can be used for both 2D and 3D simulations.
-    *
-    * @param [in] inMatrixDims  - The dimension sizes of the input matrix.
-    * @throw std::runtime_error - If the plan can't be created.
-    */
-  static void createR2CFftPlan1DY(const DimensionSizes& inMatrixDims);
-  /**
-    * @brief   Create cuFFT plan for 1DZ Real-to-Complex.
-    * @details This version doesn't need any scratch place for planning.  All 1D transforms are done in a single
-    *          batch. Data has to be transposed and padded according to the cuFFT data layout before the
-    *          transform. The FFT is done in-place.
-    *
-    *          This routine can only be used for both 3D simulations.
-    *
-    * @param [in] inMatrixDims  - The dimension sizes of the input matrix.
-    * @throw std::runtime_error - If the plan can't be created.
-    */
-  static void createR2CFftPlan1DZ(const DimensionSizes& inMatrixDims);
+    /**
+     * @brief   Create cuFFT plan for 1DX Real-to-Complex.
+     * @details This version doesn't need any scratch place for planning. All 1D transforms are done in a
+     *          single batch (no transpose needed) and in out-of-place manner.
+     *
+     *          This routine can be used for both 2D and 3D simulations.
+     *
+     * @param [in] inMatrixDims  - The dimension sizes of the input matrix.
+     * @throw std::runtime_error - If the plan can't be created.
+     */
+    static void createR2CFftPlan1DX(const DimensionSizes& inMatrixDims);
+    /**
+     * @brief   Create cuFFT plan for 1DY Real-to-Complex.
+     * @details This version doesn't need any scratch place for planning. All 1D transforms are done in a single
+     *          batch. Data is transposed and padded according to the cuFFT data layout before the
+     *          transform. The FFT is done in-place.
+     *
+     *          This routine can be used for both 2D and 3D simulations.
+     *
+     * @param [in] inMatrixDims  - The dimension sizes of the input matrix.
+     * @throw std::runtime_error - If the plan can't be created.
+     */
+    static void createR2CFftPlan1DY(const DimensionSizes& inMatrixDims);
+    /**
+     * @brief   Create cuFFT plan for 1DZ Real-to-Complex.
+     * @details This version doesn't need any scratch place for planning.  All 1D transforms are done in a single
+     *          batch. Data has to be transposed and padded according to the cuFFT data layout before the
+     *          transform. The FFT is done in-place.
+     *
+     *          This routine can only be used for both 3D simulations.
+     *
+     * @param [in] inMatrixDims  - The dimension sizes of the input matrix.
+     * @throw std::runtime_error - If the plan can't be created.
+     */
+    static void createR2CFftPlan1DZ(const DimensionSizes& inMatrixDims);
 
-  /**
-    * @brief   Create cuFFT plan for 1DX Complex-to-Real.
-    * @details This version doesn't need any scratch place for planning.  All 1D transforms are done in a single
-    *          batch. Data has to be transposed and padded according to the cuFFT data layout before the
-    *          transform. The FFT is done in-place.
-    *
-    *          This routine can be used for both 2D and 3D simulations.
-    *
-    * @param [in] outMatrixDims - The dimension sizes of the input matrix.
-    * @throw std::runtime_error - If the plan can't be created.
-    */
-  static void createC2RFftPlan1DX(const DimensionSizes& outMatrixDims);
-  /**
-    * @brief   Create cuFFT plan for 1DY Complex-to-Real.
-    * @details This version doesn't need any scratch place for planning. All 1D transforms are done in a single
-    *          batch. The output matrix is padded and transposed to be padded according to the cuFFT data layout.
-    *
-    *          This routine can be used for both 2D and 3D simulations.
-    *
-    * @param [in] outMatrixDims - The dimension sizes of the input matrix.
-    * @throw std::runtime_error - If the plan can't be created.
-    */
-  static void createC2RFftPlan1DY(const DimensionSizes& outMatrixDims);
-  /**
-    * @brief   Create cuFFT plan for 1DZ Complex-to-Real.
-    * @details This version doesn't need any scratch place for planning. All 1D transforms are done in a single
-    *          batch. The output matrix has to be padded and transposed to be padded according to the cuFFT
-    *          data layout.
-    *
-    *          This routine can only be used for both 3D simulations.
-    *
-    * @param [in] outMatrixDims - The dimension sizes of the input matrix.
-    * @throw std::runtime_error - If the plan can't be created.
-    */
-  static void createC2RFftPlan1DZ(const DimensionSizes& outMatrixDims);
+    /**
+     * @brief   Create cuFFT plan for 1DX Complex-to-Real.
+     * @details This version doesn't need any scratch place for planning.  All 1D transforms are done in a single
+     *          batch. Data has to be transposed and padded according to the cuFFT data layout before the
+     *          transform. The FFT is done in-place.
+     *
+     *          This routine can be used for both 2D and 3D simulations.
+     *
+     * @param [in] outMatrixDims - The dimension sizes of the input matrix.
+     * @throw std::runtime_error - If the plan can't be created.
+     */
+    static void createC2RFftPlan1DX(const DimensionSizes& outMatrixDims);
+    /**
+     * @brief   Create cuFFT plan for 1DY Complex-to-Real.
+     * @details This version doesn't need any scratch place for planning. All 1D transforms are done in a single
+     *          batch. The output matrix is padded and transposed to be padded according to the cuFFT data layout.
+     *
+     *          This routine can be used for both 2D and 3D simulations.
+     *
+     * @param [in] outMatrixDims - The dimension sizes of the input matrix.
+     * @throw std::runtime_error - If the plan can't be created.
+     */
+    static void createC2RFftPlan1DY(const DimensionSizes& outMatrixDims);
+    /**
+     * @brief   Create cuFFT plan for 1DZ Complex-to-Real.
+     * @details This version doesn't need any scratch place for planning. All 1D transforms are done in a single
+     *          batch. The output matrix has to be padded and transposed to be padded according to the cuFFT
+     *          data layout.
+     *
+     *          This routine can only be used for both 3D simulations.
+     *
+     * @param [in] outMatrixDims - The dimension sizes of the input matrix.
+     * @throw std::runtime_error - If the plan can't be created.
+     */
+    static void createC2RFftPlan1DZ(const DimensionSizes& outMatrixDims);
 
-  /**
-    * @brief Destroy all static plans created by the application.
-    * @throw runtime_error if the plan can't be destroyed.
-    */
-  static void destroyAllPlansAndStaticData();
+    /**
+     * @brief Destroy all static plans created by the application.
+     * @throw runtime_error if the plan can't be destroyed.
+     */
+    static void destroyAllPlansAndStaticData();
 
-  /**
-    * @brief Compute forward out-of-place ND (2D/3D) Real-to-Complex FFT.
-    *
-    * @param [in] inMatrix      - Input data for the forward FFT.
-    * @throw std::runtime_error - If the plan is not valid.
-    */
-  void computeR2CFftND(RealMatrix& inMatrix);
-  /**
-    * @brief Compute forward out-of-place ND (2D/3D) Complex-to-Real FFT.
-    *
-    * @param [out] outMatrix    - Output of the inverse FFT.
-    * @throw std::runtime_error - If the plan is not valid.
-    */
-  void computeC2RFftND(RealMatrix& outMatrix);
+    /**
+     * @brief Compute forward out-of-place ND (2D/3D) Real-to-Complex FFT.
+     *
+     * @param [in] inMatrix      - Input data for the forward FFT.
+     * @throw std::runtime_error - If the plan is not valid.
+     */
+    void computeR2CFftND(RealMatrix& inMatrix);
+    /**
+     * @brief Compute forward out-of-place ND (2D/3D) Complex-to-Real FFT.
+     *
+     * @param [out] outMatrix    - Output of the inverse FFT.
+     * @throw std::runtime_error - If the plan is not valid.
+     */
+    void computeC2RFftND(RealMatrix& outMatrix);
 
-  /**
-    * @brief Compute forward out-of-place 1DX Real-to-Complex FFT.
-    *
-    *        This routine can be used for both 2D and 3D simulations.
-    *
-    * @param [in] inMatrix      - Input data for the forward FFT.
-    * @throw std::runtime_error - If the plan is not valid.
-    */
-  void computeR2CFft1DX(RealMatrix& inMatrix);
-  /**
-    * @brief   Compute 1D out-of-place Real-to-Complex FFT in the Z dimension.
-    * @details Compute forward out-of-place 1DY Real-to-Complex FFT. The matrix is first X<->Y transposed
-    *          followed by the 1D FFT. The matrix is left in the transposed format.
-    *
-    *          This routine can be used for both 2D and 3D simulations.
-    *
-    * @param [in] inMatrix      - Input data for the forward FFT.
-    * @throw std::runtime_error - If the plan is not valid.
-    */
-  void computeR2CFft1DY(RealMatrix& inMatrix);
-  /**
-    * @brief   Compute 1D out-of-place Real-to-Complex FFT in the Z dimension.
-    * @details Computer forward out-of-place 1DY Real-to-Complex FFT. The matrix is first X<->Z transposed
-    *          followed by the 1D FFT. The matrix is left in the transposed format.
-    *
-    *          This routine can only be used for 3D simulations.
-    *
-    * @param [in] inMatrix      - Input data for the forward FFT.
-    * @throw std::runtime_error - If the plan is not valid.
-    */
-  void computeR2CFft1DZ(RealMatrix& inMatrix);
+    /**
+     * @brief Compute forward out-of-place 1DX Real-to-Complex FFT.
+     *
+     *        This routine can be used for both 2D and 3D simulations.
+     *
+     * @param [in] inMatrix      - Input data for the forward FFT.
+     * @throw std::runtime_error - If the plan is not valid.
+     */
+    void computeR2CFft1DX(RealMatrix& inMatrix);
+    /**
+     * @brief   Compute 1D out-of-place Real-to-Complex FFT in the Z dimension.
+     * @details Compute forward out-of-place 1DY Real-to-Complex FFT. The matrix is first X<->Y transposed
+     *          followed by the 1D FFT. The matrix is left in the transposed format.
+     *
+     *          This routine can be used for both 2D and 3D simulations.
+     *
+     * @param [in] inMatrix      - Input data for the forward FFT.
+     * @throw std::runtime_error - If the plan is not valid.
+     */
+    void computeR2CFft1DY(RealMatrix& inMatrix);
+    /**
+     * @brief   Compute 1D out-of-place Real-to-Complex FFT in the Z dimension.
+     * @details Computer forward out-of-place 1DY Real-to-Complex FFT. The matrix is first X<->Z transposed
+     *          followed by the 1D FFT. The matrix is left in the transposed format.
+     *
+     *          This routine can only be used for 3D simulations.
+     *
+     * @param [in] inMatrix      - Input data for the forward FFT.
+     * @throw std::runtime_error - If the plan is not valid.
+     */
+    void computeR2CFft1DZ(RealMatrix& inMatrix);
 
-  /**
-    * @brief Compute inverse out-of-place 1DX Real-to-Complex FFT.
-    *
-    *        This routine can be used for both 2D and 3D simulations.
-    *
-    * @param [out] outMatrix    - Output data for the inverse FFT.
-    * @throw std::runtime_error - If the plan is not valid.
-    */
-  void computeC2RFft1DX(RealMatrix& outMatrix);
-  /**
-    * @brief   Compute 1D out-of-place Real-to-Complex FFT in the Y dimension.
-    * @details Computer inverse out-of-place 1DY Real-to-Complex FFT. The matrix is requested to be in the
-    *          transposed layout. After the FFT is calculated, an Y<->X transposed follows. The matrix is
-    *          returned in the normal layout (z, y, x)  format.
-    *
-    *          This routine can be used for both 2D and 3D simulations.
-    *
-    * @param [out] outMatrix    - Output data for the inverse FFT.
-    * @throw std::runtime_error - If the plan is not valid.
-    */
-  void computeC2RFft1DY(RealMatrix& outMatrix);
-  /**
-    * @brief   Compute 1D out-of-place Real-to-Complex FFT in the Y dimension.
-    * @details Computer forward out-of-place 1DY Real-to-Complex FFT. The matrix is requested to  be in the
-    *          transposed layout. After the FFT is calculated, an Z<->X transposed follows. The matrix is
-    *          returned in the normal layout (z, y, x).
-    *
-    *          This routine can only be used for 3D simulations.
-    *
-    * @param [out] outMatrix    - Output data for the inverse FFT.
-    * @throw std::runtime_error - If the plan is not valid.
-    */
-  void computeC2RFft1DZ(RealMatrix& outMatrix);
+    /**
+     * @brief Compute inverse out-of-place 1DX Real-to-Complex FFT.
+     *
+     *        This routine can be used for both 2D and 3D simulations.
+     *
+     * @param [out] outMatrix    - Output data for the inverse FFT.
+     * @throw std::runtime_error - If the plan is not valid.
+     */
+    void computeC2RFft1DX(RealMatrix& outMatrix);
+    /**
+     * @brief   Compute 1D out-of-place Real-to-Complex FFT in the Y dimension.
+     * @details Computer inverse out-of-place 1DY Real-to-Complex FFT. The matrix is requested to be in the
+     *          transposed layout. After the FFT is calculated, an Y<->X transposed follows. The matrix is
+     *          returned in the normal layout (z, y, x)  format.
+     *
+     *          This routine can be used for both 2D and 3D simulations.
+     *
+     * @param [out] outMatrix    - Output data for the inverse FFT.
+     * @throw std::runtime_error - If the plan is not valid.
+     */
+    void computeC2RFft1DY(RealMatrix& outMatrix);
+    /**
+     * @brief   Compute 1D out-of-place Real-to-Complex FFT in the Y dimension.
+     * @details Computer forward out-of-place 1DY Real-to-Complex FFT. The matrix is requested to  be in the
+     *          transposed layout. After the FFT is calculated, an Z<->X transposed follows. The matrix is
+     *          returned in the normal layout (z, y, x).
+     *
+     *          This routine can only be used for 3D simulations.
+     *
+     * @param [out] outMatrix    - Output data for the inverse FFT.
+     * @throw std::runtime_error - If the plan is not valid.
+     */
+    void computeC2RFft1DZ(RealMatrix& outMatrix);
 
-protected:
-  /// cufft plan for the ND Real-to-Complex transform.
-  static cufftHandle sR2CFftPlanND;
-  /// cufft plan for the ND Complex-to-Real transform.
-  static cufftHandle sC2RFftPlanND;
+  protected:
+    /// cufft plan for the ND Real-to-Complex transform.
+    static cufftHandle sR2CFftPlanND;
+    /// cufft plan for the ND Complex-to-Real transform.
+    static cufftHandle sC2RFftPlanND;
 
-  /// cufft plan for the 1D Real-to-Complex transform in the x dimension.
-  static cufftHandle sR2CFftPlan1DX;
-  /// cufft plan for the 1D Real-to-Complex transform in the y dimension.
-  static cufftHandle sR2CFftPlan1DY;
-  /// cufft plan for the 1D Real-to-Complex transform in the z dimension.
-  static cufftHandle sR2CFftPlan1DZ;
+    /// cufft plan for the 1D Real-to-Complex transform in the x dimension.
+    static cufftHandle sR2CFftPlan1DX;
+    /// cufft plan for the 1D Real-to-Complex transform in the y dimension.
+    static cufftHandle sR2CFftPlan1DY;
+    /// cufft plan for the 1D Real-to-Complex transform in the z dimension.
+    static cufftHandle sR2CFftPlan1DZ;
 
-  /// cufft plan for the 1D Complex-to-Real transform in the x dimension.
-  static cufftHandle sC2RFftPlan1DX;
-  /// cufft plan for the 1D Complex-to-Real transform in the y dimension.
-  static cufftHandle sC2RFftPlan1DY;
-  /// cufft plan for the 1D Complex-to-Real transform in the z dimension.
-  static cufftHandle sC2RFftPlan1DZ;
+    /// cufft plan for the 1D Complex-to-Real transform in the x dimension.
+    static cufftHandle sC2RFftPlan1DX;
+    /// cufft plan for the 1D Complex-to-Real transform in the y dimension.
+    static cufftHandle sC2RFftPlan1DY;
+    /// cufft plan for the 1D Complex-to-Real transform in the z dimension.
+    static cufftHandle sC2RFftPlan1DZ;
 
-private:
-  /**
-   * @brief Throw cuda FFT exception.
-   * @param [in] cufftError        - CUDA FFT error code.
-   * @param [in] transformTypeName - CUDA transform type name.
-   * @throw std::runtime_error with message corresponding to the cufft error code.
-   */
-  static void throwCufftException(const cufftResult cufftError,
-                                  const std::string& transformTypeName);
-  /// Error messages for cufft error codes
-  static std::map<cufftResult, ErrorMessage> sCufftErrorMessages;
+  private:
+    /**
+     * @brief Throw cuda FFT exception.
+     * @param [in] cufftError        - CUDA FFT error code.
+     * @param [in] transformTypeName - CUDA transform type name.
+     * @throw std::runtime_error with message corresponding to the cufft error code.
+     */
+    static void throwCufftException(const cufftResult cufftError, const std::string& transformTypeName);
+    /// Error messages for cufft error codes
+    static std::map<cufftResult, ErrorMessage> sCufftErrorMessages;
 }; // CufftComplexMatrix
 //----------------------------------------------------------------------------------------------------------------------
 #endif /* CUFFT_COMPLEX_MATRIX_H */

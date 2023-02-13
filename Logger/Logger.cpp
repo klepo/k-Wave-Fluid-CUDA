@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      19 April     2016, 12:52 (created) \n
- *            06 March     2019, 13:15 (revised)
+ *            08 February  2023, 12:00 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -45,9 +45,10 @@ using std::string;
 Logger::LogLevel Logger::slogLevel = LogLevel::kBasic;
 
 /**
- * Initialise or change logging level.
+ * Initialize or change logging level.
  */
-void Logger::setLevel(const LogLevel actualLogLevel) {
+void Logger::setLevel(const LogLevel actualLogLevel)
+{
   slogLevel = actualLogLevel;
 } // end of setLevel
 //----------------------------------------------------------------------------------------------------------------------
@@ -55,9 +56,10 @@ void Logger::setLevel(const LogLevel actualLogLevel) {
 /**
  * Log desired activity.
  */
-void Logger::log(const LogLevel queryLevel,
-                 const string& message) {
-  if (queryLevel <= Logger::slogLevel) {
+void Logger::log(const LogLevel queryLevel, const string& message)
+{
+  if (queryLevel <= Logger::slogLevel)
+  {
     std::cout << message;
   }
 } // end of log
@@ -66,7 +68,8 @@ void Logger::log(const LogLevel queryLevel,
 /**
  * Log an error.
  */
-void Logger::error(const string& errorMessage) {
+void Logger::error(const string& errorMessage)
+{
   std::cerr << kErrFmtHead;
   std::cerr << errorMessage;
   std::cerr << kErrFmtTail;
@@ -76,7 +79,8 @@ void Logger::error(const string& errorMessage) {
 /**
  * Log an error and terminate the execution.
  */
-void Logger::errorAndTerminate(const string& errorMessage) {
+void Logger::errorAndTerminate(const string& errorMessage)
+{
   std::cerr << kErrFmtHead;
   std::cerr << errorMessage;
   std::cerr << kErrFmtTail;
@@ -88,8 +92,10 @@ void Logger::errorAndTerminate(const string& errorMessage) {
 /**
  * Flush logger, output messages only.
  */
-void Logger::flush(const LogLevel queryLevel) {
-  if (queryLevel <= Logger::slogLevel) {
+void Logger::flush(const LogLevel queryLevel)
+{
+  if (queryLevel <= Logger::slogLevel)
+  {
     std::cout.flush();
   }
 } // end of flush
@@ -99,17 +105,17 @@ void Logger::flush(const LogLevel queryLevel) {
  * Wrap the line based on delimiters and align it with the rest of the logger output.
  *
  */
-string Logger::wordWrapString(const string& inputString,
-                              const string& delimiters,
-                              const int indentation,
-                              const int lineSize) {
+string Logger::wordWrapString(
+  const string& inputString, const string& delimiters, const int indentation, const int lineSize)
+{
   std::istringstream textStream(inputString);
   string wrappedText;
   string word;
   string indentationString = kOutFmtVerticalLine;
 
   // create indentation
-  for (int i = 0; i < indentation - 1; i++) {
+  for (int i = 0; i < indentation - 1; i++)
+  {
     indentationString += ' ';
   }
 
@@ -117,21 +123,27 @@ string Logger::wordWrapString(const string& inputString,
   int spaceLeft = lineSize - 2;
 
   // until the text is empty
-  while (textStream.good()) {
+  while (textStream.good())
+  {
     word = getWord(textStream, delimiters);
-    if (spaceLeft < static_cast<int>(word.length()) + 3) { // fill the end of the line
-      for (; spaceLeft > 2; spaceLeft--) {
+    if (spaceLeft < static_cast<int>(word.length()) + 3)
+    { // fill the end of the line
+      for (; spaceLeft > 2; spaceLeft--)
+      {
         wrappedText += " ";
       }
       wrappedText += " " + kOutFmtVerticalLine + "\n" + indentationString + word;
       spaceLeft = lineSize - (static_cast<int>(word.length()) + indentation);
-    } else {
+    }
+    else
+    {
       // add the word at the same line
       wrappedText += word;
       spaceLeft -= static_cast<int>(word.length());
 
       char c;
-      if (textStream.get(c).good()) {
+      if (textStream.get(c).good())
+      {
         wrappedText += c;
         spaceLeft--;
       }
@@ -139,7 +151,8 @@ string Logger::wordWrapString(const string& inputString,
   }
 
   // fill the last line
-  for (; spaceLeft > 2; spaceLeft--) {
+  for (; spaceLeft > 2; spaceLeft--)
+  {
     wrappedText += " ";
   }
   wrappedText += " " + kOutFmtVerticalLine + "\n";
@@ -155,13 +168,15 @@ string Logger::wordWrapString(const string& inputString,
 /**
  * Extract a word from a string stream based on delimiters.
  */
-string Logger::getWord(std::istringstream& textStream,
-                       const string& delimiters) {
+string Logger::getWord(std::istringstream& textStream, const string& delimiters)
+{
   string word = "";
   char c;
 
-  while (textStream.get(c)) {
-    if (delimiters.find(c) != string::npos) {
+  while (textStream.get(c))
+  {
+    if (delimiters.find(c) != string::npos)
+    {
       textStream.unget();
       break;
     }

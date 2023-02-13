@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      14 September 2012, 17:28 (created) \n
- *            06 March     2019, 13:28 (revised)
+ *            08 February  2023, 12:00 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -45,22 +45,22 @@ using MatrixName = const std::string;
 //--------------------------------------------------------------------------------------------------------------------//
 
 /// Nt variable name
-MatrixName kNtName = "Nt";
+MatrixName kNtName        = "Nt";
 /// t_index name
 MatrixName kTimeIndexName = "t_index";
 /// dt variable name
-MatrixName kDtName = "dt";
+MatrixName kDtName        = "dt";
 /// dx variable name
-MatrixName kDxName = "dx";
+MatrixName kDxName        = "dx";
 /// dy variable name
-MatrixName kDyName = "dy";
+MatrixName kDyName        = "dy";
 /// dz variable name
-MatrixName kDzName = "dz";
+MatrixName kDzName        = "dz";
 
 /// c_ref variable name
 MatrixName kCRefName = "c_ref";
 /// c0 variable name
-MatrixName kC0Name = "c0";
+MatrixName kC0Name   = "c0";
 
 /// alpha_power variable name
 MatrixName kAlphaPowerName = "alpha_power";
@@ -129,7 +129,7 @@ MatrixName kVelocitySourceManyName = "u_source_many";
 MatrixName kPressureSourceManyName = "p_source_many";
 
 /// p_source_flag variable name
-MatrixName kPressureSourceFlagName = "p_source_flag";
+MatrixName kPressureSourceFlagName        = "p_source_flag";
 /// p0_source_flag variable name
 MatrixName kInitialPressureSourceFlagName = "p0_source_flag";
 
@@ -144,7 +144,7 @@ MatrixName kPressureSourceInputName = "p_source_input";
 MatrixName kPressureSourceIndexName = "p_source_index";
 
 /// u_source_index variable name
-MatrixName kVelocitySourceIndexName = "u_source_index";
+MatrixName kVelocitySourceIndexName  = "u_source_index";
 /// ux_source_input variable name
 MatrixName kVelocityXSourceInputName = "ux_source_input";
 /// uy_source_input variable name
@@ -155,18 +155,18 @@ MatrixName kVelocityZSourceInputName = "uz_source_input";
 /// nonuniform_grid_flag variable name
 MatrixName kNonUniformGridFlagName = "nonuniform_grid_flag";
 /// absorbing_flag variable name
-MatrixName kAbsorbingFlagName = "absorbing_flag";
+MatrixName kAbsorbingFlagName      = "absorbing_flag";
 /// nonlinear_flag variable name
-MatrixName kNonLinearFlagName = "nonlinear_flag";
+MatrixName kNonLinearFlagName      = "nonlinear_flag";
 
 /// transducer_source_flag variable name
 MatrixName kTransducerSourceFlagName = "transducer_source_flag";
 /// sensor_mask_index variable name
-MatrixName kSensorMaskIndexName = "sensor_mask_index";
+MatrixName kSensorMaskIndexName      = "sensor_mask_index";
 /// sensor_mask_type variable name
-MatrixName kSensorMaskTypeName = "sensor_mask_type";
+MatrixName kSensorMaskTypeName       = "sensor_mask_type";
 /// sensor_mask_corners variable name
-MatrixName kSensorMaskCornersName = "sensor_mask_corners";
+MatrixName kSensorMaskCornersName    = "sensor_mask_corners";
 
 /// transducer_source_input variable name
 MatrixName kTransducerSourceInputName = "transducer_source_input";
@@ -174,22 +174,22 @@ MatrixName kTransducerSourceInputName = "transducer_source_input";
 /// p0_source_input variable name
 MatrixName kInitialPressureSourceInputName = "p0_source_input";
 /// delay_mask variable name
-MatrixName kDelayMaskName = "delay_mask";
+MatrixName kDelayMaskName                  = "delay_mask";
 
 /// kappa_r variable name
-MatrixName kKappaRName = "kappa_r";
+MatrixName kKappaRName       = "kappa_r";
 /// source_kappa_r variable name;
 MatrixName kSourceKappaRName = "source_kappa_r";
 /// BonA variable name
-MatrixName kBonAName = "BonA";
+MatrixName kBonAName         = "BonA";
 /// p variable name
-MatrixName kPName = "p";
+MatrixName kPName            = "p";
 /// rhox variable name
-MatrixName kRhoXName = "rhox";
+MatrixName kRhoXName         = "rhox";
 /// rhoy variable name
-MatrixName kRhoYName = "rhoy";
+MatrixName kRhoYName         = "rhoy";
 /// rhoz variable name
-MatrixName kRhoZName = "rhoz";
+MatrixName kRhoZName         = "rhoz";
 
 /// ux variable name
 MatrixName kUxName = "ux";
@@ -245,19 +245,19 @@ MatrixName kDzudznSgzName = "dzudzn_sgz";
 /// ddx_k_shift_pos_r variable name
 MatrixName kDdxKShiftPosRName = "ddx_k_shift_pos_r";
 /// ddy_k_shift_pos variable name
-MatrixName kDdyKShiftPosName = "ddy_k_shift_pos";
+MatrixName kDdyKShiftPosName  = "ddy_k_shift_pos";
 /// ddz_k_shift_pos variable name
-MatrixName kDdzKShiftPosName = "ddz_k_shift_pos";
+MatrixName kDdzKShiftPosName  = "ddz_k_shift_pos";
 
 /// ddx_k_shift_neg_r variable name
 MatrixName kDdxKShiftNegRName = "ddx_k_shift_neg_r";
 /// ddy_k_shift_neg variable name
-MatrixName kDdyKShiftNegName = "ddy_k_shift_neg";
+MatrixName kDdyKShiftNegName  = "ddy_k_shift_neg";
 /// ddz_k_shift_neg variable name
-MatrixName kDdzKShiftNegName = "ddz_k_shift_neg";
+MatrixName kDdzKShiftNegName  = "ddz_k_shift_neg";
 
 /// rho0 variable name
-MatrixName kRho0Name = "rho0";
+MatrixName kRho0Name    = "rho0";
 /// rho0_sgx variable name
 MatrixName kRho0SgxName = "rho0_sgx";
 /// rho0_sgy variable name
@@ -266,28 +266,28 @@ MatrixName kRho0SgyName = "rho0_sgy";
 MatrixName kRho0SgzName = "rho0_sgz";
 
 /// absorb_tau variable name
-MatrixName kAbsorbTauName = "absorb_tau";
+MatrixName kAbsorbTauName     = "absorb_tau";
 /// absorb_eta variable name
-MatrixName kAbsorbEtaName = "absorb_eta";
+MatrixName kAbsorbEtaName     = "absorb_eta";
 /// absorb_nabla1_r variable name
 MatrixName kAbsorbNabla1RName = "absorb_nabla1_r";
 /// absorb_nabla2_r variable name
 MatrixName kAbsorbNabla2RName = "absorb_nabla2_r";
 
 /// p variable name in the output file
-MatrixName kPressureRawName = "p";
+MatrixName kPressureRawName    = "p";
 /// p_rms variable name
-MatrixName kPressureRmsName = "p_rms";
+MatrixName kPressureRmsName    = "p_rms";
 /// p_max variable name
-MatrixName kPressureMaxName = "p_max";
+MatrixName kPressureMaxName    = "p_max";
 /// p_min variable name
-MatrixName kPressureMinName = "p_min";
+MatrixName kPressureMinName    = "p_min";
 /// p_max_all variable name
 MatrixName kPressureMaxAllName = "p_max_all";
 /// p_min_all variable name
 MatrixName kPressureMinAllName = "p_min_all";
 /// p_final variable name
-MatrixName kPressureFinalName = "p_final";
+MatrixName kPressureFinalName  = "p_final";
 
 /// ux_rms variable name
 MatrixName kUxRmsName = "ux_rms";
@@ -339,11 +339,11 @@ MatrixName kTemp3RealNDName = "Temp_3_RSND";
 /// CUFFT_shift_temp variable name
 MatrixName kCufftShiftTempName = "CUFFT_shift_temp";
 /// CUFFT_X_temp variable name
-MatrixName kCufftXTempName = "CUFFT_X_temp";
+MatrixName kCufftXTempName     = "CUFFT_X_temp";
 /// CUFFT_Y_temp variable name
-MatrixName kCufftYTempName = "CUFFT_Y_temp";
+MatrixName kCufftYTempName     = "CUFFT_Y_temp";
 /// CUFFT_Z_temp variable name
-MatrixName kCufftZTempName = "CUFFT_Z_temp";
+MatrixName kCufftZTempName     = "CUFFT_Z_temp";
 //----------------------------------------------------------------------------------------------------------------------
 
 #endif /* MATRIX_NAMES_H */

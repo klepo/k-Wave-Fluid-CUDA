@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      11 July      2011, 10:30 (created) \n
- *            06 March     2019, 13:19 (revised)
+ *            08 February  2023, 12:00 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -45,8 +45,8 @@
 /**
  * Constructor.
  */
-RealMatrix::RealMatrix(const DimensionSizes& dimensionSizes)
-  : BaseFloatMatrix() {
+RealMatrix::RealMatrix(const DimensionSizes& dimensionSizes) : BaseFloatMatrix()
+{
   initDimensions(dimensionSizes);
   allocateMemory();
 } // end of RealMatrix
@@ -55,7 +55,8 @@ RealMatrix::RealMatrix(const DimensionSizes& dimensionSizes)
 /**
  * Destructor.
  */
-RealMatrix::~RealMatrix() {
+RealMatrix::~RealMatrix()
+{
   freeMemory();
 } // end of ~RealMatrix
 //----------------------------------------------------------------------------------------------------------------------
@@ -63,14 +64,16 @@ RealMatrix::~RealMatrix() {
 /**
  * Read data data from HDF5 file (only from the root group).
  */
-void RealMatrix::readData(Hdf5File& file,
-                          MatrixName& matrixName) {
+void RealMatrix::readData(Hdf5File& file, MatrixName& matrixName)
+{
   // test matrix datatype
-  if (file.readMatrixDataType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDataType::kFloat) {
+  if (file.readMatrixDataType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDataType::kFloat)
+  {
     throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotFloat, matrixName.c_str()));
   }
   // read matrix domain type
-  if (file.readMatrixDomainType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDomainType::kReal) {
+  if (file.readMatrixDomainType(file.getRootGroup(), matrixName) != Hdf5File::MatrixDomainType::kReal)
+  {
     throw std::ios::failure(Logger::formatMessage(kErrFmtMatrixNotReal, matrixName.c_str()));
   }
 
@@ -82,30 +85,31 @@ void RealMatrix::readData(Hdf5File& file,
 /**
  * Write data to HDF5 file (only from the root group).
  */
-void RealMatrix::writeData(Hdf5File& file,
-                           MatrixName& matrixName,
-                           const size_t compressionLevel) {
+void RealMatrix::writeData(Hdf5File& file, MatrixName& matrixName, const size_t compressionLevel)
+{
   DimensionSizes chunks = mDimensionSizes;
-  chunks.nz = 1;
+  chunks.nz             = 1;
 
-  //1D matrices
-  if ((mDimensionSizes.ny == 1) && (mDimensionSizes.nz == 1)) {
+  // 1D matrices
+  if ((mDimensionSizes.ny == 1) && (mDimensionSizes.nz == 1))
+  {
     // Chunk = 4MB
-    if (mDimensionSizes.nx > (4 * kChunkSize1D4MB)) {
+    if (mDimensionSizes.nx > (4 * kChunkSize1D4MB))
+    {
       chunks.nx = kChunkSize1D4MB;
-    } else if (mDimensionSizes.nx > (4 * kChunkSize1D1MB)) {
+    }
+    else if (mDimensionSizes.nx > (4 * kChunkSize1D1MB))
+    {
       chunks.nx = kChunkSize1D1MB;
-    } else if (mDimensionSizes.nx > (4 * kChunkSize1D256kB)) {
+    }
+    else if (mDimensionSizes.nx > (4 * kChunkSize1D256kB))
+    {
       chunks.nx = kChunkSize1D256kB;
     }
   }
 
-  hid_t dataset = file.createDataset(file.getRootGroup(),
-                                     matrixName,
-                                     mDimensionSizes,
-                                     chunks,
-                                     Hdf5File::MatrixDataType::kFloat,
-                                     compressionLevel);
+  hid_t dataset = file.createDataset(
+    file.getRootGroup(), matrixName, mDimensionSizes, chunks, Hdf5File::MatrixDataType::kFloat, compressionLevel);
 
   file.writeHyperSlab(dataset, DimensionSizes(0, 0, 0), mDimensionSizes, mHostData);
 
@@ -117,7 +121,8 @@ void RealMatrix::writeData(Hdf5File& file,
 } // end of writeData
 //----------------------------------------------------------------------------------------------------------------------
 
-void RealMatrix::resize(const DimensionSizes& dimensionSizes) {
+void RealMatrix::resize(const DimensionSizes& dimensionSizes)
+{
   freeMemory();
   initDimensions(dimensionSizes);
   allocateMemory();
@@ -134,14 +139,15 @@ void RealMatrix::resize(const DimensionSizes& dimensionSizes) {
 /**
  * Set necessary dimensions and auxiliary variables.
  */
-void RealMatrix::initDimensions(const DimensionSizes& dimensionSizes) {
+void RealMatrix::initDimensions(const DimensionSizes& dimensionSizes)
+{
   mDimensionSizes = dimensionSizes;
 
   mSize = dimensionSizes.nx * dimensionSizes.ny * dimensionSizes.nz;
 
   mCapacity = mSize;
 
-  mRowSize = dimensionSizes.nx;
+  mRowSize  = dimensionSizes.nx;
   mSlabSize = dimensionSizes.nx * dimensionSizes.ny;
 } // end of initDimensions
 //----------------------------------------------------------------------------------------------------------------------

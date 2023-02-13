@@ -1,7 +1,7 @@
 /**
  * @file      CuboidOutputStream.h
  *
- * @author    Jiri Jaros \n
+ * @author    Jiri Jaros, Petr Kleparnik \n
  *            Faculty of Information Technology \n
  *            Brno University of Technology \n
  *            jarosjir@fit.vutbr.cz
@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      13 February  2015, 12:51 (created) \n
- *            06 March     2019, 13:19 (revised)
+ *            08 February  2023, 12:00 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -46,117 +46,119 @@
  * (time-series as well as aggregations).
  *
  */
-class CuboidOutputStream : public BaseOutputStream {
-public:
-  /// Default constructor not allowed
-  CuboidOutputStream() = delete;
+class CuboidOutputStream : public BaseOutputStream
+{
+  public:
+    /// Default constructor not allowed
+    CuboidOutputStream() = delete;
 
-  /**
-    * @brief Constructor.
-    *
-    * Constructor - links the HDF5 dataset, source (sampled matrix), sensor mask and the reduce
-    * operator together. The constructor DOES NOT allocate memory because the size of the sensor mask
-    * is not known at the time the instance of the class is being created.
-    *
-    * @param [in] file         - HDF5 file to write the output to
-    * @param [in] groupName    - The name of the HDF5 group with datasets for particular cuboids
-    * @param [in] sourceMatrix - Source matrix to be sampled
-    * @param [in] sensorMask   - Sensor mask with the cuboid coordinates
-    * @param [in] reduceOp     - Reduce operator
-    */
-  CuboidOutputStream(Hdf5File& file,
-                     MatrixName& groupName,
-                     const RealMatrix& sourceMatrix,
-                     const IndexMatrix& sensorMask,
-                     const ReduceOperator reduceOp,
-                     OutputStreamContainer* outputStreamContainer,
-                     bool doNotSaveFlag);
+    /**
+     * @brief Constructor.
+     *
+     * Constructor - links the HDF5 dataset, source (sampled matrix), sensor mask and the reduce
+     * operator together. The constructor DOES NOT allocate memory because the size of the sensor mask
+     * is not known at the time the instance of the class is being created.
+     *
+     * @param [in] file         - HDF5 file to write the output to
+     * @param [in] groupName    - The name of the HDF5 group with datasets for particular cuboids
+     * @param [in] sourceMatrix - Source matrix to be sampled
+     * @param [in] sensorMask   - Sensor mask with the cuboid coordinates
+     * @param [in] reduceOp     - Reduce operator
+     */
+    CuboidOutputStream(Hdf5File& file,
+      MatrixName& groupName,
+      const RealMatrix& sourceMatrix,
+      const IndexMatrix& sensorMask,
+      const ReduceOperator reduceOp,
+      OutputStreamContainer* outputStreamContainer,
+      bool doNotSaveFlag);
 
-  /// Copy constructor is not allowed.
-  CuboidOutputStream(const CuboidOutputStream&) = delete;
+    /// Copy constructor is not allowed.
+    CuboidOutputStream(const CuboidOutputStream&) = delete;
 
-  /**
-    * @brief Destructor.
-    *
-    * If the file is still opened, it applies the post processing and flush the data.
-    * Then, the object memory is freed and the object destroyed.
-    */
-  virtual ~CuboidOutputStream();
+    /**
+     * @brief Destructor.
+     *
+     * If the file is still opened, it applies the post processing and flush the data.
+     * Then, the object memory is freed and the object destroyed.
+     */
+    virtual ~CuboidOutputStream();
 
-  /// operator= is not allowed.
-  CuboidOutputStream& operator=(const CuboidOutputStream&) = delete;
+    /// operator= is not allowed.
+    CuboidOutputStream& operator=(const CuboidOutputStream&) = delete;
 
-  /// Create the stream, allocate data for it and open necessary datasets.
-  virtual void create();
+    /// Create the stream, allocate data for it and open necessary datasets.
+    virtual void create();
 
-  /// Reopen the output stream after restart and reload data.
-  virtual void reopen();
+    /// Reopen the output stream after restart and reload data.
+    virtual void reopen();
 
-  /**
-    * @brief Sample grid points, line them up in the buffer, if necessary a reduce operator is applied.
-    * @warning data is not flushed, there is no sync.
-    */
-  virtual void sample();
+    /**
+     * @brief Sample grid points, line them up in the buffer, if necessary a reduce operator is applied.
+     * @warning data is not flushed, there is no sync.
+     */
+    virtual void sample();
 
-  /// Post sampling step, can work with other filled stream buffers
-  virtual void postSample();
+    /// Post sampling step, can work with other filled stream buffers
+    virtual void postSample();
 
-  /// Flush data to disk (from raw streams only).
-  virtual void flushRaw();
+    /// Flush data to disk (from raw streams only).
+    virtual void flushRaw();
 
-  /// Apply post-processing on the buffer and flush it to the file.
-  virtual void postProcess();
+    /// Apply post-processing on the buffer and flush it to the file.
+    virtual void postProcess();
 
-  /// Apply post-processing 2 on the buffer and flush it to the file.
-  virtual void postProcess2();
+    /// Apply post-processing 2 on the buffer and flush it to the file.
+    virtual void postProcess2();
 
-  /// Checkpoint the stream and close.
-  virtual void checkpoint();
+    /// Checkpoint the stream and close.
+    virtual void checkpoint();
 
-  /// Close stream (apply post-processing if necessary, flush data and close).
-  virtual void close();
+    /// Close stream (apply post-processing if necessary, flush data and close).
+    virtual void close();
 
-protected:
-  /**
-    * @struct CuboidInfo
-    * @brief  This structure holds information about one cuboid. Namely, its HDF5_ID,
-    *         starting position in a lineup buffer.
-    */
-  struct CuboidInfo {
-    /// Index of the dataset storing the given cuboid.
-    hid_t cuboidIdx;
-    /// Having a single buffer for all cuboids, where this one starts.
-    size_t startingPossitionInBuffer;
-    /// Maximal value
-    ReducedValue maxValue;
-    /// Minimal value
-    ReducedValue minValue;
-  };
+  protected:
+    /**
+     * @struct CuboidInfo
+     * @brief  This structure holds information about one cuboid. Namely, its HDF5_ID,
+     *         starting position in a lineup buffer.
+     */
+    struct CuboidInfo
+    {
+        /// Index of the dataset storing the given cuboid.
+        hid_t cuboidIdx;
+        /// Having a single buffer for all cuboids, where this one starts.
+        size_t startingPossitionInBuffer;
+        /// Maximal value
+        ReducedValue maxValue;
+        /// Minimal value
+        ReducedValue minValue;
+    };
 
-  /**
-    * @brief  Create a new dataset for a given cuboid specified by index (order).
-    * @param  [in] cuboidIdx - Index of the cuboid in the sensor mask.
-    * @return HDF5 handle to the dataset.
-    */
-  virtual hid_t createCuboidDataset(const size_t cuboidIdx);
+    /**
+     * @brief  Create a new dataset for a given cuboid specified by index (order).
+     * @param  [in] cuboidIdx - Index of the cuboid in the sensor mask.
+     * @return HDF5 handle to the dataset.
+     */
+    virtual hid_t createCuboidDataset(const size_t cuboidIdx);
 
-  /// Flush the buffer to the file.
-  virtual void flushBufferToFile(float* bufferToFlush = nullptr);
+    /// Flush the buffer to the file.
+    virtual void flushBufferToFile(float* bufferToFlush = nullptr);
 
-  /// Sensor mask to sample data.
-  const IndexMatrix& mSensorMask;
+    /// Sensor mask to sample data.
+    const IndexMatrix& mSensorMask;
 
-  /// Handle to a HDF5 dataset.
-  hid_t mGroup;
+    /// Handle to a HDF5 dataset.
+    hid_t mGroup;
 
-  /// vector keeping handles and positions of all cuboids.
-  std::vector<CuboidInfo> mCuboidsInfo;
+    /// vector keeping handles and positions of all cuboids.
+    std::vector<CuboidInfo> mCuboidsInfo;
 
-  /// Time step to store (N/A for aggregated).
-  size_t mSampledTimeStep;
+    /// Time step to store (N/A for aggregated).
+    size_t mSampledTimeStep;
 
-  /// Has the sampling finished?
-  cudaEvent_t mEventSamplingFinished;
+    /// Has the sampling finished?
+    cudaEvent_t mEventSamplingFinished;
 }; // end of CuboidOutputStream
 //----------------------------------------------------------------------------------------------------------------------
 

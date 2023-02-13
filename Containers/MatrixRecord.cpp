@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      02 December  2014, 15:44 (created) \n
- *            06 March     2019, 12:57 (revised)
+ *            08 February  2023, 12:00 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -43,62 +43,61 @@
  * Default constructor.
  */
 MatrixRecord::MatrixRecord()
-  : matrixPtr(nullptr),
-    matrixType(MatrixType::kReal),
-    dimensionSizes(),
-    loadData(false),
-    checkpoint(false),
-    matrixName() {
-
+  : matrixPtr(nullptr), matrixType(MatrixType::kReal), dimensionSizes(), loadData(false), checkpoint(false),
+    matrixName()
+{
 } // end of constructor
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Copy constructor of TMatrixRecord.
  */
 MatrixRecord::MatrixRecord(const MatrixRecord& src)
-  : matrixPtr(src.matrixPtr),
-    matrixType(src.matrixType),
-    dimensionSizes(src.dimensionSizes),
-    loadData(src.loadData),
-    checkpoint(src.checkpoint),
-    matrixName(src.matrixName) {
-
+  : matrixPtr(src.matrixPtr), matrixType(src.matrixType), dimensionSizes(src.dimensionSizes), loadData(src.loadData),
+    checkpoint(src.checkpoint), matrixName(src.matrixName)
+{
 } // end of copy constructor
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * operator =
  */
-MatrixRecord& MatrixRecord::operator=(const MatrixRecord& src) {
-  if (this != &src) {
-    matrixPtr = src.matrixPtr;
-    matrixType = src.matrixType;
+MatrixRecord& MatrixRecord::operator=(const MatrixRecord& src)
+{
+  if (this != &src)
+  {
+    matrixPtr      = src.matrixPtr;
+    matrixType     = src.matrixType;
     dimensionSizes = src.dimensionSizes;
-    loadData = src.loadData;
-    checkpoint = src.checkpoint;
-    matrixName = src.matrixName;
+    loadData       = src.loadData;
+    checkpoint     = src.checkpoint;
+    matrixName     = src.matrixName;
   }
 
   return *this;
 } // end of operator=
+
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Set all values for the record.
  */
 void MatrixRecord::set(const MatrixType matrixType,
-                       const DimensionSizes dimensionSizes,
-                       const bool loadData,
-                       const bool checkpoint,
-                       MatrixName& matrixName) {
-  this->matrixPtr = nullptr;
-  this->matrixType = matrixType;
+  const DimensionSizes dimensionSizes,
+  const bool loadData,
+  const bool checkpoint,
+  MatrixName& matrixName)
+{
+  this->matrixPtr      = nullptr;
+  this->matrixType     = matrixType;
   this->dimensionSizes = dimensionSizes;
-  this->loadData = loadData;
-  this->checkpoint = checkpoint;
-  this->matrixName = matrixName;
+  this->loadData       = loadData;
+  this->checkpoint     = checkpoint;
+  this->matrixName     = matrixName;
 } // end of set
+
 //----------------------------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------------------------//

@@ -2,3 +2,6 @@
 /dist/
 Data/*
 *.o
+/visualstudioproject/.vs
+/visualstudioproject/k-wave-fluid-cuda.vcxproj.user
+/k-wave-fluid-cuda.pro.user

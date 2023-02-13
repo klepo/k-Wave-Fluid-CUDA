@@ -12,7 +12,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      26 July      2011, 14:17 (created) \n
- *            06 March     2019, 13:19 (revised)
+ *            08 February  2023, 12:00 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -48,11 +48,9 @@
  * Default constructor
  */
 BaseIndexMatrix::BaseIndexMatrix()
-  : BaseMatrix(),
-    mSize(0), mCapacity(0),
-    mDimensionSizes(),
-    mRowSize(0), mSlabSize(0),
-    mHostData(nullptr), mDeviceData(nullptr) {
+  : BaseMatrix(), mSize(0), mCapacity(0), mDimensionSizes(), mRowSize(0), mSlabSize(0), mHostData(nullptr),
+    mDeviceData(nullptr)
+{
 
 } // end of BaseIndexMatrix
 //----------------------------------------------------------------------------------------------------------------------
@@ -60,9 +58,11 @@ BaseIndexMatrix::BaseIndexMatrix()
 /**
  * Zero all allocated elements.
  */
-void BaseIndexMatrix::zeroMatrix() {
+void BaseIndexMatrix::zeroMatrix()
+{
 #pragma omp parallel for schedule(static)
-  for (size_t i = 0; i < mCapacity; i++) {
+  for (size_t i = 0; i < mCapacity; i++)
+  {
     mHostData[i] = size_t(0);
   }
 } // end of zeroMatrix
@@ -71,7 +71,8 @@ void BaseIndexMatrix::zeroMatrix() {
 /**
  * Copy data from CPU -> GPU (Host -> Device).
  */
-void BaseIndexMatrix::copyToDevice() {
+void BaseIndexMatrix::copyToDevice()
+{
   cudaCheckErrors(cudaMemcpy(mDeviceData, mHostData, mCapacity * sizeof(size_t), cudaMemcpyHostToDevice));
 } // end of copyToDevice
 //----------------------------------------------------------------------------------------------------------------------
@@ -79,7 +80,8 @@ void BaseIndexMatrix::copyToDevice() {
 /**
  * Copy data from GPU -> CPU (Device -> Host).
  */
-void BaseIndexMatrix::copyFromDevice() {
+void BaseIndexMatrix::copyFromDevice()
+{
   cudaCheckErrors(cudaMemcpy(mHostData, mDeviceData, mCapacity * sizeof(size_t), cudaMemcpyDeviceToHost));
 } // end of copyFromDevice
 //----------------------------------------------------------------------------------------------------------------------
@@ -94,20 +96,23 @@ void BaseIndexMatrix::copyFromDevice() {
  * CPU memory is aligned by the kDataAlignment and then registered as pinned and zeroed.
  * The GPU memory is allocated on GPU but not zeroed (no reason).
  */
-void BaseIndexMatrix::allocateMemory() {
-  //size of memory to allocate
+void BaseIndexMatrix::allocateMemory()
+{
+  // size of memory to allocate
   size_t sizeInBytes = mCapacity * sizeof(size_t);
 
   mHostData = static_cast<size_t*>(_mm_malloc(sizeInBytes, kDataAlignment));
 
-  if (!mHostData) {
+  if (!mHostData)
+  {
     throw std::bad_alloc();
   }
 
   // Register Host memory (pin in memory)
   cudaCheckErrors(cudaHostRegister(mHostData, sizeInBytes, cudaHostRegisterPortable));
 
-  if ((cudaMalloc<size_t>(&mDeviceData, sizeInBytes) != cudaSuccess) || (!mDeviceData)) {
+  if ((cudaMalloc<size_t>(&mDeviceData, sizeInBytes) != cudaSuccess) || (!mDeviceData))
+  {
     throw std::bad_alloc();
   }
 } // end of allocateMemory
@@ -116,15 +121,18 @@ void BaseIndexMatrix::allocateMemory() {
 /**
  * Free memory.
  */
-void BaseIndexMatrix::freeMemory() {
-  if (mHostData) {
+void BaseIndexMatrix::freeMemory()
+{
+  if (mHostData)
+  {
     cudaHostUnregister(mHostData);
     _mm_free(mHostData);
   }
   mHostData = nullptr;
 
   // Free GPU memory
-  if (mDeviceData) {
+  if (mDeviceData)
+  {
     cudaCheckErrors(cudaFree(mDeviceData));
   }
   mDeviceData = nullptr;

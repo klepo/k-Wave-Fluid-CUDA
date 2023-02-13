@@ -1,7 +1,7 @@
 /**
  * @file      main.cpp
  *
- * @author    Jiri Jaros \n
+ * @author    Jiri Jaros, Petr Kleparnik \n
  *            Faculty of Information Technology \n
  *            Brno University of Technology \n
  *            jarosjir@fit.vutbr.cz
@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      11 July      2012, 10:57 (created) \n
- *            12 March     2019, 11:05 (revised)
+ *            08 February  2023, 12:00 (revised)
  *
  *
  * @mainpage kspaceFirstOrder-CUDA
@@ -293,10 +293,10 @@
 │                               │   compression                 │
 │                               │   (default = computed from    │
 │                               │   p_source_input dataset)     │
-│ --mos <mos>                   │ Multiple of overlap size  for │
+│ --mos <mos>                   │ Multiple of overlap size for  │
 │                               │   compression                 │
 │                               │   (default = 1)               │
-│ --harmonics <harmonics>       │ Number of hamornics for       │
+│ --harmonics <harmonics>       │ Number of harmonics for       │
 │                               │   compression (default = 1)   │
 ├───────────────────────────────┼───────────────────────────────┤
 │ -s <time_step>                │ When data collection begins   │
@@ -380,6 +380,27 @@
 | total_execution_time                    Total execution time                                                         |
 | peak_core_memory_in_use                 Peak memory required per core during the simulation                          |
 | total_memory_in_use Total               Peak memory in use                                                           |
++----------------------------------------------------------------------------------------------------------------------+
+| mStoreQTermFlag                         Store Q term flag                                                            |
+| mStoreQTermCFlag                        Store Q term compressed flag                                                 |
+| mStoreIntensityAvgFlag                  Store average intensity flag                                                 |
+| mStoreIntensityAvgCFlag                 Store average intensity compressed flag                                      |
+| mNoCompressionOverlapFlag               No compression overlap flag                                                  |
+| mPeriod                                 Compression period                                                           |
+| mMOS                                    Multiple of overlap size for compression                                     |
+| mHarmonics                              Number of harmonics for compression                                          |
+| mBlockSizeDefault                       Maximum block size for dataset reading - computing average intensity without |
+|                                         compression)                                                                 |
+| mBlockSizeDefaultC                      Maximum block size for dataset reading - computing average intensity with    |
+|                                         compression)                                                                 |
+| mSamplingStartTimeStep                  When data collection begins                                                  |
+| output_file_size                        Output file size                                                             |
+| simulation_peak_host_memory_in_use      Simulation peak host memory in use                                           |
+| simulation_peak_device_memory_in_use    Simulation peak GPU memory in use                                            |
+| average_sampling_iteration_time         Average sampling iteration time                                              |
+| sampling_time                           Sampling time                                                                |
+| average_non-sampling_iteration_time     Average non-sampling iteration time                                          |
+| non-sampling_time                       Non-sampling time                                                            |
 +----------------------------------------------------------------------------------------------------------------------+
 \endverbatim
  *
@@ -801,7 +822,7 @@
 #include <exception>
 
 #ifdef _OPENMP
-#include <omp.h>
+  #include <omp.h>
 #endif
 
 #include <KSpaceSolver/KSpaceFirstOrderSolver.h>
@@ -816,7 +837,8 @@ using std::string;
  * @param [in] argv  - Commandline parameters.
  * @return EXIT_SUCCESS - If the simulation completed correctly.
  */
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
   // Create k-Space solver
   KSpaceFirstOrderSolver kSpaceSolver;
 
@@ -829,25 +851,31 @@ int main(int argc, char** argv) {
   Parameters& params = Parameters::getInstance();
 
   //------------------------------------- Init simulation ---------------------------------------//
-  try {
+  try
+  {
     // Initialise Parameters by parsing the command line and reading input file scalars
     params.init(argc, argv);
     // Select GPU
     params.selectDevice();
 
     // When we know the GPU, we can print out the code version
-    if (params.isPrintVersionOnly()) {
+    if (params.isPrintVersionOnly())
+    {
       kSpaceSolver.printFullCodeNameAndLicense();
       return EXIT_SUCCESS;
     }
-  } catch (const std::exception& e) {
+  }
+  catch (const std::exception& e)
+  {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     // must be repeated in case the GPU we want to print out the code version for and all GPUs are busy
-    if (params.isPrintVersionOnly()) {
+    if (params.isPrintVersionOnly())
+    {
       kSpaceSolver.printFullCodeNameAndLicense();
     }
 
-    if (!params.isPrintVersionOnly()) {
+    if (!params.isPrintVersionOnly())
+    {
       Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
     }
     Logger::errorAndTerminate(Logger::wordWrapString(e.what(), kErrFmtPathDelimiters, 9));
@@ -864,14 +892,19 @@ int main(int argc, char** argv) {
   Logger::log(Logger::LogLevel::kBasic, kOutFmtInitializationHeader);
 
   //-------------------------------------- Allocate memory --------------------------------------//
-  try {
+  try
+  {
     kSpaceSolver.allocateMemory();
-  } catch (const std::bad_alloc&) {
+  }
+  catch (const std::bad_alloc&)
+  {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
     // 9 = Indentation of Error:
     Logger::errorAndTerminate(Logger::wordWrapString(kErrFmtOutOfMemory, " ", 9));
-  } catch (const std::exception& e) {
+  }
+  catch (const std::exception& e)
+  {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
     const string errorMessage = string(kErrFmtUnknownError) + e.what();
@@ -879,14 +912,19 @@ int main(int argc, char** argv) {
   }
 
   //-------------------------------------- Load input data --------------------------------------//
-  try {
+  try
+  {
     kSpaceSolver.loadInputData();
-  } catch (const std::ios::failure& e) {
+  }
+  catch (const std::ios::failure& e)
+  {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
     // 9 = Indentation of Error:
     Logger::errorAndTerminate(Logger::wordWrapString(e.what(), kErrFmtPathDelimiters, 9));
-  } catch (const std::exception& e) {
+  }
+  catch (const std::exception& e)
+  {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtFailed);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLastSeparator);
 
@@ -897,7 +935,8 @@ int main(int argc, char** argv) {
   Logger::log(Logger::LogLevel::kBasic, kOutFmtElapsedTime, kSpaceSolver.getDataLoadTime());
 
   // did we recover from checkpoint?
-  if (params.getTimeIndex() > 0) {
+  if (params.getTimeIndex() > 0)
+  {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
     Logger::log(Logger::LogLevel::kBasic, kOutFmtRecoveredFrom, params.getTimeIndex());
   }
@@ -915,7 +954,8 @@ int main(int argc, char** argv) {
   Logger::log(Logger::LogLevel::kBasic, kOutFmtSeparator);
 
   // Elapsed time
-  if (kSpaceSolver.getCumulatedTotalTime() != kSpaceSolver.getTotalTime()) {
+  if (kSpaceSolver.getCumulatedTotalTime() != kSpaceSolver.getTotalTime())
+  {
     Logger::log(Logger::LogLevel::kBasic, kOutFmtLegExecutionTime, kSpaceSolver.getTotalTime());
   }
   Logger::log(Logger::LogLevel::kBasic, kOutFmtTotalExecutionTime, kSpaceSolver.getCumulatedTotalTime());

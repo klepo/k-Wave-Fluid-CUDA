@@ -1,0 +1,52 @@
+# Format Style Options - Created with Clang Power Tools
+---
+#AccessModifierOffset: 0
+FixNamespaceComments: true
+IndentAccessModifiers: true
+AlignAfterOpenBracket: false
+AlignConsecutiveAssignments: AcrossComments 
+AlignConsecutiveBitFields: Consecutive
+AlignEscapedNewlines: DontAlign
+AlignTrailingComments: true
+AllowShortFunctionsOnASingleLine: None
+BasedOnStyle: LLVM
+BraceWrapping: 
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterObjCDeclaration: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeCatch: true
+  BeforeElse: true
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: true
+  BeforeLambdaBody: false
+  BeforeWhile: true
+BreakBeforeBraces: Custom
+BreakInheritanceList: BeforeColon
+BreakConstructorInitializers: BeforeColon
+ColumnLimit: 120
+ConstructorInitializerIndentWidth : 2
+ContinuationIndentWidth: 2
+ExperimentalAutoDetectBinPacking: true
+IndentPPDirectives: BeforeHash
+IndentWidth: 2
+Language: Cpp
+MaxEmptyLinesToKeep: 1
+PenaltyBreakAssignment: 3
+PointerAlignment: Left
+ReflowComments: true
+SortIncludes: false
+SpaceAfterTemplateKeyword: false
+SpaceBeforeCaseColon: false
+SpacesBeforeTrailingComments: 1
+TabWidth: 2
+UseTab: Never
+...

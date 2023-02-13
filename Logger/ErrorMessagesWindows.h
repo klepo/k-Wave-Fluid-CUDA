@@ -11,7 +11,7 @@
  * @version   kspaceFirstOrder 3.6
  *
  * @date      13 July      2016, 12:27 (created) \n
- *            06 March     2019, 13:15 (revised)
+ *            08 February  2023, 12:00 (revised)
  *
  * @copyright Copyright (C) 2019 Jiri Jaros and Bradley Treeby.
  *
@@ -41,15 +41,13 @@
 using ErrorMessage = const std::string;
 
 /// Error message header
-ErrorMessage kErrFmtHead =
-  "+---------------------------------------------------------------+\n"
-  "|            !!! K-Wave experienced a fatal error !!!           |\n"
-  "+---------------------------------------------------------------+\n";
+ErrorMessage kErrFmtHead = "+---------------------------------------------------------------+\n"
+                           "|            !!! K-Wave experienced a fatal error !!!           |\n"
+                           "+---------------------------------------------------------------+\n";
 
 /// Error message tailer
-ErrorMessage kErrFmtTail =
-  "+---------------------------------------------------------------+\n"
-  "|                      Execution terminated                     |\n"
-  "+---------------------------------------------------------------+\n";
+ErrorMessage kErrFmtTail = "+---------------------------------------------------------------+\n"
+                           "|                      Execution terminated                     |\n"
+                           "+---------------------------------------------------------------+\n";
 
 #endif /* ERROR_MESSAGES_WINDOWS_H */
