@@ -12,36 +12,41 @@ an optimized CUDA/C++ implementation to run small to moderate grid sizes
 (64x64x64 to 512x512x512). This code uses a single NVIDIA GPU to accelerate 
 the simulations (AMD GPUs are not supported).
 
-This repository contains a modified C++ implementation of `kpsaceFirstOrder3D-CUDA` 
-Version 1.2 (08/2017), which is extended by on-the-fly compression and calculation 
-of time-averaged acoustic Intensity in time-domain ultrasound simulations. 
-These approaches were published in [[2]](#2).
+**This repository contains a modified CUDA/C++ implementation of 
+`kpsaceFirstOrder-CUDA` Version 1.2 (08/2017), which is extended by on-the-fly
+compression and calculation of time-averaged acoustic Intensity in time-domain 
+ultrasound simulations. These approaches were published in [[2]](#2).**
+
+See also a modified C++ implementation of `kpsaceFirstOrder-OMP` 
+https://github.com/klepo/k-Wave-Fluid-OMP or 
+https://github.com/klepo/Visualisation-of-the-outputs-of-k-Wave-ultrasound-simulations
 
 ## Repository structure
 
     .
-    +--Compression       - Helper class for on-the-fly compression
-    +--Containers        - Matrix and output stream containers
-    +--Data              - Small test data
-    +--GetoptWin64       - Windows version of the getopt routine
-    +--Hdf5              - HDF5 classes (file access)
-    +--KSpaceSolver      - Solver classes with all the kernels
-    +--Logger            - Logger class to report progress and errors
-    +--MatrixClasses     - Matrix classes to hold data
-    +--Makefiles         - GNU makefiles for different systems
-    +--OutputHDF5Streams - Output streams to sample data
-    +--Parameters        - Parameters of the simulation
-    +--Utils             - Utility routines
-    +--nbproject         - NetBeans IDE 8.2 project
-    .clang-format        - Clang-Format config file
-    Changelog.md         - Changelog
-    License.md           - License file
-    Makefile             - NetBeans 8.2 makefile
-    Readme.md            - Readme
-    Doxyfile             - Doxygen generator file
-    header_bg.png        - Doxygen logo
-    main.cpp             - Main file of the project
-
+    +--Compression         - Helper class for the on-the-fly compression
+    +--Containers          - Matrix and output stream containers
+    +--Data                - Small test data
+    +--GetoptWin64         - Windows version of the getopt routine
+    +--Hdf5                - HDF5 classes (file access)
+    +--KSpaceSolver        - Solver classes with all the kernels
+    +--Logger              - Logger class to report progress and errors
+    +--MatrixClasses       - Matrix classes to hold data
+    +--Makefiles           - GNU makefiles for different systems
+    +--OutputHDF5Streams   - Output streams to sample data
+    +--Parameters          - Parameters of the simulation
+    +--Utils               - Utility routines
+    +--nbproject           - NetBeans IDE 8.2 project
+    +--qtproject           - QtCreator IDE project
+    +--visualstudioproject - Visual Studio IDE project
+    .clang-format          - Clang-Format config file
+    Changelog.md           - Changelog
+    License.md             - License file
+    Makefile               - NetBeans 8.2 makefile
+    Readme.md              - Readme
+    Doxyfile               - Doxygen generator file
+    header_bg.png          - Doxygen logo
+    main.cpp               - Main file of the project
 
 ## Compilation
  
